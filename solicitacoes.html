@@ -43,20 +43,22 @@
         .dados-carregados strong { color: #1B5E20; }
         .limpar-dados { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 0.8rem; margin-top: 8px; padding: 0 !important; width: auto !important; text-align: left; }
         .limpar-dados:hover { color: #FF6B8A; background: none !important; box-shadow: none !important; transform: none !important; }
-        .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .price-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; border: 3px solid transparent; transition: all 0.3s ease; cursor: pointer; position: relative; }
-        .price-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(255, 139, 167, 0.2); }
-        .price-card.selecionado { border-color: #FF8BA7; transform: scale(1.05); box-shadow: 0 10px 30px rgba(255, 139, 167, 0.3); }
-        .price-card input[type="radio"] { position: absolute; opacity: 0; cursor: pointer; }
-        .price-card h3 { color: #FF6B8A; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .price { font-size: 1.8rem; font-weight: bold; color: #FF6B8A; margin: 10px 0; }
-        .price-desc { font-size: 0.85rem; color: #636E72; margin-top: 5px; }
-        .price-card.erro { border-color: #ff4444; animation: shake 0.5s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .frete-calculado-box { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 3px solid #2196F3; border-radius: 15px; padding: 25px; margin-bottom: 25px; text-align: center; display: none; box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2); }
+        .frete-calculado-box.mostrar { display: block; animation: slideDown 0.3s ease; }
+        .frete-calculado-box h3 { color: #1565C0; font-size: 1.1rem; margin-bottom: 10px; }
+        .frete-valor { font-size: 2.2rem; font-weight: bold; color: #2196F3; margin: 10px 0; }
+        .frete-descricao { font-size: 0.95rem; color: #546E7A; margin-bottom: 5px; }
+        .frete-cidade-info { font-size: 0.85rem; color: #78909C; margin-top: 5px; }
+        .frete-cidade-info strong { color: #1565C0; }
+        .outros-estados-box { background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border: 3px solid #FF9800; border-radius: 15px; padding: 25px; margin-bottom: 25px; text-align: center; display: none; box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2); }
+        .outros-estados-box.mostrar { display: block; animation: slideDown 0.3s ease; }
+        .outros-estados-box .emoji-grande { font-size: 2.5rem; margin-bottom: 10px; }
+        .outros-estados-box h3 { color: #E65100; font-size: 1.2rem; margin-bottom: 12px; }
+        .outros-estados-box p { color: #424242; font-size: 1rem; line-height: 1.6; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #2D3436; }
         .required::after { content: " *"; color: #FF6B8A; }
-        input, select, textarea { width: 100%; padding: 14px 18px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; transition: all 0.3s; }
+        input, select, textarea { width: 100%; padding: 14px 18px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; transition: all 0.3s; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #FF8BA7; box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1); }
         textarea { resize: vertical; min-height: 100px; }
         .hint { font-size: 0.8rem; color: #636E72; margin-top: 5px; font-weight: 400; }
@@ -73,12 +75,6 @@
         .erro-conexao.show { display: block; }
         .endereco-alterado { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 5px; font-size: 0.85rem; color: #E65100; display: none; }
         .endereco-alterado.show { display: block; }
-        .checkbox-email { display: flex; align-items: flex-start; gap: 12px; background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%); border: 2px solid #90CAF9; border-radius: 12px; padding: 15px; margin-top: 15px; cursor: pointer; transition: all 0.3s ease; }
-        .checkbox-email:hover { border-color: #64B5F6; box-shadow: 0 4px 12px rgba(144, 202, 249, 0.3); }
-        .checkbox-email input[type="checkbox"] { width: 22px; height: 22px; margin-top: 2px; accent-color: #2196F3; cursor: pointer; }
-        .checkbox-email .email-texto { flex: 1; }
-        .checkbox-email .email-texto strong { color: #1565C0; display: block; margin-bottom: 4px; }
-        .checkbox-email .email-texto span { color: #546E7A; font-size: 0.9rem; }
         .numero-solicitacao { background: linear-gradient(135deg, #FF6B8A, #FF8BA7); color: white; padding: 15px 25px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; margin: 20px 0; display: inline-block; box-shadow: 0 4px 15px rgba(255, 107, 138, 0.4); }
         .numero-solicitacao-label { color: #636E72; font-size: 0.9rem; margin-bottom: 5px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
@@ -173,14 +169,12 @@
         }
         .btn-enviar-bloqueado { background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important; cursor: not-allowed !important; opacity: 0.7; }
         .btn-enviar-bloqueado:hover { transform: none !important; box-shadow: none !important; }
-        .mensagem-frete-outros { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center; color: #1565C0; font-size: 1rem; line-height: 1.5; display: none; }
-        .mensagem-frete-outros.mostrar { display: block; }
+        .aviso-campos-obrigatorios { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.85rem; color: #E65100; display: none; }
+        .aviso-campos-obrigatorios.mostrar { display: block; }
         .spinner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; }
         .spinner-overlay.ativo { display: flex; }
         .spinner-box { background: white; padding: 40px; border-radius: 16px; text-align: center; }
         .spinner-box .loading { display: inline-block; width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        .aviso-campos-obrigatorios { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.85rem; color: #E65100; display: none; }
-        .aviso-campos-obrigatorios.mostrar { display: block; }
         .redirecionando-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); z-index: 9998; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
         .redirecionando-overlay.ativo { display: flex; }
         .redirecionando-box { background: white; padding: 50px 40px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); max-width: 400px; width: 100%; }
@@ -188,8 +182,6 @@
         .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
-    <base target="_blank">
-<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -231,28 +223,9 @@
                 <label for="confirmarPrazo">✅ Li e entendi o prazo para solicitações semanais acima</label>
             </div>
         </div>
-        <div class="pricing" id="regiaoContainer">
-            <label class="price-card" data-regiao="floripa">
-                <input type="radio" name="regiao" id="floripa" value="Grande Florianópolis">
-                <h3>🏠 Grande Florianópolis</h3>
-                <div class="price" id="precoFloripa">R$ 15,00</div>
-                <p class="price-desc">Valor fixo</p>
-            </label>
-            <label class="price-card" data-regiao="sc">
-                <input type="radio" name="regiao" id="sc" value="Santa Catarina">
-                <h3>🌲 Santa Catarina</h3>
-                <div class="price" id="precoSC">R$ 21,99</div>
-                <p class="price-desc">Valor fixo</p>
-            </label>
-            <label class="price-card" data-regiao="outros">
-                <input type="radio" name="regiao" id="outros" value="Outros Estados">
-                <h3>🇧🇷 Outros Estados</h3>
-                <div class="price">Consultar</div>
-                <p class="price-desc">Orçamento via Direct</p>
-            </label>
-        </div>
         <div class="form-box desabilitado" id="formBox">
             <form id="deliveryForm">
+                <!-- 1. CPF -->
                 <div class="form-group">
                     <label class="required">CPF</label>
                     <input type="text" name="cpf" id="cpf" required placeholder="000.000.000-00" maxlength="14" autocomplete="off">
@@ -263,29 +236,35 @@
                     </div>
                     <p class="hint">💡 Digite seu CPF completo. Se já tiver cadastro, seus dados serão carregados automaticamente!</p>
                 </div>
+                <!-- 2. Nome Completo -->
                 <div class="form-group">
                     <label class="required">Nome completo</label>
                     <input type="text" name="nome" id="nome" required placeholder="Digite seu nome completo">
                 </div>
+                <!-- 3. WhatsApp -->
                 <div class="form-group">
                     <label class="required">WhatsApp</label>
                     <input type="tel" name="whatsapp" id="whatsapp" required placeholder="(48) 99999-9999">
                 </div>
+                <!-- 4. E-mail -->
                 <div class="form-group">
                     <label>E-mail</label>
                     <input type="email" name="email" id="email" placeholder="seu.email@exemplo.com">
-                    <p class="hint">💡 Necessário caso deseje receber cópia da solicitação por e-mail</p>
+                    <p class="hint">💡 Se informar o e-mail, uma cópia da solicitação será enviada automaticamente</p>
                 </div>
+                <!-- 5. Instagram -->
                 <div class="form-group">
                     <label>Instagram</label>
                     <input type="text" name="instagram" id="instagram" placeholder="@maria.silva">
                     <p class="hint">💡 Isto irá facilitar a localização da sua sacolinha</p>
                 </div>
+                <!-- 6. Rua / Avenida -->
                 <div class="form-group">
                     <label class="required">Rua / Avenida</label>
                     <input type="text" name="rua" id="rua" required placeholder="Nome da rua ou avenida">
                     <div class="endereco-alterado" id="avisoEnderecoAlterado">📝 Endereço modificado - será cadastrado um novo endereço para esta entrega</div>
                 </div>
+                <!-- 7. Nº e Complemento -->
                 <div class="endereco-grid">
                     <div class="form-group">
                         <label class="required">Nº</label>
@@ -296,32 +275,75 @@
                         <input type="text" name="complemento" id="complemento" placeholder="Apto, bloco...">
                     </div>
                 </div>
-                <div class="endereco-grid">
-                    <div class="form-group">
-                        <label class="required">Bairro</label>
-                        <input type="text" name="bairro" id="bairro" required placeholder="Bairro">
-                    </div>
-                    <div class="form-group">
-                        <label class="required">Cidade</label>
-                        <input type="text" name="cidade" id="cidade" required placeholder="Cidade">
-                    </div>
+                <!-- 8. Bairro -->
+                <div class="form-group">
+                    <label class="required">Bairro</label>
+                    <input type="text" name="bairro" id="bairro" required placeholder="Bairro">
                 </div>
+                <!-- 9. CEP -->
                 <div class="form-group">
                     <label class="required">CEP</label>
                     <input type="text" name="cep" id="cepEndereco" required placeholder="00000-000" maxlength="9">
-                    <div class="aviso" id="avisoOutros">⚠️ Para outros estados, aguarde nosso contato com o valor do frete via Direct do Instagram.</div>
                 </div>
+                <!-- 10. Estado -->
+                <div class="form-group">
+                    <label class="required">Estado</label>
+                    <select name="estado" id="estado" required>
+                        <option value="">Selecione o estado...</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                </div>
+                <!-- 11. Cidade (SC = dropdown, outros = input) -->
+                <div class="form-group" id="cidadeContainer">
+                    <label class="required">Cidade</label>
+                    <input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">
+                </div>
+                <!-- 12. Observações -->
                 <div class="form-group">
                     <label>Observações</label>
                     <textarea name="observacoes" id="observacoes" placeholder="Informações adicionais..."></textarea>
                 </div>
-                <div class="checkbox-email" id="checkboxEmailContainer">
-                    <input type="checkbox" id="receberEmail" name="receberEmail">
-                    <div class="email-texto">
-                        <strong>📧 Deseja receber cópia da solicitação por e-mail?</strong>
-                        <span>Enviaremos um resumo completo da sua solicitação com todos os detalhes e número de protocolo.</span>
-                    </div>
+                <!-- Card de Frete Calculado (acima do PIX) -->
+                <div class="frete-calculado-box" id="freteCalculadoBox">
+                    <span class="emoji-grande">🚚</span>
+                    <h3>Frete Calculado Automaticamente</h3>
+                    <div class="frete-valor" id="freteValor">R$ 0,00</div>
+                    <div class="frete-descricao" id="freteDescricao">Aguardando preenchimento do endereço...</div>
+                    <div class="frete-cidade-info" id="freteCidadeInfo"></div>
                 </div>
+                <!-- Card Outros Estados -->
+                <div class="outros-estados-box" id="outrosEstadosBox">
+                    <span class="emoji-grande">📦</span>
+                    <h3>🌎 Envio para Outros Estados</h3>
+                    <p>Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br><strong>💬 O orçamento será enviado via Direct do Instagram.</strong></p>
+                </div>
+                <!-- Área de PIX (aparece automaticamente para SC) -->
                 <div class="pagamento-area" id="pagamentoArea">
                     <h3>💳 Pagamento do Frete via PIX</h3>
                     <p>Para finalizar sua solicitação, realize o pagamento do frete via PIX.</p>
@@ -329,7 +351,7 @@
                     <div class="aviso-campos-obrigatorios" id="avisoCamposObrigatorios">⚠️ Preencha todos os campos obrigatórios acima para gerar o PIX</div>
                     <div id="pixContainer" class="pix-container">
                         <div class="pix-valor" id="pixValor">R$ 0,00</div>
-                        <div class="pix-descricao" id="pixDescricao">Frete - Grande Florianópolis</div>
+                        <div class="pix-descricao" id="pixDescricao">Frete</div>
                         <div class="pix-qr-container">
                             <img id="pixQrCodeImg" src="" alt="QR Code PIX">
                         </div>
@@ -347,12 +369,7 @@
                     </div>
                     <div id="statusPagamento" class="status-pagamento pendente" style="display:none;">⏳ Aguardando confirmação do pagamento...</div>
                 </div>
-                <div class="mensagem-frete-outros" id="mensagemFreteOutros">
-                    <strong>📦 Envio para Outros Estados</strong><br><br>
-                    Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br>
-                    <strong>💬 O orçamento será enviado via Direct do Instagram.</strong>
-                </div>
-                <button type="submit" id="btnEnviar" style="margin-top: 20px;">🔒 Preencha todos os dados e selecione a região</button>
+                <button type="submit" id="btnEnviar" style="margin-top: 20px;">🔒 Preencha todos os dados para continuar</button>
             </form>
             <div class="success" id="successMsg">
                 <div class="check-icon">✓</div>
@@ -360,13 +377,14 @@
                 <div class="numero-solicitacao-label">Número da sua solicitação:</div>
                 <div class="numero-solicitacao" id="numeroSolicitacaoDisplay">-</div>
                 <p style="color: #636E72; margin-bottom: 15px;">Guarde este número para referência futura.</p>
-                <p id="mensagemEmailEnviado" style="display: none; background: #E8F5E9; padding: 15px; border-radius: 10px; color: #2E7D32; margin-bottom: 15px;">✅ Uma cópia da solicitação foi enviada para seu e-mail!</p>
+                <p style="background: #E8F5E9; padding: 15px; border-radius: 10px; color: #2E7D32; margin-bottom: 15px;">✅ Uma cópia da solicitação foi enviada para seu e-mail!</p>
                 <p style="margin-top: 15px;">
                     <a href="https://www.instagram.com/pingodegentelojaebrecho/" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #833AB4, #FD1D1D, #F77737); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(131, 58, 180, 0.3);">📱 Abrir Instagram @pingodegentelojaebrecho</a>
                 </p>
             </div>
         </div>
     </div>
+
     <div class="modal-overlay" id="modalConfiguracoes">
         <div class="modal-config">
             <div class="config-header">
@@ -440,10 +458,145 @@
         </div>
     </div>
 <script>
+        // ============================================
+        // EVOLUTION API - ENVIO DE WHATSAPP
+        // ============================================
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+
+        // Função para enviar mensagem WhatsApp
+        async function enviarWhatsApp(numero, texto) {
+            let numeroLimpo = numero.replace(/\D/g, '');
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+
+                const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_API_KEY
+                    },
+                    body: JSON.stringify({
+                        number: numeroLimpo,
+                        text: texto
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                console.log('✅ WhatsApp enviado:', data);
+                return { sucesso: true, dados: data };
+            } catch (erro) {
+                if (erro.name === 'AbortError') {
+                    console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
+                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+                }
+                console.error('❌ Erro ao enviar WhatsApp:', erro);
+                return { sucesso: false, erro: erro.message };
+            }
+        }
+
+        // Mensagem 1: Solicitação Recebida
+        async function enviarConfirmacaoSolicitacao(dados) {
+            const texto = `Olá *${dados.nome}*! 👋
+
+🚚 *Solicitação de Entrega Recebida!*
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+⏳ Agora é só aguardar o recebimento do número do rastreamento!
+
+_Pingo de Gente - LiveControl_`;
+            
+            return await enviarWhatsApp(dados.whatsapp, texto);
+        }
+
+        // Mensagem 2: Pagamento Confirmado
+        async function enviarConfirmacaoPagamento(dados) {
+            const texto = `Olá *${dados.nome}*! 🎉
+
+✅ *Pagamento Confirmado!*
+
+🚚 Sua entrega foi liberada e será processada em breve.
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor Pago:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+Acompanhe o status pelo nosso sistema.
+
+_Pingo de Gente - LiveControl_`;
+            
+            return await enviarWhatsApp(dados.whatsapp, texto);
+        }
+
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
         emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+
+        const CIDADES_GRANDE_FLORIPA = [
+            'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
+            'PALHOCA', 'SANTO AMARO DA IMPERATRIZ', 'SAO JOSE'
+        ];
+
+        const TODAS_CIDADES_SC = [
+            "Abdon Batista", "Abelardo Luz", "Agrolandia", "Agronomica", "Agua Doce", "Aguas de Chapeco",
+            "Aguas Frias", "Aguas Mornas", "Alfredo Wagner", "Alto Bela Vista", "Anchieta", "Angelina",
+            "Anita Garibaldi", "Anitapolis", "Antonio Carlos", "Apiuna", "Arabuta", "Araquari", "Ararangua",
+            "Armazem", "Arroio Trinta", "Atalanta", "Aurora", "Balneario Arroio do Silva", "Balneario Barra do Sul",
+            "Balneario Camboriu", "Balneario Gaivota", "Balneario Picarras", "Balneario Rincao", "Bandeirante",
+            "Barra Bonita", "Barra Velha", "Bela Vista do Toldo", "Belmonte", "Benedito Novo", "Biguacu",
+            "Blumenau", "Bocaina do Sul", "Bombinhas", "Bom Jardim da Serra", "Bom Jesus", "Bom Jesus do Oeste",
+            "Bom Retiro", "Botuvera", "Braco do Norte", "Braco do Trombudo", "Brunopolis", "Brusque",
+            "Cacador", "Caibi", "Calmon", "Camboriu", "Campo Alegre", "Campo Belo do Sul", "Campo Ere",
+            "Campos Novos", "Canelinha", "Canoinhas", "Capao Alto", "Capinzal", "Capivari de Baixo",
+            "Catanduvas", "Caxambu do Sul", "Celso Ramos", "Cerro Negro", "Chapadao do Lageado", "Chapeco",
+            "Cocal do Sul", "Concordia", "Cordilheira Alta", "Coronel Freitas", "Coronel Martins", "Correia Pinto",
+            "Criciuma", "Cunha Pora", "Cunhatai", "Curitibanos", "Descanso", "Dionisio Cerqueira", "Dona Emma",
+            "Doutor Pedrinho", "Entre Rios", "Ermo", "Erval Velho", "Faxinal dos Guedes", "Flor do Sertao",
+            "Florianopolis", "Formosa do Sul", "Forquilhinha", "Fraiburgo", "Frei Rogerio", "Galvao", "Garopaba",
+            "Garuva", "Gaspar", "Governador Celso Ramos", "Grao-Para", "Gravatal", "Guabiruba", "Guaraciaba",
+            "Guaramirim", "Guatambu", "Herval d'Oeste", "Ibiam", "Ibicare", "Ibirama", "Icara", "Ilhota",
+            "Imarui", "Imbituba", "Imbuia", "Indaial", "Iomere", "Ipira", "Ipora do Oeste", "Ipuacu",
+            "Ipumirim", "Iraceminha", "Irani", "Irati", "Irineopolis", "Ita", "Itaiopolis", "Itajai",
+            "Itapema", "Itapiranga", "Itapoa", "Ituporanga", "Jabora", "Jacinto Machado", "Jaguaruna",
+            "Jaragua do Sul", "Jardinopolis", "Joacaba", "Joinville", "Jose Boiteux", "Jupia", "Lacerdopolis",
+            "Lages", "Laguna", "Lajeado Grande", "Laurentino", "Lauro Muller", "Lebon Regis", "Leoberto Leal",
+            "Lindoia do Sul", "Lontras", "Luiz Alves", "Luzerna", "Macieira", "Mafra", "Major Gercino",
+            "Major Vieira", "Maracaja", "Maravilha", "Marema", "Massaranduba", "Matos Costa", "Meleiro",
+            "Mirim Doce", "Modelo", "Mondai", "Monte Carlo", "Monte Castelo", "Morro da Fumaca", "Morro Grande",
+            "Navegantes", "Nova Erechim", "Nova Itaberaba", "Nova Trento", "Nova Veneza", "Novo Horizonte",
+            "Orleans", "Otacilio Costa", "Ouro", "Ouro Verde", "Paial", "Painel", "Palhoca", "Palma Sola",
+            "Palmeira", "Palmitos", "Papanduva", "Paraiso", "Passo de Torres", "Passos Maia", "Paulo Lopes",
+            "Pedras Grandes", "Penha", "Peritiba", "Pescaria Brava", "Petrolandia", "Pinhalzinho",
+            "Pinheiro Preto", "Piratuba", "Planalto Alegre", "Pomerode", "Ponte Alta", "Ponte Alta do Norte",
+            "Ponte Serrada", "Porto Belo", "Porto Uniao", "Pouso Redondo", "Praia Grande",
+            "Presidente Castelo Branco", "Presidente Getulio", "Presidente Nereu", "Princesa", "Quilombo",
+            "Rancho Queimado", "Rio das Antas", "Rio do Campo", "Rio do Oeste", "Rio dos Cedros", "Rio do Sul",
+            "Rio Fortuna", "Rio Negrinho", "Rio Rufino", "Riqueza", "Rodeio", "Romelandia", "Salete",
+            "Saltinho", "Salto Veloso", "Sangao", "Santa Cecilia", "Santa Helena", "Santa Rosa de Lima",
+            "Santa Rosa do Sul", "Santa Terezinha", "Santa Terezinha do Progresso", "Santiago do Sul",
+            "Santo Amaro da Imperatriz", "Sao Bento do Sul", "Sao Bernardino", "Sao Bonifacio", "Sao Carlos",
+            "Sao Cristovao do Sul", "Sao Domingos", "Sao Francisco do Sul", "Sao Joao Batista",
+            "Sao Joao do Itaperiu", "Sao Joao do Oeste", "Sao Joao do Sul", "Sao Joaquim", "Sao Jose",
+            "Sao Jose do Cedro", "Sao Jose do Cerrito", "Sao Lourenco do Oeste", "Sao Ludgero",
+            "Sao Martinho", "Sao Miguel da Boa Vista", "Sao Miguel do Oeste", "Sao Pedro de Alcantara",
+            "Saudades", "Schroeder", "Seara", "Serra Alta", "Sideropolis", "Sombrio", "Sul Brasil", "Taio",
+            "Tangara", "Tigrinhos", "Tijucas", "Timbe do Sul", "Timbo", "Timbo Grande", "Tres Barras",
+            "Treviso", "Treze de Maio", "Treze Tilias", "Trombudo Central", "Tubarao", "Tunapolis", "Turvo",
+            "Uniao do Oeste", "Urubici", "Urupema", "Urussanga", "Vargeao", "Vargem", "Vargem Bonita",
+            "Vidal Ramos", "Videira", "Vitor Meireles", "Witmarsum", "Xanxere", "Xavantina", "Xaxim", "Zortea"
+        ];
 
         var supabaseClient = null, supabaseConectado = false, clienteIdSistema = null, modoAcesso = 'publico', nomeEmpresa = '';
         const STORAGE_CONFIG = 'solicitacao_config';
@@ -459,6 +612,9 @@
         let cpfTimeout = null, ultimoCPFBuscado = '', buscaEmAndamento = false;
         var enderecoOriginal = {};
         let acessoInterno = false;
+        var valorFreteAtual = 0;
+        var estadoAtual = '';
+        var cidadeAtual = '';
 
         document.addEventListener('DOMContentLoaded', function() {
             verificarOrigemAcesso();
@@ -471,6 +627,134 @@
             verificarCamposObrigatoriosPIX();
         });
 
+        function atualizarCampoCidade(estado) {
+            const cidadeContainer = document.getElementById('cidadeContainer');
+            const cidadeAtualValor = document.getElementById('cidade') ? document.getElementById('cidade').value : '';
+
+            if (estado === 'SC') {
+                let optionsHtml = '<option value="">Selecione a cidade...</option>';
+                TODAS_CIDADES_SC.forEach(function(cidade) {
+                    optionsHtml += '<option value="' + cidade + '">' + cidade + '</option>';
+                });
+
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<select name="cidade" id="cidade" required>' + optionsHtml + '</select>';
+            } else {
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">';
+            }
+
+            if (cidadeAtualValor) {
+                const novoCampo = document.getElementById('cidade');
+                if (novoCampo) {
+                    if (novoCampo.tagName === 'SELECT') {
+                        const optionExists = Array.from(novoCampo.options).some(opt => opt.value === cidadeAtualValor);
+                        if (optionExists) novoCampo.value = cidadeAtualValor;
+                    } else {
+                        novoCampo.value = cidadeAtualValor;
+                    }
+                }
+            }
+
+            const novoCampoCidade = document.getElementById('cidade');
+            if (novoCampoCidade) {
+                if (novoCampoCidade.tagName === 'SELECT') {
+                    novoCampoCidade.addEventListener('change', function() {
+                        calcularFrete();
+                    });
+                } else {
+                    novoCampoCidade.addEventListener('input', function() {
+                        clearTimeout(window.cidadeTimeout);
+                        window.cidadeTimeout = setTimeout(function() {
+                            calcularFrete();
+                        }, 500);
+                    });
+                    novoCampoCidade.addEventListener('blur', function() {
+                        calcularFrete();
+                    });
+                }
+            }
+        }
+
+        function calcularFrete() {
+            const estado = document.getElementById('estado').value;
+            const cidadeCampo = document.getElementById('cidade');
+            const cidade = cidadeCampo ? cidadeCampo.value.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+
+            estadoAtual = estado;
+            cidadeAtual = cidade;
+
+            const freteBox = document.getElementById('freteCalculadoBox');
+            const outrosEstadosBox = document.getElementById('outrosEstadosBox');
+            const pagamentoArea = document.getElementById('pagamentoArea');
+            const freteValor = document.getElementById('freteValor');
+            const freteDescricao = document.getElementById('freteDescricao');
+            const freteCidadeInfo = document.getElementById('freteCidadeInfo');
+
+            freteBox.classList.remove('mostrar');
+            outrosEstadosBox.classList.remove('mostrar');
+            pagamentoArea.classList.remove('mostrar');
+            resetarPagamento();
+
+            if (!estado || !cidade) {
+                freteDescricao.textContent = 'Aguardando preenchimento do estado e cidade...';
+                freteValor.textContent = 'R$ 0,00';
+                freteCidadeInfo.textContent = '';
+                freteBox.classList.add('mostrar');
+                regiaoSelecionadaAtual = '';
+                valorFreteAtual = 0;
+                atualizarBotaoEnviar();
+                return;
+            }
+
+            if (estado !== 'SC') {
+                regiaoSelecionadaAtual = 'outros';
+                valorFreteAtual = 0;
+                pagamentoConfirmado = true;
+
+                freteValor.textContent = 'A Consultar';
+                freteDescricao.textContent = 'Aguarde, iremos pesar e medir o seu pacote e escolher o menor valor para sua cidade !!';
+                freteCidadeInfo.innerHTML = '<strong>Estado:</strong> ' + estado + ' | <strong>Cidade:</strong> ' + cidade;
+                freteBox.classList.add('mostrar');
+                outrosEstadosBox.classList.add('mostrar');
+
+                console.log('[FRETE] Outros Estados - Orçamento via Direct');
+            } else {
+                const cidadeNormalizada = cidade.toUpperCase().replace(/\s+/g, ' ').trim();
+                const isGrandeFloripa = CIDADES_GRANDE_FLORIPA.includes(cidadeNormalizada);
+
+                if (isGrandeFloripa) {
+                    regiaoSelecionadaAtual = 'floripa';
+                    valorFreteAtual = configAtual.precos.floripa;
+
+                    freteValor.textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
+                    freteDescricao.textContent = 'Grande Florianópolis - Valor fixo';
+                    freteCidadeInfo.innerHTML = '<strong>Cidade:</strong> ' + cidade + ' | <strong>Região:</strong> Grande Florianópolis';
+                    freteBox.classList.add('mostrar');
+                    pagamentoArea.classList.add('mostrar');
+
+                    console.log('[FRETE] Grande Florianópolis - R$', valorFreteAtual);
+                } else {
+                    regiaoSelecionadaAtual = 'sc';
+                    valorFreteAtual = configAtual.precos.sc;
+
+                    freteValor.textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
+                    freteDescricao.textContent = 'Santa Catarina - Valor fixo';
+                    freteCidadeInfo.innerHTML = '<strong>Cidade:</strong> ' + cidade + ' | <strong>Região:</strong> Santa Catarina (fora da Grande Florianópolis)';
+                    freteBox.classList.add('mostrar');
+                    pagamentoArea.classList.add('mostrar');
+
+                    console.log('[FRETE] Santa Catarina (demais) - R$', valorFreteAtual);
+                }
+            }
+
+            verificarCamposObrigatoriosPIX();
+            atualizarBotaoEnviar();
+            salvarDadosFormulario();
+        }
+
         function verificarCamposObrigatoriosPIX() {
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
@@ -478,24 +762,32 @@
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
-            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && cep;
+            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && estado && cep;
 
             const btnGerarPix = document.getElementById('btnGerarPix');
             const avisoCampos = document.getElementById('avisoCamposObrigatorios');
 
-            if (todosPreenchidos) {
+            const precisaPix = estado === 'SC';
+
+            if (precisaPix && todosPreenchidos) {
                 btnGerarPix.disabled = false;
                 btnGerarPix.classList.remove('bloqueado');
                 btnGerarPix.innerHTML = '📱 Gerar QR Code PIX';
                 avisoCampos.classList.remove('mostrar');
-            } else {
+            } else if (precisaPix) {
                 btnGerarPix.disabled = true;
                 btnGerarPix.classList.add('bloqueado');
                 btnGerarPix.innerHTML = '🔒 Preencha todos os dados obrigatórios para gerar o PIX';
                 avisoCampos.classList.add('mostrar');
+            } else {
+                btnGerarPix.disabled = true;
+                btnGerarPix.classList.add('bloqueado');
+                btnGerarPix.innerHTML = '📦 Orçamento será enviado via Direct';
+                avisoCampos.classList.remove('mostrar');
             }
 
             return todosPreenchidos;
@@ -511,17 +803,16 @@
             const numero = document.getElementById('numero').value.trim();
             const complemento = document.getElementById('complemento').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
             const observacoes = document.getElementById('observacoes').value.trim();
-            const receberEmail = document.getElementById('receberEmail').checked;
-            const valor = regiaoSelecionadaAtual === 'floripa' ? configAtual.precos.floripa : configAtual.precos.sc;
 
             const dados = {
                 cpf: cpf, nome: nome, whatsapp: whatsapp, email: email, instagram: instagram,
                 rua: rua, numero: numero, complemento: complemento, bairro: bairro,
-                cidade: cidade, cep: cep, observacoes: observacoes, receberEmail: receberEmail,
-                regiao: regiaoSelecionadaAtual, valor: valor,
+                cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
+                regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
                 clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual
             };
 
@@ -535,7 +826,6 @@
             const numeroSolicitacaoSalvo = sessionStorage.getItem('solicitacao_numero');
             if (numeroSolicitacaoSalvo) {
                 console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
-                console.log('[FORM] Limpando dados antigos e mostrando formulário novo...');
                 sessionStorage.removeItem('solicitacao_dados');
                 sessionStorage.removeItem('solicitacao_cliente_id');
                 sessionStorage.removeItem('solicitacao_cobranca_id');
@@ -564,13 +854,29 @@
                     if (dados.numero) document.getElementById('numero').value = dados.numero;
                     if (dados.complemento) document.getElementById('complemento').value = dados.complemento;
                     if (dados.bairro) document.getElementById('bairro').value = dados.bairro;
-                    if (dados.cidade) document.getElementById('cidade').value = dados.cidade;
                     if (dados.cep) document.getElementById('cepEndereco').value = dados.cep;
                     if (dados.observacoes) document.getElementById('observacoes').value = dados.observacoes;
-                    if (dados.receberEmail) document.getElementById('receberEmail').checked = dados.receberEmail;
-                    if (dados.regiao) {
-                        setTimeout(function() { aplicarSelecaoRegiao(dados.regiao); }, 100);
+
+                    if (dados.estado) {
+                        document.getElementById('estado').value = dados.estado;
+                        atualizarCampoCidade(dados.estado);
+                        if (dados.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === dados.cidade);
+                                    if (optionExists) campoCidade.value = dados.cidade;
+                                } else {
+                                    campoCidade.value = dados.cidade;
+                                }
+                            }
+                        }
                     }
+
+                    if (dados.estado && dados.cidade) {
+                        setTimeout(function() { calcularFrete(); }, 100);
+                    }
+
                     document.getElementById('confirmarPrazo').checked = true;
                     document.getElementById('formBox').classList.remove('desabilitado');
                     document.getElementById('confirmacaoBox').classList.add('ativo');
@@ -680,10 +986,7 @@
 
         function salvarConfiguracoesLocal() { localStorage.setItem(STORAGE_CONFIG, JSON.stringify(configAtual)); }
 
-        function aplicarConfiguracoesNaPagina() {
-            document.getElementById('precoFloripa').textContent = 'R$ ' + configAtual.precos.floripa.toFixed(2).replace('.', ',');
-            document.getElementById('precoSC').textContent = 'R$ ' + configAtual.precos.sc.toFixed(2).replace('.', ',');
-        }
+        function aplicarConfiguracoesNaPagina() {}
 
         function gerarLinkCompartilhavel() {
             if (!clienteIdSistema) return null;
@@ -726,9 +1029,9 @@
             renderizarLinkCompartilhavel();
             document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
             document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
-            document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<<[^>]*>/g, '');
-            document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<<[^>]*>/g, '');
-            document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<<[^>]*>/g, '');
+            document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<[^>]*>/g, '');
+            document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<[^>]*>/g, '');
+            document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<[^>]*>/g, '');
             document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
             document.getElementById('configPrecoSC').value = configAtual.precos.sc;
             document.getElementById('modalConfiguracoes').classList.add('ativo');
@@ -745,7 +1048,6 @@
                 precos: { floripa: parseFloat(document.getElementById('configPrecoFloripa').value) || 15.00, sc: parseFloat(document.getElementById('configPrecoSC').value) || 21.99 }
             };
             salvarConfiguracoesLocal();
-            aplicarConfiguracoesNaPagina();
             atualizarInfoEnvio();
             fecharConfiguracoes();
         }
@@ -756,9 +1058,9 @@
                 configAtual = { ...CONFIG_PADRAO };
                 document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
                 document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
-                document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<<[^>]*>/g, '');
-                document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<<[^>]*>/g, '');
-                document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<<[^>]*>/g, '');
+                document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<[^>]*>/g, '');
+                document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<[^>]*>/g, '');
+                document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<[^>]*>/g, '');
                 document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
                 document.getElementById('configPrecoSC').value = configAtual.precos.sc;
             }
@@ -829,36 +1131,23 @@
                 if (this.checked) {
                     formBox.classList.remove('desabilitado');
                     confirmacaoBox.classList.add('ativo');
+                    document.getElementById('freteCalculadoBox').classList.add('mostrar');
                     if (regiaoPendente) { aplicarSelecaoRegiao(regiaoPendente); regiaoPendente = null; }
-                    document.getElementById('regiaoContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     formBox.classList.add('desabilitado');
                     confirmacaoBox.classList.remove('ativo');
-                    document.querySelectorAll('input[name="regiao"]').forEach(function(r) { r.checked = false; });
-                    document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado'); });
+                    document.getElementById('freteCalculadoBox').classList.remove('mostrar');
+                    document.getElementById('outrosEstadosBox').classList.remove('mostrar');
                     document.getElementById('pagamentoArea').classList.remove('mostrar');
-                    document.getElementById('mensagemFreteOutros').classList.remove('mostrar');
                     regiaoSelecionadaAtual = ''; regiaoPendente = null;
                     resetarPagamento();
                     atualizarBotaoEnviar();
                 }
             });
 
-            document.getElementById('regiaoContainer').addEventListener('click', function(e) {
-                e.stopPropagation();
-                const card = e.target.closest('.price-card');
-                if (!card) return;
-                const regiao = card.dataset.regiao;
-                if (!document.getElementById('confirmarPrazo').checked) {
-                    regiaoPendente = regiao;
-                    if (!alertaExibido) {
-                        alertaExibido = true;
-                        alert('⚠️ Por favor, marque a caixa acima para continuar.');
-                        setTimeout(function() { alertaExibido = false; }, 100);
-                    }
-                    return;
-                }
-                aplicarSelecaoRegiao(regiao);
+            document.getElementById('estado').addEventListener('change', function() {
+                atualizarCampoCidade(this.value);
+                calcularFrete();
             });
 
             configurarBuscaAutomaticaCPF();
@@ -874,7 +1163,7 @@
                 if (e.target === this) fecharConfiguracoes();
             });
 
-            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco'];
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
             camposObrigatorios.forEach(function(id) {
                 const campo = document.getElementById(id);
                 if (campo) {
@@ -892,32 +1181,6 @@
                     });
                 }
             });
-        }
-
-        function aplicarSelecaoRegiao(regiao) {
-            document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado', 'erro'); });
-            const card = document.querySelector('.price-card[data-regiao="' + regiao + '"]');
-            if (card) {
-                card.querySelector('input[type="radio"]').checked = true;
-                card.classList.add('selecionado');
-                regiaoSelecionadaAtual = regiao;
-                const pagamentoArea = document.getElementById('pagamentoArea');
-                const mensagemFreteOutros = document.getElementById('mensagemFreteOutros');
-                const avisoOutros = document.getElementById('avisoOutros');
-                resetarPagamento();
-                if (regiao === 'floripa' || regiao === 'sc') {
-                    pagamentoArea.classList.add('mostrar');
-                    mensagemFreteOutros.classList.remove('mostrar');
-                    avisoOutros.classList.remove('show');
-                    verificarCamposObrigatoriosPIX();
-                } else if (regiao === 'outros') {
-                    pagamentoArea.classList.remove('mostrar');
-                    mensagemFreteOutros.classList.add('mostrar');
-                    avisoOutros.classList.add('show');
-                    pagamentoConfirmado = true;
-                }
-                atualizarBotaoEnviar();
-            }
         }
 
         function resetarPagamento() {
@@ -955,7 +1218,6 @@
             document.getElementById('spinnerOverlay').classList.add('ativo');
 
             try {
-                const valor = regiaoSelecionadaAtual === 'floripa' ? configAtual.precos.floripa : configAtual.precos.sc;
                 const descricaoRegiao = regiaoSelecionadaAtual === 'floripa' ? 'Frete - Grande Florianopolis' : 'Frete - Santa Catarina';
 
                 const payload = {
@@ -964,7 +1226,7 @@
                     comprador_email: email || null,
                     comprador_telefone: telefone || null,
                     comprador_cpf: cpf || null,
-                    valor: valor,
+                    valor: valorFreteAtual,
                     descricao: descricaoRegiao
                 };
 
@@ -992,7 +1254,7 @@
                 pixQrCode = pix.qr_code_base64;
                 pixCopiaCola = pix.qr_code;
 
-                document.getElementById('pixValor').textContent = 'R$ ' + valor.toFixed(2).replace('.', ',');
+                document.getElementById('pixValor').textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
                 document.getElementById('pixDescricao').textContent = descricaoRegiao;
 
                 const qrImg = document.getElementById('pixQrCodeImg');
@@ -1051,23 +1313,18 @@
             });
         }
 
-        // ===== REDIRECIONAR PARA PIX-SUCESSO (funciona com qualquer nome de arquivo) =====
         function redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete) {
             console.log('[REDIRECT] Redirecionando para pix-sucesso.html...');
 
-            // Salvar dados para pix-sucesso.html
             sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
             sessionStorage.setItem('pix_sucesso_nome', nome);
             sessionStorage.setItem('pix_sucesso_regiao', regiao);
             sessionStorage.setItem('pix_sucesso_valor', valorFrete.toFixed(2).replace('.', ','));
 
-            // Limpar dados da solicitação atual
             sessionStorage.removeItem('solicitacao_dados');
             sessionStorage.removeItem('solicitacao_cliente_id');
             sessionStorage.removeItem('solicitacao_cobranca_id');
 
-            // ===== CORREÇÃO: Funciona com qualquer nome de arquivo =====
-            // Pegar o pathname atual e substituir qualquer nome de arquivo .html por pix-sucesso.html
             const pathnameAtual = window.location.pathname;
             const diretorio = pathnameAtual.substring(0, pathnameAtual.lastIndexOf('/') + 1);
             const urlSucesso = window.location.origin + diretorio + 'pix-sucesso.html' + '?cliente=' + clienteIdSistema;
@@ -1078,10 +1335,9 @@
 
         async function enviarSolicitacaoAutomatica() {
             console.log('[AUTO] ==========================================');
-            console.log('[AUTO] ENVIANDO SOLICITAÇÃO AUTOMATICAMENTE...');
+            console.log('[AUTO] ENVIANDO SOLICITACAO AUTOMATICAMENTE...');
             console.log('[AUTO] ==========================================');
 
-            // Mostrar overlay de redirecionamento
             document.getElementById('redirecionandoOverlay').classList.add('ativo');
 
             try {
@@ -1089,10 +1345,7 @@
                     preventDefault: function() {},
                     target: document.getElementById('deliveryForm')
                 };
-
-                // Chamar enviarFormulario com modo automático (não mostra sucesso, redireciona direto)
                 await enviarFormulario(fakeEvent, true);
-
             } catch (error) {
                 console.error('[AUTO] Erro ao enviar automaticamente:', error);
                 document.getElementById('redirecionandoOverlay').classList.remove('ativo');
@@ -1107,7 +1360,7 @@
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(async function() {
                 await verificarStatusPagamento();
-            }, 5000);
+            }, 3000);
             verificarStatusPagamento();
         }
 
@@ -1162,7 +1415,6 @@
                         sessionStorage.setItem('solicitacao_dados', JSON.stringify(d));
                     }
 
-                    // ===== ENVIAR E REDIRECIONAR IMEDIATAMENTE =====
                     console.log('[POLLING] Aguardando 1 segundo antes de enviar...');
                     setTimeout(function() {
                         console.log('[POLLING] Chamando enviarSolicitacaoAutomatica()...');
@@ -1176,29 +1428,32 @@
 
         function atualizarBotaoEnviar() {
             const btn = document.getElementById('btnEnviar');
-            if (!regiaoSelecionadaAtual) {
-                btn.innerHTML = '🔒 Selecione uma região para continuar';
-                btn.classList.add('btn-enviar-bloqueado');
-                btn.disabled = true;
-                return;
-            }
+
             const nome = document.getElementById('nome').value.trim();
             const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
             const whatsapp = document.getElementById('whatsapp').value.trim();
             const rua = document.getElementById('rua').value.trim();
             const numero = document.getElementById('numero').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
-            const cidade = document.getElementById('cidade').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
             const cep = document.getElementById('cepEndereco').value.trim();
 
-            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cidade || !cep) {
+            if (!estado || !cidade) {
+                btn.innerHTML = '🔒 Selecione o estado e informe a cidade';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+                return;
+            }
+
+            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cep) {
                 btn.innerHTML = '🔒 Preencha todos os dados obrigatórios';
                 btn.classList.add('btn-enviar-bloqueado');
                 btn.disabled = true;
                 return;
             }
 
-            if (regiaoSelecionadaAtual === 'outros') {
+            if (estado !== 'SC') {
                 btn.innerHTML = '📦 ENVIAR SOLICITACAO';
                 btn.classList.remove('btn-enviar-bloqueado');
                 btn.disabled = false;
@@ -1246,19 +1501,36 @@
                         document.getElementById('numero').value = endereco.numero || '';
                         document.getElementById('complemento').value = endereco.complemento || '';
                         document.getElementById('bairro').value = endereco.bairro || '';
-                        document.getElementById('cidade').value = endereco.cidade || '';
                         document.getElementById('cepEndereco').value = endereco.cep || '';
+                        if (endereco.estado) {
+                            document.getElementById('estado').value = endereco.estado;
+                            atualizarCampoCidade(endereco.estado);
+                        }
+                        if (endereco.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === endereco.cidade);
+                                    if (optionExists) campoCidade.value = endereco.cidade;
+                                } else {
+                                    campoCidade.value = endereco.cidade;
+                                }
+                            }
+                        }
                         enderecoIdAtual = endereco.id;
-                        enderecoOriginal = { id: endereco.id, rua: endereco.rua || '', numero: endereco.numero || '', complemento: endereco.complemento || '', bairro: endereco.bairro || '', cidade: endereco.cidade || '', cep: endereco.cep || '' };
+                        enderecoOriginal = { id: endereco.id, rua: endereco.rua || '', numero: endereco.numero || '', complemento: endereco.complemento || '', bairro: endereco.bairro || '', cidade: endereco.cidade || '', estado: endereco.estado || '', cep: endereco.cep || '' };
                     }
                     dadosClienteCarregados = true;
                     enderecoFoiAlterado = false;
                     document.getElementById('dadosCarregados').classList.add('show');
                     document.getElementById('avisoEnderecoAlterado').classList.remove('show');
-                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco'].forEach(function(id) {
+                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cepEndereco'].forEach(function(id) {
                         const campo = document.getElementById(id);
                         if (campo && campo.value) { campo.style.backgroundColor = '#E8F5E9'; campo.style.borderColor = '#4CAF50'; setTimeout(function() { campo.style.backgroundColor = ''; campo.style.borderColor = ''; }, 2000); }
                     });
+                    if (document.getElementById('estado').value && document.getElementById('cidade') && document.getElementById('cidade').value) {
+                        setTimeout(function() { calcularFrete(); }, 100);
+                    }
                     verificarCamposObrigatoriosPIX();
                 } else {
                     console.log('ℹ️ Cliente não encontrado, será criado novo cadastro');
@@ -1295,7 +1567,7 @@
         }
 
         function configurarMonitoramentoEndereco() {
-            ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco'].forEach(function(campoId) {
+            ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cepEndereco'].forEach(function(campoId) {
                 const campo = document.getElementById(campoId);
                 if (campo) { campo.addEventListener('input', verificarAlteracaoEndereco); campo.addEventListener('change', verificarAlteracaoEndereco); }
             });
@@ -1303,7 +1575,7 @@
 
         function verificarAlteracaoEndereco() {
             if (!dadosClienteCarregados) return;
-            const camposEndereco = ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco'];
+            const camposEndereco = ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cepEndereco'];
             let algumCampoAlterado = false;
             camposEndereco.forEach(function(campoId) {
                 const campo = document.getElementById(campoId);
@@ -1324,22 +1596,22 @@
         }
 
         function limparCamposExcetoCPF() {
-            ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+            ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'estado', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
             clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
         }
 
         function limparDados() {
             if (confirm('Tem certeza que deseja limpar todos os dados?')) {
                 if (cpfTimeout) clearTimeout(cpfTimeout); ultimoCPFBuscado = '';
-                ['cpf', 'nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+                ['cpf', 'nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'estado', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
                 document.getElementById('dadosCarregados').classList.remove('show');
                 document.getElementById('avisoEnderecoAlterado').classList.remove('show');
                 dadosClienteCarregados = false; clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
-                document.querySelectorAll('input[name="regiao"]').forEach(function(r) { r.checked = false; });
-                document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado'); });
                 document.getElementById('pagamentoArea').classList.remove('mostrar');
-                document.getElementById('mensagemFreteOutros').classList.remove('mostrar');
+                document.getElementById('outrosEstadosBox').classList.remove('mostrar');
+                document.getElementById('freteCalculadoBox').classList.remove('mostrar');
                 regiaoSelecionadaAtual = '';
+                valorFreteAtual = 0;
                 resetarPagamento();
                 atualizarBotaoEnviar();
                 document.getElementById('cpf').focus();
@@ -1371,7 +1643,6 @@
             } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
         }
 
-        // ===== FUNÇÃO PRINCIPAL DE ENVIO (com parâmetro modoAutomatico) =====
         async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
             modoAutomatico = modoAutomatico || false;
@@ -1379,15 +1650,18 @@
             if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
 
-            const regiaoSelecionada = document.querySelector('input[name="regiao"]:checked');
-            if (!regiaoSelecionada) {
-                alert('⚠️ Selecione uma região de entrega.');
-                document.querySelectorAll('.price-card').forEach(function(c) { c.classList.add('erro'); setTimeout(function() { c.classList.remove('erro'); }, 500); });
+            const estado = document.getElementById('estado').value;
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+
+            if (!estado || !cidade) {
+                alert('⚠️ Selecione o estado e informe a cidade.');
                 return;
             }
 
-            if ((regiaoSelecionadaAtual === 'floripa' || regiaoSelecionadaAtual === 'sc') && !pagamentoConfirmado) {
-                alert('⚠️ Realize o pagamento do frete antes de enviar a solicitação.');
+            calcularFrete();
+
+            if (estado === 'SC' && !pagamentoConfirmado && !modoAutomatico) {
+                alert('⚠️ Realize o pagamento do frete via PIX antes de enviar a solicitação.');
                 document.getElementById('pagamentoArea').scrollIntoView({ behavior: 'smooth' });
                 return;
             }
@@ -1408,11 +1682,20 @@
                 const numero = formData.get('numero');
                 const complemento = formData.get('complemento');
                 const bairro = formData.get('bairro');
-                const cidade = formData.get('cidade');
+                const cidadeForm = formData.get('cidade');
+                const estadoForm = formData.get('estado');
                 const cep = formData.get('cep');
                 const observacoes = formData.get('observacoes');
-                const receberEmail = document.getElementById('receberEmail').checked;
-                const regiao = regiaoSelecionada.value;
+
+                let regiao = 'Outros Estados';
+                if (estadoForm === 'SC') {
+                    const cidadeNorm = cidadeForm.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+                    if (CIDADES_GRANDE_FLORIPA.includes(cidadeNorm)) {
+                        regiao = 'Grande Florianópolis';
+                    } else {
+                        regiao = 'Santa Catarina';
+                    }
+                }
 
                 let clientePgId = clienteIdAtual;
 
@@ -1489,7 +1772,7 @@
                         console.log('🔍 Buscando endereço existente do cliente:', clientePgId);
                         const { data: enderecoExistente, error: erroBuscaEnd } = await supabaseClient
                             .from('enderecos_pg')
-                            .select('id, rua, numero, complemento, bairro, cidade, cep')
+                            .select('id, rua, numero, complemento, bairro, cidade, estado, cep')
                             .eq('cliente_pg_id', clientePgId)
                             .eq('cliente_id', clienteIdSistema)
                             .eq('ativo', true)
@@ -1503,7 +1786,8 @@
                                 enderecoExistente.numero === numero &&
                                 enderecoExistente.complemento === (complemento || '') &&
                                 enderecoExistente.bairro === bairro &&
-                                enderecoExistente.cidade === cidade &&
+                                enderecoExistente.cidade === cidadeForm &&
+                                enderecoExistente.estado === estadoForm &&
                                 enderecoExistente.cep === cep;
 
                             if (enderecoIgual) {
@@ -1527,7 +1811,8 @@
                                 numero: numero,
                                 complemento: complemento,
                                 bairro: bairro,
-                                cidade: cidade,
+                                cidade: cidadeForm,
+                                estado: estadoForm,
                                 cep: cep,
                                 ativo: true
                             }])
@@ -1566,8 +1851,9 @@
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                if (receberEmail && email) {
-                    await enviarEmailConfirmacao({
+                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
+                if (email && email.trim()) {
+                    enviarEmailConfirmacao({
                         email: email,
                         numeroSolicitacao: numeroSolicitacao,
                         nome: nome,
@@ -1577,27 +1863,56 @@
                         numero: numero,
                         complemento: complemento,
                         bairro: bairro,
-                        cidade: cidade,
+                        cidade: cidadeForm,
                         cep: cep,
                         observacoes: observacoes
                     });
                 }
 
-                let valorFrete = 0;
-                if (regiao === 'Grande Florianópolis') {
-                    valorFrete = configAtual.precos.floripa;
-                } else if (regiao === 'Santa Catarina') {
-                    valorFrete = configAtual.precos.sc;
+                // ============================================
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO (não bloqueante)
+                // ============================================
+                if (whatsapp && whatsapp.trim()) {
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoSolicitacao({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
+                        console.log('✅ WhatsApp de confirmação enviado!');
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de confirmação não enviado (não crítico):', err.message || err);
+                    });
                 }
 
-                // ===== MODO AUTOMÁTICO (PIX pago): REDIRECIONA DIRETO =====
+                // ============================================
+                // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO (não bloqueante)
+                // ============================================
+                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
+                    // Fire-and-forget: envia WhatsApp sem esperar resposta
+                    enviarConfirmacaoPagamento({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp
+                    }).then(() => {
+                        console.log('✅ WhatsApp de pagamento confirmado enviado!');
+                    }).catch((err) => {
+                        console.log('⚠️ WhatsApp de pagamento não enviado (não crítico):', err.message || err);
+                    });
+                }
+
                 if (modoAutomatico) {
                     console.log('[AUTO] Solicitação enviada automaticamente! Número:', numeroSolicitacao);
-                    redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete);
-                    return; // Não executa o resto
+                    redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFreteAtual);
+                    return;
                 }
 
-                // ===== MODO MANUAL (Outros Estados sem PIX): MOSTRA SUCESSO AQUI =====
                 sessionStorage.removeItem('solicitacao_dados');
                 sessionStorage.removeItem('solicitacao_cliente_id');
                 sessionStorage.removeItem('solicitacao_cobranca_id');
@@ -1605,7 +1920,6 @@
                 document.getElementById('deliveryForm').style.display = 'none';
                 document.getElementById('successMsg').classList.add('show');
                 document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacao;
-                if (receberEmail && email) document.getElementById('mensagemEmailEnviado').style.display = 'block';
 
             } catch (error) {
                 console.error('❌ Erro ao enviar:', error);
