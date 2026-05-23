@@ -11,20 +11,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ===== CORREÇÃO ULTRA-AGRESSIVA LOGO VENDALIVE ===== -->
+    <!-- ===== CORREÇÃO LOGO VENDALIVE - TUDO BRANCO ===== -->
     <style>
-      /* RESET AGRESSIVO - força em TODOS os elementos do header */
+      /* RESET - força visibilidade em todos os elementos do header */
       header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
         overflow: visible !important;
         text-overflow: clip !important;
       }
 
-      /* Força o container do logo a ter largura suficiente */
       header, nav, .header, .nav, [class*="header"], [class*="nav"] {
         overflow: visible !important;
       }
 
-      /* Logo - todas as variações possíveis */
+      /* Logo - TUDO BRANCO */
       .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
       [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
       [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
@@ -39,11 +38,10 @@
         flex-shrink: 0 !important;
         flex-wrap: nowrap !important;
         text-overflow: clip !important;
-        clip: auto !important;
-        clip-path: none !important;
+        color: #ffffff !important;
       }
 
-      /* Spans dentro do logo */
+      /* TODOS os spans dentro do logo = BRANCO */
       .logo > *, .brand > *, .nav-logo > *, .header-logo > *,
       .site-logo > *, .brand-name > *,
       [class*="logo"] > *, [class*="brand"] > * {
@@ -52,6 +50,7 @@
         overflow: visible !important;
         text-overflow: clip !important;
         flex-shrink: 0 !important;
+        color: #ffffff !important;
       }
 
       /* SVG dentro do logo */
@@ -62,15 +61,15 @@
         min-width: auto !important;
       }
 
-      /* TEXTO "Venda" - cor branca/padrão */
+      /* TEXTO "Venda" - BRANCO */
       .logo span:first-child, .brand span:first-child,
       .nav-logo span:first-child, .header-logo span:first-child,
       .logo > span:first-of-type, .brand > span:first-of-type,
       .nav-logo > span:first-of-type, .header-logo > span:first-of-type {
-        color: inherit !important;
+        color: #ffffff !important;
       }
 
-      /* TEXTO "Live" - AZUL CLARO DESTAQUE */
+      /* TEXTO "Live" - BRANCO TAMBÉM */
       .logo span:last-child, .brand span:last-child,
       .nav-logo span:last-child, .header-logo span:last-child,
       .logo > span:last-of-type, .brand > span:last-of-type,
@@ -83,27 +82,26 @@
       .nav-logo [class*="live"], .header-logo [class*="live"],
       .logo [class*="Live"], .brand [class*="Live"],
       .nav-logo [class*="Live"], .header-logo [class*="Live"] {
-        color: #4facfe !important;
+        color: #ffffff !important;
         font-weight: 700 !important;
-        text-shadow: 0 0 10px rgba(79, 172, 254, 0.3) !important;
       }
 
-      /* Se o logo for um SVG com texto */
+      /* Se o logo for um SVG com texto - TUDO BRANCO */
       .logo text, .brand text, .nav-logo text, .header-logo text,
       .site-logo text, .brand-name text,
       [class*="logo"] text, [class*="brand"] text {
-        fill: inherit !important;
+        fill: #ffffff !important;
       }
 
       .logo text:last-child, .brand text:last-child,
       .nav-logo text:last-child, .header-logo text:last-child,
       .logo text:nth-child(2), .brand text:nth-child(2),
       .nav-logo text:nth-child(2), .header-logo text:nth-child(2) {
-        fill: #4facfe !important;
+        fill: #ffffff !important;
         font-weight: 700 !important;
       }
 
-      /* Container do header - não limitar largura */
+      /* Container do header */
       .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
       .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
         overflow: visible !important;
@@ -120,6 +118,7 @@
           font-size: 13px !important;
           transform: scale(0.92);
           transform-origin: left center;
+          color: #ffffff !important;
         }
       }
 
@@ -129,6 +128,7 @@
         overflow: visible !important;
         white-space: nowrap !important;
         min-width: max-content !important;
+        color: #ffffff !important;
       }
     </style>
     <!-- ==================================== -->
@@ -139,6 +139,7 @@
     <script type="module" crossorigin src="./assets/index-DaOTygQi.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
   <base target="_blank">
+<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
@@ -172,11 +173,9 @@
                 span.style.whiteSpace = 'nowrap';
                 span.style.overflow = 'visible';
 
-                // Se for o último span (provavelmente "Live")
-                if (index === spans.length - 1 || index === 1) {
-                  span.style.color = '#4facfe';
-                  span.style.fontWeight = '700';
-                }
+                // Todos os spans brancos
+                span.style.color = '#ffffff';
+                span.style.fontWeight = '700';
               });
 
               // Se o logo tiver SVG com texto
