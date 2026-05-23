@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Gestão de Vendas - VendaLive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-family: 'Inter', system-ui, sans-serif; 
             background: linear-gradient(135deg, #0B193F 0%, #1a2d5c 100%); 
             min-height: 100vh; 
             padding: 20px;
@@ -140,7 +147,53 @@
         .toast { position: fixed; bottom: 30px; right: 30px; padding: 18px 28px; border-radius: 16px; color: white; font-weight: 700; box-shadow: 0 15px 40px rgba(0,0,0,0.3); transform: translateX(450px); transition: all 0.5s; z-index: 3000; }
         .toast.show { transform: translateX(0); }
         .toast.success { background: linear-gradient(135deg, #10b981, #34d399); }
-        @media (max-width: 768px) { .form-grid, .item-grid { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        /* ===== HEADER INFO (igual dashboard) ===== */
+        .header-info {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 13px;
+        }
+        .header-info span { 
+            color: #475569; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .btn-sair {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-sair:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .alert-erro {
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            display: none;
+        }
+        .alert-erro.show { display: block; }
+
+        @media (max-width: 768px) { 
+            .form-grid, .item-grid { grid-template-columns: 1fr; } 
+            .header { flex-direction: column; text-align: center; } 
+            .header-info { flex-wrap: wrap; justify-content: center; }
+        }
     </style>
 <base target="_blank">
 </head>
@@ -148,22 +201,22 @@
     <div class="container">
         <div class="header">
             <div style="display: flex; align-items: center; gap: 20px;">
-                <button class="btn btn-primary" onclick="window.location.href='index.html'">← Voltar</button>
+                <button class="btn btn-primary" onclick="window.location.href='index.html'">&#8592; Voltar</button>
                 <div>
-                    <h1 style="color: #0B193F; font-size: 1.6rem;">📊 Gestão de Vendas</h1>
+                    <h1 style="color: #0B193F; font-size: 1.6rem;">&#128202; Gestão de Vendas</h1>
                     <p style="color: #64748b; font-size: 0.85rem;">Cadastro e gestão de vendas</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-primary" onclick="toggleDarkMode()">🌙</button>
-                <div style="display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 10px 20px; border-radius: 50px;">
-                    <span>👤 Usuário Teste</span>
-                    <button class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 8px 16px;">🚪 Sair</button>
-                </div>
+            <div class="header-info">
+                <span id="info-usuario">&#128100; Carregando...</span>
+                <span id="info-cliente">&#127978; ---</span>
+                <button class="btn-sair" onclick="logout()">&#128682; Sair</button>
             </div>
         </div>
 
         <div class="content">
+            <div class="alert-erro" id="alert-erro"></div>
+
             <div class="stats-grid">
                 <div class="stat-card"><h3>Total de Vendas</h3><div class="value" id="totalVendas">0</div></div>
                 <div class="stat-card"><h3>Vendas do Mês</h3><div class="value" id="vendasMes">0</div></div>
@@ -174,13 +227,13 @@
             <div class="actions-bar">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Buscar por comprador..." onkeyup="filtrarVendas()">
-                    <button class="btn btn-primary">🔍 Buscar</button>
+                    <button class="btn btn-primary">&#128269; Buscar</button>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <select id="filtroStatus" onchange="filtrarVendas()" style="padding: 12px 18px; border-radius: 50px; border: 2px solid #e2e8f0;">
                         <option value="">Todos Status</option>
-                        <option value="pendente">⏳ Pendente</option>
-                        <option value="pago">✅ Pago</option>
+                        <option value="pendente">&#9203; Pendente</option>
+                        <option value="pago">&#9989; Pago</option>
                     </select>
                     <button class="btn btn-success" onclick="abrirModal()">+ Nova Venda</button>
                 </div>
@@ -202,8 +255,8 @@
     <div class="modal" id="modalVenda">
         <div class="modal-content">
             <div class="modal-header">
-                <div><h2>🛒 Nova Venda</h2><p>Preencha os dados da venda</p></div>
-                <button class="btn" style="background: rgba(255,255,255,0.2); color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 24px;" onclick="fecharModal()">×</button>
+                <div><h2>&#128722; Nova Venda</h2><p>Preencha os dados da venda</p></div>
+                <button class="btn" style="background: rgba(255,255,255,0.2); color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 24px;" onclick="fecharModal()">&#215;</button>
             </div>
             <div class="modal-body">
                 <div class="form-grid">
@@ -214,24 +267,24 @@
                     <div class="form-group">
                         <label>Canal de Venda *</label>
                         <select id="canalVenda" required>
-                            <option value="live">📱 Live Instagram</option>
-                            <option value="whatsapp">💬 WhatsApp</option>
-                            <option value="loja_fisica">🏪 Loja Física</option>
+                            <option value="live">&#128241; Live Instagram</option>
+                            <option value="whatsapp">&#128172; WhatsApp</option>
+                            <option value="loja_fisica">&#127978; Loja Física</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Forma de Pagamento *</label>
                         <select id="formaPagamento" required>
-                            <option value="pix">💠 PIX</option>
-                            <option value="dinheiro">💵 Dinheiro</option>
-                            <option value="cartao">💳 Cartão</option>
+                            <option value="pix">&#128160; PIX</option>
+                            <option value="dinheiro">&#128181; Dinheiro</option>
+                            <option value="cartao">&#128179; Cartão</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Status Pagamento *</label>
                         <select id="statusPagamento" required>
-                            <option value="pendente">⏳ Pendente</option>
-                            <option value="pago">✅ Pago</option>
+                            <option value="pendente">&#9203; Pendente</option>
+                            <option value="pago">&#9989; Pago</option>
                         </select>
                     </div>
                 </div>
@@ -239,10 +292,10 @@
                 <div style="margin: 20px 0;">
                     <h3 style="color: #0B193F; margin-bottom: 15px;">Itens da Venda</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Camiseta', 49.90)">👕 Camiseta R$49,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Calça', 89.90)">👖 Calça R$89,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Tênis', 149.90)">👟 Tênis R$149,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Boné', 39.90)">🧢 Boné R$39,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Camiseta', 49.90)">&#128085; Camiseta R$49,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Calça', 89.90)">&#128086; Calça R$89,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Tênis', 149.90)">&#128095; Tênis R$149,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Boné', 39.90)">&#127913; Boné R$39,90</button>
                     </div>
                     <div id="itensContainer"></div>
                     <button class="btn-adicionar-item" onclick="adicionarItem()">+ Adicionar Item</button>
@@ -255,7 +308,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn" style="background: white; border: 2px solid #e2e8f0; color: #64748b;" onclick="fecharModal()">Cancelar</button>
-                <button class="btn btn-success" onclick="salvarVenda()" id="btnSalvar">💾 Salvar Venda</button>
+                <button class="btn btn-success" onclick="salvarVenda()" id="btnSalvar">&#128190; Salvar Venda</button>
             </div>
         </div>
     </div>
@@ -263,6 +316,111 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        // ===== SUPABASE CONFIG (igual dashboard) =====
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+        let usuarioAtual = null;
+        let clienteId = null;
+        let nomeCliente = 'Loja';
+
+        // ===== INICIALIZAÇÃO SUPABASE =====
+        function inicializarSupabase() {
+            try {
+                const supabaseLib = typeof supabase !== 'undefined' ? supabase : (typeof window.supabase !== 'undefined' ? window.supabase : null);
+                if (!supabaseLib || !supabaseLib.createClient) {
+                    console.log('[VENDAS] Supabase não disponível ainda, tentando novamente...');
+                    setTimeout(inicializarSupabase, 500);
+                    return;
+                }
+                supabaseClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('[VENDAS] Supabase inicializado com sucesso');
+                verificarAuth();
+            } catch (err) {
+                console.error('[VENDAS] Erro ao inicializar Supabase:', err);
+                setTimeout(inicializarSupabase, 500);
+            }
+        }
+
+        // ===== AUTENTICAÇÃO (igual dashboard) =====
+        async function verificarAuth() {
+            try {
+                if (!supabaseClient) {
+                    console.log('[VENDAS] supabaseClient null, aguardando...');
+                    setTimeout(verificarAuth, 500);
+                    return;
+                }
+
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError) throw sessionError;
+
+                if (!session) {
+                    console.log('[VENDAS] Sem sessão, redirecionando para login...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const { data: usuario, error: userError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('*')
+                    .eq('auth_id', session.user.id)
+                    .single();
+
+                if (userError) {
+                    mostrarErro('Erro ao carregar usuário: ' + userError.message);
+                    return;
+                }
+
+                if (!usuario) {
+                    logout();
+                    return;
+                }
+
+                usuarioAtual = usuario;
+                clienteId = usuario.cliente_id;
+
+                if (clienteId) {
+                    const { data: cliente, error: cliError } = await supabaseClient
+                        .from('clientes_sistema')
+                        .select('nome')
+                        .eq('id', clienteId)
+                        .single();
+                    if (!cliError && cliente) nomeCliente = cliente.nome;
+                }
+
+                document.getElementById('info-usuario').textContent = '������ ' + (usuario.nome || usuario.email);
+                document.getElementById('info-cliente').textContent = '������ ' + nomeCliente;
+
+                console.log('[VENDAS] Usuário autenticado:', usuario.nome || usuario.email, '| Cliente:', nomeCliente);
+
+                // Carrega dados da página
+                atualizarEstatisticas();
+                renderizarTabela();
+
+            } catch (err) {
+                mostrarErro('Erro de autenticação: ' + err.message);
+                console.error('[VENDAS] Erro auth:', err);
+            }
+        }
+
+        async function logout() {
+            try {
+                if (supabaseClient) await supabaseClient.auth.signOut();
+            } catch (err) {}
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        function mostrarErro(msg) {
+            const alertEl = document.getElementById('alert-erro');
+            alertEl.textContent = msg;
+            alertEl.classList.add('show');
+            setTimeout(() => alertEl.classList.remove('show'), 5000);
+        }
+
+        // ===== FUNCIONALIDADE VENDAS (original) =====
         let contadorItens = 0;
         let vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
 
@@ -277,7 +435,7 @@
         function mostrarToast(mensagem, tipo = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = mensagem;
-            toast.className = `toast ${tipo} show`;
+            toast.className = 'toast ' + tipo + ' show';
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
@@ -287,7 +445,7 @@
             const valorTotal = vendas.reduce((acc, v) => acc + (v.total || 0), 0);
 
             document.getElementById('totalVendas').textContent = total;
-            document.getElementById('vendasMes').textContent = total; // Simplificado
+            document.getElementById('vendasMes').textContent = total;
             document.getElementById('valorTotal').textContent = formatarMoeda(valorTotal);
             document.getElementById('vendasPendentes').textContent = pendentes;
         }
@@ -305,10 +463,10 @@
                     <td><strong>${v.comprador}</strong></td>
                     <td>${v.canal}</td>
                     <td class="valor">${formatarMoeda(v.total)}</td>
-                    <td><span class="status-badge status-${v.status}">${v.status === 'pago' ? '✅ Pago' : '⏳ Pendente'}</span></td>
-                    <td>📦 Não Enviado</td>
+                    <td><span class="status-badge status-${v.status}">${v.status === 'pago' ? '&#9989; Pago' : '&#9203; Pendente'}</span></td>
+                    <td>&#128230; Não Enviado</td>
                     <td class="acoes">
-                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(${i})">🗑️</button>
+                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(${i})">&#128465;&#65039;</button>
                     </td>
                 </tr>
             `).join('');
@@ -333,7 +491,7 @@
             div.innerHTML = `
                 <div class="item-header">
                     <div class="item-numero">${contadorItens}</div>
-                    <button class="btn-remover-item" onclick="this.closest('.item-card').remove(); atualizarTotal()">×</button>
+                    <button class="btn-remover-item" onclick="this.closest('.item-card').remove(); atualizarTotal()">&#215;</button>
                 </div>
                 <div class="item-grid">
                     <div class="form-group">
@@ -415,7 +573,7 @@
             vendas.unshift(venda);
             localStorage.setItem('vendas', JSON.stringify(vendas));
 
-            mostrarToast('✅ Venda salva com sucesso!');
+            mostrarToast('&#9989; Venda salva com sucesso!');
             fecharModal();
             atualizarEstatisticas();
             renderizarTabela();
@@ -432,17 +590,35 @@
         }
 
         function filtrarVendas() {
-            // Simplificado - apenas re-renderiza
-            renderizarTabela();
-        }
+            const termo = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('filtroStatus').value;
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-        }
+            const tbody = document.getElementById('tabelaVendas');
+            const vendasFiltradas = vendas.filter(v => {
+                const matchTermo = !termo || v.comprador.toLowerCase().includes(termo);
+                const matchStatus = !status || v.status === status;
+                return matchTermo && matchStatus;
+            });
 
-        // Inicializar
-        atualizarEstatisticas();
-        renderizarTabela();
+            if (vendasFiltradas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;"><h3>Nenhuma venda encontrada</h3></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = vendasFiltradas.map((v, i) => `
+                <tr>
+                    <td>${formatarData(v.data)}</td>
+                    <td><strong>${v.comprador}</strong></td>
+                    <td>${v.canal}</td>
+                    <td class="valor">${formatarMoeda(v.total)}</td>
+                    <td><span class="status-badge status-${v.status}">${v.status === 'pago' ? '&#9989; Pago' : '&#9203; Pendente'}</span></td>
+                    <td>&#128230; Não Enviado</td>
+                    <td class="acoes">
+                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(${vendas.indexOf(v)})">&#128465;&#65039;</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
         // Atalhos
         document.addEventListener('keydown', function(e) {
@@ -454,6 +630,9 @@
             }
             if (e.key === 'Escape') fecharModal();
         });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', inicializarSupabase);
     </script>
 </body>
 </html>
