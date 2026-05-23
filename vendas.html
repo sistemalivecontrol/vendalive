@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Gestão de Vendas - VendaLive</title>
+    <title>Gestao de Vendas - VendaLive</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -149,7 +149,6 @@
         .toast.success { background: linear-gradient(135deg, #10b981, #34d399); }
         .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
-        /* ===== HEADER INFO (igual dashboard) ===== */
         .header-info {
             display: flex;
             gap: 16px;
@@ -201,10 +200,10 @@
     <div class="container">
         <div class="header">
             <div style="display: flex; align-items: center; gap: 20px;">
-                <button class="btn btn-primary" onclick="window.location.href='index.html'">&#8592; Voltar</button>
+                <button class="btn btn-primary" onclick="window.location.href='index.html'">&larr; Voltar</button>
                 <div>
-                    <h1 style="color: #0B193F; font-size: 1.6rem;">&#128202; Gestão de Vendas</h1>
-                    <p style="color: #64748b; font-size: 0.85rem;">Cadastro e gestão de vendas</p>
+                    <h1 style="color: #0B193F; font-size: 1.6rem;">&#128202; Gestao de Vendas</h1>
+                    <p style="color: #64748b; font-size: 0.85rem;">Cadastro e gestao de vendas</p>
                 </div>
             </div>
             <div class="header-info">
@@ -219,8 +218,8 @@
 
             <div class="stats-grid">
                 <div class="stat-card"><h3>Total de Vendas</h3><div class="value" id="totalVendas">0</div></div>
-                <div class="stat-card"><h3>Vendas do Mês</h3><div class="value" id="vendasMes">0</div></div>
-                <div class="stat-card"><h3>Valor Total (Mês)</h3><div class="value" id="valorTotal">R$ 0,00</div></div>
+                <div class="stat-card"><h3>Vendas do Mes</h3><div class="value" id="vendasMes">0</div></div>
+                <div class="stat-card"><h3>Valor Total (Mes)</h3><div class="value" id="valorTotal">R$ 0,00</div></div>
                 <div class="stat-card"><h3>Pendentes</h3><div class="value" id="vendasPendentes">0</div></div>
             </div>
 
@@ -242,7 +241,7 @@
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>Data</th><th>Comprador</th><th>Canal</th><th>Valor Total</th><th>Pagamento</th><th>Entrega</th><th>Ações</th></tr>
+                        <tr><th>Data</th><th>Comprador</th><th>Canal</th><th>Valor Total</th><th>Pagamento</th><th>Entrega</th><th>Acoes</th></tr>
                     </thead>
                     <tbody id="tabelaVendas">
                         <tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;">Carregando vendas...</td></tr>
@@ -269,7 +268,7 @@
                         <select id="canalVenda" required>
                             <option value="live">&#128241; Live Instagram</option>
                             <option value="whatsapp">&#128172; WhatsApp</option>
-                            <option value="loja_fisica">&#127978; Loja Física</option>
+                            <option value="loja_fisica">&#127978; Loja Fisica</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -277,7 +276,7 @@
                         <select id="formaPagamento" required>
                             <option value="pix">&#128160; PIX</option>
                             <option value="dinheiro">&#128181; Dinheiro</option>
-                            <option value="cartao">&#128179; Cartão</option>
+                            <option value="cartao">&#128179; Cartao</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -293,9 +292,9 @@
                     <h3 style="color: #0B193F; margin-bottom: 15px;">Itens da Venda</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
                         <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Camiseta', 49.90)">&#128085; Camiseta R$49,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Calça', 89.90)">&#128086; Calça R$89,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Tênis', 149.90)">&#128095; Tênis R$149,90</button>
-                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Boné', 39.90)">&#127913; Boné R$39,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Calca', 89.90)">&#128086; Calca R$89,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Tenis', 149.90)">&#128095; Tenis R$149,90</button>
+                        <button class="btn" style="background: white; border: 2px solid #e2e8f0;" onclick="adicionarItemTemplate('Bone', 39.90)">&#127913; Bone R$39,90</button>
                     </div>
                     <div id="itensContainer"></div>
                     <button class="btn-adicionar-item" onclick="adicionarItem()">+ Adicionar Item</button>
@@ -316,7 +315,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // ===== SUPABASE CONFIG (igual dashboard) =====
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -325,12 +323,11 @@
         let clienteId = null;
         let nomeCliente = 'Loja';
 
-        // ===== INICIALIZAÇÃO SUPABASE =====
         function inicializarSupabase() {
             try {
                 const supabaseLib = typeof supabase !== 'undefined' ? supabase : (typeof window.supabase !== 'undefined' ? window.supabase : null);
                 if (!supabaseLib || !supabaseLib.createClient) {
-                    console.log('[VENDAS] Supabase não disponível ainda, tentando novamente...');
+                    console.log('[VENDAS] Supabase nao disponivel ainda, tentando novamente...');
                     setTimeout(inicializarSupabase, 500);
                     return;
                 }
@@ -343,7 +340,6 @@
             }
         }
 
-        // ===== AUTENTICAÇÃO (igual dashboard) =====
         async function verificarAuth() {
             try {
                 if (!supabaseClient) {
@@ -356,7 +352,7 @@
                 if (sessionError) throw sessionError;
 
                 if (!session) {
-                    console.log('[VENDAS] Sem sessão, redirecionando para login...');
+                    console.log('[VENDAS] Sem sessao, redirecionando para login...');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -368,7 +364,7 @@
                     .single();
 
                 if (userError) {
-                    mostrarErro('Erro ao carregar usuário: ' + userError.message);
+                    mostrarErro('Erro ao carregar usuario: ' + userError.message);
                     return;
                 }
 
@@ -389,17 +385,16 @@
                     if (!cliError && cliente) nomeCliente = cliente.nome;
                 }
 
-                document.getElementById('info-usuario').textContent = '������ ' + (usuario.nome || usuario.email);
-                document.getElementById('info-cliente').textContent = '������ ' + nomeCliente;
+                document.getElementById('info-usuario').textContent = 'Usuario: ' + (usuario.nome || usuario.email);
+                document.getElementById('info-cliente').textContent = 'Loja: ' + nomeCliente;
 
-                console.log('[VENDAS] Usuário autenticado:', usuario.nome || usuario.email, '| Cliente:', nomeCliente);
+                console.log('[VENDAS] Usuario autenticado:', usuario.nome || usuario.email, '| Cliente:', nomeCliente);
 
-                // Carrega dados da página
                 atualizarEstatisticas();
                 renderizarTabela();
 
             } catch (err) {
-                mostrarErro('Erro de autenticação: ' + err.message);
+                mostrarErro('Erro de autenticacao: ' + err.message);
                 console.error('[VENDAS] Erro auth:', err);
             }
         }
@@ -420,7 +415,6 @@
             setTimeout(() => alertEl.classList.remove('show'), 5000);
         }
 
-        // ===== FUNCIONALIDADE VENDAS (original) =====
         let contadorItens = 0;
         let vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
 
@@ -432,17 +426,17 @@
             return new Date(data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
-        function mostrarToast(mensagem, tipo = 'success') {
+        function mostrarToast(mensagem, tipo) {
             const toast = document.getElementById('toast');
             toast.textContent = mensagem;
-            toast.className = 'toast ' + tipo + ' show';
+            toast.className = 'toast ' + (tipo || 'success') + ' show';
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         function atualizarEstatisticas() {
             const total = vendas.length;
-            const pendentes = vendas.filter(v => v.status_pagamento === 'pendente').length;
-            const valorTotal = vendas.reduce((acc, v) => acc + (v.total || 0), 0);
+            const pendentes = vendas.filter(function(v) { return v.status_pagamento === 'pendente'; }).length;
+            const valorTotal = vendas.reduce(function(acc, v) { return acc + (v.total || 0); }, 0);
 
             document.getElementById('totalVendas').textContent = total;
             document.getElementById('vendasMes').textContent = total;
@@ -453,23 +447,25 @@
         function renderizarTabela() {
             const tbody = document.getElementById('tabelaVendas');
             if (vendas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;"><h3>Nenhuma venda ainda</h3><p>Clique em "Nova Venda" para começar</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;"><h3>Nenhuma venda ainda</h3><p>Clique em "Nova Venda" para comecar</p></td></tr>';
                 return;
             }
 
-            tbody.innerHTML = vendas.map((v, i) => `
-                <tr>
-                    <td>${formatarData(v.data)}</td>
-                    <td><strong>${v.comprador}</strong></td>
-                    <td>${v.canal}</td>
-                    <td class="valor">${formatarMoeda(v.total)}</td>
-                    <td><span class="status-badge status-${v.status}">${v.status === 'pago' ? '&#9989; Pago' : '&#9203; Pendente'}</span></td>
-                    <td>&#128230; Não Enviado</td>
-                    <td class="acoes">
-                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(${i})">&#128465;&#65039;</button>
-                    </td>
-                </tr>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < vendas.length; i++) {
+                var v = vendas[i];
+                html += '<tr>' +
+                    '<td>' + formatarData(v.data) + '</td>' +
+                    '<td><strong>' + v.comprador + '</strong></td>' +
+                    '<td>' + v.canal + '</td>' +
+                    '<td class="valor">' + formatarMoeda(v.total) + '</td>' +
+                    '<td><span class="status-badge status-' + v.status + '">' + (v.status === 'pago' ? 'Pago' : 'Pendente') + '</span></td>' +
+                    '<td>Nao Enviado</td>' +
+                    '<td class="acoes">' +
+                    '<button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(' + i + ')">Excluir</button>' +
+                    '</td></tr>';
+            }
+            tbody.innerHTML = html;
         }
 
         function abrirModal() {
@@ -488,34 +484,16 @@
             contadorItens++;
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = `
-                <div class="item-header">
-                    <div class="item-numero">${contadorItens}</div>
-                    <button class="btn-remover-item" onclick="this.closest('.item-card').remove(); atualizarTotal()">&#215;</button>
-                </div>
-                <div class="item-grid">
-                    <div class="form-group">
-                        <label>Produto</label>
-                        <input type="text" class="produto-nome" placeholder="Nome" required oninput="atualizarTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>Qtd</label>
-                        <input type="number" class="produto-qtd" min="1" value="1" required oninput="atualizarTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>Preço</label>
-                        <div class="input-preco">
-                            <input type="number" class="produto-preco" step="0.01" min="0" placeholder="0,00" required oninput="atualizarTotal()">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Desconto</label>
-                        <div class="input-preco">
-                            <input type="number" class="produto-desconto" step="0.01" min="0" value="0" oninput="atualizarTotal()">
-                        </div>
-                    </div>
-                </div>
-            `;
+            div.innerHTML = '<div class="item-header">' +
+                '<div class="item-numero">' + contadorItens + '</div>' +
+                '<button class="btn-remover-item" onclick="this.closest('.item-card').remove(); atualizarTotal()">x</button>' +
+                '</div>' +
+                '<div class="item-grid">' +
+                '<div class="form-group"><label>Produto</label><input type="text" class="produto-nome" placeholder="Nome" required oninput="atualizarTotal()"></div>' +
+                '<div class="form-group"><label>Qtd</label><input type="number" class="produto-qtd" min="1" value="1" required oninput="atualizarTotal()"></div>' +
+                '<div class="form-group"><label>Preco</label><div class="input-preco"><input type="number" class="produto-preco" step="0.01" min="0" placeholder="0,00" required oninput="atualizarTotal()"></div></div>' +
+                '<div class="form-group"><label>Desconto</label><div class="input-preco"><input type="number" class="produto-desconto" step="0.01" min="0" value="0" oninput="atualizarTotal()"></div></div>' +
+                '</div>';
             document.getElementById('itensContainer').appendChild(div);
         }
 
@@ -530,7 +508,7 @@
 
         function atualizarTotal() {
             let total = 0;
-            document.querySelectorAll('.item-card').forEach(card => {
+            document.querySelectorAll('.item-card').forEach(function(card) {
                 const qtd = parseFloat(card.querySelector('.produto-qtd').value) || 0;
                 const preco = parseFloat(card.querySelector('.produto-preco').value) || 0;
                 const desconto = parseFloat(card.querySelector('.produto-desconto').value) || 0;
@@ -541,11 +519,11 @@
 
         function salvarVenda() {
             const comprador = document.getElementById('comprador').value.trim();
-            if (!comprador) { mostrarToast('Nome do comprador é obrigatório!', 'error'); return; }
+            if (!comprador) { mostrarToast('Nome do comprador e obrigatorio!', 'error'); return; }
 
             const itens = [];
             let total = 0;
-            document.querySelectorAll('.item-card').forEach(card => {
+            document.querySelectorAll('.item-card').forEach(function(card) {
                 const nome = card.querySelector('.produto-nome').value.trim();
                 const qtd = parseFloat(card.querySelector('.produto-qtd').value) || 0;
                 const preco = parseFloat(card.querySelector('.produto-preco').value) || 0;
@@ -553,7 +531,7 @@
                 if (nome && qtd > 0 && preco > 0) {
                     const subtotal = (qtd * preco) - desconto;
                     total += subtotal;
-                    itens.push({ nome, qtd, preco, desconto, subtotal });
+                    itens.push({ nome: nome, qtd: qtd, preco: preco, desconto: desconto, subtotal: subtotal });
                 }
             });
 
@@ -561,19 +539,19 @@
 
             const venda = {
                 id: Date.now(),
-                comprador,
+                comprador: comprador,
                 canal: document.getElementById('canalVenda').value,
                 forma: document.getElementById('formaPagamento').value,
                 status: document.getElementById('statusPagamento').value,
-                total,
-                itens,
+                total: total,
+                itens: itens,
                 data: new Date().toISOString()
             };
 
             vendas.unshift(venda);
             localStorage.setItem('vendas', JSON.stringify(vendas));
 
-            mostrarToast('&#9989; Venda salva com sucesso!');
+            mostrarToast('Venda salva com sucesso!');
             fecharModal();
             atualizarEstatisticas();
             renderizarTabela();
@@ -585,7 +563,7 @@
                 localStorage.setItem('vendas', JSON.stringify(vendas));
                 atualizarEstatisticas();
                 renderizarTabela();
-                mostrarToast('Venda excluída');
+                mostrarToast('Venda excluida');
             }
         }
 
@@ -594,8 +572,8 @@
             const status = document.getElementById('filtroStatus').value;
 
             const tbody = document.getElementById('tabelaVendas');
-            const vendasFiltradas = vendas.filter(v => {
-                const matchTermo = !termo || v.comprador.toLowerCase().includes(termo);
+            const vendasFiltradas = vendas.filter(function(v) {
+                const matchTermo = !termo || v.comprador.toLowerCase().indexOf(termo) !== -1;
                 const matchStatus = !status || v.status === status;
                 return matchTermo && matchStatus;
             });
@@ -605,22 +583,24 @@
                 return;
             }
 
-            tbody.innerHTML = vendasFiltradas.map((v, i) => `
-                <tr>
-                    <td>${formatarData(v.data)}</td>
-                    <td><strong>${v.comprador}</strong></td>
-                    <td>${v.canal}</td>
-                    <td class="valor">${formatarMoeda(v.total)}</td>
-                    <td><span class="status-badge status-${v.status}">${v.status === 'pago' ? '&#9989; Pago' : '&#9203; Pendente'}</span></td>
-                    <td>&#128230; Não Enviado</td>
-                    <td class="acoes">
-                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(${vendas.indexOf(v)})">&#128465;&#65039;</button>
-                    </td>
-                </tr>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < vendasFiltradas.length; i++) {
+                var v = vendasFiltradas[i];
+                var idx = vendas.indexOf(v);
+                html += '<tr>' +
+                    '<td>' + formatarData(v.data) + '</td>' +
+                    '<td><strong>' + v.comprador + '</strong></td>' +
+                    '<td>' + v.canal + '</td>' +
+                    '<td class="valor">' + formatarMoeda(v.total) + '</td>' +
+                    '<td><span class="status-badge status-' + v.status + '">' + (v.status === 'pago' ? 'Pago' : 'Pendente') + '</span></td>' +
+                    '<td>Nao Enviado</td>' +
+                    '<td class="acoes">' +
+                    '<button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirVenda(' + idx + ')">Excluir</button>' +
+                    '</td></tr>';
+            }
+            tbody.innerHTML = html;
         }
 
-        // Atalhos
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 's') {
                 e.preventDefault();
@@ -631,7 +611,6 @@
             if (e.key === 'Escape') fecharModal();
         });
 
-        // Inicializar
         document.addEventListener('DOMContentLoaded', inicializarSupabase);
     </script>
 </body>
