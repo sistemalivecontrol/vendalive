@@ -15,10 +15,36 @@
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
     <base target="_blank">
 
+<<<<<<< HEAD
     <!-- CSS injetado dinamicamente como ultimo stylesheet -->
     <style id="logo-fix-final">
       /* Logo VendaLive - TUDO BRANCO - regras de precedencia maxima */
       .logo, [class*="logo"]:not([class*="container"]):not([class*="wrapper"]):not([class*="icon"]) {
+=======
+    <!-- ===== CORRECAO LOGO VENDALIVE - TUDO BRANCO V2 ===== -->
+    <style id="fix-logo-v2">
+      /* === RESET === */
+      header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
+      header, nav, .header, .nav, [class*="header"], [class*="nav"] {
+        overflow: visible !important;
+      }
+
+      /* === LOGO - TUDO BRANCO COM MAXIMA ESPECIFICIDADE === */
+      html body header .logo,
+      html body nav .logo,
+      html body header [class*="logo"],
+      html body nav [class*="logo"],
+      html body #root header [class*="logo"],
+      html body #root nav [class*="logo"],
+      html body #root [class*="header"] [class*="logo"],
+      html body #root [class*="nav"] [class*="logo"],
+      .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
+      [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
+      [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
         display: inline-flex !important;
         align-items: center !important;
         gap: 0px !important;
@@ -30,12 +56,25 @@
         flex-shrink: 0 !important;
         color: #ffffff !important;
       }
+<<<<<<< HEAD
       .logo span, [class*="logo"] > span, .logo > span {
+=======
+
+      /* === TODOS OS SPANS DENTRO DO LOGO = BRANCO === */
+      .logo > *, .brand > *, .nav-logo > *, .header-logo > *,
+      .site-logo > *, .brand-name > *,
+      [class*="logo"] > *, [class*="brand"] > *,
+      html body .logo span,
+      html body [class*="logo"] span,
+      html body #root .logo span,
+      html body #root [class*="logo"] span {
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
         display: inline !important;
         white-space: nowrap !important;
         overflow: visible !important;
         color: #ffffff !important;
       }
+<<<<<<< HEAD
       .logo span:last-child,
       .logo span:nth-child(2),
       .logo .live, .logo .Live,
@@ -55,12 +94,131 @@
       .header-left, .nav-left, [class*="header-left"], [class*="nav-left"] {
         overflow: visible !important;
         min-width: max-content !important;
+=======
+
+      /* === PRIMEIRO SPAN ("Venda") = BRANCO === */
+      .logo span:first-child,
+      [class*="logo"] span:first-child,
+      .logo > span:first-of-type,
+      [class*="logo"] > span:first-of-type {
+        color: #ffffff !important;
+      }
+
+      /* === SEGUNDO SPAN ("Live") = BRANCO === */
+      .logo span:last-child,
+      [class*="logo"] span:last-child,
+      .logo > span:last-of-type,
+      [class*="logo"] > span:last-of-type,
+      .logo span:nth-child(2),
+      [class*="logo"] span:nth-child(2),
+      .logo span:nth-of-type(2),
+      [class*="logo"] span:nth-of-type(2),
+      .logo .live, [class*="logo"] .live,
+      .logo .Live, [class*="logo"] .Live,
+      .logo .highlight, [class*="logo"] .highlight,
+      .logo .accent, [class*="logo"] .accent,
+      .logo .yellow, [class*="logo"] .yellow,
+      .logo .gold, [class*="logo"] .gold,
+      .logo .primary, [class*="logo"] .primary,
+      .logo .brand-light, [class*="logo"] .brand-light,
+      .logo .text-accent, [class*="logo"] .text-accent,
+      .logo .text-yellow-400, [class*="logo"] .text-yellow-400,
+      .logo .text-yellow-500, [class*="logo"] .text-yellow-500,
+      .logo .text-amber-400, [class*="logo"] .text-amber-400,
+      .logo .text-amber-500, [class*="logo"] .text-amber-500,
+      .logo [class*="live"], [class*="logo"] [class*="live"],
+      .logo [class*="Live"], [class*="logo"] [class*="Live"],
+      .logo [class*="accent"], [class*="logo"] [class*="accent"],
+      .logo [class*="highlight"], [class*="logo"] [class*="highlight"],
+      .logo [class*="yellow"], [class*="logo"] [class*="yellow"],
+      .logo [class*="gold"], [class*="logo"] [class*="gold"],
+      .logo [class*="primary"], [class*="logo"] [class*="primary"],
+      .logo [class*="amber"], [class*="logo"] [class*="amber"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      /* === SPANS COM ESTILO INLINE DE COR === */
+      .logo span[style*="color"],
+      [class*="logo"] span[style*="color"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      /* === SVG DO LOGO === */
+      .logo svg, [class*="logo"] svg {
+        flex-shrink: 0 !important;
+        min-width: auto !important;
+      }
+      .logo svg *, [class*="logo"] svg *,
+      .logo svg path, [class*="logo"] svg path,
+      .logo svg rect, [class*="logo"] svg rect,
+      .logo svg circle, [class*="logo"] svg circle,
+      .logo svg text, [class*="logo"] svg text {
+        stroke: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      /* === TEXTOS SVG === */
+      .logo text, [class*="logo"] text,
+      .logo text:last-child, [class*="logo"] text:last-child,
+      .logo text:nth-child(2), [class*="logo"] text:nth-child(2) {
+        fill: #ffffff !important;
+      }
+
+      /* === CONTAINER DO HEADER === */
+      .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
+      .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
+        overflow: visible !important;
+        min-width: max-content !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* === MOBILE === */
+      @media (max-width: 768px) {
+        .logo, [class*="logo"]:not([class*="container"]):not([class*="wrapper"]) {
+          font-size: 13px !important;
+          transform: scale(0.92);
+          transform-origin: left center;
+          color: #ffffff !important;
+        }
+        .logo span, [class*="logo"] span {
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      }
+
+      /* === REACT ROOT === */
+      #root .logo, #root [class*="logo"] {
+        overflow: visible !important;
+        white-space: nowrap !important;
+        min-width: max-content !important;
+        color: #ffffff !important;
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
+      }
+      #root .logo span, #root [class*="logo"] span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
       }
     </style>
+<<<<<<< HEAD
+=======
+    <!-- ==================================== -->
+
+    <style>
+      * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+    <script type="module" crossorigin src="./assets/index-DaOTygQi.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
+  <base target="_blank">
+<base target="_blank">
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
 </head>
   <body>
     <div id="root"></div>
 
+<<<<<<< HEAD
     <!-- Script V3 - injeta CSS dinamicamente como ULTIMO stylesheet -->
     <script>
       (function() {
@@ -121,6 +279,57 @@
 
             el.querySelectorAll('span').forEach(function(span) {
               forceWhite(span);
+=======
+    <!-- Script de correcao dinamica V2 - MUITO mais agressivo -->
+    <script>
+      (function() {
+        'use strict';
+
+        function forceWhite(el) {
+          if (!el) return;
+          // Forca cor branca com !important via setProperty
+          el.style.setProperty('color', '#ffffff', 'important');
+          el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          el.style.setProperty('display', 'inline', 'important');
+          el.style.setProperty('white-space', 'nowrap', 'important');
+          el.style.setProperty('overflow', 'visible', 'important');
+        }
+
+        function fixLogo() {
+          var selectors = [
+            '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
+            '[class*="logo"]', '[class*="brand"]'
+          ];
+
+          selectors.forEach(function(sel) {
+            var elements = document.querySelectorAll(sel);
+            elements.forEach(function(el) {
+              forceWhite(el);
+              el.style.setProperty('overflow', 'visible', 'important');
+              el.style.setProperty('white-space', 'nowrap', 'important');
+              el.style.setProperty('min-width', 'max-content', 'important');
+              el.style.setProperty('max-width', 'none', 'important');
+              el.style.setProperty('width', 'auto', 'important');
+              el.style.setProperty('flex-shrink', '0', 'important');
+              el.style.setProperty('text-overflow', 'clip', 'important');
+
+              var spans = el.querySelectorAll('span');
+              spans.forEach(function(span) {
+                forceWhite(span);
+                span.style.setProperty('font-weight', '700', 'important');
+              });
+
+              var svgEls = el.querySelectorAll('svg *');
+              svgEls.forEach(function(s) {
+                s.style.setProperty('stroke', '#ffffff', 'important');
+                s.style.setProperty('fill', '#ffffff', 'important');
+              });
+
+              var texts = el.querySelectorAll('text');
+              texts.forEach(function(t) {
+                t.style.setProperty('fill', '#ffffff', 'important');
+              });
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
             });
 
             el.querySelectorAll('svg *').forEach(function(s) {
@@ -138,14 +347,36 @@
               }
             }
           });
+
+          // Busca por qualquer span que tenha texto "Live" ou "live"
+          var allSpans = document.querySelectorAll('span');
+          allSpans.forEach(function(span) {
+            var text = span.textContent.trim();
+            if (text === 'Live' || text === 'live' || text === 'LIVE') {
+              var parent = span.parentElement;
+              if (parent && (
+                parent.classList.contains('logo') ||
+                parent.className.includes('logo') ||
+                parent.className.includes('brand') ||
+                parent.className.includes('Logo')
+              )) {
+                forceWhite(span);
+              }
+            }
+          });
         }
 
+<<<<<<< HEAD
+=======
+        // Executa imediatamente
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', fixAll);
         } else {
           fixAll();
         }
 
+<<<<<<< HEAD
         [100, 300, 500, 800, 1000, 1500, 2000, 3000, 5000].forEach(function(t) {
           setTimeout(fixAll, t);
         });
@@ -160,6 +391,38 @@
           document.addEventListener('DOMContentLoaded', function() {
             var obs = new MutationObserver(fixAll);
             obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+=======
+        // Multiplos timeouts para pegar renderizacoes do React
+        var timeouts = [50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000, 5000];
+        timeouts.forEach(function(t) {
+          setTimeout(fixLogo, t);
+        });
+
+        // Intervalo contínuo por 30 segundos (React pode re-renderizar)
+        var intervalId = setInterval(fixLogo, 500);
+        setTimeout(function() { clearInterval(intervalId); }, 30000);
+
+        // Observa mudancas no DOM
+        var observer = new MutationObserver(function() {
+          fixLogo();
+        });
+
+        if (document.body) {
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+          });
+        } else {
+          document.addEventListener('DOMContentLoaded', function() {
+            observer.observe(document.body, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['style', 'class']
+            });
+>>>>>>> 56fb5694bde3dfc5b4140ac4e98e0e9e47ecc1ad
           });
         }
       })();
