@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir no Navegador - Pingo de Gente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0F0F1A;
+            color: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff, #8B6FF0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: #A0A0B8;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .link-box {
+            background: #1A1A2E;
+            border: 2px solid #2A2A45;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            word-break: break-all;
+            font-size: 13px;
+            color: #A0A0B8;
+            font-family: monospace;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6B4EE6, #5A3FD1);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(107, 78, 230, 0.3);
+        }
+
+        .btn-secondary {
+            background: #1A1A2E;
+            color: #fff;
+            border: 2px solid #2A2A45;
+        }
+
+        .btn-secondary:hover {
+            border-color: #6B4EE6;
+        }
+
+        .steps {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            color: #A0A0B8;
+            font-size: 14px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6B4EE6, #8B6FF0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .success {
+            display: none;
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: #25D366;
+            font-weight: 600;
+        }
+
+        .success.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #A0A0B8;
+            font-size: 13px;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📱</div>
+        <h1>Abrir no Navegador</h1>
+        <p>Para preencher o formulário de entrega corretamente, você precisa abrir este link no <strong>Chrome</strong> ou <strong>Safari</strong>.</p>
+
+        <div class="success" id="successMsg">
+            <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+            Link copiado! Agora cole no navegador.
+        </div>
+
+        <div class="link-box" id="linkBox">
+            https://lojaebrechopingodegente.github.io/VendaLive/solicitacoes.html?cliente=0824668c-1e10-415e-8998-09d72ef47dcb
+        </div>
+
+        <button class="btn btn-primary" onclick="copiarLink()">
+            <i class="fas fa-copy" style="margin-right: 8px;"></i>
+            Copiar Link
+        </button>
+
+        <button class="btn btn-secondary" onclick="tentarAbrir()">
+            <i class="fas fa-external-link-alt" style="margin-right: 8px;"></i>
+            Tentar Abrir Direto
+        </button>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Toque em "Copiar Link" acima</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Abra o Chrome ou Safari</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Cole o link na barra de endereço</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 Pingo de Gente • Brechó Infantil</p>
+        </div>
+    </div>
+
+    <script>
+        const URL_SOLICITACAO = 'https://lojaebrechopingodegente.github.io/VendaLive/solicitacoes.html?cliente=0824668c-1e10-415e-8998-09d72ef47dcb';
+
+        function copiarLink() {
+            // Tenta usar Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(URL_SOLICITACAO).then(function() {
+                    mostrarSucesso();
+                }).catch(function() {
+                    copiarFallback();
+                });
+            } else {
+                copiarFallback();
+            }
+        }
+
+        function copiarFallback() {
+            // Fallback com textarea
+            var textarea = document.createElement('textarea');
+            textarea.value = URL_SOLICITACAO;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                mostrarSucesso();
+            } catch (err) {
+                // Se não conseguir copiar, seleciona o texto para o usuário copiar manualmente
+                var linkBox = document.getElementById('linkBox');
+                var range = document.createRange();
+                range.selectNode(linkBox);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                alert('Selecione o link acima e copie manualmente');
+            }
+
+            document.body.removeChild(textarea);
+        }
+
+        function mostrarSucesso() {
+            var success = document.getElementById('successMsg');
+            success.classList.add('show');
+            setTimeout(function() {
+                success.classList.remove('show');
+            }, 3000);
+        }
+
+        function tentarAbrir() {
+            // Tenta múltiplas formas de abrir externo
+            window.open(URL_SOLICITACAO, '_blank');
+            window.open(URL_SOLICITACAO, '_system');
+            window.open(URL_SOLICITACAO, 'external');
+
+            // Deep links para iOS
+            setTimeout(function() {
+                window.location.href = 'googlechrome://' + URL_SOLICITACAO.replace('https://', '');
+            }, 100);
+
+            setTimeout(function() {
+                window.location.href = 'safari://' + URL_SOLICITACAO.replace('https://', '');
+            }, 200);
+
+            // Se nada funcionar, copia o link
+            setTimeout(function() {
+                copiarLink();
+            }, 500);
+        }
+
+        // Tenta abrir automaticamente ao carregar (se não estiver no Instagram)
+        window.onload = function() {
+            var ua = navigator.userAgent || '';
+            var isInstagram = ua.indexOf('Instagram') > -1 || ua.indexOf('FBAN') > -1 || ua.indexOf('FBAV') > -1;
+
+            if (!isInstagram) {
+                // Se NÃO estiver no Instagram, redireciona direto
+                window.location.href = URL_SOLICITACAO;
+            }
+        };
+    </script>
+</body>
+</html>

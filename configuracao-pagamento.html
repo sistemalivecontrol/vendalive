@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta name="version" content="202605131410">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
+    <title>Configuração de Pagamento - Pingo de Gente</title>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #7F64BA 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { background: white; padding: 20px 30px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .header-center h1 { color: #0B193F; font-size: 1.6rem; margin-bottom: 3px; }
+        .header-center p { color: #636E72; font-size: 0.85rem; }
+        .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .user-info { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 10px 18px; border-radius: 12px; border: 1px solid #e9ecef; }
+        #userInfo { color: #495057; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        #userInfo .cliente-nome { color: #0B193F; font-weight: 500; }
+        .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
+        .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+
+        .config-section { background: white; border-radius: 20px; padding: 30px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .config-section h2 { color: #0B193F; font-size: 1.4rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; padding-bottom: 15px; border-bottom: 2px solid #E0E0E0; }
+        .config-section h3 { color: #2D3436; font-size: 1.1rem; margin: 20px 0 15px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2D3436; font-size: 0.95rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; font-family: inherit; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #0B193F; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+        .form-group small { display: block; margin-top: 6px; color: #636E72; font-size: 0.85rem; line-height: 1.4; }
+        .form-group .hint { background: #FFF3E0; border-left: 3px solid #FF9800; padding: 10px 15px; margin-top: 8px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #E65100; }
+
+        .btn { padding: 14px 28px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #0B193F; color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4); }
+        .btn-test { background: linear-gradient(135deg, #17a2b8, #138496); color: white; }
+        .btn-test:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(23, 162, 184, 0.4); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-ok { background: #C8E6C9; color: #2E7D32; }
+        .status-error { background: #FFCCBC; color: #D84315; }
+        .status-pending { background: #FFF3E0; color: #E65100; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 25px; background: white; padding: 8px; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,0.08); }
+        .tab { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; background: transparent; color: #636E72; }
+        .tab:hover { background: #F5F5F5; }
+        .tab.ativo { background: #0B193F; color: white; }
+
+        .tab-content { display: none; }
+        .tab-content.ativo { display: block; }
+
+        .info-box { background: #E3F2FD; border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .info-box h4 { color: #1565C0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .info-box p { color: #424242; font-size: 0.9rem; line-height: 1.6; }
+        .info-box ol { color: #424242; padding-left: 20px; margin-top: 10px; font-size: 0.9rem; }
+        .info-box li { margin: 5px 0; }
+
+        .gateway-selector {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .gateway-selector h2 {
+            color: #0B193F;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .gateway-selector > p {
+            color: #636E72;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        .gateway-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .gateway-card {
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+        }
+        .gateway-card:hover {
+            border-color: #0B193F;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+        }
+        .gateway-card.selecionado {
+            border-color: #0B193F;
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+        }
+        .gateway-card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .gateway-card h4 {
+            color: #2D3436;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .gateway-card p {
+            color: #636E72;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .gateway-card .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .gateway-card .badge-mp {
+            background: #009EE3;
+            color: white;
+        }
+        .gateway-card .badge-asaas {
+            background: #003B5C;
+            color: white;
+        }
+        .gateway-card .badge-infinitepay {
+            background: #7B1FA2;
+            color: white;
+        }
+        .gateway-card .check-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 28px;
+            height: 28px;
+            background: #0B193F;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .gateway-card.selecionado .check-icon {
+            opacity: 1;
+        }
+        .gateway-card-wrapper {
+            position: relative;
+        }
+
+        .loading { display: none; text-align: center; padding: 20px; }
+        .loading.ativo { display: block; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #0B193F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .alert.ativo { display: block; }
+        .alert-success { background: #D4EDDA; border: 2px solid #28a745; color: #155724; }
+        .alert-error { background: #F8D7DA; border: 2px solid #dc3545; color: #721c24; }
+
+        .simulador-taxa {
+            background: #E8F4FD;
+            border: 2px solid #009EE3;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .simulador-taxa h4 {
+            color: #009EE3;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .simulador-taxa .linha {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .simulador-taxa .linha.total {
+            border-top: 2px solid #009EE3;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #009EE3;
+            font-size: 1.05rem;
+        }
+        .simulador-taxa .linha.receber {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .simulador-taxa-infinitepay {
+            background: #F3E5F5;
+            border: 2px solid #7B1FA2;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .simulador-taxa-infinitepay h4 {
+            color: #7B1FA2;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .simulador-taxa-infinitepay .linha {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .simulador-taxa-infinitepay .linha.total {
+            border-top: 2px solid #7B1FA2;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #7B1FA2;
+            font-size: 1.05rem;
+        }
+        .simulador-taxa-infinitepay .linha.receber {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) { 
+            .header { flex-direction: column; text-align: center; } 
+            .header-left { flex-direction: column; } 
+            .tabs { flex-wrap: wrap; }
+            .gateway-options { grid-template-columns: 1fr; }
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <script>
+        (function(){
+            var expectedVersion = '202605131410';
+            var currentVersion = document.querySelector('meta[name="version"]')?.content || '0';
+            if (currentVersion !== expectedVersion) {
+                console.log('[CACHE] Versão diferente, forçando reload...');
+                location.reload(true);
+            }
+        })();
+    </script>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="location.href='dashboard.html'">← Voltar</button>
+                <div class="header-center">
+                    <h1>⚙️ Configuração de Pagamento</h1>
+                    <p>Configure suas integrações de pagamento</p>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="userInfo">👤 Carregando...</span>
+                <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="gateway-selector">
+            <h2>🎯 Gateway de Cartão Padrão</h2>
+            <p>Escolha qual gateway será usado para gerar links de pagamento com cartão na página de pagamento:</p>
+
+            <div class="gateway-options">
+                <div class="gateway-card-wrapper">
+                    <div class="gateway-card" id="cardMp" onclick="selecionarGateway('mercado_pago')">
+                        <div class="check-icon">✓</div>
+                        <div class="icon">💳</div>
+                        <h4>Mercado Pago</h4>
+                        <p>Link de pagamento com cartão<br>PIX e boleto desabilitados<br>Taxa calculada automaticamente</p>
+                        <span class="badge badge-mp">D+0 disponível</span>
+                    </div>
+                </div>
+                <div class="gateway-card-wrapper">
+                    <div class="gateway-card" id="cardAsaas" onclick="selecionarGateway('asaas')">
+                        <div class="check-icon">✓</div>
+                        <div class="icon">🏦</div>
+                        <h4>Asaas</h4>
+                        <p>Link de pagamento tradicional<br>Boleto + Cartão + PIX<br>Taxa configurada manualmente</p>
+                        <span class="badge badge-asaas">D+32 padrão</span>
+                    </div>
+                </div>
+                <div class="gateway-card-wrapper">
+                    <div class="gateway-card" id="cardInfinitePay" onclick="selecionarGateway('infinitepay')">
+                        <div class="check-icon">✓</div>
+                        <div class="icon">💜</div>
+                        <h4>InfinitePay</h4>
+                        <p>Checkout API simples<br>Apenas Handle necessário<br>Taxa configurada manualmente</p>
+                        <span class="badge badge-infinitepay">D+1 disponível</span>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="gatewayCartao" value="mercado_pago">
+
+            <div style="text-align: center; margin-top: 25px;">
+                <button class="btn btn-success" id="btnSalvarGateway" onclick="salvarGateway()">
+                    💾 Salvar Gateway Padrão
+                </button>
+            </div>
+
+            <div id="statusGateway" style="margin-top: 15px; text-align: center;"></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab ativo" data-aba="mercadopago" onclick="mostrarAba(this)">💳 Mercado Pago</button>
+            <button class="tab" data-aba="asaas" onclick="mostrarAba(this)">🏦 Asaas</button>
+            <button class="tab" data-aba="infinitepay" onclick="mostrarAba(this)">💜 InfinitePay</button>
+        </div>
+
+        <!-- ABA MERCADO PAGO -->
+        <div id="aba-mercadopago" class="tab-content ativo">
+            <div class="config-section">
+                <h2>💳 Configuração Mercado Pago</h2>
+
+                <div class="info-box">
+                    <h4>🔐 Como obter seu token do Mercado Pago:</h4>
+                    <ol>
+                        <li>Acesse <a href="https://www.mercadopago.com.br/developers" target="_blank">Mercado Pago Developers</a></li>
+                        <li>Crie uma aplicação ou acesse uma existente</li>
+                        <li>Vá em "Credenciais de produção"</li>
+                        <li>Copie o "Access Token"</li>
+                        <li>Cole no campo abaixo</li>
+                    </ol>
+                </div>
+
+                <div class="form-group">
+                    <label for="mpToken">Token de Produção (Access Token)</label>
+                    <input type="password" id="mpToken" placeholder="APP_USR-xxxxxxxx...">
+                    <small>Token de produção da sua aplicação Mercado Pago</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mpTokenSandbox">Token de Sandbox (Opcional)</label>
+                    <input type="password" id="mpTokenSandbox" placeholder="TEST-xxxxxxxx...">
+                    <small>Token de teste para ambiente de desenvolvimento</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mpPublicKey">Chave Pública (Public Key)</label>
+                    <input type="text" id="mpPublicKey" placeholder="APP_USR-xxxxxxxx...">
+                    <small>Chave pública da sua aplicação</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Modo de Operação</label>
+                    <select id="mpModo">
+                        <option value="producao">Produção</option>
+                        <option value="sandbox">Sandbox (Teste)</option>
+                    </select>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #2D3436; font-size: 1.1rem; margin-bottom: 15px;">📊 Taxas do Cartão (Repasse Automático)</h3>
+                    <p style="color: #636E72; font-size: 0.9rem; margin-bottom: 15px;">
+                        Configure a taxa que será <strong>adicionada automaticamente</strong> ao valor da cobrança. O cliente paga o valor com taxa incluída.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="mpTaxaPercentual">Taxa Percentual (%)</label>
+                            <input type="number" id="mpTaxaPercentual" placeholder="4.49" step="0.01" min="0" max="100" value="4.49">
+                            <small>Ex: 4.49 para 4.49%</small>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="mpTaxaFixa">Taxa Fixa (R$)</label>
+                            <input type="number" id="mpTaxaFixa" placeholder="0.00" step="0.01" min="0" value="0.00">
+                            <small>Ex: 0.49 para R$ 0,49</small>
+                        </div>
+                    </div>
+
+                    <div class="simulador-taxa">
+                        <h4>🧮 Simulador (Exemplo: R$ 100,00)</h4>
+                        <div class="linha">
+                            <span>Valor da compra:</span>
+                            <span id="simMpValor">R$ 100,00</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa percentual:</span>
+                            <span id="simMpTaxaPerc">R$ 4,49</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa fixa:</span>
+                            <span id="simMpTaxaFixa">R$ 0,00</span>
+                        </div>
+                        <div class="linha total">
+                            <span>Total cobrado do cliente:</span>
+                            <span id="simMpTotal">R$ 104,70</span>
+                        </div>
+                        <div class="linha receber">
+                            <span>💰 Você recebe:</span>
+                            <span id="simMpRecebe">R$ 100,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px;">
+                    <button class="btn btn-primary" id="btnSalvarMp" onclick="salvarConfigMp()">💾 Salvar Configuração MP</button>
+                    <button class="btn btn-test" id="btnTestarMp" onclick="testarConexaoMp()">🧪 Testar Conexão</button>
+                </div>
+
+                <div id="statusMp" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- ABA ASAAS -->
+        <div id="aba-asaas" class="tab-content">
+            <div class="config-section">
+                <h2>🏦 Configuração Asaas</h2>
+
+                <div class="info-box">
+                    <h4>🔐 Como obter sua API Key do Asaas:</h4>
+                    <ol>
+                        <li>Acesse <a href="https://www.asaas.com" target="_blank">Asaas</a> (ou <a href="https://sandbox.asaas.com" target="_blank">Sandbox</a>)</li>
+                        <li>Faça login na sua conta</li>
+                        <li>Vá em <strong>Conta → Integrações</strong> no menu lateral</li>
+                        <li>Clique em <strong>"Gerar nova API Key"</strong></li>
+                        <li>Copie a chave completa (só aparece uma vez!)</li>
+                        <li>Cole no campo abaixo</li>
+                    </ol>
+                </div>
+
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-weight: 700; color: #2D3436; margin-bottom: 20px;">
+                    <span style="font-size: 1.5rem;">🏦</span>
+                    <span>Asaas - Gateway de Pagamento</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="asaasApiKey">API Key Asaas</label>
+                    <input type="password" id="asaasApiKey" placeholder="Sua API Key do Asaas...">
+                    <small>Chave de API para autenticação nas requisições</small>
+                    <div class="hint">⚠️ A API Key só é exibida uma vez no momento da geração. Guarde-a com segurança!</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ambiente</label>
+                    <select id="asaasSandbox">
+                        <option value="false">Produção (www.asaas.com)</option>
+                        <option value="true">Sandbox (sandbox.asaas.com)</option>
+                    </select>
+                    <small>Use Sandbox para testar sem dinheiro real</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="asaasNomeConta">Nome da Conta / Loja</label>
+                    <input type="text" id="asaasNomeConta" placeholder="Ex: Pingo de Gente">
+                    <small>Nome que aparecerá nas cobranças para o cliente</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="asaasCpfCnpj">CPF/CNPJ do Beneficiário</label>
+                    <input type="text" id="asaasCpfCnpj" placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                    <small>CPF ou CNPJ cadastrado na conta Asaas (obrigatório para criar clientes)</small>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #2D3436; font-size: 1.1rem; margin-bottom: 15px;">📊 Taxas do Cartão (Embutidas no Valor)</h3>
+                    <p style="color: #636E72; font-size: 0.9rem; margin-bottom: 15px;">
+                        Configure a taxa que será <strong>adicionada automaticamente</strong> ao valor da cobrança. O cliente paga o valor com taxa incluída, e você recebe o valor original.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="taxaPercentual">Taxa Percentual (%)</label>
+                            <input type="number" id="taxaPercentual" placeholder="3.49" step="0.01" min="0" max="100" value="3.49">
+                            <small>Ex: 3.49 para 3.49%</small>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="taxaFixa">Taxa Fixa (R$)</label>
+                            <input type="number" id="taxaFixa" placeholder="0.49" step="0.01" min="0" value="0.49">
+                            <small>Ex: 0.49 para R$ 0,49</small>
+                        </div>
+                    </div>
+
+                    <div class="simulador-taxa" style="border-color: #003B5C;">
+                        <h4 style="color: #003B5C;">🧮 Simulador (Exemplo: R$ 100,00)</h4>
+                        <div class="linha">
+                            <span>Valor da compra:</span>
+                            <span id="simValor">R$ 100,00</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa percentual:</span>
+                            <span id="simTaxaPerc">R$ 3,49</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa fixa:</span>
+                            <span id="simTaxaFixa">R$ 0,49</span>
+                        </div>
+                        <div class="linha total" style="border-color: #003B5C; color: #003B5C;">
+                            <span>Total cobrado do cliente:</span>
+                            <span id="simTotal">R$ 104,12</span>
+                        </div>
+                        <div class="linha receber">
+                            <span>💰 Você recebe:</span>
+                            <span id="simRecebe">R$ 100,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="asaasWebhookUrl">URL do Webhook (Opcional)</label>
+                    <input type="text" id="asaasWebhookUrl" placeholder="https://sua-url.com/webhook" readonly style="background: #f5f5f5;">
+                    <small>Configure este webhook no painel do Asaas para receber notificações de pagamento</small>
+                    <div class="hint" id="webhookHint">🔗 URL sugerida: Configure um endpoint no Supabase Edge Functions para receber webhooks</div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px;">
+                    <button class="btn btn-primary" id="btnSalvarAsaas" onclick="salvarConfigAsaas()">💾 Salvar Configuração Asaas</button>
+                    <button class="btn btn-test" id="btnTestarAsaas" onclick="testarConexaoAsaas()">🧪 Testar Conexão</button>
+                </div>
+
+                <div class="loading" id="loadingAsaas">
+                    <div class="spinner"></div>
+                    <p>Testando conexão...</p>
+                </div>
+
+                <div id="statusAsaas" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="config-section">
+                <h2>📊 Status da Integração Asaas</h2>
+                <div id="asaasStatusInfo">
+                    <p style="color: #636E72;">Carregando status...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA INFINITE PAY -->
+        <div id="aba-infinitepay" class="tab-content">
+            <div class="config-section">
+                <h2>💜 Configuração InfinitePay</h2>
+
+                <div class="info-box" style="background: #F3E5F5; border-color: #7B1FA2;">
+                    <h4 style="color: #7B1FA2;">🔐 Como funciona a integração InfinitePay:</h4>
+                    <p style="margin-bottom: 10px;">
+                        A InfinitePay usa o <strong>Checkout API</strong> — é mais simples que Mercado Pago e Asaas!
+                    </p>
+                    <ol>
+                        <li><strong>Handle</strong> é sua InfiniteTag (nome de usuário no app, sem o $)</li>
+                        <li>Com apenas o Handle, você já gera links de pagamento</li>
+                        <li>Envia uma requisição POST para <code>api.checkout.infinitepay.io/links</code></li>
+                        <li>O cliente recebe o link e finaliza o pagamento</li>
+                        <li>Configure um webhook para receber confirmação automática</li>
+                    </ol>
+                    <p style="margin-top: 10px; color: #7B1FA2; font-weight: 600;">
+                        💡 Não precisa de API Key! Apenas seu Handle já é suficiente para gerar links.
+                    </p>
+                </div>
+
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: #F3E5F5; padding: 8px 16px; border-radius: 8px; font-weight: 700; color: #7B1FA2; margin-bottom: 20px;">
+                    <span style="font-size: 1.5rem;">💜</span>
+                    <span>InfinitePay - Checkout API</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="infinitepayHandle">🆔 Handle (InfiniteTag / Nome de Usuário) *</label>
+                    <input type="text" id="infinitepayHandle" placeholder="Ex: pingodegente">
+                    <small>Seu nome de usuário no App InfinitePay (sem o símbolo $). É o único dado obrigatório!</small>
+                    <div class="hint">💡 Exemplo: Se no app você é "$pingodegente", digite apenas "pingodegente". Seu link será: checkout.infinitepay.io/pingodegente</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="infinitepayApiKey">🔑 API Key / Client ID (Opcional)</label>
+                    <input type="password" id="infinitepayApiKey" placeholder="Deixe em branco se for usar Checkout API...">
+                    <small>Só preencha se tiver credencial de integração avançada. Para links simples, deixe em branco.</small>
+                    <div class="hint">💡 O Checkout API funciona apenas com o Handle. A API Key só é necessária para integrações avançadas.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="infinitepayClientSecret">🔒 Client Secret (Opcional)</label>
+                    <input type="password" id="infinitepayClientSecret" placeholder="Deixe em branco se for usar Checkout API...">
+                    <small>Só preencha junto com a API Key/Client ID. Para links simples, deixe em branco.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Ambiente</label>
+                    <select id="infinitepaySandbox">
+                        <option value="false">Produção (api.checkout.infinitepay.io)</option>
+                        <option value="true">Sandbox (sandbox)</option>
+                    </select>
+                    <small>Ambiente de processamento dos links de pagamento</small>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                    <h3 style="color: #2D3436; font-size: 1.1rem; margin-bottom: 15px;">📊 Taxas do Cartão (Embutidas no Valor)</h3>
+                    <p style="color: #636E72; font-size: 0.9rem; margin-bottom: 15px;">
+                        Configure a taxa que será <strong>adicionada automaticamente</strong> ao valor da cobrança. O cliente paga o valor com taxa incluída, e você recebe o valor original.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="infinitepayTaxaPercentual">Taxa Percentual (%)</label>
+                            <input type="number" id="infinitepayTaxaPercentual" placeholder="3.99" step="0.01" min="0" max="100" value="3.99">
+                            <small>Ex: 3.99 para 3.99%</small>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="infinitepayTaxaFixa">Taxa Fixa (R$)</label>
+                            <input type="number" id="infinitepayTaxaFixa" placeholder="0.00" step="0.01" min="0" value="0.00">
+                            <small>Ex: 0.49 para R$ 0,49</small>
+                        </div>
+                    </div>
+
+                    <div class="simulador-taxa-infinitepay">
+                        <h4>🧮 Simulador (Exemplo: R$ 100,00)</h4>
+                        <div class="linha">
+                            <span>Valor da compra:</span>
+                            <span id="simIpValor">R$ 100,00</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa percentual:</span>
+                            <span id="simIpTaxaPerc">R$ 3,99</span>
+                        </div>
+                        <div class="linha">
+                            <span>Taxa fixa:</span>
+                            <span id="simIpTaxaFixa">R$ 0,00</span>
+                        </div>
+                        <div class="linha total">
+                            <span>Total cobrado do cliente:</span>
+                            <span id="simIpTotal">R$ 104,14</span>
+                        </div>
+                        <div class="linha receber">
+                            <span>💰 Você recebe:</span>
+                            <span id="simIpRecebe">R$ 100,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="infinitepayWebhookUrl">🔗 URL do Webhook (Opcional)</label>
+                    <input type="url" id="infinitepayWebhookUrl" placeholder="https://aqrvozmxlcgrllclceke.supabase.co/functions/v1/infinitepay-webhook">
+                    <small>Configure esta URL no painel da InfinitePay para receber notificações de pagamento aprovado</small>
+                    <div class="hint" id="infinitepayWebhookHint">💡 A InfinitePay envia um POST para esta URL quando o pagamento for aprovado. Responda com 200 OK em menos de 1 segundo.</div>
+                </div>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px;">
+                    <button class="btn btn-primary" id="btnSalvarInfinitePay" onclick="salvarConfigInfinitePay()">💾 Salvar Configuração InfinitePay</button>
+                    <button class="btn btn-test" id="btnTestarInfinitePay" onclick="testarConexaoInfinitePay()">🧪 Testar Conexão</button>
+                </div>
+
+                <div class="loading" id="loadingInfinitePay">
+                    <div class="spinner"></div>
+                    <p>Testando conexão...</p>
+                </div>
+
+                <div id="statusInfinitePay" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="config-section">
+                <h2>📊 Status da Integração InfinitePay</h2>
+                <div id="infinitepayStatusInfo">
+                    <p style="color: #636E72;">Carregando status...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="alertSucesso"></div>
+        <div class="alert alert-error" id="alertErro"></div>
+    </div>
+
+    <script>
+        // ===== VARIÁVEIS GLOBAIS =====
+        var supabaseClient = null;
+        var usuarioAtual = null;
+        var clienteSistemaId = null;
+        var configAtual = null;
+        var appInicializado = false;
+        var gatewaySelecionado = 'mercado_pago';
+
+        // ===== CONFIG SUPABASE =====
+        var CONFIG_SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        var CONFIG_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        var EDGE_FUNCTIONS_URL = CONFIG_SUPABASE_URL + '/functions/v1';
+
+        // ===== MOSTRAR ABA =====
+        function mostrarAba(botaoClicado) {
+            if (!botaoClicado) return;
+            var aba = botaoClicado.getAttribute('data-aba');
+            if (!aba) return;
+
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('ativo'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
+
+            botaoClicado.classList.add('ativo');
+            var conteudo = document.getElementById('aba-' + aba);
+            if (conteudo) conteudo.classList.add('ativo');
+        }
+
+        // ===== SELECIONAR GATEWAY =====
+        function selecionarGateway(gateway) {
+            console.log('[GATEWAY] Selecionando:', gateway);
+            gatewaySelecionado = gateway;
+            document.getElementById('gatewayCartao').value = gateway;
+
+            document.querySelectorAll('.gateway-card').forEach(function(el) {
+                el.classList.remove('selecionado');
+            });
+
+            if (gateway === 'mercado_pago') {
+                document.getElementById('cardMp').classList.add('selecionado');
+            } else if (gateway === 'asaas') {
+                document.getElementById('cardAsaas').classList.add('selecionado');
+            } else if (gateway === 'infinitepay') {
+                document.getElementById('cardInfinitePay').classList.add('selecionado');
+            }
+
+            console.log('[GATEWAY] Selecionado:', gateway);
+        }
+
+        // ===== ALERTAS =====
+        function mostrarSucessoConfig(msg) {
+            var el = document.getElementById('alertSucesso');
+            if (el) {
+                el.textContent = msg;
+                el.classList.add('ativo');
+                setTimeout(function() { el.classList.remove('ativo'); }, 5000);
+            }
+        }
+
+        function mostrarErroConfig(msg) {
+            var el = document.getElementById('alertErro');
+            if (el) {
+                el.textContent = msg;
+                el.classList.add('ativo');
+                setTimeout(function() { el.classList.remove('ativo'); }, 5000);
+            }
+        }
+
+        // ===== HABILITAR/DESABILITAR BOTÕES =====
+        function habilitarBotoes(habilitar) {
+            var botoes = ['btnSalvarMp', 'btnTestarMp', 'btnSalvarAsaas', 'btnTestarAsaas', 'btnSalvarGateway', 'btnSalvarInfinitePay', 'btnTestarInfinitePay'];
+            botoes.forEach(function(id) {
+                var btn = document.getElementById(id);
+                if (btn) btn.disabled = !habilitar;
+            });
+        }
+
+        // ===== SIMULADORES =====
+        function atualizarSimuladorMp() {
+            var taxaPerc = parseFloat(document.getElementById('mpTaxaPercentual').value) || 0;
+            var taxaFixa = parseFloat(document.getElementById('mpTaxaFixa').value) || 0;
+            var valorExemplo = 100;
+            var taxaDecimal = taxaPerc / 100;
+            var totalCobrado = (valorExemplo + taxaFixa) / (1 - taxaDecimal);
+            var totalArredondado = Math.ceil(totalCobrado * 100) / 100;
+
+            var elSimValor = document.getElementById('simMpValor');
+            var elSimTaxaPerc = document.getElementById('simMpTaxaPerc');
+            var elSimTaxaFixa = document.getElementById('simMpTaxaFixa');
+            var elSimTotal = document.getElementById('simMpTotal');
+            var elSimRecebe = document.getElementById('simMpRecebe');
+
+            if (elSimValor) elSimValor.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+            if (elSimTaxaPerc) elSimTaxaPerc.textContent = 'R$ ' + (valorExemplo * taxaDecimal).toFixed(2).replace('.', ',');
+            if (elSimTaxaFixa) elSimTaxaFixa.textContent = 'R$ ' + taxaFixa.toFixed(2).replace('.', ',');
+            if (elSimTotal) elSimTotal.textContent = 'R$ ' + totalArredondado.toFixed(2).replace('.', ',');
+            if (elSimRecebe) elSimRecebe.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+        }
+
+        function atualizarSimulador() {
+            var taxaPerc = parseFloat(document.getElementById('taxaPercentual').value) || 0;
+            var taxaFixa = parseFloat(document.getElementById('taxaFixa').value) || 0;
+            var valorExemplo = 100;
+            var taxaDecimal = taxaPerc / 100;
+            var totalCobrado = (valorExemplo + taxaFixa) / (1 - taxaDecimal);
+            var totalArredondado = Math.ceil(totalCobrado * 100) / 100;
+
+            var elSimValor = document.getElementById('simValor');
+            var elSimTaxaPerc = document.getElementById('simTaxaPerc');
+            var elSimTaxaFixa = document.getElementById('simTaxaFixa');
+            var elSimTotal = document.getElementById('simTotal');
+            var elSimRecebe = document.getElementById('simRecebe');
+
+            if (elSimValor) elSimValor.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+            if (elSimTaxaPerc) elSimTaxaPerc.textContent = 'R$ ' + (valorExemplo * taxaDecimal).toFixed(2).replace('.', ',');
+            if (elSimTaxaFixa) elSimTaxaFixa.textContent = 'R$ ' + taxaFixa.toFixed(2).replace('.', ',');
+            if (elSimTotal) elSimTotal.textContent = 'R$ ' + totalArredondado.toFixed(2).replace('.', ',');
+            if (elSimRecebe) elSimRecebe.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+        }
+
+        function atualizarSimuladorInfinitePay() {
+            var taxaPerc = parseFloat(document.getElementById('infinitepayTaxaPercentual').value) || 0;
+            var taxaFixa = parseFloat(document.getElementById('infinitepayTaxaFixa').value) || 0;
+            var valorExemplo = 100;
+            var taxaDecimal = taxaPerc / 100;
+            var totalCobrado = (valorExemplo + taxaFixa) / (1 - taxaDecimal);
+            var totalArredondado = Math.ceil(totalCobrado * 100) / 100;
+
+            var elSimValor = document.getElementById('simIpValor');
+            var elSimTaxaPerc = document.getElementById('simIpTaxaPerc');
+            var elSimTaxaFixa = document.getElementById('simIpTaxaFixa');
+            var elSimTotal = document.getElementById('simIpTotal');
+            var elSimRecebe = document.getElementById('simIpRecebe');
+
+            if (elSimValor) elSimValor.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+            if (elSimTaxaPerc) elSimTaxaPerc.textContent = 'R$ ' + (valorExemplo * taxaDecimal).toFixed(2).replace('.', ',');
+            if (elSimTaxaFixa) elSimTaxaFixa.textContent = 'R$ ' + taxaFixa.toFixed(2).replace('.', ',');
+            if (elSimTotal) elSimTotal.textContent = 'R$ ' + totalArredondado.toFixed(2).replace('.', ',');
+            if (elSimRecebe) elSimRecebe.textContent = 'R$ ' + valorExemplo.toFixed(2).replace('.', ',');
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        async function inicializarApp() {
+            if (appInicializado) return;
+
+            try {
+                console.log('[CONFIG] Iniciando...');
+                habilitarBotoes(false);
+
+                var tentativas = 0;
+                while (tentativas < 100) {
+                    if (window.authUsuario && window.authClienteId && window.supabaseClient) {
+                        break;
+                    }
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                    tentativas++;
+                }
+
+                if (window.supabaseClient) {
+                    supabaseClient = window.supabaseClient;
+                    console.log('[CONFIG] Usando supabase do auth.js');
+                } else {
+                    supabaseClient = supabase.createClient(CONFIG_SUPABASE_URL, CONFIG_SUPABASE_ANON_KEY);
+                    console.log('[CONFIG] Supabase criado manualmente');
+                }
+
+                usuarioAtual = window.authUsuario;
+                clienteSistemaId = window.authClienteId;
+
+                if (!clienteSistemaId) {
+                    console.log('[CONFIG] Buscando sessão manualmente...');
+                    try {
+                        var sessionResult = await supabaseClient.auth.getSession();
+                        var session = sessionResult.data?.session;
+                        if (session) {
+                            var usuarioResult = await supabaseClient
+                                .from('usuarios_sistema')
+                                .select('cliente_sistema_id')
+                                .eq('auth_id', session.user.id)
+                                .maybeSingle();
+                            if (usuarioResult.data?.cliente_sistema_id) {
+                                clienteSistemaId = usuarioResult.data.cliente_sistema_id;
+                                usuarioAtual = session.user;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('[CONFIG] Erro busca manual:', e);
+                    }
+                }
+
+                if (!clienteSistemaId) {
+                    mostrarErroConfig('Erro: Cliente não identificado. Faça login novamente.');
+                    return;
+                }
+
+                appInicializado = true;
+                console.log('[CONFIG] OK! cliente:', clienteSistemaId);
+
+                var elUserInfo = document.getElementById('userInfo');
+                if (elUserInfo) {
+                    var email = (usuarioAtual && usuarioAtual.email) ? usuarioAtual.email : 'Usuário';
+                    elUserInfo.innerHTML = '👤 ' + email;
+                }
+
+                var elWebhookHint = document.getElementById('webhookHint');
+                if (elWebhookHint) {
+                    elWebhookHint.innerHTML = '🔗 URL: <code>' + CONFIG_SUPABASE_URL + '/functions/v1/asaas-webhook</code>';
+                }
+
+                var elInfinitePayWebhookHint = document.getElementById('infinitepayWebhookHint');
+                if (elInfinitePayWebhookHint) {
+                    elInfinitePayWebhookHint.innerHTML = '🔗 URL: <code>' + CONFIG_SUPABASE_URL + '/functions/v1/infinitepay-webhook</code><br><small>Responda com 200 OK em menos de 1 segundo quando receber notificação.</small>';
+                }
+
+                await carregarConfiguracoes();
+
+                // Listeners simuladores
+                var elMpTaxaPerc = document.getElementById('mpTaxaPercentual');
+                var elMpTaxaFixa = document.getElementById('mpTaxaFixa');
+                if (elMpTaxaPerc) elMpTaxaPerc.addEventListener('input', atualizarSimuladorMp);
+                if (elMpTaxaFixa) elMpTaxaFixa.addEventListener('input', atualizarSimuladorMp);
+
+                var elTaxaPercentual = document.getElementById('taxaPercentual');
+                var elTaxaFixa = document.getElementById('taxaFixa');
+                if (elTaxaPercentual) elTaxaPercentual.addEventListener('input', atualizarSimulador);
+                if (elTaxaFixa) elTaxaFixa.addEventListener('input', atualizarSimulador);
+
+                var elIpTaxaPerc = document.getElementById('infinitepayTaxaPercentual');
+                var elIpTaxaFixa = document.getElementById('infinitepayTaxaFixa');
+                if (elIpTaxaPerc) elIpTaxaPerc.addEventListener('input', atualizarSimuladorInfinitePay);
+                if (elIpTaxaFixa) elIpTaxaFixa.addEventListener('input', atualizarSimuladorInfinitePay);
+
+                habilitarBotoes(true);
+                console.log('[CONFIG] Pronto!');
+
+            } catch (e) {
+                console.error('[CONFIG] Erro:', e);
+                mostrarErroConfig('Erro: ' + e.message);
+                habilitarBotoes(false);
+            }
+        }
+
+        // ===== CARREGAR CONFIGS =====
+        async function carregarConfiguracoes() {
+            if (!clienteSistemaId || !supabaseClient) return;
+
+            try {
+                var result = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .maybeSingle();
+
+                if (result.error && result.error.code !== 'PGRST116') {
+                    console.error('[CONFIG] Erro carregar:', result.error);
+                    if (result.error.message && result.error.message.includes('column')) {
+                        mostrarErroConfig('⚠️ Tabela de configurações precisa ser atualizada. Execute o SQL no Supabase.');
+                    }
+                    return;
+                }
+
+                configAtual = result.data;
+
+                if (result.data) {
+                    // Gateway
+                    var gatewaySalvo = result.data.gateway_cartao || 'mercado_pago';
+                    console.log('[CONFIG] Gateway salvo:', gatewaySalvo);
+                    selecionarGateway(gatewaySalvo);
+
+                    // MP
+                    var elMpToken = document.getElementById('mpToken');
+                    var elMpTokenSandbox = document.getElementById('mpTokenSandbox');
+                    var elMpPublicKey = document.getElementById('mpPublicKey');
+                    var elMpModo = document.getElementById('mpModo');
+                    var elMpTaxaPercentual = document.getElementById('mpTaxaPercentual');
+                    var elMpTaxaFixa = document.getElementById('mpTaxaFixa');
+
+                    if (elMpToken && result.data.mp_token) elMpToken.value = result.data.mp_token;
+                    if (elMpTokenSandbox && result.data.mp_token_sandbox) elMpTokenSandbox.value = result.data.mp_token_sandbox;
+                    if (elMpPublicKey && result.data.mp_public_key) elMpPublicKey.value = result.data.mp_public_key;
+                    if (elMpModo && result.data.mp_modo) elMpModo.value = result.data.mp_modo;
+                    if (elMpTaxaPercentual && result.data.mp_taxa_percentual !== null) elMpTaxaPercentual.value = result.data.mp_taxa_percentual;
+                    if (elMpTaxaFixa && result.data.mp_taxa_fixa !== null) elMpTaxaFixa.value = result.data.mp_taxa_fixa;
+
+                    // Asaas
+                    var elAsaasApiKey = document.getElementById('asaasApiKey');
+                    var elAsaasSandbox = document.getElementById('asaasSandbox');
+                    var elAsaasNomeConta = document.getElementById('asaasNomeConta');
+                    var elAsaasCpfCnpj = document.getElementById('asaasCpfCnpj');
+                    var elTaxaPercentual = document.getElementById('taxaPercentual');
+                    var elTaxaFixa = document.getElementById('taxaFixa');
+
+                    if (elAsaasApiKey && result.data.asaas_api_key) elAsaasApiKey.value = result.data.asaas_api_key;
+                    if (elAsaasSandbox && result.data.asaas_sandbox !== null) elAsaasSandbox.value = result.data.asaas_sandbox.toString();
+                    if (elAsaasNomeConta && result.data.asaas_nome_conta) elAsaasNomeConta.value = result.data.asaas_nome_conta;
+                    if (elAsaasCpfCnpj && result.data.asaas_cpf_cnpj) elAsaasCpfCnpj.value = result.data.asaas_cpf_cnpj;
+                    if (elTaxaPercentual && result.data.taxa_percentual !== null) elTaxaPercentual.value = result.data.taxa_percentual;
+                    if (elTaxaFixa && result.data.taxa_fixa !== null) elTaxaFixa.value = result.data.taxa_fixa;
+
+                    // InfinitePay
+                    var elIpApiKey = document.getElementById('infinitepayApiKey');
+                    var elIpHandle = document.getElementById('infinitepayHandle');
+                    var elIpClientSecret = document.getElementById('infinitepayClientSecret');
+                    var elIpSandbox = document.getElementById('infinitepaySandbox');
+                    var elIpTaxaPercentual = document.getElementById('infinitepayTaxaPercentual');
+                    var elIpTaxaFixa = document.getElementById('infinitepayTaxaFixa');
+
+                    if (elIpApiKey && result.data.infinitepay_api_key) elIpApiKey.value = result.data.infinitepay_api_key;
+                    if (elIpHandle && result.data.infinitepay_handle) elIpHandle.value = result.data.infinitepay_handle;
+                    if (elIpClientSecret && result.data.infinitepay_client_secret) elIpClientSecret.value = result.data.infinitepay_client_secret;
+                    if (elIpSandbox && result.data.infinitepay_sandbox !== null) elIpSandbox.value = result.data.infinitepay_sandbox.toString();
+                    if (elIpTaxaPercentual && result.data.infinitepay_taxa_percentual !== null) elIpTaxaPercentual.value = result.data.infinitepay_taxa_percentual;
+                    if (elIpTaxaFixa && result.data.infinitepay_taxa_fixa !== null) elIpTaxaFixa.value = result.data.infinitepay_taxa_fixa;
+                    // CARREGAR WEBHOOK URL
+                    var elIpWebhook = document.getElementById('infinitepayWebhookUrl');
+                    if (elIpWebhook && result.data.infinitepay_webhook_url) elIpWebhook.value = result.data.infinitepay_webhook_url;
+
+                    atualizarSimuladorMp();
+                    atualizarSimulador();
+                    atualizarSimuladorInfinitePay();
+                    atualizarStatusAsaas(result.data);
+                    atualizarStatusInfinitePay(result.data);
+                } else {
+                    selecionarGateway('mercado_pago');
+                    atualizarSimuladorMp();
+                    atualizarSimulador();
+                    atualizarSimuladorInfinitePay();
+                    atualizarStatusAsaas({});
+                    atualizarStatusInfinitePay({});
+                }
+            } catch (e) {
+                console.error('[CONFIG] Erro carregar:', e);
+            }
+        }
+
+        // ===== SALVAR GATEWAY =====
+        async function salvarGateway() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+            if (!clienteSistemaId) { mostrarErroConfig('Erro: Cliente não identificado.'); return; }
+
+            var gateway = document.getElementById('gatewayCartao').value;
+            console.log('[GATEWAY] Salvando:', gateway);
+
+            habilitarBotoes(false);
+            var statusDiv = document.getElementById('statusGateway');
+            if (statusDiv) statusDiv.innerHTML = '<div class="loading ativo"><div class="spinner"></div><p>Salvando...</p></div>';
+
+            try {
+                var dados = {
+                    cliente_sistema_id: clienteSistemaId,
+                    gateway_cartao: gateway,
+                    atualizado_em: new Date().toISOString()
+                };
+
+                if (configAtual) {
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update(dados)
+                        .eq('cliente_sistema_id', clienteSistemaId);
+                    if (result.error) throw result.error;
+                } else {
+                    dados.criado_em = new Date().toISOString();
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert(dados);
+                    if (result.error) throw result.error;
+                }
+
+                var gatewayNome = gateway === 'mercado_pago' ? 'Mercado Pago' : (gateway === 'asaas' ? 'Asaas' : 'InfinitePay');
+                mostrarSucessoConfig('✅ Gateway padrão salvo: ' + gatewayNome);
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Gateway ' + gatewayNome + ' salvo!</div>';
+                }
+                await carregarConfiguracoes();
+
+            } catch (error) {
+                console.error('[GATEWAY] Erro salvar:', error);
+                mostrarErroConfig('Erro ao salvar gateway: ' + error.message);
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="status-badge status-error">❌ Erro: ' + error.message + '</div>';
+                }
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== ATUALIZAR STATUS ASAAS =====
+        function atualizarStatusAsaas(config) {
+            var container = document.getElementById('asaasStatusInfo');
+            if (!container) return;
+
+            if (!config || !config.asaas_api_key) {
+                container.innerHTML = '<div class="status-badge status-pending">⚠️ Asaas não configurado</div><p style="margin-top: 15px; color: #636E72;">Adicione sua API Key acima.</p>';
+                return;
+            }
+
+            var ambiente = config.asaas_sandbox ? 'Sandbox' : 'Produção';
+            var ambienteColor = config.asaas_sandbox ? '#FF9800' : '#28a745';
+
+            container.innerHTML = '<div class="status-badge status-ok">✅ Asaas configurado</div><div style="margin-top: 15px; display: grid; gap: 10px;"><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Ambiente:</span><span style="font-weight: 600; color: ' + ambienteColor + ';">' + ambiente + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">API Key:</span><span style="font-weight: 600; color: #2D3436;">' + config.asaas_api_key.substring(0, 10) + '...' + config.asaas_api_key.slice(-4) + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Conta:</span><span style="font-weight: 600; color: #2D3436;">' + (config.asaas_nome_conta || 'Não informado') + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">CPF/CNPJ:</span><span style="font-weight: 600; color: #2D3436;">' + (config.asaas_cpf_cnpj || 'Não informado') + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Taxa:</span><span style="font-weight: 600; color: #2D3436;">' + (config.taxa_percentual || '3.49') + '% + R$' + (config.taxa_fixa || '0.49') + '</span></div></div>';
+        }
+
+        // ===== ATUALIZAR STATUS INFINITE PAY =====
+        function atualizarStatusInfinitePay(config) {
+            var container = document.getElementById('infinitepayStatusInfo');
+            if (!container) return;
+
+            if (!config || !config.infinitepay_handle) {
+                container.innerHTML = '<div class="status-badge status-pending">⚠️ InfinitePay não configurado</div><p style="margin-top: 15px; color: #636E72;">Adicione seu Handle acima. Não precisa de API Key para gerar links!</p>';
+                return;
+            }
+
+            var ambiente = config.infinitepay_sandbox ? 'Sandbox' : 'Produção';
+            var ambienteColor = config.infinitepay_sandbox ? '#FF9800' : '#7B1FA2';
+            var temApiKey = config.infinitepay_api_key ? '✅ Configurada' : '❌ Não configurada (opcional)';
+
+            container.innerHTML = '<div class="status-badge status-ok">✅ InfinitePay configurado</div><div style="margin-top: 15px; display: grid; gap: 10px;"><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Ambiente:</span><span style="font-weight: 600; color: ' + ambienteColor + ';">' + ambiente + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Handle:</span><span style="font-weight: 600; color: #2D3436;">' + config.infinitepay_handle + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">API Key:</span><span style="font-weight: 600; color: #2D3436;">' + temApiKey + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Taxa:</span><span style="font-weight: 600; color: #2D3436;">' + (config.infinitepay_taxa_percentual || '3.99') + '% + R$' + (config.infinitepay_taxa_fixa || '0.00') + '</span></div></div>';
+        }
+
+        // ===== SALVAR MP =====
+        async function salvarConfigMp() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+
+            var mpToken = document.getElementById('mpToken').value.trim();
+            var mpTokenSandbox = document.getElementById('mpTokenSandbox').value.trim();
+            var mpPublicKey = document.getElementById('mpPublicKey').value.trim();
+            var mpModo = document.getElementById('mpModo').value;
+            var mpTaxaPercentual = parseFloat(document.getElementById('mpTaxaPercentual').value) || 4.49;
+            var mpTaxaFixa = parseFloat(document.getElementById('mpTaxaFixa').value) || 0.00;
+            var gatewayCartao = document.getElementById('gatewayCartao').value;
+
+            if (!mpToken) { mostrarErroConfig('Preencha o Token MP.'); return; }
+
+            habilitarBotoes(false);
+
+            try {
+                var dados = {
+                    cliente_sistema_id: clienteSistemaId,
+                    mp_token: mpToken,
+                    mp_token_sandbox: mpTokenSandbox || null,
+                    mp_public_key: mpPublicKey || null,
+                    mp_modo: mpModo,
+                    mp_taxa_percentual: mpTaxaPercentual,
+                    mp_taxa_fixa: mpTaxaFixa,
+                    gateway_cartao: gatewayCartao,
+                    atualizado_em: new Date().toISOString()
+                };
+
+                if (configAtual) {
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update(dados)
+                        .eq('cliente_sistema_id', clienteSistemaId);
+                    if (result.error) throw result.error;
+                } else {
+                    dados.criado_em = new Date().toISOString();
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert(dados);
+                    if (result.error) throw result.error;
+                }
+
+                mostrarSucessoConfig('✅ Configuração MP salva!');
+                await carregarConfiguracoes();
+
+            } catch (error) {
+                console.error('[CONFIG] Erro salvar MP:', error);
+                if (error.message && error.message.includes('column')) {
+                    mostrarErroConfig('⚠️ Erro: Coluna não encontrada. Execute o SQL no Supabase.');
+                } else if (error.message && error.message.includes('relation')) {
+                    mostrarErroConfig('⚠️ Erro: Tabela não encontrada. Execute o SQL no Supabase.');
+                } else {
+                    mostrarErroConfig('Erro ao salvar: ' + error.message);
+                }
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== TESTAR MP =====
+        async function testarConexaoMp() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+
+            var mpToken = document.getElementById('mpToken').value.trim();
+            if (!mpToken) { mostrarErroConfig('Preencha o Token MP.'); return; }
+
+            habilitarBotoes(false);
+            var statusDiv = document.getElementById('statusMp');
+            if (statusDiv) statusDiv.innerHTML = '<div class="loading ativo"><div class="spinner"></div><p>Testando conexão...</p></div>';
+
+            try {
+                var response = await fetch(EDGE_FUNCTIONS_URL + '/mercadopago-testar-conexao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + CONFIG_SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ mp_token: mpToken })
+                });
+
+                var data = await response.json();
+
+                if (statusDiv) statusDiv.innerHTML = '';
+
+                if (response.ok && data.success) {
+                    mostrarSucessoConfig('✅ Conexão OK!');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Conexão Mercado Pago OK!</div><p style="color: #636E72; font-size: 0.9rem; margin-top: 10px;">Usuário: ' + (data.nickname || data.email || 'N/A') + '<br>Site: ' + (data.site_id || 'N/A') + '</p>';
+                    }
+                } else {
+                    mostrarErroConfig('❌ ' + (data.error || 'Token inválido'));
+                    if (statusDiv) {
+                        statusDiv.innerHTML = '<div class="status-badge status-error">❌ ' + (data.error || 'Token inválido') + '</div>';
+                    }
+                }
+            } catch (error) {
+                mostrarErroConfig('Erro: ' + error.message);
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="status-badge status-error">❌ Erro de conexão: ' + error.message + '</div>';
+                }
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== SALVAR ASAAS =====
+        async function salvarConfigAsaas() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+
+            var asaasApiKey = document.getElementById('asaasApiKey').value.trim();
+            var asaasSandbox = document.getElementById('asaasSandbox').value === 'true';
+            var asaasNomeConta = document.getElementById('asaasNomeConta').value.trim();
+            var asaasCpfCnpj = document.getElementById('asaasCpfCnpj').value.trim();
+            var taxaPercentual = parseFloat(document.getElementById('taxaPercentual').value) || 3.49;
+            var taxaFixa = parseFloat(document.getElementById('taxaFixa').value) || 0.49;
+            var gatewayCartao = document.getElementById('gatewayCartao').value;
+
+            if (!asaasApiKey) { mostrarErroConfig('Preencha a API Key.'); return; }
+            if (!asaasCpfCnpj) { mostrarErroConfig('Preencha o CPF/CNPJ.'); return; }
+
+            habilitarBotoes(false);
+
+            try {
+                var dados = {
+                    cliente_sistema_id: clienteSistemaId,
+                    asaas_api_key: asaasApiKey,
+                    asaas_sandbox: asaasSandbox,
+                    asaas_nome_conta: asaasNomeConta || null,
+                    asaas_cpf_cnpj: asaasCpfCnpj,
+                    taxa_percentual: taxaPercentual,
+                    taxa_fixa: taxaFixa,
+                    gateway_cartao: gatewayCartao,
+                    atualizado_em: new Date().toISOString()
+                };
+
+                if (configAtual) {
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update(dados)
+                        .eq('cliente_sistema_id', clienteSistemaId);
+                    if (result.error) throw result.error;
+                } else {
+                    dados.criado_em = new Date().toISOString();
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert(dados);
+                    if (result.error) throw result.error;
+                }
+
+                mostrarSucessoConfig('✅ Configuração Asaas salva!');
+                await carregarConfiguracoes();
+
+            } catch (error) {
+                console.error('[CONFIG] Erro salvar Asaas:', error);
+                mostrarErroConfig('Erro ao salvar: ' + error.message);
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== TESTAR ASAAS =====
+        async function testarConexaoAsaas() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+            if (!clienteSistemaId) { mostrarErroConfig('Erro: Cliente não identificado.'); return; }
+
+            var loading = document.getElementById('loadingAsaas');
+            var statusDiv = document.getElementById('statusAsaas');
+            if (loading) loading.classList.add('ativo');
+            if (statusDiv) statusDiv.innerHTML = '';
+            habilitarBotoes(false);
+
+            try {
+                var response = await fetch(EDGE_FUNCTIONS_URL + '/asaas-verificar-conexao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + CONFIG_SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ cliente_sistema_id: clienteSistemaId })
+                });
+
+                var data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Conexão Asaas OK!</div><p style="color: #636E72; font-size: 0.9rem; margin-top: 10px;">Ambiente: ' + (data.ambiente || 'Produção') + '<br>Clientes cadastrados: ' + (data.total_count || 0) + '</p>';
+                    mostrarSucessoConfig('✅ Conexão com Asaas estabelecida!');
+                } else {
+                    if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ ' + (data.error || 'Erro desconhecido') + '</div>';
+                    mostrarErroConfig('❌ ' + (data.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ Erro de conexão: ' + error.message + '</div>';
+                mostrarErroConfig('Erro: ' + error.message);
+            } finally {
+                if (loading) loading.classList.remove('ativo');
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== SALVAR INFINITE PAY =====
+        async function salvarConfigInfinitePay() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+
+            var ipHandle = document.getElementById('infinitepayHandle').value.trim();
+            var ipApiKey = document.getElementById('infinitepayApiKey').value.trim();
+            var ipClientSecret = document.getElementById('infinitepayClientSecret').value.trim();
+            var ipSandbox = document.getElementById('infinitepaySandbox').value === 'true';
+            var ipTaxaPercentual = parseFloat(document.getElementById('infinitepayTaxaPercentual').value) || 3.99;
+            var ipTaxaFixa = parseFloat(document.getElementById('infinitepayTaxaFixa').value) || 0.00;
+            var gatewayCartao = document.getElementById('gatewayCartao').value;
+
+            if (!ipHandle) { mostrarErroConfig('Preencha o Handle do InfinitePay. É obrigatório!'); return; }
+
+            habilitarBotoes(false);
+
+            try {
+                var ipWebhookUrl = document.getElementById('infinitepayWebhookUrl').value.trim();
+
+                var dados = {
+                    cliente_sistema_id: clienteSistemaId,
+                    infinitepay_handle: ipHandle,
+                    infinitepay_api_key: ipApiKey || null,
+                    infinitepay_client_secret: ipClientSecret || null,
+                    infinitepay_sandbox: ipSandbox,
+                    infinitepay_taxa_percentual: ipTaxaPercentual,
+                    infinitepay_taxa_fixa: ipTaxaFixa,
+                    infinitepay_webhook_url: ipWebhookUrl || null,
+                    gateway_cartao: gatewayCartao,
+                    atualizado_em: new Date().toISOString()
+                };
+
+                if (configAtual) {
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update(dados)
+                        .eq('cliente_sistema_id', clienteSistemaId);
+                    if (result.error) throw result.error;
+                } else {
+                    dados.criado_em = new Date().toISOString();
+                    var result = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert(dados);
+                    if (result.error) throw result.error;
+                }
+
+                mostrarSucessoConfig('✅ Configuração InfinitePay salva!');
+                await carregarConfiguracoes();
+
+            } catch (error) {
+                console.error('[CONFIG] Erro salvar InfinitePay:', error);
+                if (error.message && error.message.includes('column')) {
+                    mostrarErroConfig('⚠️ Erro: Coluna não encontrada. Execute o SQL de atualização no Supabase.');
+                } else if (error.message && error.message.includes('relation')) {
+                    mostrarErroConfig('⚠️ Erro: Tabela não encontrada. Execute o SQL no Supabase.');
+                } else {
+                    mostrarErroConfig('Erro ao salvar: ' + error.message);
+                }
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== TESTAR INFINITE PAY =====
+        async function testarConexaoInfinitePay() {
+            if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+            if (!clienteSistemaId) { mostrarErroConfig('Erro: Cliente não identificado.'); return; }
+
+            var loading = document.getElementById('loadingInfinitePay');
+            var statusDiv = document.getElementById('statusInfinitePay');
+            if (loading) loading.classList.add('ativo');
+            if (statusDiv) statusDiv.innerHTML = '';
+            habilitarBotoes(false);
+
+            try {
+                var response = await fetch(EDGE_FUNCTIONS_URL + '/infinitepay-testar-conexao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + CONFIG_SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ cliente_sistema_id: clienteSistemaId })
+                });
+
+                var data = await response.json();
+
+                if (loading) loading.classList.remove('ativo');
+
+                if (response.ok && data.success) {
+                    if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Conexão InfinitePay OK!</div><p style="color: #636E72; font-size: 0.9rem; margin-top: 10px;">Handle: ' + (data.handle || 'N/A') + '<br>Ambiente: ' + (data.ambiente || 'Produção') + '</p>';
+                    mostrarSucessoConfig('✅ Conexão com InfinitePay estabelecida!');
+                } else {
+                    if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ ' + (data.error || 'Erro desconhecido') + '</div>';
+                    mostrarErroConfig('❌ ' + (data.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                if (loading) loading.classList.remove('ativo');
+                if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ Erro de conexão: ' + error.message + '</div>';
+                mostrarErroConfig('Erro: ' + error.message);
+            } finally {
+                habilitarBotoes(true);
+            }
+        }
+
+        // ===== INICIAR =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[CONFIG] DOM pronto. Iniciando...');
+            setTimeout(inicializarApp, 500);
+        });
+    </script>
+</body>
+</html>

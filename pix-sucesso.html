@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎉</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Confirmado! 🎉</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .success-card {
+            background: white;
+            border-radius: 25px;
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(76, 175, 80, 0.2);
+            animation: slideUp 0.6s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .check-circle {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+            animation: scaleIn 0.5s ease 0.3s both;
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        h1 {
+            color: #2E7D32;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .info-box {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            border: 2px solid #FFB74D;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .info-box h3 {
+            color: #E65100;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #FFB74D;
+            font-size: 0.9rem;
+        }
+        .info-item:last-child { border-bottom: none; }
+        .info-item strong { color: #E65100; }
+        .info-item span { color: #333; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #E8F5E9;
+            color: #2E7D32;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .status-badge .pulse {
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .btn-voltar {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #FF8BA7, #FF6B8A);
+            color: white;
+            text-decoration: none;
+            padding: 16px 35px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-voltar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 138, 0.4);
+        }
+        .footer-msg {
+            margin-top: 25px;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .footer-msg a {
+            color: #FF6B8A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-overlay.ativo { display: flex; }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .loading-sub {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        @media (max-width: 480px) {
+            .success-card { padding: 35px 25px; }
+            h1 { font-size: 1.5rem; }
+            .subtitle { font-size: 1rem; }
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">🚀 Enviando sua solicitação...</div>
+        <div class="loading-sub">Aguarde, estamos finalizando tudo!</div>
+    </div>
+
+    <div class="success-card" id="successCard">
+        <div class="check-circle">✓</div>
+        <h1>Pagamento Confirmado! 🎉</h1>
+        <p class="subtitle">
+            Parabéns! Seu pagamento via PIX foi processado com sucesso.<br>
+            Agora estamos finalizando sua solicitação de entrega.
+        </p>
+
+        <div class="status-badge">
+            <div class="pulse"></div>
+            <span id="statusText">Processando envio...</span>
+        </div>
+
+        <div class="info-box" id="infoBox" style="display:none;">
+            <h3>📋 Resumo da Solicitação</h3>
+            <div class="info-item">
+                <strong>Número:</strong>
+                <span id="numeroSolicitacao">-</span>
+            </div>
+            <div class="info-item">
+                <strong>Cliente:</strong>
+                <span id="nomeCliente">-</span>
+            </div>
+            <div class="info-item">
+                <strong>Região:</strong>
+                <span id="regiaoEntrega">-</span>
+            </div>
+            <div class="info-item">
+                <strong>Valor Pago:</strong>
+                <span id="valorPago">-</span>
+            </div>
+        </div>
+
+        <button class="btn-voltar" id="btnVoltar" onclick="voltarParaSolicitacoes()" style="display:none;">
+            📦 Cadastrar Nova Solicitação
+        </button>
+
+        <p class="footer-msg">
+            Dúvidas? Fale conosco no <a href="https://www.instagram.com/pingodegentelojaebrecho/" target="_blank">@pingodegentelojaebrecho</a>
+        </p>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Supabase
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+
+            // ===== VERIFICAR SE JÁ TEM DADOS DA SOLICITAÇÃO SALVOS =====
+            const numeroSalvo = sessionStorage.getItem('pix_sucesso_numero');
+            const nomeSalvo = sessionStorage.getItem('pix_sucesso_nome');
+            const regiaoSalva = sessionStorage.getItem('pix_sucesso_regiao');
+            const valorSalvo = sessionStorage.getItem('pix_sucesso_valor');
+
+            if (numeroSalvo) {
+                // Já tem dados da solicitação - mostrar direto
+                console.log('[SUCESSO] Dados da solicitação encontrados:', numeroSalvo);
+                document.getElementById('statusText').textContent = '✅ Solicitação enviada com sucesso!';
+                document.getElementById('numeroSolicitacao').textContent = numeroSalvo;
+                document.getElementById('nomeCliente').textContent = nomeSalvo || '-';
+                document.getElementById('regiaoEntrega').textContent = regiaoSalva || '-';
+                document.getElementById('valorPago').textContent = 'R$ ' + (valorSalvo || '0,00');
+                document.getElementById('infoBox').style.display = 'block';
+                document.getElementById('btnVoltar').style.display = 'inline-flex';
+                return;
+            }
+
+            // Verificar se tem dados do formulário para enviar
+            const dadosFormulario = sessionStorage.getItem('solicitacao_dados');
+            const clienteId = sessionStorage.getItem('solicitacao_cliente_id');
+            const cobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+
+            if (!dadosFormulario || !clienteId) {
+                // Sem dados salvos - mostrar apenas mensagem de sucesso
+                document.getElementById('statusText').textContent = '✅ Pagamento confirmado!';
+                document.getElementById('btnVoltar').style.display = 'inline-flex';
+                document.getElementById('btnVoltar').textContent = '🏠 Voltar para Solicitações';
+                return;
+            }
+
+            // Tem dados do formulário - enviar automaticamente
+            enviarSolicitacaoAutomatica(dadosFormulario, clienteId, cobrancaId);
+        });
+
+        async function enviarSolicitacaoAutomatica(dadosJson, clienteId, cobrancaId) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('ativo');
+
+            try {
+                const dados = JSON.parse(dadosJson);
+                console.log('[SUCESSO] Dados do formulário recuperados:', dados);
+
+                // 1. Verificar/criar cliente
+                let clientePgId = dados.clientePgId || null;
+
+                if (!clientePgId) {
+                    console.log('🔍 Buscando cliente com CPF:', dados.cpf);
+                    const { data: clienteExistente } = await supabaseClient
+                        .from('clientes_pg')
+                        .select('id, nome, whatsapp, email, instagram')
+                        .eq('cpf', dados.cpf)
+                        .eq('cliente_id', clienteId)
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (clienteExistente) {
+                        clientePgId = clienteExistente.id;
+                        // Atualizar dados se necessário
+                        const dadosAtualizacao = {};
+                        if (dados.nome && dados.nome !== clienteExistente.nome) dadosAtualizacao.nome = dados.nome;
+                        if (dados.whatsapp && dados.whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = dados.whatsapp;
+                        if (dados.email && dados.email !== clienteExistente.email) dadosAtualizacao.email = dados.email;
+                        if (dados.instagram && dados.instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = dados.instagram;
+
+                        if (Object.keys(dadosAtualizacao).length > 0) {
+                            await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                        }
+                    } else {
+                        console.log('🆕 Criando novo cliente...');
+                        const { data: novoCliente, error: erroCliente } = await supabaseClient
+                            .from('clientes_pg')
+                            .insert([{
+                                cliente_id: clienteId,
+                                cpf: dados.cpf,
+                                nome: dados.nome,
+                                whatsapp: dados.whatsapp,
+                                email: dados.email,
+                                instagram: dados.instagram
+                            }])
+                            .select()
+                            .single();
+
+                        if (erroCliente) {
+                            if (erroCliente.code === '23505') {
+                                const { data: clienteDup } = await supabaseClient
+                                    .from('clientes_pg')
+                                    .select('id')
+                                    .eq('cpf', dados.cpf)
+                                    .eq('cliente_id', clienteId)
+                                    .limit(1)
+                                    .maybeSingle();
+                                if (clienteDup) clientePgId = clienteDup.id;
+                            } else {
+                                throw erroCliente;
+                            }
+                        } else {
+                            clientePgId = novoCliente.id;
+                        }
+                    }
+                }
+
+                // 2. Criar endereço
+                let enderecoPgId = dados.enderecoId || null;
+
+                if (!enderecoPgId) {
+                    // Buscar endereço existente
+                    const { data: enderecoExistente } = await supabaseClient
+                        .from('enderecos_pg')
+                        .select('id, rua, numero, complemento, bairro, cidade, cep')
+                        .eq('cliente_pg_id', clientePgId)
+                        .eq('cliente_id', clienteId)
+                        .eq('ativo', true)
+                        .order('criado_em', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (enderecoExistente) {
+                        const enderecoIgual =
+                            enderecoExistente.rua === dados.rua &&
+                            enderecoExistente.numero === dados.numero &&
+                            enderecoExistente.complemento === (dados.complemento || '') &&
+                            enderecoExistente.bairro === dados.bairro &&
+                            enderecoExistente.cidade === dados.cidade &&
+                            enderecoExistente.cep === dados.cep;
+
+                        if (enderecoIgual) {
+                            enderecoPgId = enderecoExistente.id;
+                        }
+                    }
+
+                    if (!enderecoPgId) {
+                        const { data: novoEndereco, error: erroEndereco } = await supabaseClient
+                            .from('enderecos_pg')
+                            .insert([{
+                                cliente_id: clienteId,
+                                cliente_pg_id: clientePgId,
+                                rua: dados.rua,
+                                numero: dados.numero,
+                                complemento: dados.complemento,
+                                bairro: dados.bairro,
+                                cidade: dados.cidade,
+                                cep: dados.cep,
+                                ativo: true
+                            }])
+                            .select()
+                            .single();
+
+                        if (erroEndereco) throw erroEndereco;
+                        enderecoPgId = novoEndereco.id;
+                    }
+                }
+
+                // 3. Gerar número da solicitação
+                const agora = new Date();
+                const ano = agora.getFullYear();
+                let numeroSolicitacao = 'SOL-' + ano + '-' + Date.now().toString().slice(-4);
+
+                try {
+                    const { data: ultimaSolicitacao } = await supabaseClient
+                        .from('solicitacoes_pg')
+                        .select('numero_solicitacao')
+                        .like('numero_solicitacao', 'SOL-' + ano + '-%')
+                        .order('numero_solicitacao', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (ultimaSolicitacao && ultimaSolicitacao.numero_solicitacao) {
+                        const partes = ultimaSolicitacao.numero_solicitacao.split('-');
+                        if (partes.length === 3) {
+                            const ultimoSequencial = parseInt(partes[2], 10);
+                            if (!isNaN(ultimoSequencial)) {
+                                numeroSolicitacao = 'SOL-' + ano + '-' + (ultimoSequencial + 1).toString().padStart(4, '0');
+                            }
+                        }
+                    }
+                } catch (e) { console.log('Erro ao gerar número sequencial:', e); }
+
+                // 4. Inserir solicitação
+                const dadosSolicitacao = {
+                    cliente_id: clienteId,
+                    cliente_pg_id: clientePgId,
+                    endereco_id: enderecoPgId,
+                    numero_solicitacao: numeroSolicitacao,
+                    regiao: dados.regiao,
+                    observacoes: dados.observacoes,
+                    status: 'pendente'
+                };
+
+                if (cobrancaId) {
+                    dadosSolicitacao.cobranca_id = cobrancaId;
+                }
+
+                const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .insert([dadosSolicitacao])
+                    .select()
+                    .single();
+
+                if (erroSolicitacao) throw erroSolicitacao;
+
+                // 5. Enviar email se solicitado
+                if (dados.receberEmail && dados.email) {
+                    try {
+                        const dataFormatada = agora.getDate().toString().padStart(2, '0') + '/' +
+                            (agora.getMonth() + 1).toString().padStart(2, '0') + '/' + agora.getFullYear();
+
+                        const templateParams = {
+                            to_email: dados.email,
+                            numero_solicitacao: numeroSolicitacao,
+                            nome: dados.nome,
+                            data_solicitacao: dataFormatada,
+                            regiao: dados.regiao,
+                            rua: dados.rua,
+                            numero: dados.numero,
+                            complemento: dados.complemento || 'N/A',
+                            bairro: dados.bairro,
+                            cidade: dados.cidade,
+                            cep: dados.cep,
+                            observacoes: dados.observacoes || 'Nenhuma observação'
+                        };
+
+                        await emailjs.send('service_rqpqwg3', 'template_ttdmkto', templateParams);
+                        console.log('✅ E-mail enviado com sucesso');
+                    } catch (emailError) {
+                        console.error('Erro ao enviar e-mail:', emailError);
+                    }
+                }
+
+                // 6. Salvar dados da solicitação para exibição
+                sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
+                sessionStorage.setItem('pix_sucesso_nome', dados.nome);
+                sessionStorage.setItem('pix_sucesso_regiao', dados.regiao);
+                sessionStorage.setItem('pix_sucesso_valor', (dados.valor || '0,00').toString());
+
+                // 7. Mostrar resultado na tela
+                loadingOverlay.classList.remove('ativo');
+
+                document.getElementById('statusText').textContent = '✅ Solicitação enviada com sucesso!';
+                document.getElementById('numeroSolicitacao').textContent = numeroSolicitacao;
+                document.getElementById('nomeCliente').textContent = dados.nome;
+                document.getElementById('regiaoEntrega').textContent = dados.regiao;
+                document.getElementById('valorPago').textContent = 'R$ ' + (dados.valor || '0,00');
+                document.getElementById('infoBox').style.display = 'block';
+                document.getElementById('btnVoltar').style.display = 'inline-flex';
+
+                // Limpar sessionStorage
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+
+                console.log('✅ Solicitação enviada automaticamente após pagamento:', numeroSolicitacao);
+
+            } catch (error) {
+                console.error('❌ Erro ao enviar solicitação:', error);
+                loadingOverlay.classList.remove('ativo');
+
+                document.getElementById('statusText').textContent = '⚠️ Pagamento OK, mas houve erro no envio';
+                document.getElementById('statusText').style.color = '#E65100';
+                document.querySelector('.status-badge').style.background = '#FFF3E0';
+
+                document.getElementById('btnVoltar').style.display = 'inline-flex';
+                document.getElementById('btnVoltar').textContent = '🔄 Tentar Novamente';
+                document.getElementById('btnVoltar').onclick = function() {
+                    voltarParaSolicitacoes();
+                };
+            }
+        }
+
+        function voltarParaSolicitacoes() {
+            const clienteId = sessionStorage.getItem('solicitacao_cliente_id');
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteIdURL = urlParams.get('cliente');
+
+            // Limpar dados da solicitação anterior para permitir nova
+            sessionStorage.removeItem('pix_sucesso_numero');
+            sessionStorage.removeItem('pix_sucesso_nome');
+            sessionStorage.removeItem('pix_sucesso_regiao');
+            sessionStorage.removeItem('pix_sucesso_valor');
+            sessionStorage.removeItem('solicitacao_dados');
+            sessionStorage.removeItem('solicitacao_cliente_id');
+            sessionStorage.removeItem('solicitacao_cobranca_id');
+
+            let url = 'solicitacoes.html';
+            if (clienteIdURL) {
+                url += '?cliente=' + clienteIdURL;
+            } else if (clienteId) {
+                url += '?cliente=' + clienteId;
+            }
+
+            window.location.href = url;
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        emailjs.init('R3iqK9BVPwhsiyJmk');
+    </script>
+</body>
+</html>

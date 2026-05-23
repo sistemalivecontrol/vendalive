@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ANTI-CACHE META TAGS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- VERSION.JS - SEMPRE PRIMEIRO! -->
+    <script src="version.js?v=2026-05-04-v2"></script>
+
+    <title>⚙️ Configurações - VendaLive</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* ===== HEADER PADRONIZADO ===== */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .btn-voltar {
+            background: #0B193F;
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 10px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600;
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: all 0.3s;
+        }
+        .btn-voltar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .header-center h1 { color: #0B193F; font-size: 1.6rem; margin-bottom: 3px; }
+        .header-center p { color: #636E72; font-size: 0.85rem; }
+        .user-info {
+            display: flex; align-items: center; gap: 12px;
+            background: #f8f9fa; padding: 10px 18px;
+            border-radius: 12px; border: 1px solid #e9ecef;
+        }
+        #userInfo {
+            color: #495057; font-size: 0.95rem;
+            font-weight: 600; display: flex;
+            align-items: center; gap: 8px;
+        }
+        #userInfo .cliente-nome {
+            color: #0B193F; font-weight: 500;
+        }
+        .btn-logout {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white; border: none;
+            padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .header-left { flex-direction: column; gap: 15px; }
+            .user-info { width: 100%; justify-content: center; }
+        }
+        /* ================================ */
+
+        .content { padding: 30px; }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .config-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        .config-card h3 {
+            color: #0B193F;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0B193F;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #0B193F;
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #636E72;
+        }
+        .btn-secondary:hover { background: #e0e0e0; }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 4px solid #2196f3;
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            color: #1565c0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 28px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        .toast.show { display: flex; }
+        .toast.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        .toast.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(102, 126, 234, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .config-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; text-align: center; }
+            .header-left { flex-direction: column; gap: 15px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div>Verificando autenticação...</div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- ===== HEADER PADRONIZADO ===== -->
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="location.href=v('dashboard.html')">← Voltar</button>
+                <div class="header-center">
+                    <h1>⚙️ Configurações</h1>
+                    <p>Gerencie usuários e configurações do sistema</p>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="userInfo">👤 Carregando...</span>
+                <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
+            </div>
+        </div>
+        <!-- ================================ -->
+
+        <div class="content">
+            <div class="info-box">
+                <p><strong>🔒 Acesso Administrativo:</strong> Esta página é restrita para administradores. Aqui você pode gerenciar usuários do sistema e configurações gerais.</p>
+            </div>
+
+            <div class="config-grid">
+                <!-- Card: Dados do Cliente/Empresa -->
+                <div class="config-card">
+                    <h3>🏢 Dados da Empresa</h3>
+                    <div class="form-group">
+                        <label>Nome da Empresa</label>
+                        <input type="text" id="nomeEmpresa" placeholder="Nome da sua loja">
+                    </div>
+                    <div class="form-group">
+                        <label>CNPJ</label>
+                        <input type="text" id="cnpjEmpresa" placeholder="00.000.000/0000-00" maxlength="18">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone/WhatsApp</label>
+                        <input type="text" id="telefoneEmpresa" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="emailEmpresa" placeholder="contato@empresa.com">
+                    </div>
+                    <button class="btn btn-primary" onclick="salvarDadosEmpresa()">💾 Salvar Dados</button>
+                </div>
+
+                <!-- Card: Pix Padrão -->
+                <div class="config-card">
+                    <h3>💳 Configurações do Pix</h3>
+                    <div class="form-group">
+                        <label>Tipo de Chave</label>
+                        <select id="tipoChavePix">
+                            <option value="CNPJ">CNPJ</option>
+                            <option value="CPF">CPF</option>
+                            <option value="Celular">Celular</option>
+                            <option value="E-mail">E-mail</option>
+                            <option value="Aleatória">Chave Aleatória</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Chave Pix</label>
+                        <input type="text" id="chavePix" placeholder="Sua chave Pix">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Beneficiário</label>
+                        <input type="text" id="nomeBeneficiario" placeholder="Nome que aparece no Pix">
+                    </div>
+                    <button class="btn btn-primary" onclick="salvarConfigPix()">💾 Salvar Pix</button>
+                </div>
+
+                <!-- Card: Mensagem Padrão -->
+                <div class="config-card">
+                    <h3>📝 Mensagem de Cobrança</h3>
+                    <div class="form-group">
+                        <label>Modelo da Mensagem</label>
+                        <textarea id="mensagemCobranca" rows="8" placeholder="Digite o modelo da mensagem..."></textarea>
+                        <small>Variáveis disponíveis: {{nome}}, {{primeiroNome}}, {{valorTotal}}, {{itens}}, {{dataLimite}}, {{qtdItens}}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Prazo para Pagamento (dias)</label>
+                        <input type="number" id="prazoPagamento" min="1" max="30" value="1">
+                    </div>
+                    <button class="btn btn-primary" onclick="salvarMensagem()">💾 Salvar Mensagem</button>
+                </div>
+
+                <!-- Card: Gestão de Usuários -->
+                <div class="config-card">
+                    <h3>👥 Usuários do Sistema</h3>
+                    <div id="listaUsuarios">
+                        <p style="color: #888; text-align: center; padding: 20px;">Carregando usuários...</p>
+                    </div>
+                    <hr class="section-divider">
+                    <h4 style="color: #0B193F; margin-bottom: 15px;">➕ Novo Usuário</h4>
+                    <div class="form-group">
+                        <label>E-mail *</label>
+                        <input type="email" id="novoUsuarioEmail" placeholder="email@exemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome *</label>
+                        <input type="text" id="novoUsuarioNome" placeholder="Nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Nível de Acesso</label>
+                        <select id="novoUsuarioNivel">
+                            <option value="usuario">Usuário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="criarUsuario()">➕ Criar Usuário</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // VARIÁVEIS GLOBAIS
+        // ============================================
+        let supabaseClient = null;
+        let usuarioAtual = null;
+        let clienteSistemaId = null;
+        let usuarios = [];
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('[CONFIG] DOM carregado, iniciando...');
+
+            // Aguardar auth.js inicializar
+            await new Promise(resolve => {
+                const check = () => {
+                    if (window.supabaseClient) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+
+            supabaseClient = window.supabaseClient;
+
+            // Usar auth.js para autenticação
+            const session = await verificarSessao();
+            if (!session) return;
+
+            await carregarUsuarioLogado();
+
+            usuarioAtual = window.authUsuario;
+            clienteSistemaId = window.authClienteId;
+
+            if (!clienteSistemaId) {
+                mostrarToast('Erro: Cliente não identificado.', 'error');
+                setTimeout(() => { location.href = v('login.html'); }, 3000);
+                return;
+            }
+
+            // Verificar se é admin
+            if (usuarioAtual?.nivel_acesso !== 'admin' && usuarioAtual?.nivel_acesso !== 'administrador') {
+                mostrarToast('Acesso restrito a administradores.', 'error');
+                setTimeout(() => { location.href = v('dashboard.html'); }, 3000);
+                return;
+            }
+
+            console.log('[CONFIG] ✅ Admin autenticado. Cliente ID:', clienteSistemaId);
+
+            // Mostrar container
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+
+            // Carregar dados
+            await carregarDadosEmpresa();
+            await carregarConfigPix();
+            await carregarMensagem();
+            await carregarUsuarios();
+        });
+
+        // ============================================
+        // CARREGAR DADOS DA EMPRESA
+        // ============================================
+        async function carregarDadosEmpresa() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('nome, cnpj, telefone, email')
+                    .eq('id', clienteSistemaId)
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    document.getElementById('nomeEmpresa').value = data.nome || '';
+                    document.getElementById('cnpjEmpresa').value = data.cnpj || '';
+                    document.getElementById('telefoneEmpresa').value = data.telefone || '';
+                    document.getElementById('emailEmpresa').value = data.email || '';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados da empresa:', error);
+            }
+        }
+
+        async function salvarDadosEmpresa() {
+            try {
+                const dados = {
+                    nome: document.getElementById('nomeEmpresa').value.trim(),
+                    cnpj: document.getElementById('cnpjEmpresa').value.trim(),
+                    telefone: document.getElementById('telefoneEmpresa').value.trim(),
+                    email: document.getElementById('emailEmpresa').value.trim(),
+                    atualizado_em: new Date().toISOString()
+                };
+
+                const { error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .update(dados)
+                    .eq('id', clienteSistemaId);
+
+                if (error) throw error;
+
+                mostrarToast('✅ Dados da empresa salvos com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarToast('Erro ao salvar dados: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================
+        // CONFIGURAÇÕES DO PIX
+        // ============================================
+        async function carregarConfigPix() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('configuracoes_pg')
+                    .select('*')
+                    .eq('cliente_id', clienteSistemaId)
+                    .eq('chave', 'pix_config')
+                    .single();
+
+                if (error && error.code !== 'PGRST116') throw error;
+
+                if (data) {
+                    const config = JSON.parse(data.valor || '{}');
+                    document.getElementById('tipoChavePix').value = config.tipo || 'CNPJ';
+                    document.getElementById('chavePix').value = config.chave || '';
+                    document.getElementById('nomeBeneficiario').value = config.nome || '';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar config Pix:', error);
+            }
+        }
+
+        async function salvarConfigPix() {
+            try {
+                const config = {
+                    tipo: document.getElementById('tipoChavePix').value,
+                    chave: document.getElementById('chavePix').value.trim(),
+                    nome: document.getElementById('nomeBeneficiario').value.trim()
+                };
+
+                const { error } = await supabaseClient
+                    .from('configuracoes_pg')
+                    .upsert([{
+                        cliente_id: clienteSistemaId,
+                        chave: 'pix_config',
+                        valor: JSON.stringify(config),
+                        atualizado_em: new Date().toISOString()
+                    }], { onConflict: ['cliente_id', 'chave'] });
+
+                if (error) throw error;
+
+                mostrarToast('✅ Configurações do Pix salvas!', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarToast('Erro ao salvar Pix: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================
+        // MENSAGEM DE COBRANÇA
+        // ============================================
+        async function carregarMensagem() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('configuracoes_pg')
+                    .select('*')
+                    .eq('cliente_id', clienteSistemaId)
+                    .eq('chave', 'mensagem_cobranca')
+                    .single();
+
+                if (error && error.code !== 'PGRST116') throw error;
+
+                if (data) {
+                    const config = JSON.parse(data.valor || '{}');
+                    document.getElementById('mensagemCobranca').value = config.texto || '';
+                    document.getElementById('prazoPagamento').value = config.prazo || 1;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar mensagem:', error);
+            }
+        }
+
+        async function salvarMensagem() {
+            try {
+                const config = {
+                    texto: document.getElementById('mensagemCobranca').value.trim(),
+                    prazo: parseInt(document.getElementById('prazoPagamento').value) || 1
+                };
+
+                const { error } = await supabaseClient
+                    .from('configuracoes_pg')
+                    .upsert([{
+                        cliente_id: clienteSistemaId,
+                        chave: 'mensagem_cobranca',
+                        valor: JSON.stringify(config),
+                        atualizado_em: new Date().toISOString()
+                    }], { onConflict: ['cliente_id', 'chave'] });
+
+                if (error) throw error;
+
+                mostrarToast('✅ Mensagem de cobrança salva!', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarToast('Erro ao salvar mensagem: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================
+        // GESTÃO DE USUÁRIOS
+        // ============================================
+        async function carregarUsuarios() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('*, clientes_sistema(nome)')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('nome');
+
+                if (error) throw error;
+
+                usuarios = data || [];
+                renderizarUsuarios();
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                document.getElementById('listaUsuarios').innerHTML = '<p style="color: #c33;">Erro ao carregar usuários</p>';
+            }
+        }
+
+        function renderizarUsuarios() {
+            const container = document.getElementById('listaUsuarios');
+
+            if (usuarios.length === 0) {
+                container.innerHTML = '<p style="color: #888; text-align: center;">Nenhum usuário cadastrado</p>';
+                return;
+            }
+
+            let html = '<div style="max-height: 300px; overflow-y: auto;">';
+            usuarios.forEach(u => {
+                const isAdmin = u.nivel_acesso === 'admin' || u.nivel_acesso === 'administrador';
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${u.nome || 'Sem nome'}</strong>
+                            <div style="font-size: 0.85rem; color: #666;">${u.email || '-'}</div>
+                            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; ${isAdmin ? 'background: #d4edda; color: #155724;' : 'background: #e2e3e5; color: #383d41;'}">${isAdmin ? 'Admin' : 'Usuário'}</span>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="excluirUsuario('${u.id}')" style="padding: 6px 12px; font-size: 12px;">🗑️</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function criarUsuario() {
+            const email = document.getElementById('novoUsuarioEmail').value.trim();
+            const nome = document.getElementById('novoUsuarioNome').value.trim();
+            const nivel = document.getElementById('novoUsuarioNivel').value;
+
+            if (!email || !nome) {
+                mostrarToast('E-mail e nome são obrigatórios!', 'error');
+                return;
+            }
+
+            try {
+                // 1. Criar usuário no Auth
+                const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
+                    email: email,
+                    password: '123456', // Senha padrão - usuário deve alterar
+                    email_confirm: true
+                });
+
+                if (authError) {
+                    // Se não tiver permissão admin, criar via signUp
+                    if (authError.message.includes('not authorized')) {
+                        mostrarToast('Crie o usuário manualmente no Supabase Dashboard → Auth → Users', 'warning');
+                        return;
+                    }
+                    throw authError;
+                }
+
+                // 2. Inserir na tabela usuarios_pg
+                const { error: insertError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .insert([{
+                        auth_id: authUser.user.id,
+                        email: email,
+                        nome: nome,
+                        nivel_acesso: nivel,
+                        cliente_sistema_id: clienteSistemaId,
+                        ativo: true,
+                        criado_em: new Date().toISOString()
+                    }]);
+
+                if (insertError) throw insertError;
+
+                mostrarToast('✅ Usuário criado com sucesso! Senha padrão: 123456', 'success');
+
+                // Limpar campos
+                document.getElementById('novoUsuarioEmail').value = '';
+                document.getElementById('novoUsuarioNome').value = '';
+                document.getElementById('novoUsuarioNivel').value = 'usuario';
+
+                // Recarregar lista
+                await carregarUsuarios();
+            } catch (error) {
+                console.error('Erro ao criar usuário:', error);
+                mostrarToast('Erro: ' + error.message, 'error');
+            }
+        }
+
+        async function excluirUsuario(id) {
+            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('usuarios_pg')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                mostrarToast('✅ Usuário excluído!', 'success');
+                await carregarUsuarios();
+            } catch (error) {
+                console.error('Erro ao excluir:', error);
+                mostrarToast('Erro ao excluir: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+        function mostrarToast(mensagem, tipo = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.className = `toast ${tipo} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Máscara CNPJ
+        document.getElementById('cnpjEmpresa').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 14) value = value.slice(0, 14);
+            value = value.replace(/(\d{2})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1/$2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

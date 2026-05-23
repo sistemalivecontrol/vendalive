@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>">
+    <title>Pagamento - Pingo de Gente</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #0B193F; font-size: 1.8rem; }
+        .logo p { color: #888; font-size: 0.9rem; }
+        .venda-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .venda-info h3 { color: #333; margin-bottom: 10px; font-size: 1.1rem; }
+        .venda-info p { color: #666; margin: 5px 0; font-size: 0.95rem; }
+        .valor {
+            font-size: 2.5rem;
+            color: #0B193F;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .valor-cartao {
+            font-size: 1.2rem;
+            color: #009EE3;
+            text-align: center;
+            margin: 5px 0 15px;
+        }
+        .qr-section { text-align: center; margin: 25px 0; }
+        #qrcode {
+            display: inline-block;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .pix-code {
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .btn-copiar {
+            background: #0B193F;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        .btn-copiar:hover { background: #5568d3; transform: translateY(-2px); }
+        .btn-paguei {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            margin: 15px 0;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .btn-paguei:hover { background: #218838; transform: translateY(-2px); }
+        .btn-paguei:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        .btn-cartao {
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            margin: 10px 0;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-cartao:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+        .btn-cartao:disabled { background: #adb5bd !important; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-mp { background: linear-gradient(135deg, #009EE3, #007EB5); }
+        .btn-mp:hover { background: linear-gradient(135deg, #007EB5, #006899); }
+        .btn-asaas { background: linear-gradient(135deg, #003B5C, #005A8C); }
+        .btn-asaas:hover { background: linear-gradient(135deg, #002a42, #004a7a); }
+        .btn-infinite { background: linear-gradient(135deg, #7B1FA2, #9C27B0); }
+        .btn-infinite:hover { background: linear-gradient(135deg, #6A1B9A, #8E24AA); }
+        .gateway-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+        .badge-mp { background: #003B5C; }
+        .badge-asaas { background: #003B5C; }
+        .badge-infinite { background: #4A148C; }
+        .instrucoes {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .instrucoes h4 { color: #856404; margin-bottom: 8px; }
+        .instrucoes ol { color: #856404; padding-left: 20px; font-size: 0.9rem; }
+        .instrucoes li { margin: 5px 0; }
+        .status-msg {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        .status-msg.sucesso { background: #d4edda; color: #155724; display: block; }
+        .status-msg.erro { background: #f8d7da; color: #721c24; display: block; }
+        .status-msg.info { background: #d1ecf1; color: #0c5460; display: block; }
+        .loading { text-align: center; padding: 40px; }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0B193F;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer { text-align: center; margin-top: 30px; color: #888; font-size: 0.85rem; }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #E0E0E0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🛍️ Pingo de Gente</h1>
+            <p>Pagamento via PIX ou Cartão</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Carregando dados da venda...</p>
+        </div>
+
+        <div id="conteudo" style="display:none;">
+            <div class="venda-info">
+                <h3>📋 Resumo da Compra</h3>
+                <p><strong>Cliente:</strong> <span id="cliente-nome">-</span></p>
+                <p><strong>Live:</strong> <span id="live-codigo">-</span></p>
+                <p><strong>Itens:</strong> <span id="itens-desc">-</span></p>
+            </div>
+
+            <div class="valor">
+                <span id="valor-total">R$ 0,00</span>
+            </div>
+
+            <div id="secao-pix">
+                <div class="instrucoes">
+                    <h4>📱 Como pagar com PIX:</h4>
+                    <ol>
+                        <li>Abra o app do seu banco</li>
+                        <li>Escolha pagar via PIX (QR Code ou Copia e Cola)</li>
+                        <li>Escaneie o QR Code abaixo ou cole o código</li>
+                        <li>Confirme o valor e finalize o pagamento</li>
+                        <li>Volte aqui e clique em "Já paguei"</li>
+                    </ol>
+                </div>
+
+                <div class="qr-section">
+                    <div id="qrcode"></div>
+                </div>
+
+                <div class="pix-code" id="pix-code">
+                    Código PIX aparecerá aqui...
+                </div>
+
+                <button class="btn-copiar" onclick="copiarPix()">
+                    📋 Copiar Código PIX
+                </button>
+
+                <button class="btn-paguei" id="btn-paguei" onclick="clientePaguei()">
+                    ✅ Já paguei! Confirmar pagamento
+                </button>
+            </div>
+
+            <div class="divider">
+                <span>ou</span>
+            </div>
+
+            <div id="secao-cartao">
+                <div id="valor-cartao-info" class="valor-cartao" style="display:none;">
+                    💳 Cartão: <span id="valor-cartao">R$ 0,00</span>
+                </div>
+                <button class="btn-cartao btn-mp" id="btnCartao" onclick="gerarLinkCartao()">
+                    <span class="gateway-badge badge-mp" id="badgeGateway">Mercado Pago</span>
+                    💳 Pagar com Cartão
+                </button>
+            </div>
+
+            <div id="status-msg" class="status-msg"></div>
+        </div>
+
+        <div class="footer">
+            <p>Pagamento seguro via PIX ou Cartão</p>
+            <p>Dúvidas? Chame no Instagram @pingodegente</p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+        let pixData = null;
+        let pixCode = '';
+        let vendaAtual = null;
+        let gatewayConfig = null;
+        let clienteSistemaId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const urlParams = new URLSearchParams(window.location.search);
+                const pixId = urlParams.get('pix');
+                const vendaId = urlParams.get('venda');
+                const clienteParam = urlParams.get('cliente');
+                if (clienteParam) clienteSistemaId = clienteParam;
+
+                if (!pixId && !vendaId) {
+                    mostrarErro('Link inválido. Nenhuma venda especificada.');
+                    return;
+                }
+                if (pixId) await carregarPorPixId(pixId);
+                else await carregarPorVendaId(vendaId);
+            } catch (error) {
+                mostrarErro('Erro ao carregar página: ' + error.message);
+            }
+        });
+
+        async function carregarGatewayConfig() {
+            if (!clienteSistemaId) return;
+            try {
+                const { data: config, error } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('gateway_cartao, mp_taxa_percentual, mp_taxa_fixa, taxa_percentual, taxa_fixa, infinitepay_taxa_percentual, infinitepay_taxa_fixa')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .maybeSingle();
+                if (error) {
+                    gatewayConfig = { gateway_cartao: 'mercado_pago' };
+                    return;
+                }
+                gatewayConfig = config || { gateway_cartao: 'mercado_pago' };
+                atualizarUIBotaoCartao();
+            } catch (e) {
+                gatewayConfig = { gateway_cartao: 'mercado_pago' };
+            }
+        }
+
+        function atualizarUIBotaoCartao() {
+            const btn = document.getElementById('btnCartao');
+            const badge = document.getElementById('badgeGateway');
+            if (!btn || !badge) return;
+            const gateway = gatewayConfig?.gateway_cartao || 'mercado_pago';
+            btn.className = 'btn-cartao';
+            badge.className = 'gateway-badge';
+            if (gateway === 'infinitepay') {
+                btn.classList.add('btn-infinite');
+                badge.classList.add('badge-infinite');
+                badge.textContent = 'InfinitePay';
+            } else if (gateway === 'asaas') {
+                btn.classList.add('btn-asaas');
+                badge.classList.add('badge-asaas');
+                badge.textContent = 'Asaas';
+            } else {
+                btn.classList.add('btn-mp');
+                badge.classList.add('badge-mp');
+                badge.textContent = 'Mercado Pago';
+            }
+        }
+
+        async function carregarPorPixId(pixId) {
+            try {
+                const { data: pix, error: pixError } = await supabaseClient
+                    .from('pix_estaticos')
+                    .select('*')
+                    .eq('id', pixId)
+                    .maybeSingle();
+                if (pixError || !pix) throw new Error('Link de pagamento não encontrado.');
+                pixData = pix;
+                clienteSistemaId = pix.cliente_sistema_id;
+                await carregarGatewayConfig();
+                const { data: venda } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('*')
+                    .eq('id', pix.venda_id)
+                    .maybeSingle();
+                if (venda) {
+                    vendaAtual = venda;
+                    venda.cliente_nome_exibicao = venda.comprador || venda.cliente_nome || 'Cliente';
+                }
+                await processarVenda(venda, pix);
+            } catch (error) {
+                mostrarErro(error.message);
+            }
+        }
+
+        async function carregarPorVendaId(vendaId) {
+            try {
+                const { data: venda, error } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('*')
+                    .eq('id', vendaId)
+                    .maybeSingle();
+                if (error || !venda) throw new Error('Venda não encontrada.');
+                vendaAtual = venda;
+                clienteSistemaId = venda.cliente_sistema_id;
+                await carregarGatewayConfig();
+                const { data: pix } = await supabaseClient
+                    .from('pix_estaticos')
+                    .select('*')
+                    .eq('venda_id', vendaId)
+                    .maybeSingle();
+                pixData = pix;
+                await processarVenda(venda, pix);
+            } catch (error) {
+                mostrarErro(error.message);
+            }
+        }
+
+        async function processarVenda(venda, pix) {
+            if (venda.status_pagamento === 'pago' || venda.status_pagamento === 'confirmado') {
+                mostrarErro('Esta venda já foi paga! ✅');
+                return;
+            }
+            if (pix?.cliente_disse_pago) {
+                document.getElementById('btn-paguei').disabled = true;
+                document.getElementById('btn-paguei').textContent = '⏳ Aguardando confirmação do vendedor';
+                mostrarStatus('Você já confirmou o pagamento! Estamos verificando.', 'info');
+            }
+            document.getElementById('cliente-nome').textContent = venda.cliente_nome_exibicao || venda.comprador || venda.cliente_nome || 'Cliente';
+            document.getElementById('live-codigo').textContent = venda.codigo_live || '-';
+            document.getElementById('itens-desc').textContent = venda.itens?.length ? venda.itens.length + ' item(s)' : 'Itens da live';
+            document.getElementById('valor-total').textContent = formatarMoeda(venda.total || 0);
+
+            const gateway = gatewayConfig?.gateway_cartao || 'mercado_pago';
+            let taxaPerc = 0, taxaFixa = 0;
+            if (gateway === 'infinitepay') {
+                taxaPerc = parseFloat(gatewayConfig.infinitepay_taxa_percentual || '3.99');
+                taxaFixa = parseFloat(gatewayConfig.infinitepay_taxa_fixa || '0.00');
+            } else if (gateway === 'asaas') {
+                taxaPerc = parseFloat(gatewayConfig.taxa_percentual || '3.49');
+                taxaFixa = parseFloat(gatewayConfig.taxa_fixa || '0.49');
+            } else {
+                taxaPerc = parseFloat(gatewayConfig.mp_taxa_percentual || '4.49');
+                taxaFixa = parseFloat(gatewayConfig.mp_taxa_fixa || '0.00');
+            }
+            const taxaDecimal = taxaPerc / 100;
+            const valorComTaxa = Math.ceil(((venda.total + taxaFixa) / (1 - taxaDecimal)) * 100) / 100;
+            document.getElementById('valor-cartao').textContent = formatarMoeda(valorComTaxa);
+            document.getElementById('valor-cartao-info').style.display = 'block';
+
+            const chavePix = 'eae138a5-64fc-428e-99d2-62b621971892';
+            const valor = venda.total || 0;
+            const nomeRecebedor = '50.403.919 AMANDA MARCELI';
+            const cidade = 'SAO PAULO';
+            const cep = '05409000';
+            const txid = 'ophK0ykzx2lDITMziipn';
+            pixCode = gerarPixCopiaCola(chavePix, valor, nomeRecebedor, cidade, cep, txid);
+            document.getElementById('pix-code').textContent = pixCode;
+            gerarQRCode(pixCode);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('conteudo').style.display = 'block';
+        }
+
+        async function gerarLinkCartao() {
+            if (!vendaAtual) {
+                mostrarStatus('Erro: Dados da venda não carregados.', 'erro');
+                return;
+            }
+            const gateway = gatewayConfig?.gateway_cartao || 'mercado_pago';
+            if (gateway === 'infinitepay') await gerarLinkInfinitePay();
+            else if (gateway === 'asaas') await gerarLinkAsaas();
+            else await gerarLinkMercadoPago();
+        }
+
+        // ===== FUNÇÃO ÚNICA: cancelar PIX ao gerar link de cartão =====
+        async function cancelarPixPorLink() {
+            if (pixData?.id) {
+                try {
+                    await supabaseClient.from('pix_estaticos')
+                        .update({ 
+                            status: 'cancelado_link', 
+                            atualizado_em: new Date().toISOString() 
+                        })
+                        .eq('id', pixData.id);
+                    console.log('[PIX] Status alterado para cancelado_link');
+                } catch (e) {
+                    console.log('[PIX] Erro ao cancelar PIX (não crítico):', e.message);
+                }
+            }
+        }
+
+        // ===== INFINITE PAY - VIA EDGE FUNCTION infinitepay-gerar =====
+        async function gerarLinkInfinitePay() {
+            const btn = document.getElementById('btnCartao');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="gateway-badge badge-infinite">InfinitePay</span> ⏳ Gerando link...';
+
+            try {
+                const currentClienteId = clienteSistemaId;
+                if (!currentClienteId) throw new Error('Cliente do sistema não identificado.');
+
+                const { data: config } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('infinitepay_handle, infinitepay_api_key, infinitepay_taxa_percentual, infinitepay_taxa_fixa')
+                    .eq('cliente_sistema_id', currentClienteId)
+                    .maybeSingle();
+
+                if (!config?.infinitepay_handle) throw new Error('InfinitePay não configurado. Contate o vendedor.');
+
+                const taxaPerc = parseFloat(config.infinitepay_taxa_percentual || '3.99');
+                const taxaFixa = parseFloat(config.infinitepay_taxa_fixa || '0.00');
+                const taxaDecimal = taxaPerc / 100;
+                const valorComTaxa = Math.ceil(((vendaAtual.total + taxaFixa) / (1 - taxaDecimal)) * 100) / 100;
+
+                const bodyData = {
+                    cliente_sistema_id: currentClienteId,
+                    handle: config.infinitepay_handle,
+                    comprador_nome: vendaAtual.cliente_nome_exibicao || vendaAtual.comprador || 'Cliente',
+                    comprador_email: vendaAtual.email || null,
+                    comprador_telefone: vendaAtual.cliente_whatsapp || null,
+                    valor_original: parseFloat(vendaAtual.total || 0),
+                    valor_com_taxa: valorComTaxa,
+                    taxa_percentual: taxaPerc,
+                    taxa_fixa: taxaFixa,
+                    codigo_live: vendaAtual.codigo_live || null,
+                    venda_id: vendaAtual.id
+                };
+
+                console.log('[INFINITE] Enviando para infinitepay-gerar:', bodyData);
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/infinitepay-gerar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[INFINITE] HTTP Error:', response.status, errorText);
+                    throw new Error(`Erro ${response.status}: ${errorText || 'Falha na requisição'}`);
+                }
+
+                const resultado = await response.json();
+                console.log('[INFINITE] Resposta completa:', resultado);
+
+                if (resultado.error) throw new Error(resultado.error);
+
+                const checkoutUrl = resultado.checkout_url || resultado.invoice_url || resultado.url;
+                if (!checkoutUrl) {
+                    throw new Error('Link não retornado. Resposta: ' + JSON.stringify(resultado));
+                }
+
+                console.log('[INFINITE] Link gerado! cobranca_id:', resultado.cobranca_id);
+
+                // Cancelar PIX estático com status "cancelado_link"
+                await cancelarPixPorLink();
+
+                // Redirecionar
+                window.location.href = checkoutUrl;
+                mostrarStatus('✅ Link InfinitePay aberto!', 'sucesso');
+
+            } catch (error) {
+                console.error('[INFINITE] Erro:', error);
+                mostrarStatus('❌ ' + error.message, 'erro');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="gateway-badge badge-infinite">InfinitePay</span> 💜 Pagar com Cartão';
+            }
+        }
+
+        async function gerarLinkMercadoPago() {
+            const btn = document.getElementById('btnCartao');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="gateway-badge badge-mp">Mercado Pago</span> ⏳ Gerando link...';
+            try {
+                const bodyData = {
+                    cliente_sistema_id: clienteSistemaId,
+                    comprador_nome: vendaAtual.cliente_nome_exibicao || vendaAtual.comprador || 'Cliente',
+                    comprador_email: vendaAtual.email || null,
+                    comprador_cpf: vendaAtual.cliente_cpf || null,
+                    comprador_telefone: vendaAtual.cliente_whatsapp || null,
+                    valor: parseFloat(vendaAtual.total || 0),
+                    descricao: `Cobranca Live ${vendaAtual.codigo_live || ''}`,
+                    codigo_live: vendaAtual.codigo_live || null,
+                    venda_id: vendaAtual.id
+                };
+
+                const { data: resultado, error: funcError } = await supabaseClient.functions.invoke('mercadopago-link', {
+                    body: bodyData
+                });
+
+                if (funcError) throw new Error(funcError.message || 'Erro ao gerar link');
+                if (!resultado || resultado.error) throw new Error(resultado?.error || 'Erro');
+
+                if (resultado.invoice_url) {
+                    // Cancelar PIX estático com status "cancelado_link"
+                    await cancelarPixPorLink();
+
+                    window.location.href = resultado.invoice_url;
+                    mostrarStatus('✅ Link Mercado Pago aberto!', 'sucesso');
+                } else throw new Error('Link não retornado.');
+            } catch (error) {
+                mostrarStatus('❌ ' + error.message, 'erro');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="gateway-badge badge-mp">Mercado Pago</span> 💳 Pagar com Cartão (até 12x)';
+            }
+        }
+
+        async function gerarLinkAsaas() {
+            const btn = document.getElementById('btnCartao');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="gateway-badge badge-asaas">Asaas</span> ⏳ Gerando link...';
+            try {
+                const { data: config } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('asaas_cpf_cnpj')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .maybeSingle();
+                if (!config?.asaas_cpf_cnpj) throw new Error('Asaas não configurado.');
+                const bodyData = {
+                    cliente_sistema_id: clienteSistemaId,
+                    comprador_nome: vendaAtual.cliente_nome_exibicao || vendaAtual.comprador || 'Cliente',
+                    comprador_email: vendaAtual.email || null,
+                    comprador_cpf: vendaAtual.cliente_cpf || null,
+                    comprador_telefone: vendaAtual.cliente_whatsapp || null,
+                    valor: parseFloat(vendaAtual.total || 0),
+                    descricao: `Cobranca Live ${vendaAtual.codigo_live || ''}`,
+                    codigo_live: vendaAtual.codigo_live || null,
+                    cpf_cnpj_beneficiario: config.asaas_cpf_cnpj,
+                    max_parcelas: 12
+                };
+
+                const { data: resultado, error: funcError } = await supabaseClient.functions.invoke('asaas-cobranca', {
+                    body: bodyData
+                });
+
+                if (funcError) throw new Error(funcError.message || 'Erro ao gerar cobrança');
+                if (!resultado || resultado.error) throw new Error(resultado?.error || 'Erro');
+
+                if (resultado.invoice_url) {
+                    // Cancelar PIX estático com status "cancelado_link"
+                    await cancelarPixPorLink();
+
+                    window.location.href = resultado.invoice_url;
+                    mostrarStatus('✅ Link Asaas aberto!', 'sucesso');
+                } else throw new Error('Link não retornado.');
+            } catch (error) {
+                mostrarStatus('❌ ' + error.message, 'erro');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="gateway-badge badge-asaas">Asaas</span> 🏦 Pagar com Cartão (até 12x)';
+            }
+        }
+
+        function gerarPixCopiaCola(chavePix, valor, nomeRecebedor, cidade, cep, txid) {
+            const sanitize = (str, max) => {
+                if (!str) return '';
+                return str.normalize('NFD')
+                    .replace(/[̀-ͯ]/g, '')
+                    .replace(/[^a-zA-Z0-9\s\.\-\/]/g, '')
+                    .substring(0, max);
+            };
+            const nome = sanitize(nomeRecebedor, 25);
+            const city = sanitize(cidade, 15);
+            const val = parseFloat(valor).toFixed(2);
+            function pixField(id, value) {
+                const len = String(value.length).padStart(2, '0');
+                return id + len + value;
+            }
+            const payloadFormat = pixField('00', '01');
+            const gui = pixField('00', 'BR.GOV.BCB.PIX');
+            const chave = pixField('01', chavePix);
+            const merchantAccount = pixField('26', gui + chave);
+            const merchantCategory = pixField('52', '0000');
+            const currency = pixField('53', '986');
+            const amount = pixField('54', val);
+            const country = pixField('58', 'BR');
+            const merchantName = pixField('59', nome);
+            const merchantCity = pixField('60', city);
+            const postalCode = pixField('61', cep);
+            const txidField = pixField('05', txid);
+            const additionalData = pixField('62', txidField);
+            const semCRC = payloadFormat + merchantAccount + merchantCategory + 
+                          currency + amount + country + merchantName + merchantCity + 
+                          postalCode + additionalData + '6304';
+            const crc = calcularCRC16(semCRC);
+            return semCRC + crc;
+        }
+
+        function calcularCRC16(str) {
+            let crc = 0xFFFF;
+            const polynomial = 0x1021;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    crc = (crc & 0x8000) ? ((crc << 1) ^ polynomial) : (crc << 1);
+                    crc &= 0xFFFF;
+                }
+            }
+            return crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function gerarQRCode(texto) {
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            new QRCode(qrcodeDiv, {
+                text: texto,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        async function copiarPix() {
+            try {
+                await navigator.clipboard.writeText(pixCode);
+                mostrarStatus('✅ Código PIX copiado!', 'sucesso');
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = pixCode;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarStatus('✅ Código PIX copiado!', 'sucesso');
+            }
+        }
+
+        async function clientePaguei() {
+            const btn = document.getElementById('btn-paguei');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processando...';
+            try {
+                if (!pixData) throw new Error('Dados do PIX não encontrados.');
+                if (pixData.cliente_disse_pago) {
+                    mostrarStatus('Você já confirmou o pagamento! Aguardando nossa verificação.', 'info');
+                    btn.textContent = '⏳ Aguardando confirmação';
+                    return;
+                }
+                await supabaseClient.from('pix_estaticos')
+                    .update({
+                        status: 'aguardando_confirmacao',
+                        cliente_disse_pago: true,
+                        cliente_disse_pago_em: new Date().toISOString(),
+                        atualizado_em: new Date().toISOString()
+                    })
+                    .eq('id', pixData.id);
+                mostrarStatus('✅ Pagamento confirmado por você! Estamos verificando.', 'sucesso');
+                btn.textContent = '⏳ Aguardando confirmação';
+                btn.style.background = '#ffc107';
+                btn.style.color = '#333';
+            } catch (error) {
+                mostrarStatus('❌ Erro ao confirmar. Tente novamente.', 'erro');
+                btn.disabled = false;
+                btn.textContent = '✅ Já paguei! Confirmar pagamento';
+            }
+        }
+
+        function formatarMoeda(valor) {
+            return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',');
+        }
+
+        function mostrarStatus(msg, tipo) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = 'status-msg ' + tipo;
+        }
+
+        function mostrarErro(msg) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('conteudo').style.display = 'none';
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = 'status-msg erro';
+            el.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

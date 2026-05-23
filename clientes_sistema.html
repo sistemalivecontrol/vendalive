@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento - Clientes e Usuários</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚙️%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .header {
+            background: #0B193F;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-voltar {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Abas */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            background: #f0f0f0;
+            color: #666;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            background: #e0e0e0;
+        }
+        .tab-btn.active {
+            background: #0B193F;
+            color: white;
+        }
+
+        /* Conteúdo das abas */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h2 { color: #333; margin-bottom: 25px; }
+        h3 { color: #555; margin-bottom: 20px; font-size: 18px; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0B193F;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: #0B193F;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-cancelar-form {
+            width: 100%;
+            padding: 14px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-cancelar-form:hover {
+            background: #d0d0d0;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #4caf50;
+        }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #f44336;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        .warning-box {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #e65100;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+        }
+        tr:hover { background: #f8f9fa; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-admin { background: #e3f2fd; color: #1565c0; }
+        .badge-vendedor { background: #f3e5f5; color: #7b1fa2; }
+        .badge-ativo { background: #e8f5e9; color: #2e7d32; }
+        .badge-inativo { background: #ffebee; color: #c62828; }
+        .badge-orphan { background: #fff3e0; color: #e65100; }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .acoes {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .btn-acao {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .btn-editar { background: #0B193F; color: white; }
+        .btn-excluir { background: #e74c3c; color: white; }
+        .btn-resetar { background: #ff9800; color: white; }
+        .btn-status { background: #4caf50; color: white; }
+        .btn-status.inativo { background: #757575; }
+        .btn-recuperar { background: #ff9800; color: white; }
+        .btn-recuperar:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0B193F;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .login-box h2 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .login-box p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .login-box input {
+            margin-bottom: 15px;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            background: #0B193F;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .login-error {
+            color: #c62828;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .hidden { display: none !important; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal h3 { margin-bottom: 20px; }
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-btns button { flex: 1; }
+        .btn-cancelar {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-confirmar {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-confirmar.desativar {
+            background: #ff9800;
+        }
+        .btn-confirmar.recuperar {
+            background: #ff9800;
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <!-- Tela de Login com Senha -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2>🔐 Acesso Restrito</h2>
+            <p>Digite a senha de administrador para continuar</p>
+            <input type="password" id="senhaInput" placeholder="Digite a senha" onkeypress="if(event.key==='Enter')verificarSenha()">
+            <button onclick="verificarSenha()">Entrar</button>
+            <div id="loginError" class="login-error">Senha incorreta!</div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-content">
+            <h1>⚙️ Gerenciamento do Sistema</h1>
+            <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Abas -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mostrarAba('clientes')">
+                🏢 Clientes
+            </button>
+            <button class="tab-btn" onclick="mostrarAba('usuarios')">
+                👥 Usuários
+            </button>
+        </div>
+
+        <div id="successMsg" class="success-message"></div>
+        <div id="errorMsg" class="error-message"></div>
+
+        <!-- ABA CLIENTES -->
+        <div id="aba-clientes" class="tab-content active">
+            <div class="grid">
+                <!-- Formulário de Cadastro/Edição de Clientes -->
+                <div class="card">
+                    <h2 id="tituloFormCliente">🏢 Novo Cliente</h2>
+                    <form id="formCliente">
+                        <input type="hidden" id="clienteIdEdicao">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nomeCliente">Nome da Empresa *</label>
+                                <input type="text" id="nomeCliente" required placeholder="Nome do cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="emailCliente">E-mail</label>
+                                <input type="email" id="emailCliente" placeholder="contato@empresa.com">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="telefoneCliente">Telefone</label>
+                                <input type="text" id="telefoneCliente" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="form-group">
+                                <label for="cnpjCliente">CNPJ/CPF</label>
+                                <input type="text" id="cnpjCliente" placeholder="00.000.000/0000-00">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dataExpiracao">Data de Expiração *</label>
+                                <input type="date" id="dataExpiracao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="statusCliente">Status</label>
+                                <select id="statusCliente">
+                                    <option value="true">Ativo</option>
+                                    <option value="false">Inativo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSalvarCliente">💾 Salvar Cliente</button>
+                        <button type="button" id="btnCancelarEdicao" class="btn-cancelar-form hidden" onclick="cancelarEdicaoCliente()">❌ Cancelar Edição</button>
+                    </form>
+                </div>
+
+                <!-- Lista de Clientes -->
+                <div class="card">
+                    <h2>📋 Clientes Cadastrados</h2>
+                    <div id="loadingClientes" class="loading">Carregando...</div>
+                    <table id="tabelaClientes" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Telefone</th>
+                                <th>Expiração</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA USUÁRIOS -->
+        <div id="aba-usuarios" class="tab-content">
+            <div class="info-box">
+                <strong>ℹ️ Como funciona:</strong><br>
+                1. Selecione o cliente (empresa) no dropdown<br>
+                2. Cadastre usuários com e-mail e senha para esse cliente<br>
+                3. Os usuários poderão fazer login no sistema
+            </div>
+
+            <!-- Alerta de usuários órfãos -->
+            <div id="orphanWarning" class="warning-box hidden">
+                <strong>⚠️ Atenção:</strong> Existem <span id="orphanCount">0</span> usuário(s) cadastrado(s) no sistema de autenticação mas não vinculado(s) a nenhum cliente.
+                <button onclick="abrirModalRecuperar()" class="btn-acao btn-recuperar" style="margin-left: 10px;">🔧 Recuperar Usuários</button>
+            </div>
+
+            <div class="grid">
+                <!-- Formulário de Cadastro de Usuários -->
+                <div class="card">
+                    <h2>📝 Novo Usuário</h2>
+                    <form id="formUsuario">
+                        <div class="form-group">
+                            <label for="clienteSelect">Cliente (Empresa) *</label>
+                            <select id="clienteSelect" required>
+                                <option value="">Selecione um cliente...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nomeUsuario">Nome Completo *</label>
+                            <input type="text" id="nomeUsuario" required placeholder="Nome do usuário">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emailUsuario">E-mail *</label>
+                            <input type="email" id="emailUsuario" required placeholder="usuario@empresa.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="senhaUsuario">Senha *</label>
+                            <input type="password" id="senhaUsuario" required placeholder="Mínimo 6 caracteres" minlength="6">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nivelAcesso">Nível de Acesso *</label>
+                            <select id="nivelAcesso" required>
+                                <option value="admin">Administrador (acesso total)</option>
+                                <option value="vendedor" selected>Vendedor (vendas apenas)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit">💾 Criar Usuário</button>
+                    </form>
+                </div>
+
+                <!-- Lista de Usuários -->
+                <div class="card">
+                    <h2>📋 Usuários Cadastrados</h2>
+                    <div class="form-group">
+                        <label>Filtrar por Cliente</label>
+                        <select id="filtroCliente" onchange="carregarUsuarios()">
+                            <option value="">Todos os clientes</option>
+                        </select>
+                    </div>
+                    <div id="loadingUsuarios" class="loading">Carregando...</div>
+                    <table id="tabelaUsuarios" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Cliente</th>
+                                <th>Nível</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Cliente -->
+    <div id="modalEditarCliente" class="modal-overlay">
+        <div class="modal">
+            <h3>✏️ Editar Cliente</h3>
+            <p>Editando: <strong id="editarClienteNome"></strong></p>
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharModal('modalEditarCliente')">Cancelar</button>
+                <button class="btn-confirmar" onclick="confirmarEdicaoCliente()" style="background: #0B193F;">Continuar Editando</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Excluir Cliente -->
+    <div id="modalExcluirCliente" class="modal-overlay">
+        <div class="modal">
+            <h3>⚠️ Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir o cliente <strong id="excluirClienteNome"></strong>?</p>
+            <p style="color: #e74c3c; font-size: 13px; margin-top: 10px;">⚠️ Todos os usuários vinculados a este cliente também serão excluídos!</p>
+            <input type="hidden" id="excluirClienteId">
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharModal('modalExcluirCliente')">Cancelar</button>
+                <button class="btn-confirmar" onclick="confirmarExcluirCliente()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Resetar Senha -->
+    <div id="modalResetar" class="modal-overlay">
+        <div class="modal">
+            <h3>🔑 Resetar Senha</h3>
+            <p>Digite a nova senha para <strong id="resetUsuarioNome"></strong></p>
+            <input type="hidden" id="resetUsuarioId">
+            <input type="password" id="novaSenha" placeholder="Nova senha (mínimo 6 caracteres)" minlength="6">
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharModal('modalResetar')">Cancelar</button>
+                <button class="btn-confirmar" onclick="confirmarResetarSenha()">Resetar Senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Excluir Usuário -->
+    <div id="modalExcluir" class="modal-overlay">
+        <div class="modal">
+            <h3>⚠️ Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir o usuário <strong id="excluirUsuarioNome"></strong>?</p>
+            <input type="hidden" id="excluirUsuarioId">
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharModal('modalExcluir')">Cancelar</button>
+                <button class="btn-confirmar" onclick="confirmarExcluir()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Recuperar Usuários Órfãos -->
+    <div id="modalRecuperar" class="modal-overlay">
+        <div class="modal" style="max-width: 600px;">
+            <h3>🔧 Recuperar Usuários do Auth</h3>
+            <p>Estes usuários existem no sistema de autenticação mas não estão vinculados a nenhum cliente:</p>
+            <div id="loadingOrfaos" class="loading">Carregando usuários órfãos...</div>
+            <table id="tabelaOrfaos" style="display: none; margin-top: 15px;">
+                <thead>
+                    <tr>
+                        <th>E-mail</th>
+                        <th>Criado em</th>
+                        <th>Cliente</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="semOrfaos" style="display: none; text-align: center; padding: 20px; color: #666;">
+                Nenhum usuário órfão encontrado.
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancelar" onclick="fecharModal('modalRecuperar')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO
+        // ============================================
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ============================================
+        // SENHA DE ACESSO (MUDE AQUI)
+        // ============================================
+        const SENHA_ADMIN = '770057';
+
+        // Variável para armazenar cliente em edição
+        let clienteEmEdicao = null;
+
+        function verificarSenha() {
+            const senha = document.getElementById('senhaInput').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (senha === SENHA_ADMIN) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                inicializar();
+            } else {
+                errorDiv.style.display = 'block';
+                document.getElementById('senhaInput').value = '';
+                document.getElementById('senhaInput').focus();
+            }
+        }
+
+        // ============================================
+        // CONTROLE DE ABAS
+        // ============================================
+        function mostrarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('aba-' + aba).classList.add('active');
+            event.target.classList.add('active');
+
+            if (aba === 'clientes') {
+                carregarClientesLista();
+            } else {
+                carregarClientesSelect();
+                carregarUsuarios();
+                verificarUsuariosOrfaos();
+            }
+        }
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        async function inicializar() {
+            await carregarClientesLista();
+            await carregarClientesSelect();
+            await carregarUsuarios();
+        }
+
+        // ============================================
+        // VERIFICAR USUÁRIOS ÓRFÃOS (NO AUTH, NÃO NA TABELA)
+        // ============================================
+        async function verificarUsuariosOrfaos() {
+            try {
+                // Buscar todos os auth_ids da tabela usuarios_pg
+                const { data: usuariosPg, error: pgError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('auth_id, email');
+
+                if (pgError) {
+                    console.error('[ORFAOS] Erro ao buscar usuarios_pg:', pgError);
+                    return;
+                }
+
+                // Lista de e-mails já vinculados
+                const emailsVinculados = new Set((usuariosPg || []).map(u => u.email?.toLowerCase()).filter(Boolean));
+
+                // Buscar todos os usuários do Auth (usando a função RPC list_users se existir, ou via signIn)
+                // Como não temos acesso direto ao auth.users via Anon Key, vamos usar uma abordagem diferente:
+                // Tentar signUp com e-mails conhecidos ou usar uma Edge Function
+
+                // Por enquanto, vamos verificar baseado nos e-mails que sabemos que foram criados
+                // e não estão na tabela (informação do usuário)
+
+                // Contagem simples: se o usuário reportou problemas, mostramos o botão
+                // Na prática, isso seria melhor feito com uma Edge Function
+
+                // Vamos tentar uma abordagem: listar usuários do Auth via RPC
+                const { data: authUsers, error: authError } = await supabaseClient
+                    .rpc('list_auth_users');
+
+                if (authError) {
+                    console.log('[ORFAOS] RPC list_auth_users não disponível:', authError.message);
+                    // Fallback: não mostrar alerta se não conseguir listar
+                    return;
+                }
+
+                const orfaos = (authUsers || []).filter(u => !emailsVinculados.has(u.email?.toLowerCase()));
+
+                if (orfaos.length > 0) {
+                    document.getElementById('orphanCount').textContent = orfaos.length;
+                    document.getElementById('orphanWarning').classList.remove('hidden');
+                } else {
+                    document.getElementById('orphanWarning').classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error('[ORFAOS] Erro:', error);
+            }
+        }
+
+        // ============================================
+        // ABRIR MODAL DE RECUPERAÇÃO
+        // ============================================
+        async function abrirModalRecuperar() {
+            document.getElementById('modalRecuperar').style.display = 'flex';
+            document.getElementById('loadingOrfaos').style.display = 'block';
+            document.getElementById('tabelaOrfaos').style.display = 'none';
+            document.getElementById('semOrfaos').style.display = 'none';
+
+            try {
+                // Buscar usuários do Auth via RPC
+                const { data: authUsers, error: authError } = await supabaseClient
+                    .rpc('list_auth_users');
+
+                if (authError) {
+                    console.error('[ORFAOS] Erro RPC:', authError);
+                    document.getElementById('loadingOrfaos').textContent = 'Erro: ' + authError.message;
+                    return;
+                }
+
+                // Buscar e-mails já vinculados
+                const { data: usuariosPg } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('email');
+
+                const emailsVinculados = new Set((usuariosPg || []).map(u => u.email?.toLowerCase()));
+
+                // Filtrar órfãos
+                const orfaos = (authUsers || []).filter(u => {
+                    const email = (u.email || '').toLowerCase();
+                    return email && !emailsVinculados.has(email);
+                });
+
+                document.getElementById('loadingOrfaos').style.display = 'none';
+
+                if (orfaos.length === 0) {
+                    document.getElementById('semOrfaos').style.display = 'block';
+                    return;
+                }
+
+                // Preencher tabela
+                const tbody = document.getElementById('tabelaOrfaos').querySelector('tbody');
+                tbody.innerHTML = '';
+
+                orfaos.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.email}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td>
+                            <select class="cliente-select-recuperar" data-auth-id="${user.id}" data-email="${user.email}" style="width: 100%; padding: 5px;">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-acao btn-recuperar" onclick="recuperarUsuarioOrfao('${user.id}', '${user.email}', this)">🔗 Vincular</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Preencher selects com clientes
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('id, nome')
+                    .eq('ativo', true)
+                    .order('nome');
+
+                document.querySelectorAll('.cliente-select-recuperar').forEach(select => {
+                    clientes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.nome;
+                        select.appendChild(opt);
+                    });
+                });
+
+                document.getElementById('tabelaOrfaos').style.display = 'table';
+
+            } catch (error) {
+                console.error('[ORFAOS] Erro:', error);
+                document.getElementById('loadingOrfaos').textContent = 'Erro ao carregar: ' + error.message;
+            }
+        }
+
+        // ============================================
+        // RECUPERAR USUÁRIO ÓRFÃO
+        // ============================================
+        async function recuperarUsuarioOrfao(authId, email, btn) {
+            const select = btn.closest('tr').querySelector('.cliente-select-recuperar');
+            const clienteId = select.value;
+            const nome = prompt('Digite o nome do usuário:');
+
+            if (!clienteId) {
+                alert('Selecione um cliente!');
+                return;
+            }
+            if (!nome || nome.trim() === '') {
+                alert('Digite um nome!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Vinculando...';
+
+            try {
+                const { error } = await supabaseClient
+                    .from('usuarios_pg')
+                    .insert({
+                        auth_id: authId,
+                        cliente_id: clienteId,
+                        nome: nome.trim(),
+                        email: email.toLowerCase(),
+                        nivel_acesso: 'vendedor',
+                        ativo: true
+                    });
+
+                if (error) throw error;
+
+                mostrarSucesso('✅ Usuário vinculado com sucesso!');
+                btn.closest('tr').remove();
+
+                // Atualizar contagem
+                const remaining = document.querySelectorAll('#tabelaOrfaos tbody tr').length;
+                if (remaining === 0) {
+                    document.getElementById('semOrfaos').style.display = 'block';
+                    document.getElementById('tabelaOrfaos').style.display = 'none';
+                }
+                document.getElementById('orphanCount').textContent = remaining;
+                if (remaining === 0) {
+                    document.getElementById('orphanWarning').classList.add('hidden');
+                }
+
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('[ORFAOS] Erro ao vincular:', error);
+                mostrarErro('Erro ao vincular: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '🔗 Vincular';
+            }
+        }
+
+        // ============================================
+        // CLIENTES - FORMULÁRIO (CRIAR/EDITAR)
+        // ============================================
+        document.getElementById('formCliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const clienteId = document.getElementById('clienteIdEdicao').value;
+            const successDiv = document.getElementById('successMsg');
+            const errorDiv = document.getElementById('errorMsg');
+            successDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+
+            const cliente = {
+                nome: document.getElementById('nomeCliente').value.trim(),
+                email: document.getElementById('emailCliente').value.trim() || null,
+                telefone: document.getElementById('telefoneCliente').value.trim() || null,
+                cnpj: document.getElementById('cnpjCliente').value.trim() || null,
+                data_expiracao: document.getElementById('dataExpiracao').value,
+                ativo: document.getElementById('statusCliente').value === 'true'
+            };
+
+            try {
+                let result;
+                if (clienteId) {
+                    result = await supabaseClient
+                        .from('clientes_sistema')
+                        .update(cliente)
+                        .eq('id', clienteId)
+                        .select()
+                        .single();
+                } else {
+                    result = await supabaseClient
+                        .from('clientes_sistema')
+                        .insert(cliente)
+                        .select()
+                        .single();
+                }
+
+                if (result.error) throw result.error;
+
+                mostrarSucesso(clienteId ? '✅ Cliente atualizado com sucesso!' : '✅ Cliente cadastrado com sucesso!');
+
+                document.getElementById('formCliente').reset();
+                document.getElementById('clienteIdEdicao').value = '';
+                document.getElementById('tituloFormCliente').textContent = '🏢 Novo Cliente';
+                document.getElementById('btnSalvarCliente').textContent = '💾 Salvar Cliente';
+                document.getElementById('btnCancelarEdicao').classList.add('hidden');
+                clienteEmEdicao = null;
+
+                await carregarClientesLista();
+                await carregarClientesSelect();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro('❌ Erro: ' + (error.message || 'Erro desconhecido'));
+            }
+        });
+
+        function cancelarEdicaoCliente() {
+            document.getElementById('formCliente').reset();
+            document.getElementById('clienteIdEdicao').value = '';
+            document.getElementById('tituloFormCliente').textContent = '🏢 Novo Cliente';
+            document.getElementById('btnSalvarCliente').textContent = '💾 Salvar Cliente';
+            document.getElementById('btnCancelarEdicao').classList.add('hidden');
+            clienteEmEdicao = null;
+        }
+
+        // ============================================
+        // CLIENTES - CARREGAR LISTA
+        // ============================================
+        async function carregarClientesLista() {
+            try {
+                const { data: clientes, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const loadingDiv = document.getElementById('loadingClientes');
+                const tabela = document.getElementById('tabelaClientes');
+                const tbody = tabela.querySelector('tbody');
+
+                loadingDiv.style.display = 'none';
+                tabela.style.display = 'table';
+                tbody.innerHTML = '';
+
+                if (!clientes || clientes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Nenhum cliente cadastrado</td></tr>';
+                    return;
+                }
+
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                clientes.forEach(cliente => {
+                    const expiracao = new Date(cliente.data_expiracao);
+                    expiracao.setHours(0, 0, 0, 0);
+                    const ativo = cliente.ativo && expiracao >= hoje;
+
+                    const row = `
+                        <tr>
+                            <td>${cliente.nome}</td>
+                            <td>${cliente.email || '-'}</td>
+                            <td>${cliente.telefone || '-'}</td>
+                            <td>${new Date(cliente.data_expiracao).toLocaleDateString('pt-BR')}</td>
+                            <td><span class="badge ${ativo ? 'badge-ativo' : 'badge-inativo'}">${ativo ? 'Ativo' : 'Inativo'}</span></td>
+                            <td>
+                                <div class="acoes">
+                                    <button class="btn-acao btn-editar" onclick="prepararEdicaoCliente('${cliente.id}')">✏️ Editar</button>
+                                    <button class="btn-acao btn-status ${!cliente.ativo ? 'inativo' : ''}" onclick="alternarStatusCliente('${cliente.id}', ${cliente.ativo})">${cliente.ativo ? 'Desativar' : 'Ativar'}</button>
+                                    <button class="btn-acao btn-excluir" onclick="abrirModalExcluirCliente('${cliente.id}', '${cliente.nome}')">🗑️ Excluir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar clientes:', error);
+                mostrarErro('Erro ao carregar clientes: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // CLIENTES - EDITAR
+        // ============================================
+        async function prepararEdicaoCliente(id) {
+            try {
+                const { data: cliente, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                clienteEmEdicao = cliente;
+
+                document.getElementById('clienteIdEdicao').value = cliente.id;
+                document.getElementById('nomeCliente').value = cliente.nome;
+                document.getElementById('emailCliente').value = cliente.email || '';
+                document.getElementById('telefoneCliente').value = cliente.telefone || '';
+                document.getElementById('cnpjCliente').value = cliente.cnpj || '';
+                document.getElementById('dataExpiracao').value = cliente.data_expiracao;
+                document.getElementById('statusCliente').value = cliente.ativo ? 'true' : 'false';
+
+                document.getElementById('tituloFormCliente').textContent = '✏️ Editar Cliente';
+                document.getElementById('btnSalvarCliente').textContent = '💾 Atualizar Cliente';
+                document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+
+                document.getElementById('formCliente').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Erro ao carregar cliente:', error);
+                mostrarErro('Erro ao carregar dados do cliente: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // CLIENTES - ALTERNAR STATUS
+        // ============================================
+        async function alternarStatusCliente(id, statusAtual) {
+            try {
+                const novoStatus = !statusAtual;
+                const { error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .update({ ativo: novoStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                mostrarSucesso(novoStatus ? '✅ Cliente ativado com sucesso!' : '✅ Cliente desativado com sucesso!');
+                await carregarClientesLista();
+                await carregarClientesSelect();
+
+            } catch (error) {
+                console.error('Erro ao alterar status:', error);
+                mostrarErro('Erro ao alterar status: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // CLIENTES - EXCLUIR
+        // ============================================
+        function abrirModalExcluirCliente(id, nome) {
+            document.getElementById('excluirClienteId').value = id;
+            document.getElementById('excluirClienteNome').textContent = nome;
+            document.getElementById('modalExcluirCliente').style.display = 'flex';
+        }
+
+        async function confirmarExcluirCliente() {
+            const clienteId = document.getElementById('excluirClienteId').value;
+
+            try {
+                const { error: errorUsuarios } = await supabaseClient
+                    .from('usuarios_pg')
+                    .delete()
+                    .eq('cliente_id', clienteId);
+
+                if (errorUsuarios) throw errorUsuarios;
+
+                const { error: errorCliente } = await supabaseClient
+                    .from('clientes_sistema')
+                    .delete()
+                    .eq('id', clienteId);
+
+                if (errorCliente) throw errorCliente;
+
+                mostrarSucesso('✅ Cliente e usuários vinculados excluídos com sucesso!');
+                fecharModal('modalExcluirCliente');
+                await carregarClientesLista();
+                await carregarClientesSelect();
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro('Erro ao excluir cliente: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // CLIENTES - SELECT PARA USUÁRIOS
+        // ============================================
+        async function carregarClientesSelect() {
+            try {
+                const { data: clientes, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('*')
+                    .eq('ativo', true)
+                    .order('nome');
+
+                if (error) throw error;
+
+                const select = document.getElementById('clienteSelect');
+                const filtro = document.getElementById('filtroCliente');
+
+                select.innerHTML = '<option value="">Selecione um cliente...</option>';
+                filtro.innerHTML = '<option value="">Todos os clientes</option>';
+
+                clientes.forEach(cliente => {
+                    const option = `<option value="${cliente.id}">${cliente.nome}</option>`;
+                    select.innerHTML += option;
+                    filtro.innerHTML += option;
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar clientes:', error);
+                mostrarErro('Erro ao carregar clientes: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // USUÁRIOS - FORMULÁRIO (CORRIGIDO - RATE LIMIT + VERIFICAÇÃO AUTH)
+        // ============================================
+        document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const clienteId = document.getElementById('clienteSelect').value;
+            const nome = document.getElementById('nomeUsuario').value.trim();
+            const email = document.getElementById('emailUsuario').value.trim().toLowerCase();
+            const senha = document.getElementById('senhaUsuario').value;
+            const nivel = document.getElementById('nivelAcesso').value;
+
+            if (!clienteId) {
+                mostrarErro('Selecione um cliente!');
+                return;
+            }
+
+            try {
+                console.log('[USUARIO] Verificando e-mail:', email);
+
+                // PASSO 1: Verificar se e-mail já existe na tabela usuarios_pg
+                const { data: usuarioExistente, error: checkError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('id, email, nome')
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (checkError) {
+                    console.error('[USUARIO] Erro ao verificar e-mail:', checkError);
+                    throw new Error('Erro ao verificar e-mail: ' + checkError.message);
+                }
+
+                if (usuarioExistente) {
+                    console.log('[USUARIO] E-mail já cadastrado na tabela:', usuarioExistente);
+                    throw new Error('Este e-mail já está cadastrado para o usuário: ' + usuarioExistente.nome);
+                }
+
+                console.log('[USUARIO] E-mail livre na tabela, criando no Auth...');
+
+                // PASSO 2: Criar usuário no Auth do Supabase
+                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha
+                });
+
+                console.log('[USUARIO] Resposta auth completa:', authData);
+                console.log('[USUARIO] authError:', authError);
+
+                // TRATAMENTO DE ERROS DO AUTH
+                if (authError) {
+                    const msg = (authError.message || '').toLowerCase();
+                    const status = authError.status || 0;
+
+                    // Rate limit (429 Too Many Requests)
+                    if (status === 429 || msg.includes('rate limit') || msg.includes('too many requests')) {
+                        throw new Error('⏳ Muitas tentativas de cadastro. Aguarde 1 minuto e tente novamente.');
+                    }
+                    // E-mail já existe
+                    if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+                        throw new Error('Este e-mail já está cadastrado no sistema de autenticação!');
+                    }
+                    // Erro de segurança/timeout
+                    if (msg.includes('security') || msg.includes('seconds')) {
+                        throw new Error('Aguarde alguns segundos antes de tentar novamente (limite de segurança).');
+                    }
+                    throw authError;
+                }
+
+                // DETECTAR auth_id de ambas as estruturas possíveis
+                let authId = null;
+
+                if (authData && authData.user && authData.user.id) {
+                    authId = authData.user.id;
+                    console.log('[USUARIO] Auth ID obtido via authData.user.id:', authId);
+                } else if (authData && authData.id) {
+                    authId = authData.id;
+                    console.log('[USUARIO] Auth ID obtido via authData.id:', authId);
+                }
+
+                // Se não conseguiu extrair authId mas authData não é null
+                if (!authId && authData) {
+                    console.warn('[USUARIO] authData existe mas sem ID. Possível usuário existente.');
+                    throw new Error('Este e-mail já pode estar cadastrado no sistema. Verifique e tente novamente.');
+                }
+
+                if (!authId) {
+                    console.error('[USUARIO] Não conseguiu extrair authId de authData:', authData);
+                    throw new Error('Erro ao criar usuário no sistema de autenticação. Tente novamente.');
+                }
+
+                // PASSO 3: Inserir na tabela usuarios_pg
+                const { error: dbError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .insert({
+                        auth_id: authId,
+                        cliente_id: clienteId,
+                        nome: nome,
+                        email: email,
+                        nivel_acesso: nivel,
+                        ativo: true
+                    });
+
+                if (dbError) {
+                    console.error('[USUARIO] Erro ao inserir no banco:', dbError);
+                    throw new Error('Erro ao vincular usuário ao cliente: ' + dbError.message);
+                }
+
+                mostrarSucesso('✅ Usuário criado com sucesso!');
+                document.getElementById('formUsuario').reset();
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('[USUARIO] Erro completo:', error);
+                mostrarErro('❌ Erro: ' + (error.message || 'Erro desconhecido'));
+            }
+        });
+
+        // ============================================
+        // USUÁRIOS - LISTA
+        // ============================================
+        async function carregarUsuarios() {
+            try {
+                const filtroCliente = document.getElementById('filtroCliente').value;
+
+                let query = supabaseClient
+                    .from('usuarios_pg')
+                    .select(`
+                        *,
+                        clientes_sistema!inner(nome)
+                    `)
+                    .order('criado_em', { ascending: false });
+
+                if (filtroCliente) {
+                    query = query.eq('cliente_id', filtroCliente);
+                }
+
+                const { data: usuarios, error } = await query;
+
+                if (error) throw error;
+
+                const loadingDiv = document.getElementById('loadingUsuarios');
+                const tabela = document.getElementById('tabelaUsuarios');
+                const tbody = tabela.querySelector('tbody');
+
+                loadingDiv.style.display = 'none';
+                tabela.style.display = 'table';
+                tbody.innerHTML = '';
+
+                if (!usuarios || usuarios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Nenhum usuário cadastrado</td></tr>';
+                    return;
+                }
+
+                usuarios.forEach(usuario => {
+                    const nomeCliente = usuario.clientes_sistema?.nome || 'N/A';
+                    const nivel = usuario.nivel_acesso || 'vendedor';
+                    const row = `
+                        <tr>
+                            <td>${usuario.nome}</td>
+                            <td>${usuario.email || '-'}</td>
+                            <td>${nomeCliente}</td>
+                            <td><span class="badge badge-${nivel}">${nivel === 'admin' ? 'Admin' : 'Vendedor'}</span></td>
+                            <td>
+                                <div class="acoes">
+                                    <button class="btn-acao btn-resetar" onclick="abrirModalResetar('${usuario.id}', '${usuario.nome}')">🔑 Senha</button>
+                                    <button class="btn-acao btn-excluir" onclick="abrirModalExcluir('${usuario.id}', '${usuario.nome}')">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                mostrarErro('Erro ao carregar usuários: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // MODAIS USUÁRIOS
+        // ============================================
+        function abrirModalResetar(id, nome) {
+            document.getElementById('resetUsuarioId').value = id;
+            document.getElementById('resetUsuarioNome').textContent = nome;
+            document.getElementById('novaSenha').value = '';
+            document.getElementById('modalResetar').style.display = 'flex';
+        }
+
+        function abrirModalExcluir(id, nome) {
+            document.getElementById('excluirUsuarioId').value = id;
+            document.getElementById('excluirUsuarioNome').textContent = nome;
+            document.getElementById('modalExcluir').style.display = 'flex';
+        }
+
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function confirmarResetarSenha() {
+            const usuarioId = document.getElementById('resetUsuarioId').value;
+            const novaSenha = document.getElementById('novaSenha').value;
+
+            if (!novaSenha || novaSenha.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres!');
+                return;
+            }
+
+            try {
+                const { data: usuario, error: fetchError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('auth_id, email')
+                    .eq('id', usuarioId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                mostrarSucesso('⚠️ Para resetar a senha, use o painel do Supabase > Authentication > Users');
+                fecharModal('modalResetar');
+
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro('Erro ao resetar senha: ' + error.message);
+            }
+        }
+
+        async function confirmarExcluir() {
+            const usuarioId = document.getElementById('excluirUsuarioId').value;
+
+            try {
+                const { data: usuario, error: fetchError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('auth_id')
+                    .eq('id', usuarioId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                const { error: deleteError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .delete()
+                    .eq('id', usuarioId);
+
+                if (deleteError) throw deleteError;
+
+                mostrarSucesso('✅ Usuário excluído com sucesso!');
+                fecharModal('modalExcluir');
+                await carregarUsuarios();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro('Erro ao excluir usuário: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+        function mostrarSucesso(msg) {
+            const div = document.getElementById('successMsg');
+            div.textContent = msg;
+            div.style.display = 'block';
+            setTimeout(() => div.style.display = 'none', 5000);
+        }
+
+        function mostrarErro(msg) {
+            const div = document.getElementById('errorMsg');
+            div.textContent = msg;
+            div.style.display = 'block';
+            setTimeout(() => div.style.display = 'none', 5000);
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

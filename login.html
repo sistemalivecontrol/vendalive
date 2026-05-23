@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VendaLive</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(91, 155, 213, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(11, 25, 63, 0.8) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(91, 155, 213, 0.05) 0%, transparent 60%);
+            z-index: 0;
+        }
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: float-particle linear infinite;
+        }
+        @keyframes float-particle {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Layout */
+        .login-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        /* Left side - branding */
+        .brand-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+        .brand-content {
+            text-align: center;
+            max-width: 420px;
+        }
+        .logo-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            margin-bottom: 32px;
+            animation: logo-glow 3s ease-in-out infinite;
+        }
+        @keyframes logo-glow {
+            0%, 100% { box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05); }
+            50% { box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(91,155,213,0.15), 0 0 0 1px rgba(255,255,255,0.05); }
+        }
+        .brand-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+        .brand-title span { color: #5b9bd5; }
+        .brand-subtitle {
+            color: rgba(255,255,255,0.45);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 32px;
+        }
+        .brand-features {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-align: left;
+        }
+        .brand-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+        .brand-feature:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.12);
+            transform: translateX(4px);
+        }
+        .brand-feature svg {
+            width: 20px;
+            height: 20px;
+            color: #5b9bd5;
+            flex-shrink: 0;
+        }
+        .brand-feature span {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Right side - form */
+        .form-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .login-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+        }
+        .login-header p {
+            color: rgba(255,255,255,0.45);
+            font-size: 14px;
+        }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.65);
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: rgba(255,255,255,0.3);
+            pointer-events: none;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input:focus {
+            outline: none;
+            border-color: #5b9bd5;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15);
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: #0B193F;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button[type="submit"]:hover {
+            background: #152B5C;
+            border-color: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        button[type="submit"]:disabled {
+            background: #1e293b;
+            border-color: transparent;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.35);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .back-link:hover { color: #5b9bd5; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .login-layout { grid-template-columns: 1fr; }
+            .brand-side { display: none; }
+            .form-side { padding: 24px; }
+            .login-card { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="login-layout">
+        <!-- Left - Branding -->
+        <div class="brand-side">
+            <div class="brand-content">
+                <img src="./img/logo-livecontrol.png" alt="VendaLive Logo" class="logo-img">
+                <h1 class="brand-title">Live<span>Control</span></h1>
+                <p class="brand-subtitle">Sistema de Gestão para Lives</p>
+                <div class="brand-features">
+                    <div class="brand-feature">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        <span>Registro rápido de vendas durante a live</span>
+                    </div>
+                    <div class="brand-feature">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <span>Cobrança automática via PIX</span>
+                    </div>
+                    <div class="brand-feature">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Gestão completa de clientes e entregas</span>
+                    </div>
+                    <div class="brand-feature">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        <span>Relatórios em tempo real</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right - Form -->
+        <div class="form-side">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Entre com seus dados para acessar o sistema</p>
+                </div>
+
+                <div id="errorMsg" class="error-message"></div>
+                <div id="successMsg" class="success-message"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <div class="input-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            <input type="email" id="email" required placeholder="seu@email.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <div class="input-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <input type="password" id="senha" required placeholder="Sua senha" autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnEntrar">
+                        Entrar no Sistema
+                    </button>
+                </form>
+            </div>
+
+            <a href="https://sistemalivecontrol.github.io/livecontrol/" class="back-link">&larr; Voltar para o site</a>
+        </div>
+    </div>
+
+    <script>
+        // Generate particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
+            p.style.animationDuration = (15 + Math.random() * 25) + 's';
+            p.style.animationDelay = (Math.random() * 20) + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const btnEntrar = document.getElementById('btnEntrar');
+            const errorDiv = document.getElementById('errorMsg');
+            const successDiv = document.getElementById('successMsg');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            btnEntrar.disabled = true;
+            btnEntrar.innerHTML = 'Entrando... <span class="loading"></span>';
+
+            try {
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: senha
+                });
+                if (authError) throw new Error('E-mail ou senha incorretos.');
+
+                const authId = authData.user.id;
+                const { data: usuario, error: userError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select(`*, clientes_sistema!inner(id, nome, ativo, data_expiracao)`)
+                    .eq('auth_id', authId)
+                    .eq('ativo', true)
+                    .single();
+
+                if (userError) {
+                    await supabaseClient.auth.signOut();
+                    if (userError.code === 'PGRST116') {
+                        throw new Error('Usuário não encontrado no sistema ou está inativo.');
+                    }
+                    throw new Error('Erro ao verificar permissões: ' + userError.message);
+                }
+                if (!usuario) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Usuário não encontrado no sistema.');
+                }
+
+                const cliente = usuario.clientes_sistema;
+                if (!cliente.ativo) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Cliente inativo. Entre em contato com o administrador.');
+                }
+                const hoje = new Date();
+                const expiracao = new Date(cliente.data_expiracao);
+                if (expiracao < hoje) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Licença expirada em ' + expiracao.toLocaleDateString('pt-BR'));
+                }
+
+                const dadosSessao = {
+                    auth_id: authId,
+                    usuario_id: usuario.id,
+                    nome: usuario.nome,
+                    email: usuario.email,
+                    cliente_id: usuario.cliente_id,
+                    cliente_nome: cliente.nome,
+                    nivel_acesso: usuario.nivel_acesso,
+                    ativo: usuario.ativo,
+                    login_time: new Date().toISOString()
+                };
+                localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                localStorage.setItem('clienteId', usuario.cliente_id);
+                localStorage.setItem('nivelAcesso', usuario.nivel_acesso);
+
+                successDiv.textContent = 'Bem-vindo, ' + (usuario.nome || usuario.email) + '! Redirecionando...';
+                successDiv.style.display = 'block';
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+
+            } catch (error) {
+                errorDiv.innerHTML = error.message;
+                errorDiv.style.display = 'block';
+                btnEntrar.disabled = false;
+                btnEntrar.innerHTML = 'Entrar no Sistema';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', fazerLogin);
+
+        async function verificarSessaoExistente() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error) return;
+                if (session) {
+                    const usuarioLogado = localStorage.getItem('usuarioLogado');
+                    if (usuarioLogado) {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (error) {}
+        }
+        verificarSessaoExistente();
+    </script>
+</body>
+</html>

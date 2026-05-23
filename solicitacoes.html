@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Solicitação de Entrega</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; position: relative; }
+        h1 { color: #FF6B8A; font-size: 1.8rem; margin-bottom: 10px; }
+        .btn-config { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; padding: 10px 20px; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: none; align-items: center; gap: 8px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255, 107, 138, 0.3); }
+        .btn-config.visible { display: flex; }
+        .btn-config:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 138, 0.4); }
+        @media (max-width: 600px) { .btn-config { position: relative; margin: 0 auto 20px; width: fit-content; } }
+        .cliente-badge { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 25px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1565C0; }
+        .cliente-badge.erro { background: #FFEBEE; border-color: #EF5350; color: #C62828; }
+        .cliente-badge.interno { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-color: #4CAF50; color: #2E7D32; }
+        .info-envio-unificado { background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border: 3px solid #FF9800; border-radius: 15px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2); }
+        .info-envio-unificado h2 { color: #E65100; font-size: 1.3rem; margin-bottom: 15px; font-weight: 700; }
+        .info-envio-unificado .data-atual { font-size: 1.1rem; color: #424242; margin-bottom: 15px; font-weight: 600; }
+        .info-envio-unificado .envio-info { font-size: 1rem; color: #2E7D32; margin-bottom: 10px; line-height: 1.6; }
+        .info-envio-unificado .prazo-info { font-size: 0.95rem; color: #BF360C; margin-bottom: 0; font-weight: 600; }
+        .emoji-grande { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .confirmacao-container { background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; text-align: center; }
+        .confirmacao-container.ativo { border-color: #A8E6CF; background: #F0FFF4; }
+        .checkbox-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+        .checkbox-wrapper input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #FF6B8A; }
+        .checkbox-wrapper label { margin: 0; cursor: pointer; font-size: 1rem; color: #2D3436; font-weight: 600; }
+        .form-box.desabilitado { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+        .form-box.desabilitado::after { content: "👆 Marque a caixa acima para começar"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #FF6B8A; color: white; padding: 15px 25px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.2); white-space: nowrap; z-index: 10; }
+        .form-box { position: relative; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 40px rgba(255, 139, 167, 0.15); }
+        .loading-spinner { display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .dados-carregados { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border: 2px solid #4CAF50; border-radius: 10px; padding: 15px; margin-top: 10px; display: none; animation: slideDown 0.3s ease; }
+        .dados-carregados.show { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dados-carregados p { margin: 0; color: #2E7D32; font-size: 0.9rem; }
+        .dados-carregados strong { color: #1B5E20; }
+        .limpar-dados { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 0.8rem; margin-top: 8px; padding: 0 !important; width: auto !important; text-align: left; }
+        .limpar-dados:hover { color: #FF6B8A; background: none !important; box-shadow: none !important; transform: none !important; }
+        .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .price-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; border: 3px solid transparent; transition: all 0.3s ease; cursor: pointer; position: relative; }
+        .price-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(255, 139, 167, 0.2); }
+        .price-card.selecionado { border-color: #FF8BA7; transform: scale(1.05); box-shadow: 0 10px 30px rgba(255, 139, 167, 0.3); }
+        .price-card input[type="radio"] { position: absolute; opacity: 0; cursor: pointer; }
+        .price-card h3 { color: #FF6B8A; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .price { font-size: 1.8rem; font-weight: bold; color: #FF6B8A; margin: 10px 0; }
+        .price-desc { font-size: 0.85rem; color: #636E72; margin-top: 5px; }
+        .price-card.erro { border-color: #ff4444; animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #2D3436; }
+        .required::after { content: " *"; color: #FF6B8A; }
+        input, select, textarea { width: 100%; padding: 14px 18px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; transition: all 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #FF8BA7; box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1); }
+        textarea { resize: vertical; min-height: 100px; }
+        .hint { font-size: 0.8rem; color: #636E72; margin-top: 5px; font-weight: 400; }
+        .endereco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .endereco-grid { grid-template-columns: 1fr; } }
+        .aviso { background: #FFF3E0; border-left: 4px solid #FFD93D; padding: 12px; margin-top: 10px; border-radius: 0 8px 8px 0; font-size: 0.9rem; display: none; }
+        .aviso.show { display: block; }
+        button { width: 100%; padding: 18px; background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 107, 138, 0.4); }
+        .success { display: none; text-align: center; padding: 40px; }
+        .success.show { display: block !important; }
+        .check-icon { width: 80px; height: 80px; background: #A8E6CF; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .erro-conexao { background: #ffebee; border: 2px solid #f44336; color: #c62828; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .erro-conexao.show { display: block; }
+        .endereco-alterado { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 5px; font-size: 0.85rem; color: #E65100; display: none; }
+        .endereco-alterado.show { display: block; }
+        .checkbox-email { display: flex; align-items: flex-start; gap: 12px; background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%); border: 2px solid #90CAF9; border-radius: 12px; padding: 15px; margin-top: 15px; cursor: pointer; transition: all 0.3s ease; }
+        .checkbox-email:hover { border-color: #64B5F6; box-shadow: 0 4px 12px rgba(144, 202, 249, 0.3); }
+        .checkbox-email input[type="checkbox"] { width: 22px; height: 22px; margin-top: 2px; accent-color: #2196F3; cursor: pointer; }
+        .checkbox-email .email-texto { flex: 1; }
+        .checkbox-email .email-texto strong { color: #1565C0; display: block; margin-bottom: 4px; }
+        .checkbox-email .email-texto span { color: #546E7A; font-size: 0.9rem; }
+        .numero-solicitacao { background: linear-gradient(135deg, #FF6B8A, #FF8BA7); color: white; padding: 15px 25px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; margin: 20px 0; display: inline-block; box-shadow: 0 4px 15px rgba(255, 107, 138, 0.4); }
+        .numero-solicitacao-label { color: #636E72; font-size: 0.9rem; margin-bottom: 5px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
+        .modal-overlay.ativo { display: flex; }
+        .modal-config { background: white; border-radius: 20px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .config-header { background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; padding: 25px 30px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .config-header h2 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        .config-header p { font-size: 0.9rem; opacity: 0.9; margin-top: 5px; }
+        .btn-fechar { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.3s; }
+        .btn-fechar:hover { background: rgba(255,255,255,0.2); }
+        .config-body { padding: 30px; }
+        .config-section { margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #E0E0E0; }
+        .config-section:last-child { border-bottom: none; margin-bottom: 0; }
+        .config-section h3 { color: #FF6B8A; font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .config-field { margin-bottom: 15px; }
+        .config-field label { display: block; font-weight: 600; margin-bottom: 8px; color: #2D3436; font-size: 0.9rem; }
+        .config-field input, .config-field select, .config-field textarea { width: 100%; padding: 12px 15px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 0.95rem; transition: all 0.3s; }
+        .config-field input:focus, .config-field select:focus, .config-field textarea:focus { outline: none; border-color: #FF8BA7; box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1); }
+        .config-field textarea { min-height: 80px; resize: vertical; font-family: monospace; font-size: 0.85rem; }
+        .config-field small { display: block; margin-top: 5px; color: #636E72; font-size: 0.8rem; }
+        .config-preview { background: #FFF5F7; border: 2px solid #FF8BA7; border-radius: 12px; padding: 20px; margin-top: 15px; }
+        .config-preview h4 { color: #FF6B8A; margin-bottom: 10px; font-size: 0.95rem; }
+        .config-preview-content { background: white; padding: 15px; border-radius: 8px; font-size: 0.9rem; line-height: 1.6; }
+        .config-footer { padding: 20px 30px; background: #F8F9FA; border-radius: 0 0 20px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn-reset { background: #FFEBEE; color: #C62828; border: 2px solid #EF5350; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-reset:hover { background: #EF5350; color: white; }
+        .btn-salvar { background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; padding: 14px 40px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 107, 138, 0.4); }
+        .btn-cancelar { background: #E0E0E0; color: #2D3436; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-cancelar:hover { background: #D0D0D0; }
+        .preco-input { display: flex; align-items: center; gap: 10px; }
+        .preco-input span { color: #636E72; font-weight: 600; }
+        .link-compartilhavel-box { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .link-compartilhavel-box h4 { color: #1565C0; margin-bottom: 15px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .link-display { background: white; border: 2px solid #90CAF9; border-radius: 8px; padding: 12px 15px; font-family: monospace; font-size: 0.85rem; color: #424242; word-break: break-all; margin-bottom: 12px; line-height: 1.5; }
+        .link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-copiar-link { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-copiar-link:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4); }
+        .btn-copiar-link.copiado { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .btn-abrir-link { background: white; color: #2196F3; border: 2px solid #2196F3; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-abrir-link:hover { background: #E3F2FD; }
+        .link-info { margin-top: 12px; padding: 10px; background: rgba(255,255,255,0.6); border-radius: 8px; font-size: 0.85rem; color: #546E7A; }
+        .link-info strong { color: #1565C0; }
+        .cliente-id-display { display: inline-block; background: #FF6B8A; color: white; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
+        .link-nao-disponivel { background: #FFEBEE; border: 2px dashed #EF5350; border-radius: 12px; padding: 20px; text-align: center; color: #C62828; margin-bottom: 25px; }
+        .link-nao-disponivel p { margin: 0; font-size: 0.9rem; }
+        .empresa-header { text-align: center; margin-bottom: 15px; }
+        .empresa-nome { font-size: 1.6rem; font-weight: bold; color: #FF6B8A; text-align: center; margin-bottom: 10px; }
+        .pagamento-area { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #0095d9; border-radius: 15px; padding: 20px 15px; margin: 15px 0; text-align: center; display: none; }
+        .pagamento-area.mostrar { display: block; }
+        .pagamento-area h3 { color: #1565C0; margin-bottom: 12px; font-size: 1.1rem; }
+        .pagamento-area p { color: #666; margin-bottom: 12px; font-size: 0.9rem; line-height: 1.4; }
+        .btn-gerar-pix { background: linear-gradient(135deg, #0095d9 0%, #007bb8 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; width: auto; max-width: 100%; }
+        .btn-gerar-pix:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 149, 217, 0.4); }
+        .btn-gerar-pix:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .btn-gerar-pix.bloqueado { background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important; cursor: not-allowed !important; opacity: 0.7; }
+        .btn-gerar-pix.bloqueado:hover { transform: none !important; box-shadow: none !important; }
+        .pix-container { background: white; border: 2px dashed #0095d9; border-radius: 12px; padding: 15px 12px; margin: 12px 0; text-align: center; display: none; }
+        .pix-container.mostrar { display: block; }
+        .pix-valor { font-size: 1.6em; font-weight: bold; color: #0095d9; margin: 8px 0; }
+        .pix-descricao { font-size: 0.9rem; color: #666; margin-bottom: 12px; }
+        .pix-qr-container { background: #f8f9fa; border-radius: 10px; padding: 12px; margin: 10px auto; display: inline-block; max-width: 100%; }
+        .pix-qr-container img { max-width: 200px; width: 100%; border-radius: 8px; display: block; margin: 0 auto; }
+        .pix-copia-cola { background: #f5f5f5; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 0.7rem; word-break: break-all; color: #333; text-align: left; border: 1px solid #e0e0e0; max-height: 100px; overflow-y: auto; line-height: 1.4; }
+        .btn-copiar-codigo { background: #0B193F; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; width: auto; max-width: 100%; }
+        .btn-copiar-codigo:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .btn-copiar-codigo.copiado { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .pix-instrucoes { background: #FFF8E1; border: 1px solid #FFB74D; border-radius: 10px; padding: 12px 15px; margin: 12px 0; font-size: 0.85rem; color: #E65100; text-align: left; }
+        .pix-instrucoes strong { display: block; margin-bottom: 8px; font-size: 0.95rem; }
+        .pix-instrucoes ol { margin: 0; padding-left: 18px; }
+        .pix-instrucoes li { margin-bottom: 6px; line-height: 1.4; }
+        .status-pagamento { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-top: 12px; max-width: 100%; flex-wrap: wrap; justify-content: center; }
+        .status-pagamento.pendente { background: #FFF3E0; color: #E65100; }
+        .status-pagamento.pago { background: #E8F5E9; color: #2E7D32; }
+        .status-pagamento.erro { background: #FFEBEE; color: #C62828; }
+        @media (max-width: 480px) {
+            .pagamento-area { padding: 15px 10px; margin: 10px 0; }
+            .pagamento-area h3 { font-size: 1rem; }
+            .pagamento-area p { font-size: 0.85rem; }
+            .btn-gerar-pix { padding: 12px 16px; font-size: 0.95rem; width: 100%; justify-content: center; }
+            .pix-container { padding: 12px 8px; }
+            .pix-valor { font-size: 1.4em; }
+            .pix-qr-container { padding: 8px; }
+            .pix-qr-container img { max-width: 180px; }
+            .pix-copia-cola { font-size: 0.65rem; padding: 8px 10px; max-height: 80px; }
+            .btn-copiar-codigo { width: 100%; justify-content: center; padding: 10px 16px; font-size: 0.9rem; }
+            .pix-instrucoes { padding: 10px 12px; font-size: 0.8rem; }
+            .pix-instrucoes li { margin-bottom: 4px; }
+            .status-pagamento { font-size: 0.85rem; padding: 8px 12px; }
+        }
+        .btn-enviar-bloqueado { background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important; cursor: not-allowed !important; opacity: 0.7; }
+        .btn-enviar-bloqueado:hover { transform: none !important; box-shadow: none !important; }
+        .mensagem-frete-outros { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center; color: #1565C0; font-size: 1rem; line-height: 1.5; display: none; }
+        .mensagem-frete-outros.mostrar { display: block; }
+        .spinner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner-overlay.ativo { display: flex; }
+        .spinner-box { background: white; padding: 40px; border-radius: 16px; text-align: center; }
+        .spinner-box .loading { display: inline-block; width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .aviso-campos-obrigatorios { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.85rem; color: #E65100; display: none; }
+        .aviso-campos-obrigatorios.mostrar { display: block; }
+        .redirecionando-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); z-index: 9998; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
+        .redirecionando-overlay.ativo { display: flex; }
+        .redirecionando-box { background: white; padding: 50px 40px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); max-width: 400px; width: 100%; }
+        .redirecionando-box .loading { display: inline-block; width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 25px; }
+        .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
+        .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
+    </style>
+    <base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner-box">
+            <div class="loading"></div>
+            <p style="font-size:1.1rem; color:#333; font-weight:600;">Processando...</p>
+        </div>
+    </div>
+    <div class="redirecionando-overlay" id="redirecionandoOverlay">
+        <div class="redirecionando-box">
+            <div class="loading"></div>
+            <h2>✅ Pagamento Confirmado!</h2>
+            <p>Enviando sua solicitação e redirecionando para a página de confirmação...</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="empresa-header" id="empresaHeader">
+                <div class="empresa-nome" id="empresaNome">Carregando...</div>
+            </div>
+            <h1>Solicitação de Entrega</h1>
+            <div class="cliente-badge" id="clienteBadge">
+                <span>🏪</span>
+                <span id="clienteBadgeText">Identificando loja...</span>
+            </div>
+            <button class="btn-config" id="btnConfig" onclick="abrirConfiguracoes()">⚙️ Configurações</button>
+        </div>
+        <div id="erroConexao" class="erro-conexao">⚠️ Erro ao conectar com o banco de dados. Verifique sua conexão ou tente recarregar a página.</div>
+        <div id="infoEnvioUnificado" class="info-envio-unificado">
+            <span class="emoji-grande">⏰</span>
+            <h2>Carregando...</h2>
+            <p class="data-atual">Aguarde um momento</p>
+        </div>
+        <div class="confirmacao-container" id="confirmacaoBox">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="confirmarPrazo">
+                <label for="confirmarPrazo">✅ Li e entendi o prazo para solicitações semanais acima</label>
+            </div>
+        </div>
+        <div class="pricing" id="regiaoContainer">
+            <label class="price-card" data-regiao="floripa">
+                <input type="radio" name="regiao" id="floripa" value="Grande Florianópolis">
+                <h3>🏠 Grande Florianópolis</h3>
+                <div class="price" id="precoFloripa">R$ 15,00</div>
+                <p class="price-desc">Valor fixo</p>
+            </label>
+            <label class="price-card" data-regiao="sc">
+                <input type="radio" name="regiao" id="sc" value="Santa Catarina">
+                <h3>🌲 Santa Catarina</h3>
+                <div class="price" id="precoSC">R$ 21,99</div>
+                <p class="price-desc">Valor fixo</p>
+            </label>
+            <label class="price-card" data-regiao="outros">
+                <input type="radio" name="regiao" id="outros" value="Outros Estados">
+                <h3>🇧🇷 Outros Estados</h3>
+                <div class="price">Consultar</div>
+                <p class="price-desc">Orçamento via Direct</p>
+            </label>
+        </div>
+        <div class="form-box desabilitado" id="formBox">
+            <form id="deliveryForm">
+                <div class="form-group">
+                    <label class="required">CPF</label>
+                    <input type="text" name="cpf" id="cpf" required placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                    <div class="dados-carregados" id="dadosCarregados">
+                        <p>✅ <strong>Dados encontrados!</strong> Formulário preenchido automaticamente.</p>
+                        <button type="button" class="limpar-dados" id="btnLimparDados">🗑️ Limpar e preencher novo cadastro</button>
+                    </div>
+                    <p class="hint">💡 Digite seu CPF completo. Se já tiver cadastro, seus dados serão carregados automaticamente!</p>
+                </div>
+                <div class="form-group">
+                    <label class="required">Nome completo</label>
+                    <input type="text" name="nome" id="nome" required placeholder="Digite seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label class="required">WhatsApp</label>
+                    <input type="tel" name="whatsapp" id="whatsapp" required placeholder="(48) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" id="email" placeholder="seu.email@exemplo.com">
+                    <p class="hint">💡 Necessário caso deseje receber cópia da solicitação por e-mail</p>
+                </div>
+                <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="text" name="instagram" id="instagram" placeholder="@maria.silva">
+                    <p class="hint">💡 Isto irá facilitar a localização da sua sacolinha</p>
+                </div>
+                <div class="form-group">
+                    <label class="required">Rua / Avenida</label>
+                    <input type="text" name="rua" id="rua" required placeholder="Nome da rua ou avenida">
+                    <div class="endereco-alterado" id="avisoEnderecoAlterado">📝 Endereço modificado - será cadastrado um novo endereço para esta entrega</div>
+                </div>
+                <div class="endereco-grid">
+                    <div class="form-group">
+                        <label class="required">Nº</label>
+                        <input type="text" name="numero" id="numero" required placeholder="Número">
+                    </div>
+                    <div class="form-group">
+                        <label>Complemento</label>
+                        <input type="text" name="complemento" id="complemento" placeholder="Apto, bloco...">
+                    </div>
+                </div>
+                <div class="endereco-grid">
+                    <div class="form-group">
+                        <label class="required">Bairro</label>
+                        <input type="text" name="bairro" id="bairro" required placeholder="Bairro">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Cidade</label>
+                        <input type="text" name="cidade" id="cidade" required placeholder="Cidade">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="required">CEP</label>
+                    <input type="text" name="cep" id="cepEndereco" required placeholder="00000-000" maxlength="9">
+                    <div class="aviso" id="avisoOutros">⚠️ Para outros estados, aguarde nosso contato com o valor do frete via Direct do Instagram.</div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes" id="observacoes" placeholder="Informações adicionais..."></textarea>
+                </div>
+                <div class="checkbox-email" id="checkboxEmailContainer">
+                    <input type="checkbox" id="receberEmail" name="receberEmail">
+                    <div class="email-texto">
+                        <strong>📧 Deseja receber cópia da solicitação por e-mail?</strong>
+                        <span>Enviaremos um resumo completo da sua solicitação com todos os detalhes e número de protocolo.</span>
+                    </div>
+                </div>
+                <div class="pagamento-area" id="pagamentoArea">
+                    <h3>💳 Pagamento do Frete via PIX</h3>
+                    <p>Para finalizar sua solicitação, realize o pagamento do frete via PIX.</p>
+                    <button type="button" id="btnGerarPix" class="btn-gerar-pix bloqueado" onclick="gerarPixMercadoPago()" disabled>🔒 Preencha todos os dados obrigatórios para gerar o PIX</button>
+                    <div class="aviso-campos-obrigatorios" id="avisoCamposObrigatorios">⚠️ Preencha todos os campos obrigatórios acima para gerar o PIX</div>
+                    <div id="pixContainer" class="pix-container">
+                        <div class="pix-valor" id="pixValor">R$ 0,00</div>
+                        <div class="pix-descricao" id="pixDescricao">Frete - Grande Florianópolis</div>
+                        <div class="pix-qr-container">
+                            <img id="pixQrCodeImg" src="" alt="QR Code PIX">
+                        </div>
+                        <div class="pix-copia-cola" id="pixCopiaCola">Copia e cola será gerado aqui...</div>
+                        <button type="button" class="btn-copiar-codigo" id="btnCopiarCodigo" onclick="copiarCodigoPix()">📋 Copiar Código PIX</button>
+                        <div class="pix-instrucoes">
+                            <strong>📲 Como pagar:</strong>
+                            <ol>
+                                <li>Abra o app do seu banco</li>
+                                <li>Escolha a opção "PIX" → "Copia e Cola" ou escaneie o QR Code</li>
+                                <li>Cole o código acima e confirme o pagamento</li>
+                                <li>Aguarde a confirmação automática abaixo ⬇️</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div id="statusPagamento" class="status-pagamento pendente" style="display:none;">⏳ Aguardando confirmação do pagamento...</div>
+                </div>
+                <div class="mensagem-frete-outros" id="mensagemFreteOutros">
+                    <strong>📦 Envio para Outros Estados</strong><br><br>
+                    Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br>
+                    <strong>💬 O orçamento será enviado via Direct do Instagram.</strong>
+                </div>
+                <button type="submit" id="btnEnviar" style="margin-top: 20px;">🔒 Preencha todos os dados e selecione a região</button>
+            </form>
+            <div class="success" id="successMsg">
+                <div class="check-icon">✓</div>
+                <h2 style="color: #FF6B8A; margin-bottom: 10px;">Solicitação Enviada!</h2>
+                <div class="numero-solicitacao-label">Número da sua solicitação:</div>
+                <div class="numero-solicitacao" id="numeroSolicitacaoDisplay">-</div>
+                <p style="color: #636E72; margin-bottom: 15px;">Guarde este número para referência futura.</p>
+                <p id="mensagemEmailEnviado" style="display: none; background: #E8F5E9; padding: 15px; border-radius: 10px; color: #2E7D32; margin-bottom: 15px;">✅ Uma cópia da solicitação foi enviada para seu e-mail!</p>
+                <p style="margin-top: 15px;">
+                    <a href="https://www.instagram.com/pingodegentelojaebrecho/" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #833AB4, #FD1D1D, #F77737); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(131, 58, 180, 0.3);">📱 Abrir Instagram @pingodegentelojaebrecho</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalConfiguracoes">
+        <div class="modal-config">
+            <div class="config-header">
+                <div>
+                    <h2>⚙️ Configurações</h2>
+                    <p>Personalize as informações de envio e pagamento</p>
+                </div>
+                <button class="btn-fechar" onclick="fecharConfiguracoes()">×</button>
+            </div>
+            <div class="config-body">
+                <div class="config-section" id="secaoLinkCompartilhavel">
+                    <h3>🔗 Link para Clientes</h3>
+                    <p style="color: #636E72; font-size: 0.9rem; margin-bottom: 15px;">Compartilhe este link com seus clientes para que eles possam solicitar entregas diretamente.</p>
+                    <div id="linkCompartilhavelContainer"></div>
+                </div>
+                <div class="config-section">
+                    <h3>📦 Informações de Envio</h3>
+                    <div class="config-grid">
+                        <div class="config-field">
+                            <label>Título da Seção</label>
+                            <input type="text" id="configTituloEnvio" placeholder="Próximo Envio">
+                        </div>
+                        <div class="config-field">
+                            <label>Emoji</label>
+                            <input type="text" id="configEmojiEnvio" placeholder="⏰" maxlength="5">
+                        </div>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Envio Próxima Semana</label>
+                        <textarea id="configTextoProximaSemana" placeholder="Sua sacola será enviada entre Quinta e Sexta-feira da próxima semana"></textarea>
+                        <small>Variáveis: {{data_inicio}} e {{data_fim}}</small>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Envio Esta Semana</label>
+                        <textarea id="configTextoEstaSemana" placeholder="Sua sacola será enviada entre Quinta e Sexta-feira desta semana"></textarea>
+                        <small>Variáveis: {{data_inicio}} e {{data_fim}}</small>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Prazo de Solicitação</label>
+                        <textarea id="configTextoPrazo" placeholder="Solicitações abertas até Quarta-feira {{data}} às 17:00h"></textarea>
+                        <small>Variável: {{data}}</small>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>💰 Preços de Entrega</h3>
+                    <div class="config-grid">
+                        <div class="config-field">
+                            <label>Grande Florianópolis (R$)</label>
+                            <div class="preco-input">
+                                <span>R$</span>
+                                <input type="number" id="configPrecoFloripa" step="0.01" min="0" placeholder="15.00">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <label>Santa Catarina (R$)</label>
+                            <div class="preco-input">
+                                <span>R$</span>
+                                <input type="number" id="configPrecoSC" step="0.01" min="0" placeholder="21.99">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="config-footer">
+                <button class="btn-reset" onclick="restaurarPadrao()">🔄 Restaurar Padrão</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-cancelar" onclick="fecharConfiguracoes()">Cancelar</button>
+                    <button class="btn-salvar" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
+        emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+
+        var supabaseClient = null, supabaseConectado = false, clienteIdSistema = null, modoAcesso = 'publico', nomeEmpresa = '';
+        const STORAGE_CONFIG = 'solicitacao_config';
+        const CONFIG_PADRAO = {
+            envio: { titulo: 'Próximo Envio', emoji: '⏰', textoProximaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira da próxima semana</strong>', textoEstaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira desta semana</strong>', textoPrazo: 'Solicitações abertas até <strong>Quarta-feira {{data}} às 17:00h</strong>' },
+            precos: { floripa: 15.00, sc: 21.99 }
+        };
+        let configAtual = { ...CONFIG_PADRAO };
+        var pagamentoConfirmado = false, cobrancaId = null, pollingInterval = null;
+        var pixQrCode = null, pixCopiaCola = null, mpPaymentId = null;
+        var regiaoSelecionadaAtual = '', alertaExibido = false, regiaoPendente = null;
+        var dadosClienteCarregados = false, clienteIdAtual = null, enderecoIdAtual = null, enderecoFoiAlterado = false;
+        let cpfTimeout = null, ultimoCPFBuscado = '', buscaEmAndamento = false;
+        var enderecoOriginal = {};
+        let acessoInterno = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarOrigemAcesso();
+            carregarConfiguracoes();
+            inicializarSupabase();
+            configurarEventos();
+            atualizarInfoEnvio();
+            aplicarConfiguracoesNaPagina();
+            verificarDadosSalvos();
+            verificarCamposObrigatoriosPIX();
+        });
+
+        function verificarCamposObrigatoriosPIX() {
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade').value.trim();
+            const cep = document.getElementById('cepEndereco').value.trim();
+
+            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && cep;
+
+            const btnGerarPix = document.getElementById('btnGerarPix');
+            const avisoCampos = document.getElementById('avisoCamposObrigatorios');
+
+            if (todosPreenchidos) {
+                btnGerarPix.disabled = false;
+                btnGerarPix.classList.remove('bloqueado');
+                btnGerarPix.innerHTML = '📱 Gerar QR Code PIX';
+                avisoCampos.classList.remove('mostrar');
+            } else {
+                btnGerarPix.disabled = true;
+                btnGerarPix.classList.add('bloqueado');
+                btnGerarPix.innerHTML = '🔒 Preencha todos os dados obrigatórios para gerar o PIX';
+                avisoCampos.classList.add('mostrar');
+            }
+
+            return todosPreenchidos;
+        }
+
+        function salvarDadosFormulario() {
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const nome = document.getElementById('nome').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const instagram = document.getElementById('instagram').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const complemento = document.getElementById('complemento').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade').value.trim();
+            const cep = document.getElementById('cepEndereco').value.trim();
+            const observacoes = document.getElementById('observacoes').value.trim();
+            const receberEmail = document.getElementById('receberEmail').checked;
+            const valor = regiaoSelecionadaAtual === 'floripa' ? configAtual.precos.floripa : configAtual.precos.sc;
+
+            const dados = {
+                cpf: cpf, nome: nome, whatsapp: whatsapp, email: email, instagram: instagram,
+                rua: rua, numero: numero, complemento: complemento, bairro: bairro,
+                cidade: cidade, cep: cep, observacoes: observacoes, receberEmail: receberEmail,
+                regiao: regiaoSelecionadaAtual, valor: valor,
+                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual
+            };
+
+            sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
+            sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
+            if (cobrancaId) sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+            console.log('[FORM] Dados do formulário salvos no sessionStorage');
+        }
+
+        function verificarDadosSalvos() {
+            const numeroSolicitacaoSalvo = sessionStorage.getItem('solicitacao_numero');
+            if (numeroSolicitacaoSalvo) {
+                console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
+                console.log('[FORM] Limpando dados antigos e mostrando formulário novo...');
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+                sessionStorage.removeItem('solicitacao_numero');
+                sessionStorage.removeItem('solicitacao_nome');
+                sessionStorage.removeItem('solicitacao_regiao');
+                sessionStorage.removeItem('solicitacao_valor');
+                sessionStorage.removeItem('solicitacao_payment_id');
+                limparDados();
+                const infoDiv = document.getElementById('infoEnvioUnificado');
+                infoDiv.innerHTML = '<span class="emoji-grande">👋</span><h2>Bem-vindo de volta!</h2><p class="data-atual">Sua última solicitação foi enviada com sucesso.</p><p class="envio-info">Preencha o formulário abaixo para uma nova solicitação.</p>';
+                return;
+            }
+
+            const dadosSalvos = sessionStorage.getItem('solicitacao_dados');
+            if (dadosSalvos) {
+                try {
+                    const dados = JSON.parse(dadosSalvos);
+                    console.log('[FORM] Dados salvos encontrados, restaurando formulário...');
+                    if (dados.cpf) document.getElementById('cpf').value = dados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    if (dados.nome) document.getElementById('nome').value = dados.nome;
+                    if (dados.whatsapp) document.getElementById('whatsapp').value = dados.whatsapp;
+                    if (dados.email) document.getElementById('email').value = dados.email;
+                    if (dados.instagram) document.getElementById('instagram').value = dados.instagram;
+                    if (dados.rua) document.getElementById('rua').value = dados.rua;
+                    if (dados.numero) document.getElementById('numero').value = dados.numero;
+                    if (dados.complemento) document.getElementById('complemento').value = dados.complemento;
+                    if (dados.bairro) document.getElementById('bairro').value = dados.bairro;
+                    if (dados.cidade) document.getElementById('cidade').value = dados.cidade;
+                    if (dados.cep) document.getElementById('cepEndereco').value = dados.cep;
+                    if (dados.observacoes) document.getElementById('observacoes').value = dados.observacoes;
+                    if (dados.receberEmail) document.getElementById('receberEmail').checked = dados.receberEmail;
+                    if (dados.regiao) {
+                        setTimeout(function() { aplicarSelecaoRegiao(dados.regiao); }, 100);
+                    }
+                    document.getElementById('confirmarPrazo').checked = true;
+                    document.getElementById('formBox').classList.remove('desabilitado');
+                    document.getElementById('confirmacaoBox').classList.add('ativo');
+                    clienteIdAtual = dados.clientePgId || null;
+                    enderecoIdAtual = dados.enderecoId || null;
+                    dadosClienteCarregados = true;
+                    if (dados.cpf && dados.cpf.length === 11) {
+                        setTimeout(function() { buscarPorCPFAutomatico(dados.cpf); }, 500);
+                    }
+                    atualizarBotaoEnviar();
+                    verificarCamposObrigatoriosPIX();
+                    console.log('[FORM] Formulário restaurado com sucesso');
+                } catch (e) {
+                    console.error('[FORM] Erro ao restaurar dados salvos:', e);
+                }
+            }
+        }
+
+        async function verificarOrigemAcesso() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteIdDaURL = urlParams.get('cliente');
+            const referrer = document.referrer || '';
+            const referrerEhDashboard = referrer.includes('dashboard') || referrer.includes('gerenciamento') || referrer.includes('live.html');
+            const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
+            acessoInterno = referrerEhDashboard || sessionFlag;
+
+            if (clienteIdDaURL) {
+                modoAcesso = 'publico';
+                clienteIdSistema = clienteIdDaURL;
+                console.log('🔗 Modo PÚBLICO - Cliente ID da URL:', clienteIdSistema);
+                atualizarBadgeCliente('publico', clienteIdSistema);
+                setTimeout(function() { carregarNomeEmpresa(); }, 500);
+                return;
+            }
+
+            if (acessoInterno) {
+                modoAcesso = 'interno';
+                document.getElementById('btnConfig').classList.add('visible');
+                console.log('✅ Modo INTERNO - Buscando cliente_id do usuário logado...');
+                try {
+                    if (typeof window.supabase !== 'undefined') {
+                        const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        const { data: { session } } = await tempClient.auth.getSession();
+                        if (session) {
+                            const { data: usuario, error } = await tempClient.from('usuarios_pg').select('cliente_id, clientes_sistema(nome)').eq('auth_id', session.user.id).single();
+                            if (usuario && usuario.cliente_id) {
+                                clienteIdSistema = usuario.cliente_id;
+                                const nomeCliente = usuario.clientes_sistema?.nome || 'Sua Loja';
+                                console.log('✅ Cliente ID do usuário logado:', clienteIdSistema);
+                                atualizarBadgeCliente('interno', clienteIdSistema, nomeCliente);
+                                setTimeout(function() { carregarNomeEmpresa(); }, 500);
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) { console.error('Erro ao buscar usuário logado:', e); }
+            }
+
+            console.error('❌ Nenhum cliente_id encontrado!');
+            atualizarBadgeCliente('erro', null, 'Erro: Identifique a loja na URL (ex: ?cliente=UUID)');
+        }
+
+        function atualizarBadgeCliente(tipo, clienteId, nomeCliente) {
+            const badge = document.getElementById('clienteBadge');
+            const badgeText = document.getElementById('clienteBadgeText');
+            badge.classList.remove('erro', 'interno');
+            if (tipo === 'erro') {
+                badge.classList.add('erro');
+                badgeText.innerHTML = nomeCliente || 'Erro de configuração';
+            } else if (tipo === 'interno') {
+                badge.classList.add('interno');
+                badgeText.innerHTML = '<strong>' + (nomeCliente || 'Modo Interno') + '</strong><br><small>ID: ' + (clienteId?.substring(0, 8)) + '...</small>';
+            } else {
+                badgeText.innerHTML = '<strong>Link da Loja</strong><br><small>ID: ' + (clienteId?.substring(0, 8)) + '...</small>';
+            }
+        }
+
+        async function carregarNomeEmpresa() {
+            if (!clienteIdSistema || !supabaseClient) return;
+            try {
+                const { data: empresa, error } = await supabaseClient.from('clientes_sistema').select('nome').eq('id', clienteIdSistema).single();
+                if (error) { console.error('Erro ao buscar nome da empresa:', error); return; }
+                if (empresa && empresa.nome) {
+                    nomeEmpresa = empresa.nome;
+                    const empresaNomeEl = document.getElementById('empresaNome');
+                    if (empresaNomeEl) empresaNomeEl.textContent = nomeEmpresa;
+                    const pageTitleEl = document.getElementById('pageTitle');
+                    if (pageTitleEl) pageTitleEl.textContent = 'Solicitação de Entrega - ' + nomeEmpresa;
+                    console.log('✅ Nome da empresa carregado:', nomeEmpresa);
+                }
+            } catch (e) { console.error('Erro ao carregar nome da empresa:', e); }
+        }
+
+        function marcarAcessoDashboard() { sessionStorage.setItem('acesso_dashboard', 'true'); }
+
+        function carregarConfiguracoes() {
+            const salvo = localStorage.getItem(STORAGE_CONFIG);
+            if (salvo) {
+                try {
+                    configAtual = JSON.parse(salvo);
+                    configAtual = { ...CONFIG_PADRAO, ...configAtual };
+                    if (configAtual.envio) configAtual.envio = { ...CONFIG_PADRAO.envio, ...configAtual.envio };
+                    if (configAtual.precos) configAtual.precos = { ...CONFIG_PADRAO.precos, ...configAtual.precos };
+                } catch (e) { configAtual = { ...CONFIG_PADRAO }; }
+            }
+        }
+
+        function salvarConfiguracoesLocal() { localStorage.setItem(STORAGE_CONFIG, JSON.stringify(configAtual)); }
+
+        function aplicarConfiguracoesNaPagina() {
+            document.getElementById('precoFloripa').textContent = 'R$ ' + configAtual.precos.floripa.toFixed(2).replace('.', ',');
+            document.getElementById('precoSC').textContent = 'R$ ' + configAtual.precos.sc.toFixed(2).replace('.', ',');
+        }
+
+        function gerarLinkCompartilhavel() {
+            if (!clienteIdSistema) return null;
+            const urlBase = window.location.origin + window.location.pathname;
+            return urlBase + '?cliente=' + clienteIdSistema;
+        }
+
+        function renderizarLinkCompartilhavel() {
+            const container = document.getElementById('linkCompartilhavelContainer');
+            const link = gerarLinkCompartilhavel();
+            if (!link) {
+                container.innerHTML = '<div class="link-nao-disponivel"><p>⚠️ <strong>Link não disponível</strong></p><p style="margin-top: 8px;">Não foi possível identificar o cliente. Faça login novamente.</p></div>';
+                return;
+            }
+            const clienteIdCurto = clienteIdSistema.substring(0, 8) + '...';
+            container.innerHTML = '<div class="link-compartilhavel-box"><h4>🔗 Link Público para Clientes</h4><div class="link-display" id="linkCompartilhavel">' + link + '</div><div class="link-actions"><button class="btn-copiar-link" id="btnCopiarLink" onclick="copiarLinkCompartilhavel()">📋 Copiar Link</button><button class="btn-abrir-link" onclick="abrirLinkCompartilhavel()">🔗 Abrir Link</button></div><div class="link-info"><strong>📍 Como usar:</strong><br>• Copie este link e envie para seus clientes via WhatsApp, Instagram ou e-mail<br>• Quando o cliente acessar, o formulário já estará vinculado à sua loja<br>• <strong>Seu ID:</strong> <span class="cliente-id-display">' + clienteIdCurto + '</span></div></div>';
+        }
+
+        function copiarLinkCompartilhavel() {
+            const link = document.getElementById('linkCompartilhavel').textContent;
+            const btn = document.getElementById('btnCopiarLink');
+            navigator.clipboard.writeText(link).then(function() {
+                btn.innerHTML = '✓ Copiado!'; btn.classList.add('copiado');
+                setTimeout(function() { btn.innerHTML = '📋 Copiar Link'; btn.classList.remove('copiado'); }, 2000);
+            }).catch(function() {
+                const textArea = document.createElement('textarea'); textArea.value = link;
+                document.body.appendChild(textArea); textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+                btn.innerHTML = '✓ Copiado!'; btn.classList.add('copiado');
+                setTimeout(function() { btn.innerHTML = '📋 Copiar Link'; btn.classList.remove('copiado'); }, 2000);
+            });
+        }
+
+        function abrirLinkCompartilhavel() {
+            const link = gerarLinkCompartilhavel();
+            if (link) window.open(link, '_blank');
+        }
+
+        function abrirConfiguracoes() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado às configurações.'); return; }
+            renderizarLinkCompartilhavel();
+            document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
+            document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
+            document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<<[^>]*>/g, '');
+            document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<<[^>]*>/g, '');
+            document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<<[^>]*>/g, '');
+            document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
+            document.getElementById('configPrecoSC').value = configAtual.precos.sc;
+            document.getElementById('modalConfiguracoes').classList.add('ativo');
+        }
+
+        function fecharConfiguracoes() { document.getElementById('modalConfiguracoes').classList.remove('ativo'); }
+
+        function salvarConfiguracoes() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado.'); return; }
+            const titulo = document.getElementById('configTituloEnvio').value.trim();
+            if (!titulo) { alert('⚠️ O título da seção de envio é obrigatório!'); return; }
+            configAtual = {
+                envio: { titulo: titulo, emoji: document.getElementById('configEmojiEnvio').value || '⏰', textoProximaSemana: document.getElementById('configTextoProximaSemana').value || CONFIG_PADRAO.envio.textoProximaSemana, textoEstaSemana: document.getElementById('configTextoEstaSemana').value || CONFIG_PADRAO.envio.textoEstaSemana, textoPrazo: document.getElementById('configTextoPrazo').value || CONFIG_PADRAO.envio.textoPrazo },
+                precos: { floripa: parseFloat(document.getElementById('configPrecoFloripa').value) || 15.00, sc: parseFloat(document.getElementById('configPrecoSC').value) || 21.99 }
+            };
+            salvarConfiguracoesLocal();
+            aplicarConfiguracoesNaPagina();
+            atualizarInfoEnvio();
+            fecharConfiguracoes();
+        }
+
+        function restaurarPadrao() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado.'); return; }
+            if (confirm('Tem certeza que deseja restaurar todas as configurações para o padrão?')) {
+                configAtual = { ...CONFIG_PADRAO };
+                document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
+                document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
+                document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<<[^>]*>/g, '');
+                document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<<[^>]*>/g, '');
+                document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<<[^>]*>/g, '');
+                document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
+                document.getElementById('configPrecoSC').value = configAtual.precos.sc;
+            }
+        }
+
+        function inicializarSupabase() {
+            try {
+                if (typeof window.supabase === 'undefined') { mostrarErroConexao(); return; }
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseConectado = true;
+                console.log('✅ Supabase conectado. Modo:', modoAcesso, '| Cliente ID:', clienteIdSistema);
+            } catch (e) { console.error('Erro Supabase:', e); mostrarErroConexao(); }
+        }
+
+        function mostrarErroConexao() { document.getElementById('erroConexao').classList.add('show'); }
+
+        function formatarData(data) {
+            const dia = data.getDate().toString().padStart(2, '0');
+            const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+            return dia + '/' + mes + '/' + data.getFullYear();
+        }
+
+        function obterNomeDiaSemana(dia) {
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return dias[dia];
+        }
+
+        function atualizarInfoEnvio() {
+            const agora = new Date();
+            const diaSemana = agora.getDay();
+            const hora = agora.getHours();
+            const minutos = agora.getMinutes();
+            const horaAtualEmMinutos = (hora * 60) + minutos;
+            const limiteQuarta = (17 * 60);
+            const infoDiv = document.getElementById('infoEnvioUnificado');
+            const dataAtualStr = formatarData(agora);
+            const nomeDiaAtual = obterNomeDiaSemana(diaSemana);
+
+            let html = '<span class="emoji-grande">' + configAtual.envio.emoji + '</span>';
+            html += '<h2>' + configAtual.envio.titulo + '</h2>';
+            html += '<p class="data-atual">Hoje é ' + nomeDiaAtual + ' dia ' + dataAtualStr + '.</p>';
+
+            if (diaSemana === 3 && horaAtualEmMinutos < limiteQuarta) {
+                const quintaEnvio = new Date(agora); quintaEnvio.setDate(agora.getDate() + 1);
+                const sextaEnvio = new Date(agora); sextaEnvio.setDate(agora.getDate() + 2);
+                let textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
+                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', dataAtualStr);
+                html += '<p class="prazo-info">' + textoPrazo + '</p>';
+            } else {
+                let diasAteQuarta = (3 - diaSemana + 7) % 7;
+                if (diasAteQuarta === 0) diasAteQuarta = 7;
+                const proximaQuarta = new Date(agora); proximaQuarta.setDate(agora.getDate() + diasAteQuarta);
+                const quintaEnvio = new Date(proximaQuarta); quintaEnvio.setDate(proximaQuarta.getDate() + 1);
+                const sextaEnvio = new Date(proximaQuarta); sextaEnvio.setDate(proximaQuarta.getDate() + 2);
+                let textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
+                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaQuarta));
+                html += '<p class="prazo-info">' + textoPrazo + '</p>';
+            }
+            infoDiv.innerHTML = html;
+        }
+
+        function configurarEventos() {
+            document.getElementById('confirmarPrazo').addEventListener('change', function() {
+                const formBox = document.getElementById('formBox');
+                const confirmacaoBox = document.getElementById('confirmacaoBox');
+                if (this.checked) {
+                    formBox.classList.remove('desabilitado');
+                    confirmacaoBox.classList.add('ativo');
+                    if (regiaoPendente) { aplicarSelecaoRegiao(regiaoPendente); regiaoPendente = null; }
+                    document.getElementById('regiaoContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    formBox.classList.add('desabilitado');
+                    confirmacaoBox.classList.remove('ativo');
+                    document.querySelectorAll('input[name="regiao"]').forEach(function(r) { r.checked = false; });
+                    document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado'); });
+                    document.getElementById('pagamentoArea').classList.remove('mostrar');
+                    document.getElementById('mensagemFreteOutros').classList.remove('mostrar');
+                    regiaoSelecionadaAtual = ''; regiaoPendente = null;
+                    resetarPagamento();
+                    atualizarBotaoEnviar();
+                }
+            });
+
+            document.getElementById('regiaoContainer').addEventListener('click', function(e) {
+                e.stopPropagation();
+                const card = e.target.closest('.price-card');
+                if (!card) return;
+                const regiao = card.dataset.regiao;
+                if (!document.getElementById('confirmarPrazo').checked) {
+                    regiaoPendente = regiao;
+                    if (!alertaExibido) {
+                        alertaExibido = true;
+                        alert('⚠️ Por favor, marque a caixa acima para continuar.');
+                        setTimeout(function() { alertaExibido = false; }, 100);
+                    }
+                    return;
+                }
+                aplicarSelecaoRegiao(regiao);
+            });
+
+            configurarBuscaAutomaticaCPF();
+            configurarMonitoramentoEndereco();
+            document.getElementById('btnLimparDados').addEventListener('click', limparDados);
+            document.getElementById('cepEndereco').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) value = value.substring(0, 5) + '-' + value.substring(5, 8);
+                e.target.value = value;
+            });
+            document.getElementById('deliveryForm').addEventListener('submit', enviarFormulario);
+            document.getElementById('modalConfiguracoes').addEventListener('click', function(e) {
+                if (e.target === this) fecharConfiguracoes();
+            });
+
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco'];
+            camposObrigatorios.forEach(function(id) {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    campo.addEventListener('input', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                    campo.addEventListener('change', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                    campo.addEventListener('blur', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                }
+            });
+        }
+
+        function aplicarSelecaoRegiao(regiao) {
+            document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado', 'erro'); });
+            const card = document.querySelector('.price-card[data-regiao="' + regiao + '"]');
+            if (card) {
+                card.querySelector('input[type="radio"]').checked = true;
+                card.classList.add('selecionado');
+                regiaoSelecionadaAtual = regiao;
+                const pagamentoArea = document.getElementById('pagamentoArea');
+                const mensagemFreteOutros = document.getElementById('mensagemFreteOutros');
+                const avisoOutros = document.getElementById('avisoOutros');
+                resetarPagamento();
+                if (regiao === 'floripa' || regiao === 'sc') {
+                    pagamentoArea.classList.add('mostrar');
+                    mensagemFreteOutros.classList.remove('mostrar');
+                    avisoOutros.classList.remove('show');
+                    verificarCamposObrigatoriosPIX();
+                } else if (regiao === 'outros') {
+                    pagamentoArea.classList.remove('mostrar');
+                    mensagemFreteOutros.classList.add('mostrar');
+                    avisoOutros.classList.add('show');
+                    pagamentoConfirmado = true;
+                }
+                atualizarBotaoEnviar();
+            }
+        }
+
+        function resetarPagamento() {
+            pagamentoConfirmado = false;
+            cobrancaId = null;
+            mpPaymentId = null;
+            pixQrCode = null;
+            pixCopiaCola = null;
+            if (pollingInterval) clearInterval(pollingInterval);
+            document.getElementById('pixContainer').classList.remove('mostrar');
+            document.getElementById('statusPagamento').style.display = 'none';
+            document.getElementById('pixQrCodeImg').src = '';
+            document.getElementById('pixCopiaCola').textContent = 'Copia e cola será gerado aqui...';
+            document.getElementById('btnCopiarCodigo').classList.remove('copiado');
+            document.getElementById('btnCopiarCodigo').innerHTML = '📋 Copiar Código PIX';
+            verificarCamposObrigatoriosPIX();
+        }
+
+        async function gerarPixMercadoPago() {
+            const btn = document.getElementById('btnGerarPix');
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const telefone = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!verificarCamposObrigatoriosPIX()) {
+                alert('⚠️ Preencha todos os campos obrigatórios antes de gerar o PIX.');
+                return;
+            }
+
+            salvarDadosFormulario();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;"></span> Gerando PIX...';
+            document.getElementById('spinnerOverlay').classList.add('ativo');
+
+            try {
+                const valor = regiaoSelecionadaAtual === 'floripa' ? configAtual.precos.floripa : configAtual.precos.sc;
+                const descricaoRegiao = regiaoSelecionadaAtual === 'floripa' ? 'Frete - Grande Florianopolis' : 'Frete - Santa Catarina';
+
+                const payload = {
+                    cliente_sistema_id: clienteIdSistema,
+                    comprador_nome: nome,
+                    comprador_email: email || null,
+                    comprador_telefone: telefone || null,
+                    comprador_cpf: cpf || null,
+                    valor: valor,
+                    descricao: descricaoRegiao
+                };
+
+                console.log('[PIX-MP] Enviando para mercadopago-pix-direto:', payload);
+
+                const response = await fetch(SUPABASE_URL + '/functions/v1/mercadopago-pix-direto', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log('[PIX-MP] Resposta:', data);
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Erro ao gerar PIX');
+                }
+
+                cobrancaId = data.cobranca_id;
+                const pix = data.pix;
+                mpPaymentId = pix.id || data.payment_id;
+                pixQrCode = pix.qr_code_base64;
+                pixCopiaCola = pix.qr_code;
+
+                document.getElementById('pixValor').textContent = 'R$ ' + valor.toFixed(2).replace('.', ',');
+                document.getElementById('pixDescricao').textContent = descricaoRegiao;
+
+                const qrImg = document.getElementById('pixQrCodeImg');
+                if (pix.qr_code_base64) {
+                    qrImg.src = 'data:image/png;base64,' + pix.qr_code_base64;
+                    qrImg.style.display = 'block';
+                } else if (pix.qr_code) {
+                    qrImg.src = 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl=' + encodeURIComponent(pix.qr_code);
+                    qrImg.style.display = 'block';
+                } else {
+                    qrImg.style.display = 'none';
+                }
+
+                document.getElementById('pixCopiaCola').textContent = pix.qr_code || 'Código não disponível';
+                document.getElementById('pixContainer').classList.add('mostrar');
+                btn.style.display = 'none';
+
+                const statusEl = document.getElementById('statusPagamento');
+                statusEl.className = 'status-pagamento pendente';
+                statusEl.innerHTML = '⏳ Aguardando pagamento...<br><small>ID: ' + (cobrancaId ? cobrancaId.substring(0, 8) : '---') + '...</small>';
+                statusEl.style.display = 'inline-flex';
+
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+                sessionStorage.setItem('solicitacao_payment_id', mpPaymentId);
+
+                iniciarVerificacaoPagamento();
+
+            } catch (error) {
+                console.error('[PIX-MP] Erro:', error);
+                btn.disabled = false;
+                btn.innerHTML = '📱 Gerar QR Code PIX';
+                alert('Erro: ' + error.message);
+            } finally {
+                document.getElementById('spinnerOverlay').classList.remove('ativo');
+            }
+        }
+
+        function copiarCodigoPix() {
+            if (!pixCopiaCola) return;
+            navigator.clipboard.writeText(pixCopiaCola).then(function() {
+                const btn = document.getElementById('btnCopiarCodigo');
+                btn.innerHTML = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(function() {
+                    btn.innerHTML = '📋 Copiar Código PIX';
+                    btn.classList.remove('copiado');
+                }, 2000);
+            }).catch(function() {
+                const textarea = document.createElement('textarea');
+                textarea.value = pixCopiaCola;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Código PIX copiado!');
+            });
+        }
+
+        // ===== REDIRECIONAR PARA PIX-SUCESSO (funciona com qualquer nome de arquivo) =====
+        function redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete) {
+            console.log('[REDIRECT] Redirecionando para pix-sucesso.html...');
+
+            // Salvar dados para pix-sucesso.html
+            sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
+            sessionStorage.setItem('pix_sucesso_nome', nome);
+            sessionStorage.setItem('pix_sucesso_regiao', regiao);
+            sessionStorage.setItem('pix_sucesso_valor', valorFrete.toFixed(2).replace('.', ','));
+
+            // Limpar dados da solicitação atual
+            sessionStorage.removeItem('solicitacao_dados');
+            sessionStorage.removeItem('solicitacao_cliente_id');
+            sessionStorage.removeItem('solicitacao_cobranca_id');
+
+            // ===== CORREÇÃO: Funciona com qualquer nome de arquivo =====
+            // Pegar o pathname atual e substituir qualquer nome de arquivo .html por pix-sucesso.html
+            const pathnameAtual = window.location.pathname;
+            const diretorio = pathnameAtual.substring(0, pathnameAtual.lastIndexOf('/') + 1);
+            const urlSucesso = window.location.origin + diretorio + 'pix-sucesso.html' + '?cliente=' + clienteIdSistema;
+
+            console.log('[REDIRECT] URL:', urlSucesso);
+            window.location.href = urlSucesso;
+        }
+
+        async function enviarSolicitacaoAutomatica() {
+            console.log('[AUTO] ==========================================');
+            console.log('[AUTO] ENVIANDO SOLICITAÇÃO AUTOMATICAMENTE...');
+            console.log('[AUTO] ==========================================');
+
+            // Mostrar overlay de redirecionamento
+            document.getElementById('redirecionandoOverlay').classList.add('ativo');
+
+            try {
+                const fakeEvent = { 
+                    preventDefault: function() {},
+                    target: document.getElementById('deliveryForm')
+                };
+
+                // Chamar enviarFormulario com modo automático (não mostra sucesso, redireciona direto)
+                await enviarFormulario(fakeEvent, true);
+
+            } catch (error) {
+                console.error('[AUTO] Erro ao enviar automaticamente:', error);
+                document.getElementById('redirecionandoOverlay').classList.remove('ativo');
+                alert('⚠️ Pagamento confirmado mas houve erro no envio automático. Clique em ENVIAR SOLICITAÇÃO manualmente.');
+            }
+        }
+
+        function iniciarVerificacaoPagamento() {
+            console.log('[POLLING] Iniciando verificação de pagamento...');
+            console.log('[POLLING] cobrancaId:', cobrancaId);
+            console.log('[POLLING] mpPaymentId:', mpPaymentId);
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(async function() {
+                await verificarStatusPagamento();
+            }, 5000);
+            verificarStatusPagamento();
+        }
+
+        async function verificarStatusPagamento() {
+            if (pagamentoConfirmado) return;
+
+            let idBusca = cobrancaId;
+            let campoBusca = 'id';
+
+            if (!idBusca && mpPaymentId) {
+                idBusca = mpPaymentId;
+                campoBusca = 'mercado_pago_id';
+            }
+
+            if (!idBusca) {
+                console.log('[POLLING] Sem ID para verificar');
+                return;
+            }
+
+            try {
+                console.log('[POLLING] Verificando', campoBusca, ':', idBusca);
+
+                let query = supabaseClient.from('cobrancas_pix').select('status, status_mp');
+                if (campoBusca === 'id') {
+                    query = query.eq('id', idBusca);
+                } else {
+                    query = query.eq('mp_payment_id', idBusca);
+                }
+
+                const { data: cobranca, error } = await query.single();
+
+                if (error) {
+                    console.log('[POLLING] Erro na query:', error);
+                    return;
+                }
+
+                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
+
+                if (cobranca && (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited')) {
+                    console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO! Status:', cobranca.status, '| MP:', cobranca.status_mp);
+                    pagamentoConfirmado = true;
+                    clearInterval(pollingInterval);
+
+                    const statusEl = document.getElementById('statusPagamento');
+                    statusEl.className = 'status-pagamento pago';
+                    statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Enviando solicitação...';
+
+                    const dados = sessionStorage.getItem('solicitacao_dados');
+                    if (dados) {
+                        const d = JSON.parse(dados);
+                        d.pagamentoConfirmado = true;
+                        sessionStorage.setItem('solicitacao_dados', JSON.stringify(d));
+                    }
+
+                    // ===== ENVIAR E REDIRECIONAR IMEDIATAMENTE =====
+                    console.log('[POLLING] Aguardando 1 segundo antes de enviar...');
+                    setTimeout(function() {
+                        console.log('[POLLING] Chamando enviarSolicitacaoAutomatica()...');
+                        enviarSolicitacaoAutomatica();
+                    }, 1000);
+                }
+            } catch (e) {
+                console.error('[POLLING] Erro:', e);
+            }
+        }
+
+        function atualizarBotaoEnviar() {
+            const btn = document.getElementById('btnEnviar');
+            if (!regiaoSelecionadaAtual) {
+                btn.innerHTML = '🔒 Selecione uma região para continuar';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+                return;
+            }
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade').value.trim();
+            const cep = document.getElementById('cepEndereco').value.trim();
+
+            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cidade || !cep) {
+                btn.innerHTML = '🔒 Preencha todos os dados obrigatórios';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+                return;
+            }
+
+            if (regiaoSelecionadaAtual === 'outros') {
+                btn.innerHTML = '📦 ENVIAR SOLICITACAO';
+                btn.classList.remove('btn-enviar-bloqueado');
+                btn.disabled = false;
+            } else if (pagamentoConfirmado) {
+                btn.innerHTML = '📦 ENVIAR SOLICITACAO';
+                btn.classList.remove('btn-enviar-bloqueado');
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = '🔒 Ao realizar o pagamento seu formulário será enviado automaticamente não precisa fazer mais nada, só aguardar!!!';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+            }
+        }
+
+        async function buscarPorCPFAutomatico(cpfDigitado) {
+            if (!supabaseConectado || !clienteIdSistema) { console.error('❌ Supabase não conectado ou cliente_id não definido'); return; }
+            const cpfSomenteNumeros = cpfDigitado.replace(/\D/g, '');
+            if (cpfSomenteNumeros.length !== 11) return;
+            if (cpfSomenteNumeros === ultimoCPFBuscado || buscaEmAndamento) return;
+
+            ultimoCPFBuscado = cpfSomenteNumeros;
+            buscaEmAndamento = true;
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('dadosCarregados').classList.remove('show');
+
+            try {
+                console.log('🔍 Buscando CPF:', cpfSomenteNumeros, 'no cliente:', clienteIdSistema);
+                let { data: cliente, error } = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfSomenteNumeros).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
+                if (!cliente) {
+                    const cpfFormatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    let result = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfFormatado).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
+                    cliente = result.data;
+                }
+
+                if (cliente) {
+                    console.log('✅ Cliente encontrado:', cliente.nome);
+                    const { data: endereco } = await supabaseClient.from('enderecos_pg').select('*').eq('cliente_pg_id', cliente.id).eq('cliente_id', clienteIdSistema).eq('ativo', true).order('criado_em', { ascending: false }).limit(1).maybeSingle();
+                    document.getElementById('nome').value = cliente.nome || '';
+                    document.getElementById('whatsapp').value = cliente.whatsapp || '';
+                    document.getElementById('instagram').value = cliente.instagram || '';
+                    document.getElementById('email').value = cliente.email || '';
+                    clienteIdAtual = cliente.id;
+                    if (endereco) {
+                        document.getElementById('rua').value = endereco.rua || '';
+                        document.getElementById('numero').value = endereco.numero || '';
+                        document.getElementById('complemento').value = endereco.complemento || '';
+                        document.getElementById('bairro').value = endereco.bairro || '';
+                        document.getElementById('cidade').value = endereco.cidade || '';
+                        document.getElementById('cepEndereco').value = endereco.cep || '';
+                        enderecoIdAtual = endereco.id;
+                        enderecoOriginal = { id: endereco.id, rua: endereco.rua || '', numero: endereco.numero || '', complemento: endereco.complemento || '', bairro: endereco.bairro || '', cidade: endereco.cidade || '', cep: endereco.cep || '' };
+                    }
+                    dadosClienteCarregados = true;
+                    enderecoFoiAlterado = false;
+                    document.getElementById('dadosCarregados').classList.add('show');
+                    document.getElementById('avisoEnderecoAlterado').classList.remove('show');
+                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cidade', 'cepEndereco'].forEach(function(id) {
+                        const campo = document.getElementById(id);
+                        if (campo && campo.value) { campo.style.backgroundColor = '#E8F5E9'; campo.style.borderColor = '#4CAF50'; setTimeout(function() { campo.style.backgroundColor = ''; campo.style.borderColor = ''; }, 2000); }
+                    });
+                    verificarCamposObrigatoriosPIX();
+                } else {
+                    console.log('ℹ️ Cliente não encontrado, será criado novo cadastro');
+                    if (dadosClienteCarregados) { limparCamposExcetoCPF(); dadosClienteCarregados = false; document.getElementById('dadosCarregados').classList.remove('show'); clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; }
+                }
+            } catch (error) { console.error('Erro na busca:', error); }
+            finally { document.getElementById('loadingSpinner').style.display = 'none'; buscaEmAndamento = false; atualizarBotaoEnviar(); verificarCamposObrigatoriosPIX(); }
+        }
+
+        function configurarBuscaAutomaticaCPF() {
+            const cpfInput = document.getElementById('cpf');
+            cpfInput.addEventListener('input', function(e) {
+                if (cpfTimeout) clearTimeout(cpfTimeout);
+                const valor = e.target.value;
+                const cpfSomenteNumeros = valor.replace(/\D/g, '');
+                if (cpfSomenteNumeros.length === 0) { ultimoCPFBuscado = ''; return; }
+                if (cpfSomenteNumeros.length < 11) {
+                    let formatado = cpfSomenteNumeros;
+                    if (cpfSomenteNumeros.length > 9) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+                    else if (cpfSomenteNumeros.length > 6) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+                    else if (cpfSomenteNumeros.length > 3) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+                    e.target.value = formatado; return;
+                }
+                let formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                e.target.value = formatado;
+                cpfTimeout = setTimeout(function() { buscarPorCPFAutomatico(formatado); }, 500);
+            });
+            cpfInput.addEventListener('blur', function(e) {
+                const valor = e.target.value;
+                const cpfSomenteNumeros = valor.replace(/\D/g, '');
+                if (cpfSomenteNumeros.length === 11 && cpfSomenteNumeros !== ultimoCPFBuscado) buscarPorCPFAutomatico(valor);
+            });
+            cpfInput.addEventListener('keypress', function(e) { if (!/[0-9]/.test(String.fromCharCode(e.which))) e.preventDefault(); });
+        }
+
+        function configurarMonitoramentoEndereco() {
+            ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco'].forEach(function(campoId) {
+                const campo = document.getElementById(campoId);
+                if (campo) { campo.addEventListener('input', verificarAlteracaoEndereco); campo.addEventListener('change', verificarAlteracaoEndereco); }
+            });
+        }
+
+        function verificarAlteracaoEndereco() {
+            if (!dadosClienteCarregados) return;
+            const camposEndereco = ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco'];
+            let algumCampoAlterado = false;
+            camposEndereco.forEach(function(campoId) {
+                const campo = document.getElementById(campoId);
+                if (!campo) return;
+                const campoNome = campoId === 'cepEndereco' ? 'cep' : campoId;
+                const valorAtual = campo.value || '';
+                const valorOriginal = enderecoOriginal[campoNome] || '';
+                if (valorAtual !== valorOriginal) algumCampoAlterado = true;
+            });
+            const aviso = document.getElementById('avisoEnderecoAlterado');
+            if (algumCampoAlterado) {
+                if (!enderecoFoiAlterado) { enderecoFoiAlterado = true; enderecoIdAtual = null; }
+                if (aviso) aviso.classList.add('show');
+            } else {
+                if (enderecoFoiAlterado) { enderecoFoiAlterado = false; enderecoIdAtual = enderecoOriginal.id; }
+                if (aviso) aviso.classList.remove('show');
+            }
+        }
+
+        function limparCamposExcetoCPF() {
+            ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+            clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
+        }
+
+        function limparDados() {
+            if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                if (cpfTimeout) clearTimeout(cpfTimeout); ultimoCPFBuscado = '';
+                ['cpf', 'nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+                document.getElementById('dadosCarregados').classList.remove('show');
+                document.getElementById('avisoEnderecoAlterado').classList.remove('show');
+                dadosClienteCarregados = false; clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
+                document.querySelectorAll('input[name="regiao"]').forEach(function(r) { r.checked = false; });
+                document.querySelectorAll('.price-card').forEach(function(c) { c.classList.remove('selecionado'); });
+                document.getElementById('pagamentoArea').classList.remove('mostrar');
+                document.getElementById('mensagemFreteOutros').classList.remove('mostrar');
+                regiaoSelecionadaAtual = '';
+                resetarPagamento();
+                atualizarBotaoEnviar();
+                document.getElementById('cpf').focus();
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+            }
+        }
+
+        async function gerarNumeroSolicitacao() {
+            const agora = new Date(); const ano = agora.getFullYear();
+            try {
+                const { data: ultimaSolicitacao, error } = await supabaseClient.from('solicitacoes_pg').select('numero_solicitacao').like('numero_solicitacao', 'SOL-' + ano + '-%').order('numero_solicitacao', { ascending: false }).limit(1).maybeSingle();
+                if (error) throw error;
+                let sequencial = 1;
+                if (ultimaSolicitacao && ultimaSolicitacao.numero_solicitacao) {
+                    const partes = ultimaSolicitacao.numero_solicitacao.split('-');
+                    if (partes.length === 3) { const ultimoSequencial = parseInt(partes[2], 10); if (!isNaN(ultimoSequencial)) sequencial = ultimoSequencial + 1; }
+                }
+                return 'SOL-' + ano + '-' + sequencial.toString().padStart(4, '0');
+            } catch (error) { console.error('Erro ao gerar número:', error); return 'SOL-' + ano + '-' + Date.now().toString().slice(-4); }
+        }
+
+        async function enviarEmailConfirmacao(dadosSolicitacao) {
+            try {
+                const templateParams = { to_email: dadosSolicitacao.email, numero_solicitacao: dadosSolicitacao.numeroSolicitacao, nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao, regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero, complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro, cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep, observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação' };
+                const response = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams);
+                console.log('✅ E-mail enviado:', response.status); return true;
+            } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
+        }
+
+        // ===== FUNÇÃO PRINCIPAL DE ENVIO (com parâmetro modoAutomatico) =====
+        async function enviarFormulario(e, modoAutomatico) {
+            e.preventDefault();
+            modoAutomatico = modoAutomatico || false;
+
+            if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
+            if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
+
+            const regiaoSelecionada = document.querySelector('input[name="regiao"]:checked');
+            if (!regiaoSelecionada) {
+                alert('⚠️ Selecione uma região de entrega.');
+                document.querySelectorAll('.price-card').forEach(function(c) { c.classList.add('erro'); setTimeout(function() { c.classList.remove('erro'); }, 500); });
+                return;
+            }
+
+            if ((regiaoSelecionadaAtual === 'floripa' || regiaoSelecionadaAtual === 'sc') && !pagamentoConfirmado) {
+                alert('⚠️ Realize o pagamento do frete antes de enviar a solicitação.');
+                document.getElementById('pagamentoArea').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const btnSubmit = document.getElementById('btnEnviar');
+            const textoOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '⏳ Enviando...';
+            btnSubmit.disabled = true;
+
+            try {
+                const formData = new FormData(e.target);
+                const cpf = formData.get('cpf').replace(/\D/g, '');
+                const nome = formData.get('nome');
+                const whatsapp = formData.get('whatsapp');
+                const email = formData.get('email');
+                const instagram = formData.get('instagram');
+                const rua = formData.get('rua');
+                const numero = formData.get('numero');
+                const complemento = formData.get('complemento');
+                const bairro = formData.get('bairro');
+                const cidade = formData.get('cidade');
+                const cep = formData.get('cep');
+                const observacoes = formData.get('observacoes');
+                const receberEmail = document.getElementById('receberEmail').checked;
+                const regiao = regiaoSelecionada.value;
+
+                let clientePgId = clienteIdAtual;
+
+                if (!clientePgId) {
+                    console.log('🔍 Buscando cliente existente com CPF:', cpf);
+                    const { data: clienteExistente, error: erroBusca } = await supabaseClient
+                        .from('clientes_pg')
+                        .select('id, nome, whatsapp, email, instagram')
+                        .eq('cpf', cpf)
+                        .eq('cliente_id', clienteIdSistema)
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (erroBusca) console.error('Erro ao buscar cliente:', erroBusca);
+
+                    if (clienteExistente) {
+                        console.log('✅ Cliente existente encontrado:', clienteExistente.id);
+                        clientePgId = clienteExistente.id;
+                        clienteIdAtual = clientePgId;
+                        const dadosAtualizacao = {};
+                        if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                        if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                        if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
+                        if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                        if (Object.keys(dadosAtualizacao).length > 0) {
+                            const { error: erroUpdate } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                            if (erroUpdate) console.error('Erro ao atualizar cliente:', erroUpdate);
+                        }
+                    } else {
+                        console.log('🆕 Criando novo cliente...');
+                        const { data: novoCliente, error: erroCliente } = await supabaseClient
+                            .from('clientes_pg')
+                            .insert([{
+                                cliente_id: clienteIdSistema,
+                                cpf: cpf,
+                                nome: nome,
+                                whatsapp: whatsapp,
+                                email: email,
+                                instagram: instagram
+                            }])
+                            .select()
+                            .single();
+
+                        if (erroCliente) {
+                            if (erroCliente.code === '23505') {
+                                console.log('⚠️ CPF já existe, buscando ID...');
+                                const { data: clienteDuplicado } = await supabaseClient
+                                    .from('clientes_pg')
+                                    .select('id')
+                                    .eq('cpf', cpf)
+                                    .eq('cliente_id', clienteIdSistema)
+                                    .limit(1)
+                                    .maybeSingle();
+                                if (clienteDuplicado) {
+                                    clientePgId = clienteDuplicado.id;
+                                    clienteIdAtual = clientePgId;
+                                } else {
+                                    throw new Error('Não foi possível encontrar o cliente após erro de duplicidade');
+                                }
+                            } else {
+                                throw erroCliente;
+                            }
+                        } else {
+                            clientePgId = novoCliente.id;
+                            clienteIdAtual = clientePgId;
+                        }
+                    }
+                }
+
+                let enderecoPgId = enderecoIdAtual;
+
+                if (!enderecoPgId || enderecoFoiAlterado) {
+                    if (!enderecoFoiAlterado && clientePgId) {
+                        console.log('🔍 Buscando endereço existente do cliente:', clientePgId);
+                        const { data: enderecoExistente, error: erroBuscaEnd } = await supabaseClient
+                            .from('enderecos_pg')
+                            .select('id, rua, numero, complemento, bairro, cidade, cep')
+                            .eq('cliente_pg_id', clientePgId)
+                            .eq('cliente_id', clienteIdSistema)
+                            .eq('ativo', true)
+                            .order('criado_em', { ascending: false })
+                            .limit(1)
+                            .maybeSingle();
+
+                        if (enderecoExistente) {
+                            const enderecoIgual = 
+                                enderecoExistente.rua === rua &&
+                                enderecoExistente.numero === numero &&
+                                enderecoExistente.complemento === (complemento || '') &&
+                                enderecoExistente.bairro === bairro &&
+                                enderecoExistente.cidade === cidade &&
+                                enderecoExistente.cep === cep;
+
+                            if (enderecoIgual) {
+                                console.log('✅ Endereço existente encontrado e igual:', enderecoExistente.id);
+                                enderecoPgId = enderecoExistente.id;
+                                enderecoIdAtual = enderecoPgId;
+                            } else {
+                                console.log('📝 Endereço diferente, criando novo...');
+                            }
+                        }
+                    }
+
+                    if (!enderecoPgId) {
+                        console.log('🆕 Criando novo endereço...');
+                        const { data: novoEndereco, error: erroEndereco } = await supabaseClient
+                            .from('enderecos_pg')
+                            .insert([{
+                                cliente_id: clienteIdSistema,
+                                cliente_pg_id: clientePgId,
+                                rua: rua,
+                                numero: numero,
+                                complemento: complemento,
+                                bairro: bairro,
+                                cidade: cidade,
+                                cep: cep,
+                                ativo: true
+                            }])
+                            .select()
+                            .single();
+
+                        if (erroEndereco) throw erroEndereco;
+                        enderecoPgId = novoEndereco.id;
+                        enderecoIdAtual = enderecoPgId;
+                    }
+                }
+
+                const numeroSolicitacao = await gerarNumeroSolicitacao();
+                const agora = new Date();
+                const dataSolicitacao = formatarData(agora);
+
+                const dadosSolicitacao = {
+                    cliente_id: clienteIdSistema,
+                    cliente_pg_id: clientePgId,
+                    endereco_id: enderecoPgId,
+                    numero_solicitacao: numeroSolicitacao,
+                    regiao: regiao,
+                    observacoes: observacoes,
+                    status: 'pendente'
+                };
+
+                if (cobrancaId) {
+                    dadosSolicitacao.cobranca_id = cobrancaId;
+                }
+
+                const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .insert([dadosSolicitacao])
+                    .select()
+                    .single();
+
+                if (erroSolicitacao) throw erroSolicitacao;
+
+                if (receberEmail && email) {
+                    await enviarEmailConfirmacao({
+                        email: email,
+                        numeroSolicitacao: numeroSolicitacao,
+                        nome: nome,
+                        dataSolicitacao: dataSolicitacao,
+                        regiao: regiao,
+                        rua: rua,
+                        numero: numero,
+                        complemento: complemento,
+                        bairro: bairro,
+                        cidade: cidade,
+                        cep: cep,
+                        observacoes: observacoes
+                    });
+                }
+
+                let valorFrete = 0;
+                if (regiao === 'Grande Florianópolis') {
+                    valorFrete = configAtual.precos.floripa;
+                } else if (regiao === 'Santa Catarina') {
+                    valorFrete = configAtual.precos.sc;
+                }
+
+                // ===== MODO AUTOMÁTICO (PIX pago): REDIRECIONA DIRETO =====
+                if (modoAutomatico) {
+                    console.log('[AUTO] Solicitação enviada automaticamente! Número:', numeroSolicitacao);
+                    redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete);
+                    return; // Não executa o resto
+                }
+
+                // ===== MODO MANUAL (Outros Estados sem PIX): MOSTRA SUCESSO AQUI =====
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+
+                document.getElementById('deliveryForm').style.display = 'none';
+                document.getElementById('successMsg').classList.add('show');
+                document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacao;
+                if (receberEmail && email) document.getElementById('mensagemEmailEnviado').style.display = 'block';
+
+            } catch (error) {
+                console.error('❌ Erro ao enviar:', error);
+                let mensagemErro = '❌ Erro ao enviar solicitação. Tente novamente.';
+                if (error.message && error.message.includes('duplicate')) {
+                    mensagemErro = '⚠️ Este CPF já está cadastrado. Tente novamente ou limpe os dados.';
+                }
+                alert(mensagemErro);
+                btnSubmit.innerHTML = textoOriginal;
+                btnSubmit.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

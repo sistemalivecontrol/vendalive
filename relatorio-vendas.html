@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas - Sistema Multi-Entidade</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* ===== HEADER PADRONIZADO ===== */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .btn-voltar {
+            background: #0B193F;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .btn-voltar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .header-center h1 { color: #0B193F; font-size: 1.6rem; margin-bottom: 3px; }
+        .header-center p { color: #636E72; font-size: 0.85rem; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        #userInfo {
+            color: #495057;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #userInfo .cliente-nome {
+            color: #0B193F;
+            font-weight: 500;
+        }
+        .btn-logout {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .header-left { flex-direction: column; gap: 15px; }
+            .user-info { width: 100%; justify-content: center; }
+        }
+        /* ================================ */
+
+        .content {
+            padding: 30px;
+        }
+
+        .report-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .report-title::before {
+            content: '';
+            width: 5px;
+            height: 32px;
+            background: #0B193F;
+            border-radius: 3px;
+        }
+
+        .report-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto auto;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 16px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0B193F;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-gerar-relatorio {
+            background: #0B193F;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            height: fit-content;
+        }
+
+        .btn-gerar-relatorio:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-limpar-filtros {
+            background: white;
+            color: #666;
+            border: 2px solid #e0e0e0;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+            height: fit-content;
+        }
+
+        .btn-limpar-filtros:hover {
+            border-color: #999;
+            color: #333;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .report-stat-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .report-stat-card:hover {
+            border-color: #0B193F;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .report-stat-label {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .report-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .report-stat-value.valor {
+            color: #27ae60;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #0B193F;
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .valor {
+            font-weight: 700;
+            color: #27ae60;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pendente { background: #fff3cd; color: #856404; }
+        .status-pago { background: #d4edda; color: #155724; }
+        .status-cancelado { background: #f8d7da; color: #721c24; }
+        .status-enviado { background: #d1ecf1; color: #0c5460; }
+        .status-entregue { background: #d4edda; color: #155724; }
+        .status-nao_enviado { background: #e2e3e5; color: #383d41; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .report-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-exportar {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .btn-exportar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 28px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #0B193F;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .report-filters {
+                grid-template-columns: 1fr;
+            }
+            .report-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .header { flex-direction: column; text-align: center; }
+            .header-left { flex-direction: column; gap: 15px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <!-- ===== HEADER PADRONIZADO ===== -->
+        <div class="header">
+            <div class="header-left">
+                <a href="vendas.html" class="btn-voltar" target="_self">← Voltar</a>
+                <div class="header-center">
+                    <h1>📊 Relatório de Vendas</h1>
+                    <p>Filtros por período e comprador</p>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="userInfo">👤 Carregando...</span>
+                <button class="btn-logout" onclick="fazerLogout()">🚪 Sair</button>
+            </div>
+        </div>
+        <!-- ================================ -->
+
+        <div class="content">
+            <div class="report-title">📈 Relatório de Vendas</div>
+
+            <!-- Filtros -->
+            <div class="report-filters">
+                <div class="form-group">
+                    <label>📅 Data Inicial</label>
+                    <input type="date" id="reportDataInicial">
+                </div>
+                <div class="form-group">
+                    <label>📅 Data Final</label>
+                    <input type="date" id="reportDataFinal">
+                </div>
+                <div class="form-group">
+                    <label>👤 Nome do Comprador</label>
+                    <input type="text" id="reportComprador" placeholder="Digite o nome...">
+                </div>
+                <button class="btn-gerar-relatorio" onclick="gerarRelatorio()">
+                    🔍 Gerar Relatório
+                </button>
+                <button class="btn-limpar-filtros" onclick="limparFiltros()">
+                    🧹 Limpar
+                </button>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="report-stats" id="reportStats" style="display: none;">
+                <div class="report-stat-card">
+                    <div class="report-stat-label">Total de Vendas</div>
+                    <div class="report-stat-value" id="reportTotalVendas">0</div>
+                </div>
+                <div class="report-stat-card">
+                    <div class="report-stat-label">Valor Total</div>
+                    <div class="report-stat-value valor" id="reportValorTotal">R$ 0,00</div>
+                </div>
+                <div class="report-stat-card">
+                    <div class="report-stat-label">Ticket Médio</div>
+                    <div class="report-stat-value valor" id="reportTicketMedio">R$ 0,00</div>
+                </div>
+                <div class="report-stat-card">
+                    <div class="report-stat-label">Pagos / Pendentes</div>
+                    <div class="report-stat-value" id="reportStatusCount">0 / 0</div>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="table-container" id="reportTableContainer" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Comprador</th>
+                            <th>Canal</th>
+                            <th>Itens</th>
+                            <th>Valor Total</th>
+                            <th>Pagamento</th>
+                            <th>Entrega</th>
+                            <th>Código Live</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTabelaVendas">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Estado Vazio -->
+            <div class="empty-state" id="reportEmpty" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <h3>Nenhuma venda encontrada</h3>
+                <p>Ajuste os filtros e clique em "Gerar Relatório" para visualizar os dados.</p>
+            </div>
+
+            <!-- Ações -->
+            <div class="report-actions" id="reportActions" style="display: none;">
+                <span id="reportInfo" style="color: #888; font-size: 0.9rem;"></span>
+                <button class="btn-exportar" onclick="exportarRelatorioCSV()">
+                    📥 Exportar CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p style="color: #0B193F; font-weight: 600;">Carregando dados...</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==========================================
+        // CONFIGURAÇÃO SUPABASE
+        // ==========================================
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        // CORREÇÃO: UMD CDN exporta createClient via destructuring
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let clienteId = null;
+        let todasVendas = [];
+        let vendasRelatorio = [];
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await verificarAutenticacao();
+            await carregarDadosUsuarioLogado();
+            await carregarVendas();
+
+            // Preenche datas com mês atual
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            document.getElementById('reportDataInicial').value = primeiroDia.toISOString().split('T')[0];
+            document.getElementById('reportDataFinal').value = hoje.toISOString().split('T')[0];
+
+            // Auto-gerar relatório após carregar dados
+            if (todasVendas.length > 0) {
+                console.log('[RELATORIO] Dados carregados:', todasVendas.length, 'vendas');
+                console.log('[RELATORIO] Primeira venda data_venda:', todasVendas[0]?.data_venda);
+                gerarRelatorio();
+            } else {
+                console.log('[RELATORIO] Nenhuma venda carregada');
+            }
+        });
+
+        // ==========================================
+        // AUTENTICAÇÃO
+        // ==========================================
+        async function verificarAutenticacao() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (err) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function carregarDadosUsuarioLogado() {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) return;
+
+                const { data: usuarioData } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('cliente_id')
+                    .eq('auth_id', user.id)
+                    .single();
+
+                if (usuarioData) {
+                    clienteId = usuarioData.cliente_id;
+                }
+
+                const { data: usuario, error } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('nome, nivel_acesso, cliente_id, clientes_sistema(nome)')
+                    .eq('auth_id', user.id)
+                    .single();
+
+                if (error || !usuario) {
+                    document.getElementById('userInfo').innerHTML = `👤 ${user.email.split('@')[0]}`;
+                    return;
+                }
+
+                const nomeUsuario = usuario.nome || user.email.split('@')[0];
+                const nomeCliente = usuario.clientes_sistema?.nome || '';
+
+                const textoExibicao = nomeCliente 
+                    ? `👤 ${nomeUsuario} <span class="cliente-nome">(${nomeCliente})</span>`
+                    : `👤 ${nomeUsuario}`;
+
+                document.getElementById('userInfo').innerHTML = textoExibicao;
+
+            } catch (err) {
+                console.error('Erro ao carregar usuário:', err);
+            }
+        }
+
+        async function fazerLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        // ==========================================
+        // CARREGAMENTO DE VENDAS
+        // ==========================================
+        async function carregarVendas() {
+            try {
+                if (!clienteId) {
+                    console.log('[RELATORIO] clienteId ainda não carregado, retry em 500ms...');
+                    setTimeout(carregarVendas, 500);
+                    return;
+                }
+
+                showLoading(true);
+                console.log('[RELATORIO] Buscando vendas para cliente_id:', clienteId);
+
+                const { data, error } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('*')
+                    .eq('cliente_id', clienteId)
+                    .order('data_venda', { ascending: false });
+
+                if (error) {
+                    console.error('[RELATORIO] Erro Supabase:', error);
+                    throw error;
+                }
+
+                todasVendas = data || [];
+                console.log('[RELATORIO] Vendas carregadas:', todasVendas.length);
+                if (todasVendas.length > 0) {
+                    console.log('[RELATORIO] Primeira venda:', {
+                        id: todasVendas[0].id,
+                        data_venda: todasVendas[0].data_venda,
+                        comprador: todasVendas[0].comprador,
+                        total: todasVendas[0].total
+                    });
+                }
+                showLoading(false);
+
+            } catch (err) {
+                showLoading(false);
+                console.error('[RELATORIO] Erro ao carregar vendas:', err);
+                mostrarToast('Erro ao carregar vendas', 'error');
+            }
+        }
+
+        // ==========================================
+        // RELATÓRIO
+        // ==========================================
+        function gerarRelatorio() {
+            const dataInicial = document.getElementById('reportDataInicial').value;
+            const dataFinal = document.getElementById('reportDataFinal').value;
+            const compradorFiltro = document.getElementById('reportComprador').value.toLowerCase().trim();
+
+            console.log('[RELATORIO] Gerando relatório...');
+            console.log('[RELATORIO] Filtros:', { dataInicial, dataFinal, compradorFiltro });
+            console.log('[RELATORIO] Total vendas carregadas:', todasVendas.length);
+
+            vendasRelatorio = todasVendas.filter(venda => {
+                let matchData = true;
+                let matchComprador = true;
+
+                if (dataInicial || dataFinal) {
+                    // Extract just the YYYY-MM-DD part from the ISO date string
+                    // This avoids all timezone issues by comparing dates as strings
+                    const vendaDataStr = venda.data_venda ? venda.data_venda.substring(0, 10) : '';
+
+                    if (dataInicial && vendaDataStr) {
+                        if (vendaDataStr < dataInicial) matchData = false;
+                    }
+                    if (dataFinal && vendaDataStr) {
+                        if (vendaDataStr > dataFinal) matchData = false;
+                    }
+                }
+
+                if (compradorFiltro) {
+                    const compradorNome = (venda.comprador || '').toLowerCase();
+                    matchComprador = compradorNome.includes(compradorFiltro);
+                }
+
+                return matchData && matchComprador;
+            });
+
+            console.log('[RELATORIO] Vendas após filtro:', vendasRelatorio.length);
+
+            vendasRelatorio.sort((a, b) => new Date(b.data_venda) - new Date(a.data_venda));
+
+            document.getElementById('reportStats').style.display = 'grid';
+
+            const totalVendas = vendasRelatorio.length;
+            const valorTotal = vendasRelatorio.reduce((acc, v) => acc + parseFloat(v.total || 0), 0);
+            const ticketMedio = totalVendas > 0 ? valorTotal / totalVendas : 0;
+            const pagos = vendasRelatorio.filter(v => v.status_pagamento === 'pago').length;
+            const pendentes = vendasRelatorio.filter(v => v.status_pagamento === 'pendente').length;
+
+            document.getElementById('reportTotalVendas').textContent = totalVendas;
+            document.getElementById('reportValorTotal').textContent = formatarMoeda(valorTotal);
+            document.getElementById('reportTicketMedio').textContent = formatarMoeda(ticketMedio);
+            document.getElementById('reportStatusCount').textContent = `${pagos} / ${pendentes}`;
+
+            const tbody = document.getElementById('reportTabelaVendas');
+            const tableContainer = document.getElementById('reportTableContainer');
+            const emptyState = document.getElementById('reportEmpty');
+            const actions = document.getElementById('reportActions');
+
+            if (vendasRelatorio.length === 0) {
+                tableContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+                actions.style.display = 'none';
+            } else {
+                tableContainer.style.display = 'block';
+                emptyState.style.display = 'none';
+                actions.style.display = 'flex';
+
+                tbody.innerHTML = vendasRelatorio.map(venda => {
+                    const itens = Array.isArray(venda.itens) ? venda.itens : JSON.parse(venda.itens || '[]');
+                    const qtdItens = itens.reduce((acc, item) => acc + (parseInt(item.quantidade) || 1), 0);
+
+                    return `
+                        <tr>
+                            <td>${formatarData(venda.data_venda)}</td>
+                            <td><strong>${venda.comprador || 'N/A'}</strong></td>
+                            <td>${formatarCanal(venda.canal_venda)}</td>
+                            <td>${qtdItens} item(s)</td>
+                            <td class="valor">${formatarMoeda(venda.total)}</td>
+                            <td>${formatarStatusPagamento(venda.status_pagamento)}</td>
+                            <td>${formatarStatusEntrega(venda.status_entrega)}</td>
+                            <td>${venda.codigo_live || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const dataIniText = dataInicial ? new Date(dataInicial).toLocaleDateString('pt-BR') : 'início';
+                const dataFinText = dataFinal ? new Date(dataFinal).toLocaleDateString('pt-BR') : 'hoje';
+                document.getElementById('reportInfo').textContent = 
+                    `Período: ${dataIniText} até ${dataFinText} | ${totalVendas} venda(s) encontrada(s)`;
+            }
+
+            mostrarToast(`Relatório gerado: ${totalVendas} venda(s) encontrada(s)`, 'success');
+        }
+
+        function limparFiltros() {
+            document.getElementById('reportDataInicial').value = '';
+            document.getElementById('reportDataFinal').value = '';
+            document.getElementById('reportComprador').value = '';
+            document.getElementById('reportStats').style.display = 'none';
+            document.getElementById('reportTableContainer').style.display = 'none';
+            document.getElementById('reportEmpty').style.display = 'none';
+            document.getElementById('reportActions').style.display = 'none';
+            vendasRelatorio = [];
+            mostrarToast('Filtros limpos', 'warning');
+        }
+
+        function exportarRelatorioCSV() {
+            if (vendasRelatorio.length === 0) {
+                mostrarToast('Nenhuma venda para exportar', 'error');
+                return;
+            }
+
+            let csv = 'Data,Comprador,Canal,Forma Pagamento,Status Pagamento,Status Entrega,Valor Total,Itens,Codigo Live,Observacoes\n';
+
+            vendasRelatorio.forEach(venda => {
+                const itens = Array.isArray(venda.itens) ? venda.itens : JSON.parse(venda.itens || '[]');
+                const itensTexto = itens.map(i => `${i.nome || 'Item'} x${i.quantidade || 1}`).join('; ');
+
+                csv += `"${formatarData(venda.data_venda)}",`;
+                csv += `"${(venda.comprador || '').replace(/"/g, '""')}",`;
+                csv += `"${venda.canal_venda || ''}",`;
+                csv += `"${venda.forma_pagamento || ''}",`;
+                csv += `"${venda.status_pagamento || ''}",`;
+                csv += `"${venda.status_entrega || ''}",`;
+                csv += `"${(venda.total || 0).toString().replace('.', ',')}",`;
+                csv += `"${itensTexto.replace(/"/g, '""')}",`;
+                csv += `"${venda.codigo_live || ''}",`;
+                csv += `"${(venda.observacoes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const dataIni = document.getElementById('reportDataInicial').value || 'inicio';
+            const dataFin = document.getElementById('reportDataFinal').value || 'fim';
+            link.href = URL.createObjectURL(blob);
+            link.download = `relatorio_vendas_${dataIni}_${dataFin}.csv`;
+            link.click();
+
+            mostrarToast('Relatório exportado com sucesso!', 'success');
+        }
+
+        // ==========================================
+        // UTILITÁRIOS
+        // ==========================================
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor || 0);
+        }
+
+        function formatarData(dataString) {
+            if (!dataString) return '-';
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatarCanal(canal) {
+            const canais = {
+                'live': '📱 Live Instagram',
+                'whatsapp': '💬 WhatsApp',
+                'loja_fisica': '🏪 Loja Física',
+                'site': '🌐 Site',
+                'outro': '📦 Outro'
+            };
+            return canais[canal] || canal;
+        }
+
+        function formatarStatusPagamento(status) {
+            const classes = {
+                'pendente': 'status-pendente',
+                'pago': 'status-pago',
+                'cancelado': 'status-cancelado'
+            };
+            const labels = {
+                'pendente': '⏳ Pendente',
+                'pago': '✅ Pago',
+                'cancelado': '❌ Cancelado'
+            };
+            return `<span class="status-badge ${classes[status] || ''}">${labels[status] || status}</span>`;
+        }
+
+        function formatarStatusEntrega(status) {
+            const classes = {
+                'nao_enviado': 'status-nao_enviado',
+                'enviado': 'status-enviado',
+                'entregue': 'status-entregue'
+            };
+            const labels = {
+                'nao_enviado': '📦 Não Enviado',
+                'enviado': '🚚 Enviado',
+                'entregue': '✅ Entregue'
+            };
+            return `<span class="status-badge ${classes[status] || ''}">${labels[status] || status}</span>`;
+        }
+
+        function mostrarToast(mensagem, tipo = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.className = `toast ${tipo} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

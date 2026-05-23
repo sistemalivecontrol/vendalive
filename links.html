@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pingo de Gente - Links</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%B6%3C/text%3E%3C/svg%3E">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6B4EE6;
+            --primary-light: #8B6FF0;
+            --primary-dark: #5A3FD1;
+            --accent: #FF6B9D;
+            --accent-light: #FF8FB0;
+            --bg: #0F0F1A;
+            --bg-card: #1A1A2E;
+            --bg-card-hover: #252540;
+            --text: #FFFFFF;
+            --text-muted: #A0A0B8;
+            --border: #2A2A45;
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+            --shadow-glow: 0 0 20px rgba(107, 78, 230, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(107, 78, 230, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 107, 157, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(107, 78, 230, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(107, 78, 230, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.5; }
+        }
+
+        .profile h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile p {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .links-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            padding-left: 5px;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            padding: 18px 22px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 14px;
+            text-decoration: none;
+            color: var(--text);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .link-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .link-card:hover::before {
+            opacity: 1;
+        }
+
+        .link-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 18px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .link-card:hover .link-icon {
+            transform: scale(1.1);
+        }
+
+        .link-icon.blue { background: linear-gradient(135deg, #2196F3, #64B5F6); }
+        .link-icon.green { background: linear-gradient(135deg, #25D366, #128C7E); }
+        .link-icon.pink { background: linear-gradient(135deg, #E91E63, #F48FB1); }
+
+        .link-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .link-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-arrow {
+            margin-left: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .link-card:hover .link-arrow {
+            color: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        .link-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+        }
+
+        .badge-boys {
+            background: linear-gradient(135deg, #2196F3, #64B5F6);
+            color: white;
+        }
+
+        .badge-girls {
+            background: linear-gradient(135deg, #E91E63, #F48FB1);
+            color: white;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 30px 15px;
+            }
+
+            .profile h1 {
+                font-size: 24px;
+            }
+
+            .link-card {
+                padding: 16px 18px;
+            }
+
+            .link-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            .link-title {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile -->
+        <div class="profile animate-in delay-1">
+            <div class="profile-avatar">👶</div>
+            <h1>Pingo de Gente</h1>
+            <p>Brechó Infantil • Roupas de 0 a 14 anos<br>Enviamos para todo o Brasil 📦</p>
+        </div>
+
+        <!-- Links Section -->
+        <div class="links-section animate-in delay-2">
+            <div class="section-title">🔗 Links Importantes</div>
+
+            <!-- Solicitações de Entrega - Força abrir no navegador padrão -->
+            <a href="https://lojaebrechopingodegente.github.io/VendaLive/solicitacoes.html?cliente=0824668c-1e10-415e-8998-09d72ef47dcb" 
+               class="link-card" 
+               onclick="return abrirNavegadorPadrao(event, this.href)">
+                <div class="link-icon blue">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Solicitações de Entrega</div>
+                    <div class="link-desc">Formulário de envio de produtos</div>
+                </div>
+                <span class="link-badge badge-new">Novo</span>
+                <i class="fas fa-chevron-right link-arrow"></i>
+            </a>
+
+            <!-- Grupo Meninos -->
+            <a href="https://chat.whatsapp.com/EWFhbOiDj7H70Exf5dlVjl?utm_source=ig&utm_medium=social&utm_content=link_in_bio" 
+               class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="link-icon green">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Grupo Meninos</div>
+                    <div class="link-desc">Novidades para os meninos 👦</div>
+                </div>
+                <span class="link-badge badge-boys">Meninos</span>
+                <i class="fas fa-chevron-right link-arrow"></i>
+            </a>
+
+            <!-- Grupo Meninas -->
+            <a href="https://chat.whatsapp.com/DldNkjKxtllKt1zFazp0MK?utm_source=ig&utm_medium=social&utm_content=link_in_bio" 
+               class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="link-icon pink">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+                <div class="link-content">
+                    <div class="link-title">Grupo Meninas</div>
+                    <div class="link-desc">Novidades para as meninas 👧</div>
+                </div>
+                <span class="link-badge badge-girls">Meninas</span>
+                <i class="fas fa-chevron-right link-arrow"></i>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer animate-in delay-3">
+            <p>© 2026 Pingo de Gente • Brechó Infantil</p>
+            <p style="margin-top: 5px;">Feito com 💜 em Florianópolis</p>
+        </div>
+    </div>
+
+    <script>
+        const URL_SOLICITACAO = 'https://lojaebrechopingodegente.github.io/VendaLive/solicitacoes.html?cliente=0824668c-1e10-415e-8998-09d72ef47dcb';
+
+        function isInstagramBrowser() {
+            var ua = navigator.userAgent || navigator.vendor || window.opera || '';
+            return /Instagram|FBAN|FBAV|FB_IAB/i.test(ua);
+        }
+
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
+
+        function abrirNavegadorPadrao(event, url) {
+            event.preventDefault();
+
+            // Se NÃO estiver no Instagram, abre normal em nova aba
+            if (!isInstagramBrowser()) {
+                window.open(url, '_blank');
+                return false;
+            }
+
+            // === ESTÁ NO INSTAGRAM - Força abrir no navegador padrão ===
+
+            // 1. Tenta window.open com targets especiais
+            window.open(url, '_blank');
+            window.open(url, '_system');
+            window.open(url, 'external');
+
+            // 2. iOS: tenta abrir no Safari via deep link
+            if (isIOS()) {
+                setTimeout(function() {
+                    window.location.href = 'x-web-search://?' + encodeURIComponent(url);
+                }, 100);
+                
+                setTimeout(function() {
+                    window.location.href = 'googlechrome://' + url.replace('https://', '');
+                }, 200);
+            }
+
+            // 3. Android: tenta abrir no Chrome via intent
+            if (isAndroid()) {
+                setTimeout(function() {
+                    window.location.href = 'intent://' + url.replace('https://', '') + '#Intent;scheme=https;package=com.android.chrome;end';
+                }, 100);
+                
+                setTimeout(function() {
+                    window.location.href = 'googlechrome://' + url.replace('https://', '');
+                }, 200);
+            }
+
+            // 4. Fallback: se nada funcionou em 1.5s, redireciona para página intermediária
+            setTimeout(function() {
+                window.location.href = 'https://lojaebrechopingodegente.github.io/VendaLive/abrir-solicitacao.html';
+            }, 1500);
+
+            return false;
+        }
+    </script>
+</body>
+</html>
