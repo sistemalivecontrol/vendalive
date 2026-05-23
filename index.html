@@ -101,6 +101,31 @@
         font-weight: 700 !important;
       }
 
+
+      /* ÍCONE SVG do logo - forçar branco */
+      .logo svg *, .brand svg *, .nav-logo svg *, .header-logo svg *,
+      .site-logo svg *, .brand-name svg *,
+      [class*="logo"] svg *, [class*="brand"] svg * {
+        stroke: #ffffff !important;
+        fill: #ffffff !important;
+      }
+      .logo svg path[fill], .brand svg path[fill],
+      .nav-logo svg path[fill], .header-logo svg path[fill] {
+        fill: #ffffff !important;
+      }
+      .logo svg rect, .brand svg rect,
+      .nav-logo svg rect, .header-logo svg rect {
+        stroke: #ffffff !important;
+      }
+      .logo svg circle, .brand svg circle,
+      .nav-logo svg circle, .header-logo svg circle {
+        fill: #ffffff !important;
+      }
+      .logo svg text, .brand svg text,
+      .nav-logo svg text, .header-logo svg text {
+        fill: #ffffff !important;
+      }
+
       /* Container do header */
       .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
       .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
@@ -140,6 +165,7 @@
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
   <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
@@ -178,12 +204,16 @@
                 span.style.fontWeight = '700';
               });
 
+              // Forçar SVG do ícone branco
+              var svgElements = el.querySelectorAll('svg *');
+              svgElements.forEach(function(el) {
+                el.style.stroke = '#ffffff';
+                el.style.fill = '#ffffff';
+              });
               // Se o logo tiver SVG com texto
               var texts = el.querySelectorAll('text');
               texts.forEach(function(text, index) {
-                if (index === texts.length - 1 || index === 1) {
-                  text.style.fill = '#4facfe';
-                }
+                text.style.fill = '#ffffff';
               });
             });
           });
