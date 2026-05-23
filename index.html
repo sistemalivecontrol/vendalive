@@ -10,12 +10,65 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- ===== CORREÇÃO LOGO VENDALIVE ===== -->
+    <style>
+      /* Fix logo cortado */
+      .logo-container, .brand-container, .nav-brand, .header-brand,
+      [class*="logo"], [class*="brand"] {
+        overflow: visible !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+      }
+
+      .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
+      [class*="logo"] span, [class*="brand"] span {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        min-width: max-content !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* Cor do "Live" - Azul claro destaque */
+      .logo .live-text, .brand .live-text, .logo .highlight, .brand .highlight,
+      .nav-logo .live, .header-logo .live,
+      .logo span:last-child, .brand span:last-child,
+      .nav-logo span:last-child, .header-logo span:last-child,
+      .logo span:nth-child(2), .brand span:nth-child(2),
+      [class*="live"], [class*="Live"] {
+        color: #4facfe !important;
+        font-weight: 700 !important;
+      }
+
+      /* Mobile fix */
+      @media (max-width: 768px) {
+        .logo, .brand, .nav-logo, .header-logo,
+        [class*="logo"], [class*="brand"] {
+          font-size: 14px !important;
+          transform: scale(0.95);
+          transform-origin: left center;
+        }
+      }
+
+      /* React root fix */
+      [id="root"] .logo, [id="root"] .brand,
+      [id="root"] [class*="logo"], [id="root"] [class*="brand"] {
+        overflow: visible !important;
+        white-space: nowrap !important;
+      }
+    </style>
+    <!-- ==================================== -->
+
     <style>
       * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     </style>
     <script type="module" crossorigin src="./assets/index-DaOTygQi.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
-  </head>
+  <base target="_blank">
+</head>
   <body>
     <div id="root"></div>
   </body>
