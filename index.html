@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="VendaLive - Sistema de Gestão para Lives. Gerencie pedidos, clientes, cobranças e entregas em tempo real." />
+    <meta name="description" content="VendaLive - Sistema de Gestao para Lives. Gerencie pedidos, clientes, cobrancas e entregas em tempo real." />
     <meta name="theme-color" content="#0a1628" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <title>VendaLive - Sistema de Gestão para Lives</title>
+    <title>VendaLive - Sistema de Gestao para Lives</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ===== CORREÇÃO LOGO VENDALIVE - TUDO BRANCO ===== -->
-    <style>
+    <!-- ===== CORRECAO LOGO VENDALIVE - TUDO BRANCO V2 ===== -->
+    <style id="fix-logo-v2">
       /* === RESET === */
       header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
         overflow: visible !important;
@@ -22,7 +22,7 @@
         overflow: visible !important;
       }
 
-      /* === LOGO - TUDO BRANCO COM MÁXIMA ESPECIFICIDADE === */
+      /* === LOGO - TUDO BRANCO COM MAXIMA ESPECIFICIDADE === */
       html body header .logo,
       html body nav .logo,
       html body header [class*="logo"],
@@ -182,9 +182,21 @@
   <body>
     <div id="root"></div>
 
-    <!-- Script de correção dinâmica após React renderizar -->
+    <!-- Script de correcao dinamica V2 - MUITO mais agressivo -->
     <script>
       (function() {
+        'use strict';
+
+        function forceWhite(el) {
+          if (!el) return;
+          // Forca cor branca com !important via setProperty
+          el.style.setProperty('color', '#ffffff', 'important');
+          el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          el.style.setProperty('display', 'inline', 'important');
+          el.style.setProperty('white-space', 'nowrap', 'important');
+          el.style.setProperty('overflow', 'visible', 'important');
+        }
+
         function fixLogo() {
           var selectors = [
             '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
@@ -194,59 +206,91 @@
           selectors.forEach(function(sel) {
             var elements = document.querySelectorAll(sel);
             elements.forEach(function(el) {
-              el.style.overflow = 'visible';
-              el.style.whiteSpace = 'nowrap';
-              el.style.minWidth = 'max-content';
-              el.style.maxWidth = 'none';
-              el.style.width = 'auto';
-              el.style.flexShrink = '0';
-              el.style.textOverflow = 'clip';
+              forceWhite(el);
+              el.style.setProperty('overflow', 'visible', 'important');
+              el.style.setProperty('white-space', 'nowrap', 'important');
+              el.style.setProperty('min-width', 'max-content', 'important');
+              el.style.setProperty('max-width', 'none', 'important');
+              el.style.setProperty('width', 'auto', 'important');
+              el.style.setProperty('flex-shrink', '0', 'important');
+              el.style.setProperty('text-overflow', 'clip', 'important');
 
               var spans = el.querySelectorAll('span');
               spans.forEach(function(span) {
-                span.style.display = 'inline';
-                span.style.whiteSpace = 'nowrap';
-                span.style.overflow = 'visible';
-                span.style.color = '#ffffff';
-                span.style.fontWeight = '700';
-                span.style.webkitTextFillColor = '#ffffff';
+                forceWhite(span);
+                span.style.setProperty('font-weight', '700', 'important');
               });
 
-              var svgElements = el.querySelectorAll('svg *');
-              svgElements.forEach(function(svgEl) {
-                svgEl.style.stroke = '#ffffff';
-                svgEl.style.fill = '#ffffff';
+              var svgEls = el.querySelectorAll('svg *');
+              svgEls.forEach(function(s) {
+                s.style.setProperty('stroke', '#ffffff', 'important');
+                s.style.setProperty('fill', '#ffffff', 'important');
               });
 
               var texts = el.querySelectorAll('text');
-              texts.forEach(function(text) {
-                text.style.fill = '#ffffff';
+              texts.forEach(function(t) {
+                t.style.setProperty('fill', '#ffffff', 'important');
               });
             });
           });
+
+          // Busca por qualquer span que tenha texto "Live" ou "live"
+          var allSpans = document.querySelectorAll('span');
+          allSpans.forEach(function(span) {
+            var text = span.textContent.trim();
+            if (text === 'Live' || text === 'live' || text === 'LIVE') {
+              var parent = span.parentElement;
+              if (parent && (
+                parent.classList.contains('logo') ||
+                parent.className.includes('logo') ||
+                parent.className.includes('brand') ||
+                parent.className.includes('Logo')
+              )) {
+                forceWhite(span);
+              }
+            }
+          });
         }
 
+        // Executa imediatamente
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', fixLogo);
         } else {
           fixLogo();
         }
 
-        setTimeout(fixLogo, 100);
-        setTimeout(fixLogo, 500);
-        setTimeout(fixLogo, 1000);
-        setTimeout(fixLogo, 2000);
-        setTimeout(fixLogo, 3000);
+        // Multiplos timeouts para pegar renderizacoes do React
+        var timeouts = [50, 100, 200, 300, 500, 800, 1000, 1500, 2000, 3000, 5000];
+        timeouts.forEach(function(t) {
+          setTimeout(fixLogo, t);
+        });
 
+        // Intervalo contínuo por 30 segundos (React pode re-renderizar)
+        var intervalId = setInterval(fixLogo, 500);
+        setTimeout(function() { clearInterval(intervalId); }, 30000);
+
+        // Observa mudancas no DOM
         var observer = new MutationObserver(function() {
           fixLogo();
         });
 
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true
-        });
+        if (document.body) {
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+          });
+        } else {
+          document.addEventListener('DOMContentLoaded', function() {
+            observer.observe(document.body, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['style', 'class']
+            });
+          });
+        }
       })();
     </script>
   </body>
