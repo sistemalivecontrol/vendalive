@@ -623,8 +623,8 @@
           if (!cliResult.error && cliResult.data) nomeCliente = cliResult.data.nome;
         }
 
-        document.getElementById('info-usuario').textContent = '������ ' + (usuario.nome || usuario.email);
-        document.getElementById('info-cliente').textContent = '������ ' + nomeCliente;
+        document.getElementById('info-usuario').textContent = '&#128100; ' + (usuario.nome || usuario.email);
+        document.getElementById('info-cliente').textContent = '&#127978; ' + nomeCliente;
         atualizarLinkSolicitacoes();
       } catch (err) { mostrarErro('Erro de autenticacao: ' + err.message); }
     }
