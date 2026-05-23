@@ -7,8 +7,6 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dashboard - VendaLive</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8cmVjdCB4PSI4IiB5PSIxNSIgd2lkdGg9IjYwIiBoZWlnaHQ9IjcwIiByeD0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwNjZGRiIgc3Ryb2tlLXdpZHRoPSI2Ii8+CiAgPHBhdGggZD0iTTM1IDQwIEw1NSA1MiBMMzUgNjQgWiIgZmlsbD0iIzAwNjZGRiIvPgogIDxwYXRoIGQ9Ik0yMCA3NSBMMzUgNjAiIHN0cm9rZT0iIzAwNjZGRiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI3MiIgY3k9IjI1IiByPSIyMiIgZmlsbD0iIzAwNjZGRiIvPgogIDx0ZXh0IHg9IjcyIiB5PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0iQXJpYWwiPkw8L3RleHQ+Cjwvc3ZnPg==">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -68,11 +66,11 @@
       background: none;
       border: none;
       color: white;
-      font-size: 24px;
       cursor: pointer;
       padding: 8px;
       margin-right: -8px;
     }
+    .mobile-menu-btn svg { width: 24px; height: 24px; }
     .mobile-menu-overlay {
       display: none;
       position: fixed;
@@ -326,6 +324,11 @@
     }
     .hidden { display: none !important; }
 
+    /* ===== ICONS ===== */
+    .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
+    .icon-svg-sm { width: 14px; height: 14px; }
+    .icon-svg-lg { width: 20px; height: 20px; }
+
     /* ===== MOBILE RESPONSIVE ===== */
     @media (max-width: 1024px) {
       .grid { grid-template-columns: 1fr; gap: 16px; }
@@ -405,7 +408,13 @@
 
   <div class="header">
     <div class="header-left">
-      <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">&#9776;</button>
+      <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
       <div class="header-logo">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="8" y="15" width="60" height="70" rx="12" stroke="#0B193F" stroke-width="6" fill="none"/>
@@ -420,8 +429,20 @@
       <h1>Dashboard</h1>
     </div>
     <div class="header-info">
-      <span id="info-usuario">Carregando...</span>
-      <span id="info-cliente">---</span>
+      <span id="info-usuario">
+        <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Carregando...
+      </span>
+      <span id="info-cliente">
+        <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        ---
+      </span>
       <button class="btn-header" onclick="logout()">Sair</button>
     </div>
   </div>
@@ -623,8 +644,8 @@
           if (!cliResult.error && cliResult.data) nomeCliente = cliResult.data.nome;
         }
 
-        document.getElementById('info-usuario').textContent = '&#128100; ' + (usuario.nome || usuario.email);
-        document.getElementById('info-cliente').textContent = '&#127978; ' + nomeCliente;
+        document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + (usuario.nome || usuario.email);
+        document.getElementById('info-cliente').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> ' + nomeCliente;
         atualizarLinkSolicitacoes();
       } catch (err) { mostrarErro('Erro de autenticacao: ' + err.message); }
     }
