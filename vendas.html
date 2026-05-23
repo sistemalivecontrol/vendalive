@@ -195,6 +195,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -484,16 +485,16 @@
             contadorItens++;
             const div = document.createElement('div');
             div.className = 'item-card';
-            div.innerHTML = "<div class='item-header'>" +
-                "<div class='item-numero'>" + contadorItens + "</div>" +
-                "<button class='btn-remover-item' onclick="this.closest('.item-card').remove(); atualizarTotal()">x</button>" +
-                "</div>" +
-                "<div class='item-grid'>" +
-                "<div class='form-group'><label>Produto</label><input type='text' class='produto-nome' placeholder='Nome' required oninput='atualizarTotal()'></div>" +
-                "<div class='form-group'><label>Qtd</label><input type='number' class='produto-qtd' min='1' value='1' required oninput='atualizarTotal()'></div>" +
-                "<div class='form-group'><label>Preco</label><div class='input-preco'><input type='number' class='produto-preco' step='0.01' min='0' placeholder='0,00' required oninput='atualizarTotal()'></div></div>" +
-                "<div class='form-group'><label>Desconto</label><div class='input-preco'><input type='number' class='produto-desconto' step='0.01' min='0' value='0' oninput='atualizarTotal()'></div></div>" +
-                "</div>";
+            div.innerHTML = `<div class='item-header'>
+                <div class='item-numero'>${contadorItens}</div>
+                <button class='btn-remover-item' onclick="this.closest('.item-card').remove(); atualizarTotal()">x</button>
+                </div>
+                <div class='item-grid'>
+                <div class='form-group'><label>Produto</label><input type='text' class='produto-nome' placeholder='Nome' required oninput='atualizarTotal()'></div>
+                <div class='form-group'><label>Qtd</label><input type='number' class='produto-qtd' min='1' value='1' required oninput='atualizarTotal()'></div>
+                <div class='form-group'><label>Preco</label><div class='input-preco'><input type='number' class='produto-preco' step='0.01' min='0' placeholder='0,00' required oninput='atualizarTotal()'></div></div>
+                <div class='form-group'><label>Desconto</label><div class='input-preco'><input type='number' class='produto-desconto' step='0.01' min='0' value='0' oninput='atualizarTotal()'></div></div>
+                </div>`;
             document.getElementById('itensContainer').appendChild(div);
         }
 
