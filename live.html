@@ -9,6 +9,8 @@
     <meta http-equiv="Expires" content="0">
     <!-- version.js removido - controle de versão inline -->
     <title>Registro de Vendas - Live</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js?v='+ APP_VERSION +'"></script>
     <style>
@@ -2230,7 +2232,9 @@ function gerarRelatorioNovaAba() {
     const compradoresOrdenados = Object.keys(vendasPorComprador).sort((a, b) => {
         return a.localeCompare(b, 'pt-BR', { sensitivity: 'base' });
     });
-    let html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatorio</title><style>' +
+    let html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatorio</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>' +
         '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;padding:20px}' +
         'h1{text-align:center;font-size:18px;margin-bottom:20px}.data-live{text-align:center;font-size:14px;font-weight:bold;margin-bottom:10px}' +
         'table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #000;padding:6px 8px}' +
