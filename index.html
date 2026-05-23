@@ -11,53 +11,124 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ===== CORREÇÃO LOGO VENDALIVE ===== -->
+    <!-- ===== CORREÇÃO ULTRA-AGRESSIVA LOGO VENDALIVE ===== -->
     <style>
-      /* Fix logo cortado */
-      .logo-container, .brand-container, .nav-brand, .header-brand,
-      [class*="logo"], [class*="brand"] {
+      /* RESET AGRESSIVO - força em TODOS os elementos do header */
+      header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
         overflow: visible !important;
-        min-width: fit-content !important;
-        white-space: nowrap !important;
+        text-overflow: clip !important;
       }
 
+      /* Força o container do logo a ter largura suficiente */
+      header, nav, .header, .nav, [class*="header"], [class*="nav"] {
+        overflow: visible !important;
+      }
+
+      /* Logo - todas as variações possíveis */
       .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
-      [class*="logo"] span, [class*="brand"] span {
+      [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
+      [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 2px !important;
+        gap: 0px !important;
         white-space: nowrap !important;
+        overflow: visible !important;
+        min-width: max-content !important;
+        max-width: none !important;
+        width: auto !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+        text-overflow: clip !important;
+        clip: auto !important;
+        clip-path: none !important;
+      }
+
+      /* Spans dentro do logo */
+      .logo > *, .brand > *, .nav-logo > *, .header-logo > *,
+      .site-logo > *, .brand-name > *,
+      [class*="logo"] > *, [class*="brand"] > * {
+        display: inline !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* SVG dentro do logo */
+      .logo svg, .brand svg, .nav-logo svg, .header-logo svg,
+      .site-logo svg, .brand-name svg,
+      [class*="logo"] svg, [class*="brand"] svg {
+        flex-shrink: 0 !important;
+        min-width: auto !important;
+      }
+
+      /* TEXTO "Venda" - cor branca/padrão */
+      .logo span:first-child, .brand span:first-child,
+      .nav-logo span:first-child, .header-logo span:first-child,
+      .logo > span:first-of-type, .brand > span:first-of-type,
+      .nav-logo > span:first-of-type, .header-logo > span:first-of-type {
+        color: inherit !important;
+      }
+
+      /* TEXTO "Live" - AZUL CLARO DESTAQUE */
+      .logo span:last-child, .brand span:last-child,
+      .nav-logo span:last-child, .header-logo span:last-child,
+      .logo > span:last-of-type, .brand > span:last-of-type,
+      .nav-logo > span:last-of-type, .header-logo > span:last-of-type,
+      .logo span:nth-child(2), .brand span:nth-child(2),
+      .nav-logo span:nth-child(2), .header-logo span:nth-child(2),
+      .logo .live, .brand .live, .nav-logo .live, .header-logo .live,
+      .logo .highlight, .brand .highlight, .nav-logo .highlight, .header-logo .highlight,
+      .logo [class*="live"], .brand [class*="live"],
+      .nav-logo [class*="live"], .header-logo [class*="live"],
+      .logo [class*="Live"], .brand [class*="Live"],
+      .nav-logo [class*="Live"], .header-logo [class*="Live"] {
+        color: #4facfe !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 10px rgba(79, 172, 254, 0.3) !important;
+      }
+
+      /* Se o logo for um SVG com texto */
+      .logo text, .brand text, .nav-logo text, .header-logo text,
+      .site-logo text, .brand-name text,
+      [class*="logo"] text, [class*="brand"] text {
+        fill: inherit !important;
+      }
+
+      .logo text:last-child, .brand text:last-child,
+      .nav-logo text:last-child, .header-logo text:last-child,
+      .logo text:nth-child(2), .brand text:nth-child(2),
+      .nav-logo text:nth-child(2), .header-logo text:nth-child(2) {
+        fill: #4facfe !important;
+        font-weight: 700 !important;
+      }
+
+      /* Container do header - não limitar largura */
+      .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
+      .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
         overflow: visible !important;
         min-width: max-content !important;
         flex-shrink: 0 !important;
       }
 
-      /* Cor do "Live" - Azul claro destaque */
-      .logo .live-text, .brand .live-text, .logo .highlight, .brand .highlight,
-      .nav-logo .live, .header-logo .live,
-      .logo span:last-child, .brand span:last-child,
-      .nav-logo span:last-child, .header-logo span:last-child,
-      .logo span:nth-child(2), .brand span:nth-child(2),
-      [class*="live"], [class*="Live"] {
-        color: #4facfe !important;
-        font-weight: 700 !important;
-      }
-
-      /* Mobile fix */
+      /* Mobile */
       @media (max-width: 768px) {
         .logo, .brand, .nav-logo, .header-logo,
-        [class*="logo"], [class*="brand"] {
-          font-size: 14px !important;
-          transform: scale(0.95);
+        .site-logo, .brand-name,
+        [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
+        [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
+          font-size: 13px !important;
+          transform: scale(0.92);
           transform-origin: left center;
         }
       }
 
-      /* React root fix */
-      [id="root"] .logo, [id="root"] .brand,
-      [id="root"] [class*="logo"], [id="root"] [class*="brand"] {
+      /* React root */
+      #root .logo, #root .brand, #root .nav-logo, #root .header-logo,
+      #root [class*="logo"], #root [class*="brand"] {
         overflow: visible !important;
         white-space: nowrap !important;
+        min-width: max-content !important;
       }
     </style>
     <!-- ==================================== -->
@@ -71,5 +142,76 @@
 </head>
   <body>
     <div id="root"></div>
+
+    <!-- Script de correção dinâmica após React renderizar -->
+    <script>
+      (function() {
+        function fixLogo() {
+          // Procura por todos os possíveis logos
+          var selectors = [
+            '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
+            '[class*="logo"]', '[class*="brand"]'
+          ];
+
+          selectors.forEach(function(sel) {
+            var elements = document.querySelectorAll(sel);
+            elements.forEach(function(el) {
+              // Força estilos inline (mais específico que CSS)
+              el.style.overflow = 'visible';
+              el.style.whiteSpace = 'nowrap';
+              el.style.minWidth = 'max-content';
+              el.style.maxWidth = 'none';
+              el.style.width = 'auto';
+              el.style.flexShrink = '0';
+              el.style.textOverflow = 'clip';
+
+              // Procura spans dentro do logo
+              var spans = el.querySelectorAll('span');
+              spans.forEach(function(span, index) {
+                span.style.display = 'inline';
+                span.style.whiteSpace = 'nowrap';
+                span.style.overflow = 'visible';
+
+                // Se for o último span (provavelmente "Live")
+                if (index === spans.length - 1 || index === 1) {
+                  span.style.color = '#4facfe';
+                  span.style.fontWeight = '700';
+                }
+              });
+
+              // Se o logo tiver SVG com texto
+              var texts = el.querySelectorAll('text');
+              texts.forEach(function(text, index) {
+                if (index === texts.length - 1 || index === 1) {
+                  text.style.fill = '#4facfe';
+                }
+              });
+            });
+          });
+        }
+
+        // Executa após carregamento
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', fixLogo);
+        } else {
+          fixLogo();
+        }
+
+        // Reexecuta após 1s e 3s (React pode renderizar depois)
+        setTimeout(fixLogo, 1000);
+        setTimeout(fixLogo, 3000);
+
+        // Observa mudanças no DOM (React re-renderiza)
+        var observer = new MutationObserver(function(mutations) {
+          fixLogo();
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+      })();
+    </script>
   </body>
 </html>
