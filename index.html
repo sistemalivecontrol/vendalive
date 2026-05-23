@@ -13,17 +13,24 @@
 
     <!-- ===== CORREÇÃO LOGO VENDALIVE - TUDO BRANCO ===== -->
     <style>
-      /* RESET - força visibilidade em todos os elementos do header */
+      /* === RESET === */
       header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
         overflow: visible !important;
         text-overflow: clip !important;
       }
-
       header, nav, .header, .nav, [class*="header"], [class*="nav"] {
         overflow: visible !important;
       }
 
-      /* Logo - TUDO BRANCO */
+      /* === LOGO - TUDO BRANCO COM MÁXIMA ESPECIFICIDADE === */
+      html body header .logo,
+      html body nav .logo,
+      html body header [class*="logo"],
+      html body nav [class*="logo"],
+      html body #root header [class*="logo"],
+      html body #root nav [class*="logo"],
+      html body #root [class*="header"] [class*="logo"],
+      html body #root [class*="nav"] [class*="logo"],
       .logo, .brand, .nav-logo, .header-logo, .site-logo, .brand-name,
       [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
       [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
@@ -41,10 +48,14 @@
         color: #ffffff !important;
       }
 
-      /* TODOS os spans dentro do logo = BRANCO */
+      /* === TODOS OS SPANS DENTRO DO LOGO = BRANCO === */
       .logo > *, .brand > *, .nav-logo > *, .header-logo > *,
       .site-logo > *, .brand-name > *,
-      [class*="logo"] > *, [class*="brand"] > * {
+      [class*="logo"] > *, [class*="brand"] > *,
+      html body .logo span,
+      html body [class*="logo"] span,
+      html body #root .logo span,
+      html body #root [class*="logo"] span {
         display: inline !important;
         white-space: nowrap !important;
         overflow: visible !important;
@@ -53,80 +64,78 @@
         color: #ffffff !important;
       }
 
-      /* SVG dentro do logo */
-      .logo svg, .brand svg, .nav-logo svg, .header-logo svg,
-      .site-logo svg, .brand-name svg,
-      [class*="logo"] svg, [class*="brand"] svg {
+      /* === PRIMEIRO SPAN ("Venda") = BRANCO === */
+      .logo span:first-child,
+      [class*="logo"] span:first-child,
+      .logo > span:first-of-type,
+      [class*="logo"] > span:first-of-type {
+        color: #ffffff !important;
+      }
+
+      /* === SEGUNDO SPAN ("Live") = BRANCO === */
+      .logo span:last-child,
+      [class*="logo"] span:last-child,
+      .logo > span:last-of-type,
+      [class*="logo"] > span:last-of-type,
+      .logo span:nth-child(2),
+      [class*="logo"] span:nth-child(2),
+      .logo span:nth-of-type(2),
+      [class*="logo"] span:nth-of-type(2),
+      .logo .live, [class*="logo"] .live,
+      .logo .Live, [class*="logo"] .Live,
+      .logo .highlight, [class*="logo"] .highlight,
+      .logo .accent, [class*="logo"] .accent,
+      .logo .yellow, [class*="logo"] .yellow,
+      .logo .gold, [class*="logo"] .gold,
+      .logo .primary, [class*="logo"] .primary,
+      .logo .brand-light, [class*="logo"] .brand-light,
+      .logo .text-accent, [class*="logo"] .text-accent,
+      .logo .text-yellow-400, [class*="logo"] .text-yellow-400,
+      .logo .text-yellow-500, [class*="logo"] .text-yellow-500,
+      .logo .text-amber-400, [class*="logo"] .text-amber-400,
+      .logo .text-amber-500, [class*="logo"] .text-amber-500,
+      .logo [class*="live"], [class*="logo"] [class*="live"],
+      .logo [class*="Live"], [class*="logo"] [class*="Live"],
+      .logo [class*="accent"], [class*="logo"] [class*="accent"],
+      .logo [class*="highlight"], [class*="logo"] [class*="highlight"],
+      .logo [class*="yellow"], [class*="logo"] [class*="yellow"],
+      .logo [class*="gold"], [class*="logo"] [class*="gold"],
+      .logo [class*="primary"], [class*="logo"] [class*="primary"],
+      .logo [class*="amber"], [class*="logo"] [class*="amber"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      /* === SPANS COM ESTILO INLINE DE COR === */
+      .logo span[style*="color"],
+      [class*="logo"] span[style*="color"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      /* === SVG DO LOGO === */
+      .logo svg, [class*="logo"] svg {
         flex-shrink: 0 !important;
         min-width: auto !important;
       }
-
-      /* TEXTO "Venda" - BRANCO */
-      .logo span:first-child, .brand span:first-child,
-      .nav-logo span:first-child, .header-logo span:first-child,
-      .logo > span:first-of-type, .brand > span:first-of-type,
-      .nav-logo > span:first-of-type, .header-logo > span:first-of-type {
-        color: #ffffff !important;
-      }
-
-      /* TEXTO "Live" - BRANCO TAMBÉM */
-      .logo span:last-child, .brand span:last-child,
-      .nav-logo span:last-child, .header-logo span:last-child,
-      .logo > span:last-of-type, .brand > span:last-of-type,
-      .nav-logo > span:last-of-type, .header-logo > span:last-of-type,
-      .logo span:nth-child(2), .brand span:nth-child(2),
-      .nav-logo span:nth-child(2), .header-logo span:nth-child(2),
-      .logo .live, .brand .live, .nav-logo .live, .header-logo .live,
-      .logo .highlight, .brand .highlight, .nav-logo .highlight, .header-logo .highlight,
-      .logo [class*="live"], .brand [class*="live"],
-      .nav-logo [class*="live"], .header-logo [class*="live"],
-      .logo [class*="Live"], .brand [class*="Live"],
-      .nav-logo [class*="Live"], .header-logo [class*="Live"] {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-      }
-
-      /* Se o logo for um SVG com texto - TUDO BRANCO */
-      .logo text, .brand text, .nav-logo text, .header-logo text,
-      .site-logo text, .brand-name text,
-      [class*="logo"] text, [class*="brand"] text {
-        fill: #ffffff !important;
-      }
-
-      .logo text:last-child, .brand text:last-child,
-      .nav-logo text:last-child, .header-logo text:last-child,
-      .logo text:nth-child(2), .brand text:nth-child(2),
-      .nav-logo text:nth-child(2), .header-logo text:nth-child(2) {
-        fill: #ffffff !important;
-        font-weight: 700 !important;
-      }
-
-
-      /* ÍCONE SVG do logo - forçar branco */
-      .logo svg *, .brand svg *, .nav-logo svg *, .header-logo svg *,
-      .site-logo svg *, .brand-name svg *,
-      [class*="logo"] svg *, [class*="brand"] svg * {
+      .logo svg *, [class*="logo"] svg *,
+      .logo svg path, [class*="logo"] svg path,
+      .logo svg rect, [class*="logo"] svg rect,
+      .logo svg circle, [class*="logo"] svg circle,
+      .logo svg text, [class*="logo"] svg text {
         stroke: #ffffff !important;
         fill: #ffffff !important;
       }
-      .logo svg path[fill], .brand svg path[fill],
-      .nav-logo svg path[fill], .header-logo svg path[fill] {
-        fill: #ffffff !important;
-      }
-      .logo svg rect, .brand svg rect,
-      .nav-logo svg rect, .header-logo svg rect {
-        stroke: #ffffff !important;
-      }
-      .logo svg circle, .brand svg circle,
-      .nav-logo svg circle, .header-logo svg circle {
-        fill: #ffffff !important;
-      }
-      .logo svg text, .brand svg text,
-      .nav-logo svg text, .header-logo svg text {
+
+      /* === TEXTOS SVG === */
+      .logo text, [class*="logo"] text,
+      .logo text:last-child, [class*="logo"] text:last-child,
+      .logo text:nth-child(2), [class*="logo"] text:nth-child(2) {
         fill: #ffffff !important;
       }
 
-      /* Container do header */
+      /* === CONTAINER DO HEADER === */
       .header-left, .nav-left, [class*="header-left"], [class*="nav-left"],
       .header-start, .nav-start, [class*="header-start"], [class*="nav-start"] {
         overflow: visible !important;
@@ -134,26 +143,30 @@
         flex-shrink: 0 !important;
       }
 
-      /* Mobile */
+      /* === MOBILE === */
       @media (max-width: 768px) {
-        .logo, .brand, .nav-logo, .header-logo,
-        .site-logo, .brand-name,
-        [class*="logo"]:not([class*="container"]):not([class*="wrapper"]),
-        [class*="brand"]:not([class*="container"]):not([class*="wrapper"]) {
+        .logo, [class*="logo"]:not([class*="container"]):not([class*="wrapper"]) {
           font-size: 13px !important;
           transform: scale(0.92);
           transform-origin: left center;
           color: #ffffff !important;
         }
+        .logo span, [class*="logo"] span {
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+        }
       }
 
-      /* React root */
-      #root .logo, #root .brand, #root .nav-logo, #root .header-logo,
-      #root [class*="logo"], #root [class*="brand"] {
+      /* === REACT ROOT === */
+      #root .logo, #root [class*="logo"] {
         overflow: visible !important;
         white-space: nowrap !important;
         min-width: max-content !important;
         color: #ffffff !important;
+      }
+      #root .logo span, #root [class*="logo"] span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
       }
     </style>
     <!-- ==================================== -->
@@ -165,7 +178,6 @@
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
   <base target="_blank">
 <base target="_blank">
-<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
@@ -174,7 +186,6 @@
     <script>
       (function() {
         function fixLogo() {
-          // Procura por todos os possíveis logos
           var selectors = [
             '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
             '[class*="logo"]', '[class*="brand"]'
@@ -183,7 +194,6 @@
           selectors.forEach(function(sel) {
             var elements = document.querySelectorAll(sel);
             elements.forEach(function(el) {
-              // Força estilos inline (mais específico que CSS)
               el.style.overflow = 'visible';
               el.style.whiteSpace = 'nowrap';
               el.style.minWidth = 'max-content';
@@ -192,46 +202,43 @@
               el.style.flexShrink = '0';
               el.style.textOverflow = 'clip';
 
-              // Procura spans dentro do logo
               var spans = el.querySelectorAll('span');
-              spans.forEach(function(span, index) {
+              spans.forEach(function(span) {
                 span.style.display = 'inline';
                 span.style.whiteSpace = 'nowrap';
                 span.style.overflow = 'visible';
-
-                // Todos os spans brancos
                 span.style.color = '#ffffff';
                 span.style.fontWeight = '700';
+                span.style.webkitTextFillColor = '#ffffff';
               });
 
-              // Forçar SVG do ícone branco
               var svgElements = el.querySelectorAll('svg *');
-              svgElements.forEach(function(el) {
-                el.style.stroke = '#ffffff';
-                el.style.fill = '#ffffff';
+              svgElements.forEach(function(svgEl) {
+                svgEl.style.stroke = '#ffffff';
+                svgEl.style.fill = '#ffffff';
               });
-              // Se o logo tiver SVG com texto
+
               var texts = el.querySelectorAll('text');
-              texts.forEach(function(text, index) {
+              texts.forEach(function(text) {
                 text.style.fill = '#ffffff';
               });
             });
           });
         }
 
-        // Executa após carregamento
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', fixLogo);
         } else {
           fixLogo();
         }
 
-        // Reexecuta após 1s e 3s (React pode renderizar depois)
+        setTimeout(fixLogo, 100);
+        setTimeout(fixLogo, 500);
         setTimeout(fixLogo, 1000);
+        setTimeout(fixLogo, 2000);
         setTimeout(fixLogo, 3000);
 
-        // Observa mudanças no DOM (React re-renderiza)
-        var observer = new MutationObserver(function(mutations) {
+        var observer = new MutationObserver(function() {
           fixLogo();
         });
 
