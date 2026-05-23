@@ -317,7 +317,6 @@
         .calc-botoes button.limpar { background: var(--danger); color: white; }
     </style>
     <base target="_blank">
-<base target="_blank">
 </head>
 
 <body>
@@ -329,7 +328,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <button class="btn-voltar" onclick="location.href='dashboard.html'">← Voltar</button>
+                <button class="btn-voltar" onclick="window.location.href='dashboard.html'">← Voltar</button>
                 <div class="header-center">
                     <h1>📊 Gestão de Vendas</h1>
                     <p>Cadastro e gestão de vendas</p>
@@ -417,7 +416,7 @@
                 <div style="margin-top: 30px; text-align: center; padding: 30px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: var(--radius); border: 1px solid var(--border);">
                     <h3 style="color: var(--primary); margin-bottom: 15px; font-size: 1.3rem;">📈 Relatório de Vendas</h3>
                     <p style="color: var(--text-light); margin-bottom: 20px;">Gere relatórios detalhados com filtros por data e comprador</p>
-                    <button class="btn-gerar-relatorio" onclick="location.href='relatorio-vendas.html'">📊 Abrir Relatório</button>
+                    <button class="btn-gerar-relatorio" onclick="window.location.href='relatorio-vendas.html'">📊 Abrir Relatório</button>
                 </div>
             </div>
 
@@ -1254,7 +1253,7 @@
         }
 
         function compartilharWhatsAppView() {
-            if (!vendaAtualView) return;
+            if (typeof vendaAtualView === 'undefined' || !vendaAtualView) { mostrarToast('Nenhuma venda selecionada', 'warning'); return; }
             const venda = vendaAtualView;
             const itens = Array.isArray(venda.itens) ? venda.itens : JSON.parse(venda.itens || '[]');
 
