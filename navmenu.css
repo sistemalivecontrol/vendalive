@@ -47,22 +47,22 @@
 .nav-menu-panel {
     position: fixed;
     top: 0;
-    right: -320px;
+    left: -320px;
     width: 320px;
     max-width: 85vw;
     height: 100vh;
     height: 100dvh;
     background: #0a1628;
     z-index: 9999;
-    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
 }
 .nav-menu-panel.active {
-    right: 0;
+    left: 0;
 }
 
 /* Scrollbar estilizada */
@@ -252,7 +252,7 @@
 @keyframes navItemSlide {
     from {
         opacity: 0;
-        transform: translateX(20px);
+        transform: translateX(-20px);
     }
     to {
         opacity: 1;
