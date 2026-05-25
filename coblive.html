@@ -48,7 +48,10 @@
         .btn-pix { background: linear-gradient(135deg, #32BCAD, #2a9d8f); color: white; }
         .btn-pix:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(50, 188, 173, 0.4); }
         .btn-pix:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
-        @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } }
+                .btn-pix-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
+        .btn-pix-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); }
+        .btn-pix-whatsapp:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
+@media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } }
         .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; }
         .stat-card h3 { color: rgba(255,255,255,0.85); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
@@ -206,6 +209,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -268,6 +272,7 @@
                 <button class="btn btn-pix" id="btnPixSelecionados" onclick="gerarPixSelecionados()" disabled>💳 PIX Selecionados</button>
                 <button class="btn btn-instagram" id="btnCobrarPixMpSelecionados" onclick="cobrarPixMpSelecionados()" disabled>📱 Cobrar c/ PIX MP</button>
                 <button class="btn btn-pix-estatico" id="btnPixEstaticoSelecionados" onclick="cobrarPixEstaticoSelecionados()" disabled>📱 PIX Grátis Selecionados</button>
+                <button class="btn btn-pix-whatsapp" id="btnPixWhatsappSelecionados" onclick="cobrarPixWhatsappSelecionados()" disabled>💬 Pix Grátis Whats</button>
             </div>
         </div>
 
@@ -864,6 +869,7 @@
                     '<button class="btn-acao btn-gerar-pix" onclick="gerarPixCliente(' + index + ')">💳 Link Inf.</button>' +
                     '<button class="btn-acao btn-pix-mp" onclick="cobrarPixMpCliente(' + index + ')">📱 PIX MP</button>' +
                     '<button class="btn-acao btn-pix-estatico" onclick="cobrarPixEstaticoCliente(' + index + ')" title="Zero tarifa - confirmação manual">📱 PIX Grátis</button>' +
+                    '<button class="btn-acao btn-pix-whatsapp" onclick="cobrarPixWhatsappCliente(' + index + ')" title="Enviar PIX Grátis via WhatsApp" ' + (!cliente.whatsapp ? 'disabled' : '') + '>💬 Pix Grátis Whats</button>' +
                     '</div></td>';
                 if (idsSelecionados.has(index)) tr.classList.add('selecionado');
                 tbody.appendChild(tr);
@@ -916,6 +922,7 @@
             document.getElementById('btnPixSelecionados').disabled = !habilitado;
             document.getElementById('btnCobrarPixMpSelecionados').disabled = !habilitado;
             document.getElementById('btnPixEstaticoSelecionados').disabled = !habilitado;
+            document.getElementById('btnPixWhatsappSelecionados').disabled = !habilitado;
         }
 
         function verItens(index) {
@@ -1632,7 +1639,193 @@ async function gerarPixSelecionados() {
             });
         }
 
+        
         // ============================================
+        // PIX GRÁTIS VIA WHATSAPP (EVOLUTION API)
+        // ============================================
+
+        function gerarMensagemPixWhatsapp(cliente, linkPagamento) {
+            const primeiroNome = cliente.nome.split(' ')[0];
+            const dataLimite = new Date();
+            dataLimite.setDate(dataLimite.getDate() + configPrazo);
+            const dataLimiteFormatada = dataLimite.toLocaleDateString('pt-BR');
+            let itensFormatados = '';
+            cliente.itens.forEach(function(item) {
+                itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '
+';
+            });
+            let mensagem = 'Olá, ' + primeiroNome + '! 💕
+
+';
+            mensagem += 'Gratidão por acompanhar nossa live!! 🛍️
+
+';
+            mensagem += 'Segue o valor da sua compra: ' + formatarMoeda(cliente.total) + '
+
+';
+            mensagem += 'Itens:
+' + itensFormatados + '
+';
+            mensagem += '💳 *Pague com PIX pelo link:*
+';
+            mensagem += linkPagamento + '
+
+';
+            mensagem += 'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.
+
+';
+            mensagem += 'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!
+
+';
+            mensagem += 'Enviar comprovante de pagamento aqui. ✅
+
+';
+            mensagem += 'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳
+
+';
+            mensagem += 'Obrigada ❣️';
+            return mensagem;
+        }
+
+        async function cobrarPixWhatsappSelecionados() {
+            sincronizarLiveAtual();
+            if (idsSelecionados.size === 0) return;
+            if (idsSelecionados.size > 1) {
+                showStatus('Selecione apenas 1 cliente para enviar PIX Grátis via WhatsApp', 'error');
+                return;
+            }
+            const index = Array.from(idsSelecionados)[0];
+            await cobrarPixWhatsappCliente(index);
+        }
+
+        async function cobrarPixWhatsappCliente(index) {
+            sincronizarLiveAtual();
+            const cliente = clientesAgrupados[index];
+            if (!cliente) return;
+
+            if (!cliente.whatsapp || !cliente.whatsapp.trim()) {
+                alert('Cliente não possui WhatsApp cadastrado. Clique em "Add Instagram" para cadastrar o telefone.');
+                return;
+            }
+
+            showStatus('Gerando PIX Grátis e enviando via WhatsApp...', 'info');
+
+            const resultado = await cobrarPixEstatico(
+                cliente.clientePgId || null,
+                cliente.nome,
+                cliente.total,
+                codigoLiveAtual,
+                cliente.itens
+            );
+
+            if (!resultado || !resultado.link) {
+                showStatus('Erro ao gerar PIX Grátis', 'error');
+                return;
+            }
+
+            clientesCobrados.add(index);
+            renderizarTabela();
+
+            const mensagem = gerarMensagemPixWhatsapp(cliente, resultado.link);
+
+            // Enviar via Evolution API
+            const envioResult = await enviarPixWhatsapp(cliente.whatsapp, mensagem);
+
+            if (envioResult.sucesso) {
+                showStatus('✅ PIX Grátis enviado via WhatsApp com sucesso!', 'success');
+            } else if (envioResult.erro === 'NÚMERO_INVÁLIDO') {
+                showStatus('📱 ' + (envioResult.mensagem || 'Este número não está cadastrado no WhatsApp'), 'warning');
+            } else if (envioResult.erro === 'Timeout') {
+                showStatus('⏱️ A API do WhatsApp está demorando. A mensagem pode ter sido enviada.', 'warning');
+            } else {
+                showStatus('⚠️ Erro ao enviar WhatsApp: ' + (envioResult.erro || 'Erro desconhecido'), 'warning');
+            }
+        }
+
+        // ============================================
+        // EVOLUTION API - ENVIO DE WHATSAPP PARA PIX
+        // ============================================
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+
+        async function enviarPixWhatsapp(numero, texto) {
+            let numeroLimpo = numero.toString().replace(/\D/g, '');
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+
+            // Tentativa 1 com timeout de 20s
+            let resultado = await _enviarPixWhatsapp(numeroLimpo, texto, 20000);
+
+            // Se falhou por timeout, tentar mais uma vez
+            if (!resultado.sucesso && resultado.erro === 'Timeout') {
+                console.log('[EVOLUTION PIX] Timeout na tentativa 1, aguardando 3s para retry...');
+                await new Promise(r => setTimeout(r, 3000));
+                resultado = await _enviarPixWhatsapp(numeroLimpo, texto, 25000);
+            }
+
+            return resultado;
+        }
+
+        async function _enviarPixWhatsapp(numeroLimpo, texto, timeoutMs) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                const response = await fetch(EVOLUTION_API_URL + '/message/sendText/' + EVOLUTION_INSTANCE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_API_KEY
+                    },
+                    body: JSON.stringify({
+                        number: numeroLimpo,
+                        text: texto
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+                console.log('[EVOLUTION PIX] Response:', JSON.stringify(data));
+
+                // Tratar erro 400: número não existe no WhatsApp
+                if (!response.ok) {
+                    if (data.response && data.response.message && Array.isArray(data.response.message)) {
+                        const msg = data.response.message[0];
+                        if (msg && msg.exists === false) {
+                            console.error('[EVOLUTION PIX] Número não existe no WhatsApp:', msg.number);
+                            return { sucesso: false, erro: 'NÚMERO_INVÁLIDO', dados: data, mensagem: 'Este número não está cadastrado no WhatsApp: ' + msg.number };
+                        }
+                    }
+
+                    // WORKAROUND: Erro Prisma (mensagem geralmente enviada mesmo com erro)
+                    const isPrismaError = data.response &&
+                                         data.response.message &&
+                                         Array.isArray(data.response.message) &&
+                                         data.response.message.some(m => typeof m === 'string' && m.includes('Prisma'));
+
+                    if (isPrismaError) {
+                        console.warn('[EVOLUTION PIX] Workaround Prisma: erro 400 ignorado');
+                        return { sucesso: true, dados: data, warning: 'Erro interno do servidor (Prisma), mas mensagem foi enviada' };
+                    }
+
+                    return { sucesso: false, erro: data.error || 'HTTP ' + response.status, dados: data };
+                }
+
+                return { sucesso: true, dados: data };
+            } catch (erro) {
+                if (erro.name === 'AbortError') {
+                    console.log('[EVOLUTION PIX] Timeout (' + timeoutMs + 'ms)');
+                    return { sucesso: false, erro: 'Timeout', dados: { status: 'TIMEOUT' } };
+                }
+                console.error('[EVOLUTION PIX] Erro:', erro);
+                return { sucesso: false, erro: erro.message };
+            }
+        }
+
+// ============================================
         // INTEGRACAO COM EXTENSAO CHROME
         // ============================================
         function getSessionId() {
