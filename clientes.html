@@ -114,6 +114,7 @@
             .header-left { flex-direction: column; gap: 15px; }
             .user-info { width: 100%; justify-content: center; }
         }
+        .content { padding: 30px; }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -485,21 +486,22 @@
                 <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
             </div>
         </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total de Clientes</div>
-                <div class="stat-value" id="statTotalClientes">-</div>
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total de Clientes</div>
+                    <div class="stat-value" id="statTotalClientes">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total de Endereços</div>
+                    <div class="stat-value" id="statTotalEnderecos">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Novos este Mês</div>
+                    <div class="stat-value" id="statClientesMes">-</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Total de Endereços</div>
-                <div class="stat-value" id="statTotalEnderecos">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Novos este Mês</div>
-                <div class="stat-value" id="statClientesMes">-</div>
-            </div>
-        </div>
-        <div class="search-section">
+            <div class="search-section">
             <div class="search-grid">
                 <div class="form-group">
                     <label for="buscaNome">Nome ou CPF</label>
@@ -529,6 +531,7 @@
         <button class="btn-novo" onclick="abrirModalCliente()">➕ Novo Cliente</button>
         <div class="clientes-list" id="listaClientes">
             <div class="loading"><div>Carregando clientes...</div></div>
+        </div>
         </div>
     </div>
     <div class="modal-overlay" id="modalCliente">
