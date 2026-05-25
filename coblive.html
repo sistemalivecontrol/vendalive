@@ -48,7 +48,7 @@
         .btn-pix { background: linear-gradient(135deg, #32BCAD, #2a9d8f); color: white; }
         .btn-pix:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(50, 188, 173, 0.4); }
         .btn-pix:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
-                .btn-pix-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
+        .btn-pix-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
         .btn-pix-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); }
         .btn-pix-whatsapp:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
 @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } }
@@ -206,6 +206,7 @@
         .pix-status-pago { background: #C8E6C9; color: #2E7D32; }
         .pix-status-pendente { background: #FFCCBC; color: #D84315; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -544,8 +545,33 @@
         let configPrazo = 1;
         let todasLivesGrid = [];
 
-        // MENSAGEM PADRAO - usando \n explicitamente
-        const MENSAGEM_PADRAO = "Olá, {{primeiroNome}} gratidão por acompanhar a nossa live!!\n\nSegue o valor da sua compra {{valorTotal}}\n\nItens:\n\n{{itens}}\n\nEste é o valor total das compras caso já tenha pago alguma peça durante a live só fazer o pix da diferença.\n\nAguardaremos o pagamento até às 12:00 de amanhã ({{dataLimite}}) ou seguiremos a fila de espera como de costume!\n\nEnviar comprovante de pagamento aqui no direct.\n\nCaso tenha crédito ou consignados conosco nos avise para descontarmos. 💳\n\nObrigada ❣️\n\nPix para pagamento:\n\n{{cnpj}}\n{{pixChave}}\n\n{{nomePix}}";
+        // MENSAGEM PADRAO - usando arrays e join() para criar quebras de linha
+        const MENSAGEM_PADRAO = [
+            "Olá, {{primeiroNome}} gratidão por acompanhar a nossa live!!",
+            "",
+            "Segue o valor da sua compra {{valorTotal}}",
+            "",
+            "Itens:",
+            "",
+            "{{itens}}",
+            "",
+            "Este é o valor total das compras caso já tenha pago alguma peça durante a live só fazer o pix da diferença.",
+            "",
+            "Aguardaremos o pagamento até às 12:00 de amanhã ({{dataLimite}}) ou seguiremos a fila de espera como de costume!",
+            "",
+            "Enviar comprovante de pagamento aqui no direct.",
+            "",
+            "Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳",
+            "",
+            "Obrigada ❣️",
+            "",
+            "Pix para pagamento:",
+            "",
+            "{{cnpj}}",
+            "{{pixChave}}",
+            "",
+            "{{nomePix}}"
+        ].join("\n");
 
         const PIX_PADRAO = { tipo: 'CNPJ', chave: '50.403.919/0001-02', nome: 'Amanda Marcelino' };
 
@@ -1098,7 +1124,7 @@
         // LINK INFINITE - GERAR LINK E COPIAR MENSAGEM
         // ============================================
 
-                function gerarMensagemInfinitePay(cliente, linkPagamento) {
+        function gerarMensagemInfinitePay(cliente, linkPagamento) {
             const primeiroNome = cliente.nome.split(' ')[0];
             const dataLimite = new Date();
             dataLimite.setDate(dataLimite.getDate() + configPrazo);
@@ -1109,17 +1135,28 @@
                 itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '\n';
             });
 
-            let mensagem = 'Olá, ' + primeiroNome + '! 💕\n\n';
-            mensagem += 'Gratidão por acompanhar nossa live!! 🛍️\n\n';
-            mensagem += 'Segue o valor da sua compra: ' + formatarMoeda(cliente.total) + '\n\n';
-            mensagem += 'Itens:\n' + itensFormatados + '\n';
-            mensagem += '💳 *Pague com PIX pelo link:*\n';
-            mensagem += linkPagamento + '\n\n';
-            mensagem += 'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.\n\n';
-            mensagem += 'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!\n\n';
-            mensagem += 'Enviar comprovante de pagamento aqui no direct. ✅\n\n';
-            mensagem += 'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳\n\n';
-            mensagem += 'Obrigada ❣️';
+            const mensagem = [
+                'Olá, ' + primeiroNome + '! 💕',
+                '',
+                'Gratidão por acompanhar nossa live!! 🛍️',
+                '',
+                'Segue o valor da sua compra: ' + formatarMoeda(cliente.total),
+                '',
+                'Itens:',
+                itensFormatados,
+                '💳 *Pague com PIX pelo link:*',
+                linkPagamento,
+                '',
+                'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.',
+                '',
+                'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!',
+                '',
+                'Enviar comprovante de pagamento aqui no direct. ✅',
+                '',
+                'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳',
+                '',
+                'Obrigada ❣️'
+            ].join('\n');
 
             return mensagem;
         }
@@ -1137,7 +1174,6 @@
             showStatus('Gerando Link InfinitePay...', 'info');
 
             try {
-                // Buscar configuração do InfinitePay
                 const { data: config, error: configError } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .select('infinitepay_handle, infinitepay_api_key, infinitepay_taxa_percentual, infinitepay_taxa_fixa')
@@ -1152,14 +1188,12 @@
                     return;
                 }
 
-                // Calcular valor com taxa (igual à pix-pagamento.html)
                 const taxaPerc = parseFloat(config.infinitepay_taxa_percentual || '3.99');
                 const taxaFixa = parseFloat(config.infinitepay_taxa_fixa || '0.00');
                 const taxaDecimal = taxaPerc / 100;
                 const valorOriginal = parseFloat(cliente.total || 0);
                 const valorComTaxa = Math.ceil(((valorOriginal + taxaFixa) / (1 - taxaDecimal)) * 100) / 100;
 
-                // Criar venda na tabela vendas_pg primeiro (para ter venda_id)
                 const { data: novaVenda, error: vendaError } = await supabaseClient
                     .from('vendas_pg')
                     .insert({
@@ -1183,12 +1217,10 @@
 
                 if (vendaError) {
                     console.error('[COBLIVE] Erro ao criar venda:', vendaError);
-                    // Continua mesmo sem venda_id
                 }
 
                 const vendaId = novaVenda ? novaVenda.id : null;
 
-                // Gerar link via Edge Function - mesma estrutura da pix-pagamento.html
                 const bodyData = {
                     cliente_sistema_id: clienteSistemaId,
                     handle: config.infinitepay_handle,
@@ -1230,10 +1262,8 @@
                     throw new Error('Link de checkout não retornado');
                 }
 
-                // Gerar mensagem com o link
                 const mensagem = gerarMensagemInfinitePay(cliente, checkoutUrl);
 
-                // Copiar para área de transferência
                 try {
                     await navigator.clipboard.writeText(mensagem);
                     showStatus('✅ Link gerado e mensagem copiada! Abrindo Instagram...', 'success');
@@ -1247,11 +1277,9 @@
                     showStatus('✅ Link gerado e mensagem copiada! Abrindo Instagram...', 'success');
                 }
 
-                // Marcar como cobrado
                 clientesCobrados.add(index);
                 renderizarTabela();
 
-                // Abrir Instagram
                 instagramAtual = cliente.instagram.replace('@', '').trim();
                 abrirInstagramCliente();
 
@@ -1260,7 +1288,8 @@
                 showStatus('❌ Erro: ' + err.message, 'error');
             }
         }
-async function gerarPixSelecionados() {
+
+        async function gerarPixSelecionados() {
             sincronizarLiveAtual();
             if (idsSelecionados.size === 0) return;
             if (idsSelecionados.size > 1) {
@@ -1481,17 +1510,28 @@ async function gerarPixSelecionados() {
             cliente.itens.forEach(function(item) {
                 itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '\n';
             });
-            let mensagem = 'Olá, ' + primeiroNome + '! 💕\n\n';
-            mensagem += 'Gratidão por acompanhar nossa live!! 🛍️\n\n';
-            mensagem += 'Segue o valor da sua compra: ' + formatarMoeda(cliente.total) + '\n\n';
-            mensagem += 'Itens:\n' + itensFormatados + '\n';
-            mensagem += '💳 *Pague com PIX pelo link:*\n';
-            mensagem += pixData.ticket_url + '\n\n';
-            mensagem += 'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.\n\n';
-            mensagem += 'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!\n\n';
-            mensagem += 'Enviar comprovante de pagamento aqui no direct. ✅\n\n';
-            mensagem += 'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳\n\n';
-            mensagem += 'Obrigada ❣️';
+            const mensagem = [
+                'Olá, ' + primeiroNome + '! 💕',
+                '',
+                'Gratidão por acompanhar nossa live!! 🛍️',
+                '',
+                'Segue o valor da sua compra: ' + formatarMoeda(cliente.total),
+                '',
+                'Itens:',
+                itensFormatados,
+                '💳 *Pague com PIX pelo link:*',
+                pixData.ticket_url,
+                '',
+                'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.',
+                '',
+                'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!',
+                '',
+                'Enviar comprovante de pagamento aqui no direct. ✅',
+                '',
+                'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳',
+                '',
+                'Obrigada ❣️'
+            ].join('\n');
             return mensagem;
         }
 
@@ -1540,17 +1580,28 @@ async function gerarPixSelecionados() {
             cliente.itens.forEach(function(item) {
                 itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '\n';
             });
-            let mensagem = 'Olá, ' + primeiroNome + '! 💕\n\n';
-            mensagem += 'Gratidão por acompanhar nossa live!! 🛍️\n\n';
-            mensagem += 'Segue o valor da sua compra: ' + formatarMoeda(cliente.total) + '\n\n';
-            mensagem += 'Itens:\n' + itensFormatados + '\n';
-            mensagem += '💳 *Pague com PIX pelo link:*\n';
-            mensagem += linkPagamento + '\n\n';
-            mensagem += 'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.\n\n';
-            mensagem += 'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!\n\n';
-            mensagem += 'Enviar comprovante de pagamento aqui no direct. ✅\n\n';
-            mensagem += 'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳\n\n';
-            mensagem += 'Obrigada ❣️';
+            const mensagem = [
+                'Olá, ' + primeiroNome + '! 💕',
+                '',
+                'Gratidão por acompanhar nossa live!! 🛍️',
+                '',
+                'Segue o valor da sua compra: ' + formatarMoeda(cliente.total),
+                '',
+                'Itens:',
+                itensFormatados,
+                '💳 *Pague com PIX pelo link:*',
+                linkPagamento,
+                '',
+                'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.',
+                '',
+                'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!',
+                '',
+                'Enviar comprovante de pagamento aqui no direct. ✅',
+                '',
+                'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳',
+                '',
+                'Obrigada ❣️'
+            ].join('\n');
             return mensagem;
         }
 
@@ -1639,7 +1690,6 @@ async function gerarPixSelecionados() {
             });
         }
 
-        
         // ============================================
         // PIX GRÁTIS VIA WHATSAPP (EVOLUTION API)
         // ============================================
@@ -1651,39 +1701,30 @@ async function gerarPixSelecionados() {
             const dataLimiteFormatada = dataLimite.toLocaleDateString('pt-BR');
             let itensFormatados = '';
             cliente.itens.forEach(function(item) {
-                itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '
-';
+                itensFormatados += '• ' + (item.codigo || 'Item') + ' - ' + formatarMoeda(item.valor) + '\n';
             });
-            let mensagem = 'Olá, ' + primeiroNome + '! 💕
-
-';
-            mensagem += 'Gratidão por acompanhar nossa live!! 🛍️
-
-';
-            mensagem += 'Segue o valor da sua compra: ' + formatarMoeda(cliente.total) + '
-
-';
-            mensagem += 'Itens:
-' + itensFormatados + '
-';
-            mensagem += '💳 *Pague com PIX pelo link:*
-';
-            mensagem += linkPagamento + '
-
-';
-            mensagem += 'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.
-
-';
-            mensagem += 'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!
-
-';
-            mensagem += 'Enviar comprovante de pagamento aqui. ✅
-
-';
-            mensagem += 'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳
-
-';
-            mensagem += 'Obrigada ❣️';
+            const mensagem = [
+                'Olá, ' + primeiroNome + '! 💕',
+                '',
+                'Gratidão por acompanhar nossa live!! 🛍️',
+                '',
+                'Segue o valor da sua compra: ' + formatarMoeda(cliente.total),
+                '',
+                'Itens:',
+                itensFormatados,
+                '💳 *Pague com PIX pelo link:*',
+                linkPagamento,
+                '',
+                'Este é o valor total das compras. Caso já tenha pago alguma peça durante a live, só fazer o pix da diferença.',
+                '',
+                'Aguardaremos o pagamento até às 12:00 de amanhã (' + dataLimiteFormatada + ') ou seguiremos a fila de espera como de costume!',
+                '',
+                'Enviar comprovante de pagamento aqui. ✅',
+                '',
+                'Caso tenha crédito ou consignados conosco nos avise para descontarmos. 💳',
+                '',
+                'Obrigada ❣️'
+            ].join('\n');
             return mensagem;
         }
 
@@ -1728,7 +1769,6 @@ async function gerarPixSelecionados() {
 
             const mensagem = gerarMensagemPixWhatsapp(cliente, resultado.link);
 
-            // Enviar via Evolution API
             const envioResult = await enviarPixWhatsapp(cliente.whatsapp, mensagem);
 
             if (envioResult.sucesso) {
@@ -1755,10 +1795,8 @@ async function gerarPixSelecionados() {
                 numeroLimpo = '55' + numeroLimpo;
             }
 
-            // Tentativa 1 com timeout de 20s
             let resultado = await _enviarPixWhatsapp(numeroLimpo, texto, 20000);
 
-            // Se falhou por timeout, tentar mais uma vez
             if (!resultado.sucesso && resultado.erro === 'Timeout') {
                 console.log('[EVOLUTION PIX] Timeout na tentativa 1, aguardando 3s para retry...');
                 await new Promise(r => setTimeout(r, 3000));
@@ -1790,7 +1828,6 @@ async function gerarPixSelecionados() {
                 const data = await response.json();
                 console.log('[EVOLUTION PIX] Response:', JSON.stringify(data));
 
-                // Tratar erro 400: número não existe no WhatsApp
                 if (!response.ok) {
                     if (data.response && data.response.message && Array.isArray(data.response.message)) {
                         const msg = data.response.message[0];
@@ -1800,7 +1837,6 @@ async function gerarPixSelecionados() {
                         }
                     }
 
-                    // WORKAROUND: Erro Prisma (mensagem geralmente enviada mesmo com erro)
                     const isPrismaError = data.response &&
                                          data.response.message &&
                                          Array.isArray(data.response.message) &&
@@ -1825,7 +1861,7 @@ async function gerarPixSelecionados() {
             }
         }
 
-// ============================================
+        // ============================================
         // INTEGRACAO COM EXTENSAO CHROME
         // ============================================
         function getSessionId() {
@@ -2162,7 +2198,6 @@ async function gerarPixSelecionados() {
 
                 let vendaId = null;
 
-                // Buscar venda existente
                 const { data: vendaExistente } = await supabaseClient
                     .from('vendas_pg')
                     .select('id, total, status_pagamento')
@@ -2211,7 +2246,6 @@ async function gerarPixSelecionados() {
                     vendaId = novaVenda.id;
                 }
 
-                // Buscar PIX existente
                 const { data: pixExistente } = await supabaseClient
                     .from('pix_estaticos')
                     .select('id, status')
