@@ -296,6 +296,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -567,11 +568,15 @@
         // CONSTANTES DO RASTREAMENTO
         // ============================================
         const URLS_RASTREAMENTO = {
-            'correios': (codigo) => `https://www2.correios.com.br/sistemas/rastreamento/default.cfm?objeto=${codigo}`,
+            'correios': (codigo) => `https://www.linketrack.com/track/?codigo=${codigo}`,
+            'correios_pac': (codigo) => `https://www.linketrack.com/track/?codigo=${codigo}`,
+            'correios_sedex': (codigo) => `https://www.linketrack.com/track/?codigo=${codigo}`,
             'jadlog': (codigo) => `https://www.jadlog.com.br/tracking?cnpj=&cte=${codigo}`,
             'super_frete': (codigo) => `https://rastreio.superfrete.com/#/tracking/${codigo}`,
             'melhor_envio': (codigo) => `https://www.melhorrastreio.com.br/rastreio/${codigo}`,
             'transportadora': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`,
+            'motoboy': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`,
+            'retirada': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`,
             'outro': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`
         };
 
