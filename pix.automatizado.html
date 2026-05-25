@@ -14,10 +14,10 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
         .header { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .header-left { display: flex; align-items: center; gap: 20px; }
-        .btn-voltar { background: linear-gradient(135deg, #A8E6CF, #7FCDCD); color: #2D3436; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
         .header h1 { color: #0B193F; font-size: 1.8rem; margin-bottom: 5px; }
         .header p { color: #636E72; font-size: 0.9rem; }
@@ -25,15 +25,15 @@
         .user-info { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 10px 20px; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #1565C0; }
 
         .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.08); border-left: 4px solid #0B193F; }
-        .stat-card h3 { color: #636E72; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .stat-card .valor { color: #0B193F; font-size: 2rem; font-weight: bold; }
+        .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; }
+        .stat-card h3 { color: rgba(255,255,255,0.85); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-card .valor { color: white; font-size: 2rem; font-weight: bold; }
         .stat-card.pago { border-left-color: #28a745; }
-        .stat-card.pago .valor { color: #28a745; }
+        .stat-card.pago .valor { color: #90EE90; }
         .stat-card.pendente { border-left-color: #ffc107; }
-        .stat-card.pendente .valor { color: #ffc107; }
+        .stat-card.pendente .valor { color: #FFD54F; }
         .stat-card.expirado { border-left-color: #dc3545; }
-        .stat-card.expirado .valor { color: #dc3545; }
+        .stat-card.expirado .valor { color: #FF6B6B; }
 
         .filtros-container { background: white; padding: 25px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
         .filtros-titulo { color: #0B193F; font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
