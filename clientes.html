@@ -591,7 +591,6 @@
 // ============================================
 if (window.__clientesInitialized) {
     console.log('[CLIENTES] ⚠️ Script já inicializado anteriormente. Abortando.');
-    // Não executar nada novamente - força parada do script
     throw new Error('CLIENTES_ALREADY_INITIALIZED');
 }
 window.__clientesInitialized = true;
@@ -608,21 +607,20 @@ document.getElementById('btnVoltar').addEventListener('click', function(e) {
 });
 
 // ============================================
-// VARIÁVEIS GLOBAIS (auth.js fornece supabaseClient, authClienteId)
+// VARIÁVEIS GLOBAIS
 // ============================================
 let supabaseClient = null;
 let usuarioAtual = null;
 let clienteSistemaId = null;
 let clientesData = [];
-let authCheckInterval = null; // Referência para limpar o intervalo
+let authCheckInterval = null;
 
 // ============================================
-// INICIALIZAÇÃO - MESMA ESTRUTURA DO COBLIVE
+// INICIALIZAÇÃO
 // ============================================
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('[CLIENTES] DOM carregado. Iniciando...');
 
-    // Aguardar auth.js inicializar completamente (até 10 segundos)
     let tentativas = 0;
     const maxTentativas = 100;
 
@@ -648,7 +646,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 function inicializarInterface() {
-    // Proteção extra: só inicializa uma vez
     if (window.__clientesInterfaceInitialized) {
         console.log('[CLIENTES] Interface já inicializada. Pulando.');
         return;
@@ -734,10 +731,10 @@ function renderizarClientes(clientes) {
                         <span>🏠 ${enderecos.length} endereço(s)</span>
                     </div>
                 </div>
-                <div class="cliente-actions" onclick="event.stopPropagation()">
-                    <button class="btn-icon btn-editar" onclick="editarCliente('${cliente.id}')" title="Editar">✏️</button>
-                    <button class="btn-icon btn-excluir" onclick="excluirCliente('${cliente.id}')" title="Excluir">🗑️</button>
-                    <button class="btn-icon btn-expand" title="Ver detalhes">▼</button>
+                <div class="cliente-actions">
+                    <button class="btn-icon btn-editar" onclick="event.stopPropagation(); editarCliente('${cliente.id}')" title="Editar">✏️</button>
+                    <button class="btn-icon btn-excluir" onclick="event.stopPropagation(); excluirCliente('${cliente.id}')" title="Excluir">🗑️</button>
+                    <button class="btn-icon btn-expand" onclick="event.stopPropagation(); toggleDetalhes('${cliente.id}')" title="Ver detalhes">▼</button>
                 </div>
             </div>
             <div class="cliente-detalhes" id="detalhes-${cliente.id}">
@@ -774,9 +771,17 @@ function renderizarClientes(clientes) {
 function toggleDetalhes(clienteId) {
     const detalhes = document.getElementById(`detalhes-${clienteId}`);
     const item = document.querySelector(`[data-id="${clienteId}"]`);
+    if (!detalhes || !item) {
+        console.error('[CLIENTES] Elemento não encontrado para clienteId:', clienteId);
+        return;
+    }
     const btnExpand = item.querySelector('.btn-expand');
     detalhes.classList.toggle('active');
-    btnExpand.textContent = detalhes.classList.contains('active') ? '▲' : '▼';
+    if (btnExpand) {
+        btnExpand.textContent = detalhes.classList.contains('active') ? '▲' : '▼';
+        btnExpand.title = detalhes.classList.contains('active') ? 'Ocultar detalhes' : 'Ver detalhes';
+    }
+    console.log('[CLIENTES] Toggle detalhes cliente', clienteId, '- ativo:', detalhes.classList.contains('active'));
 }
 
 function abrirModalCliente(clienteId = null) {
