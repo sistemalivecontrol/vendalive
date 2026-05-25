@@ -7,10 +7,10 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
+
     <!-- VERSION.JS - SEMPRE PRIMEIRO! -->
     <script src="version.js?v=2026-05-04-v1"></script>
-    
+
     <title>Gerenciamento de Clientes - Pingo de Gente</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="auth.js?v=2026-05-07-1735"></script>
@@ -468,7 +468,6 @@
             }
         }
     </style>
-
 <base target="_blank">
 </head>
 <body>
@@ -588,6 +587,17 @@
     <div class="toast" id="toast"></div>
     <script>
 // ============================================
+// PROTEÇÃO CONTRA INICIALIZAÇÃO DUPLICADA
+// ============================================
+if (window.__clientesInitialized) {
+    console.log('[CLIENTES] ⚠️ Script já inicializado anteriormente. Abortando.');
+    // Não executar nada novamente - força parada do script
+    throw new Error('CLIENTES_ALREADY_INITIALIZED');
+}
+window.__clientesInitialized = true;
+console.log('[CLIENTES] 🚀 Primeira inicialização. Prosseguindo...');
+
+// ============================================
 // NAVEGAÇÃO - VOLTAR PARA DASHBOARD (FORÇADO)
 // ============================================
 document.getElementById('btnVoltar').addEventListener('click', function(e) {
@@ -604,6 +614,7 @@ let supabaseClient = null;
 let usuarioAtual = null;
 let clienteSistemaId = null;
 let clientesData = [];
+let authCheckInterval = null; // Referência para limpar o intervalo
 
 // ============================================
 // INICIALIZAÇÃO - MESMA ESTRUTURA DO COBLIVE
@@ -615,7 +626,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let tentativas = 0;
     const maxTentativas = 100;
 
-    const checkAuth = setInterval(() => {
+    authCheckInterval = setInterval(() => {
         tentativas++;
 
         supabaseClient = window.supabaseClient;
@@ -623,11 +634,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         clienteSistemaId = window.authClienteId;
 
         if (supabaseClient && clienteSistemaId) {
-            clearInterval(checkAuth);
+            clearInterval(authCheckInterval);
+            authCheckInterval = null;
             console.log('[CLIENTES] ✅ auth.js pronto. Cliente ID:', clienteSistemaId);
             inicializarInterface();
         } else if (tentativas >= maxTentativas) {
-            clearInterval(checkAuth);
+            clearInterval(authCheckInterval);
+            authCheckInterval = null;
             console.error('[CLIENTES] Timeout aguardando auth.js');
             mostrarToast('Erro ao inicializar. Recarregue a página.', 'error');
         }
@@ -635,6 +648,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 function inicializarInterface() {
+    // Proteção extra: só inicializa uma vez
+    if (window.__clientesInterfaceInitialized) {
+        console.log('[CLIENTES] Interface já inicializada. Pulando.');
+        return;
+    }
+    window.__clientesInterfaceInitialized = true;
+
     console.log('[CLIENTES] Inicializando. Cliente Sistema ID:', clienteSistemaId);
     carregarDados();
 }
