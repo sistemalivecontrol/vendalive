@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
     <!-- Auth.js -->
     <script src="./js/auth.js" defer></script>
+    <link rel="stylesheet" href="navmenu.css">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -588,5 +589,6 @@
         document.getElementById('modalConfirmacao').addEventListener('click', function(e) { if (e.target === this) fecharModalConfirmacao(); });
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModal(); fecharModalView(); fecharModalConfirmacao(); } });
     </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>
