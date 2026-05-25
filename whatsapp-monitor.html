@@ -235,7 +235,6 @@
     </div>
 
     <script>
-
         // ===== CONFIGURACAO =====
         const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
         const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
@@ -271,7 +270,6 @@
                 return;
             }
 
-            // Datas padrão: últimos 7 dias
             const hoje = new Date();
             const seteDiasAtras = new Date();
             seteDiasAtras.setDate(hoje.getDate() - 7);
@@ -281,30 +279,22 @@
             carregarDados();
         });
 
-        // ===== CARREGAR DADOS - APENAS LEITURA =====
+        // ===== CARREGAR DADOS =====
         async function carregarDados() {
             mostrarLoading(true);
             todasMensagens = [];
 
             try {
-                // 1. Buscar da tabela whatsapp_envios (se existir)
                 await buscarWhatsappEnvios();
-
-                // 2. Buscar de vendas_pg (cobranças PIX)
                 await buscarVendasWhatsapp();
-
-                // 3. Buscar de solicitacoes_pg (confirmações enviadas)
                 await buscarSolicitacoesWhatsapp();
-
-                // 4. Buscar da Evolution API (mensagens enviadas fromMe)
+                await buscarRastreamentosWhatsapp();
                 await buscarEvolutionAPI();
 
-                // Ordenar por data (mais recente primeiro)
                 todasMensagens.sort(function(a, b) {
-                    return new Date(b.enviado_em || 0) - new Date(a.enviado_em || 0);
+                    return new Date(b.data || 0) - new Date(a.data || 0);
                 });
 
-                // Remover duplicatas (mesmo ID)
                 const vistas = new Set();
                 todasMensagens = todasMensagens.filter(function(m) {
                     if (vistas.has(m.id)) return false;
@@ -324,7 +314,7 @@
             }
         }
 
-        // ===== BUSCAR DA TABELA WHATSAPP_ENVIOS =====
+        // ===== 1. WHATSAPP_ENVIOS =====
         async function buscarWhatsappEnvios() {
             try {
                 const { data, error } = await supabaseClient
@@ -334,11 +324,7 @@
                     .order('enviado_em', { ascending: false })
                     .limit(300);
 
-                if (error) {
-                    // Tabela pode não existir ainda - não é erro crítico
-                    console.log('[MONITOR] Tabela whatsapp_envios não disponível');
-                    return;
-                }
+                if (error) { console.log('[MONITOR] whatsapp_envios não disponível:', error.message); return; }
 
                 (data || []).forEach(function(item) {
                     todasMensagens.push({
@@ -353,37 +339,43 @@
                         metadata: item.metadata
                     });
                 });
-            } catch (e) {
-                console.log('[MONITOR] Erro whatsapp_envios:', e.message);
-            }
+            } catch (e) { console.log('[MONITOR] Erro whatsapp_envios:', e.message); }
         }
 
-        // ===== BUSCAR DE VENDAS_PG (COBRANÇAS) =====
+        // ===== 2. VENDAS_PG - SEM JOIN, busca clientes separado =====
         async function buscarVendasWhatsapp() {
             try {
                 const { data, error } = await supabaseClient
                     .from('vendas_pg')
-                    .select('id, comprador, total, status_pagamento, origem, codigo_live, criado_em, atualizado_em, clientes_pg(nome, whatsapp)')
+                    .select('id, comprador, total, status_pagamento, origem, codigo_live, criado_em, cliente_nome')
                     .eq('cliente_id', clienteSistemaId)
                     .order('criado_em', { ascending: false })
                     .limit(200);
 
-                if (error) {
-                    console.log('[MONITOR] Erro vendas_pg:', error.message);
-                    return;
-                }
+                if (error) { console.log('[MONITOR] Erro vendas_pg:', error.message); return; }
+
+                // Buscar clientes separadamente
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('nome, whatsapp')
+                    .eq('cliente_id', clienteSistemaId);
+
+                const clientesMap = {};
+                (clientes || []).forEach(function(c) {
+                    if (c.nome) clientesMap[c.nome.toLowerCase().trim()] = c;
+                });
 
                 (data || []).forEach(function(v) {
-                    // Detectar se foi envio WhatsApp pela origem
                     const origensWhatsapp = ['coblive', 'coblive_infinite', 'coblive_pix', 'whatsapp', 'pix_whatsapp'];
                     const ehWhatsapp = origensWhatsapp.some(function(o) {
                         return (v.origem || '').toLowerCase().includes(o);
                     });
 
-                    if (!ehWhatsapp && !v.clientes_pg?.whatsapp) return;
+                    const clienteInfo = clientesMap[(v.comprador || '').toLowerCase().trim()] ||
+                                       clientesMap[(v.cliente_nome || '').toLowerCase().trim()];
+                    const numero = clienteInfo ? clienteInfo.whatsapp : '';
 
-                    const numero = v.clientes_pg?.whatsapp || '';
-                    if (!numero) return;
+                    if (!ehWhatsapp && !numero) return;
 
                     todasMensagens.push({
                         id: 'venda_' + v.id,
@@ -391,131 +383,160 @@
                         origem: detectarOrigem(v.origem),
                         status: v.status_pagamento === 'pago' ? 'entregue' : 'enviado',
                         numero: numero,
-                        cliente: v.comprador || v.clientes_pg?.nome || 'Cliente',
+                        cliente: v.comprador || v.cliente_nome || 'Cliente',
                         mensagem: 'Cobrança PIX: ' + formatarMoeda(v.total),
                         valor: v.total,
-                        metadata: {
-                            venda_id: v.id,
-                            codigo_live: v.codigo_live,
-                            origem_raw: v.origem
-                        }
+                        metadata: { venda_id: v.id, codigo_live: v.codigo_live, origem_raw: v.origem }
                     });
                 });
-            } catch (e) {
-                console.log('[MONITOR] Erro vendas:', e.message);
-            }
+            } catch (e) { console.log('[MONITOR] Erro vendas:', e.message); }
         }
 
-        // ===== BUSCAR DE SOLICITACOES_PG =====
+        // ===== 3. SOLICITACOES_PG - usa cliente_pg_id =====
         async function buscarSolicitacoesWhatsapp() {
             try {
                 const { data, error } = await supabaseClient
                     .from('solicitacoes_pg')
-                    .select('id, nome, telefone, numero_solicitacao, status, criado_em, atualizado_em, cliente_sistema_id, whatsapp_enviado_em, whatsapp_enviado_status')
-                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .select('id, cliente_pg_id, numero_solicitacao, status, criado_em, codigo_rastreio, forma_envio')
+                    .eq('cliente_id', clienteSistemaId)
                     .order('criado_em', { ascending: false })
                     .limit(200);
 
-                if (error) {
-                    console.log('[MONITOR] Erro solicitacoes:', error.message);
-                    return;
-                }
+                if (error) { console.log('[MONITOR] Erro solicitacoes:', error.message); return; }
+
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, whatsapp')
+                    .eq('cliente_id', clienteSistemaId);
+
+                const clientesMap = {};
+                (clientes || []).forEach(function(c) { clientesMap[c.id] = c; });
 
                 (data || []).forEach(function(s) {
-                    // Se tem whatsapp_enviado_em, foi enviado
-                    if (!s.whatsapp_enviado_em && !s.telefone) return;
+                    const clienteInfo = clientesMap[s.cliente_pg_id] || {};
+                    const numero = clienteInfo.whatsapp || '';
+                    const nome = clienteInfo.nome || 'Cliente';
+
+                    if (!numero) return;
 
                     todasMensagens.push({
                         id: 'solic_' + s.id,
-                        data: s.whatsapp_enviado_em || s.criado_em,
+                        data: s.criado_em,
                         origem: 'solicitacao',
-                        status: s.whatsapp_enviado_status || 'enviado',
-                        numero: s.telefone || '',
-                        cliente: s.nome || 'Cliente',
+                        status: s.status === 'entregue' ? 'entregue' : 'enviado',
+                        numero: numero,
+                        cliente: nome,
                         mensagem: 'Solicitação de entrega #' + (s.numero_solicitacao || s.id),
                         valor: null,
                         metadata: {
                             solicitacao_id: s.id,
                             numero_solicitacao: s.numero_solicitacao,
-                            status_solicitacao: s.status
+                            codigo_rastreio: s.codigo_rastreio,
+                            forma_envio: s.forma_envio
                         }
                     });
                 });
-            } catch (e) {
-                console.log('[MONITOR] Erro solicitacoes:', e.message);
-            }
+            } catch (e) { console.log('[MONITOR] Erro solicitacoes:', e.message); }
         }
 
-        // ===== BUSCAR DA EVOLUTION API =====
+        // ===== 4. RASTREAMENTOS_PG =====
+        async function buscarRastreamentosWhatsapp() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('rastreamentos_pg')
+                    .select('id, solicitacao_id, codigo_rastreio, forma_envio, data_envio, data_cadastro')
+                    .eq('cliente_id', clienteSistemaId)
+                    .order('data_cadastro', { ascending: false })
+                    .limit(100);
+
+                if (error) { console.log('[MONITOR] Erro rastreamentos:', error.message); return; }
+
+                const { data: solic } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, cliente_pg_id')
+                    .eq('cliente_id', clienteSistemaId);
+
+                const solicMap = {};
+                (solic || []).forEach(function(s) { solicMap[s.id] = s.cliente_pg_id; });
+
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, whatsapp')
+                    .eq('cliente_id', clienteSistemaId);
+
+                const clientesMap = {};
+                (clientes || []).forEach(function(c) { clientesMap[c.id] = c; });
+
+                (data || []).forEach(function(r) {
+                    const clientePgId = solicMap[r.solicitacao_id];
+                    const clienteInfo = clientesMap[clientePgId] || {};
+                    const numero = clienteInfo.whatsapp || '';
+                    const nome = clienteInfo.nome || 'Cliente';
+
+                    if (!numero) return;
+
+                    todasMensagens.push({
+                        id: 'rastro_' + r.id,
+                        data: r.data_cadastro,
+                        origem: 'rastreamento',
+                        status: 'enviado',
+                        numero: numero,
+                        cliente: nome,
+                        mensagem: 'Rastreamento: ' + r.codigo_rastreio,
+                        valor: null,
+                        metadata: {
+                            rastreamento_id: r.id,
+                            codigo_rastreio: r.codigo_rastreio,
+                            forma_envio: r.forma_envio
+                        }
+                    });
+                });
+            } catch (e) { console.log('[MONITOR] Erro rastreamentos:', e.message); }
+        }
+
+        // ===== 5. EVOLUTION API =====
         async function buscarEvolutionAPI() {
             try {
-                // Buscar chats da instância
                 const response = await fetch(EVOLUTION_API_URL + '/chat/findChats/' + EVOLUTION_INSTANCE, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': EVOLUTION_API_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
                     body: JSON.stringify({})
                 });
 
-                if (!response.ok) {
-                    console.log('[MONITOR] Evolution API indisponível');
-                    return;
-                }
+                if (!response.ok) { console.log('[MONITOR] Evolution API indisponível'); return; }
 
                 const chats = await response.json();
-                if (!chats || !Array.isArray(chats)) {
-                    console.log('[MONITOR] Nenhum chat na Evolution');
-                    return;
-                }
+                if (!chats || !Array.isArray(chats)) { console.log('[MONITOR] Nenhum chat'); return; }
 
-                // Para cada chat, buscar mensagens enviadas (fromMe)
                 const promessas = chats.slice(0, 15).map(function(chat) {
                     return buscarMensagensChat(chat.id || chat.remoteJid);
                 });
-
                 await Promise.all(promessas);
-
-            } catch (e) {
-                console.log('[MONITOR] Erro Evolution:', e.message);
-            }
+            } catch (e) { console.log('[MONITOR] Erro Evolution:', e.message); }
         }
 
         async function buscarMensagensChat(chatId) {
             if (!chatId) return;
-
             try {
                 const response = await fetch(EVOLUTION_API_URL + '/chat/findMessages/' + EVOLUTION_INSTANCE, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': EVOLUTION_API_KEY
-                    },
-                    body: JSON.stringify({
-                        where: { key: { remoteJid: chatId } },
-                        limit: 30
-                    })
+                    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
+                    body: JSON.stringify({ where: { key: { remoteJid: chatId } }, limit: 30 })
                 });
-
                 if (!response.ok) return;
-
                 const messages = await response.json();
                 if (!messages || !Array.isArray(messages)) return;
 
                 messages.forEach(function(msg) {
-                    if (!msg.key || !msg.key.fromMe) return; // Só mensagens enviadas por nós
-
+                    if (!msg.key || !msg.key.fromMe) return;
                     const numero = (msg.key.remoteJid || '').replace(/@s\.whatsapp\.net/g, '').replace(/@g\.us/g, '');
                     const jaExiste = todasMensagens.some(function(m) {
                         return m.id === msg.key.id || (m.numero === numero && Math.abs(new Date(m.data) - new Date(msg.messageTimestamp * 1000)) < 60000);
                     });
-
                     if (jaExiste) return;
 
                     const texto = extrairTextoMensagem(msg);
                     const origem = detectarOrigemPorTexto(texto);
-
                     todasMensagens.push({
                         id: msg.key.id,
                         data: new Date(msg.messageTimestamp * 1000).toISOString(),
@@ -525,15 +546,10 @@
                         cliente: msg.pushName || 'Cliente',
                         mensagem: texto,
                         valor: extrairValorDoTexto(texto),
-                        metadata: {
-                            evolution_raw: msg,
-                            messageTimestamp: msg.messageTimestamp
-                        }
+                        metadata: { evolution_raw: msg }
                     });
                 });
-            } catch (e) {
-                // Ignorar erro individual de chat
-            }
+            } catch (e) {}
         }
 
         // ===== DETECTAR ORIGEM =====
@@ -552,7 +568,7 @@
             const t = texto.toLowerCase();
             if (t.includes('pix') && (t.includes('cobran') || t.includes('compra') || t.includes('valor'))) return 'coblive';
             if (t.includes('rastreamento') || t.includes('correio') || t.includes('sedex') || t.includes('pac')) return 'rastreamento';
-            if (t.includes('solicita') || t.includes('entrega') || t.includes('endereço')) return 'solicitacao';
+            if (t.includes('solicita') || t.includes('entrega') || t.includes('endereco')) return 'solicitacao';
             if (t.includes('pagamento') || t.includes('link') || t.includes('checkout')) return 'pix_pagamento';
             return 'outro';
         }
@@ -560,9 +576,9 @@
         function extrairTextoMensagem(msg) {
             if (!msg.message) return '[Mídia]';
             if (msg.message.conversation) return msg.message.conversation;
-            if (msg.message.extendedTextMessage) return msg.message.extendedTextMessage.text || '[Texto estendido]';
+            if (msg.message.extendedTextMessage) return msg.message.extendedTextMessage.text || '[Texto]';
             if (msg.message.imageMessage) return '[Imagem] ' + (msg.message.imageMessage.caption || '');
-            if (msg.message.documentMessage) return '[Documento] ' + (msg.message.documentMessage.caption || '');
+            if (msg.message.documentMessage) return '[Doc] ' + (msg.message.documentMessage.caption || '');
             if (msg.message.videoMessage) return '[Vídeo]';
             if (msg.message.audioMessage) return '[Áudio]';
             return '[Mídia]';
@@ -571,9 +587,7 @@
         function extrairValorDoTexto(texto) {
             if (!texto) return null;
             const match = texto.match(/R\$\s*([\d.,]+)/);
-            if (match) {
-                return parseFloat(match[1].replace('.', '').replace(',', '.'));
-            }
+            if (match) return parseFloat(match[1].replace('.', '').replace(',', '.'));
             return null;
         }
 
@@ -587,25 +601,11 @@
 
             mensagensFiltradas = todasMensagens.filter(function(m) {
                 let ok = true;
-
-                if (dataInicio) {
-                    const d = new Date(m.data || 0);
-                    ok = ok && d >= new Date(dataInicio + 'T00:00:00');
-                }
-                if (dataFim) {
-                    const d = new Date(m.data || 0);
-                    ok = ok && d <= new Date(dataFim + 'T23:59:59');
-                }
+                if (dataInicio) ok = ok && new Date(m.data || 0) >= new Date(dataInicio + 'T00:00:00');
+                if (dataFim) ok = ok && new Date(m.data || 0) <= new Date(dataFim + 'T23:59:59');
                 if (origem) ok = ok && m.origem === origem;
                 if (status) ok = ok && m.status === status;
-                if (busca) {
-                    ok = ok && (
-                        (m.cliente || '').toLowerCase().includes(busca) ||
-                        (m.numero || '').includes(busca) ||
-                        (m.mensagem || '').toLowerCase().includes(busca)
-                    );
-                }
-
+                if (busca) ok = ok && ((m.cliente || '').toLowerCase().includes(busca) || (m.numero || '').includes(busca) || (m.mensagem || '').toLowerCase().includes(busca));
                 return ok;
             });
 
@@ -626,7 +626,7 @@
             aplicarFiltros();
         }
 
-        // ===== RENDERIZAR TABELA =====
+        // ===== RENDERIZAR =====
         function renderizarTabela() {
             const tbody = document.getElementById('tbodyPrincipal');
             const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
@@ -634,7 +634,7 @@
             const pagina = mensagensFiltradas.slice(inicio, fim);
 
             if (pagina.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><h3>Nenhum envio encontrado</h3><p>Tente ajustar os filtros ou atualizar os dados</p></div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><h3>Nenhum envio encontrado</h3><p>Tente ajustar os filtros</p></div></td></tr>';
                 document.getElementById('paginacaoPrincipal').innerHTML = '';
                 document.getElementById('infoResultados').textContent = '0 resultados';
                 return;
@@ -650,37 +650,27 @@
                     '<td class="cliente-nome">' + escapeHtml(m.cliente || '-') + '</td>' +
                     '<td class="mensagem-preview" title="' + escapeHtml(m.mensagem || '') + '">' + escapeHtml(truncar(m.mensagem || '-', 45)) + '</td>' +
                     '<td>' + (m.valor ? '<span class="valor-tag">' + formatarMoeda(m.valor) + '</span>' : '-') + '</td>' +
-                    '<td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="verDetalhes(\'' + m.id + '\')">👁️ Ver</button></td>' +
+                    '<td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="verDetalhes(\'' + m.id + '\')">👁️</button></td>' +
                     '</tr>';
             });
             tbody.innerHTML = html;
-
             renderizarPaginacao();
-            document.getElementById('infoResultados').textContent = mensagensFiltradas.length + ' envio(s) encontrado(s)';
+            document.getElementById('infoResultados').textContent = mensagensFiltradas.length + ' envio(s)';
         }
 
         function renderizarPaginacao() {
             const totalPaginas = Math.ceil(mensagensFiltradas.length / ITENS_POR_PAGINA);
             const container = document.getElementById('paginacaoPrincipal');
-
-            if (totalPaginas <= 1) {
-                container.innerHTML = '<span class="paginacao-info">Página 1 de 1</span>';
-                return;
-            }
+            if (totalPaginas <= 1) { container.innerHTML = '<span class="paginacao-info">Página 1 de 1</span>'; return; }
 
             let html = '<button onclick="mudarPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + '>←</button>';
-
             for (let i = 1; i <= totalPaginas; i++) {
                 if (i === 1 || i === totalPaginas || (i >= paginaAtual - 1 && i <= paginaAtual + 1)) {
                     html += '<button class="' + (i === paginaAtual ? 'ativo' : '') + '" onclick="mudarPagina(' + i + ')">' + i + '</button>';
-                } else if (i === paginaAtual - 2 || i === paginaAtual + 2) {
-                    html += '<span style="color:#888">...</span>';
-                }
+                } else if (i === paginaAtual - 2 || i === paginaAtual + 2) { html += '<span style="color:#888">...</span>'; }
             }
-
             html += '<button onclick="mudarPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>→</button>';
             html += '<span class="paginacao-info">' + paginaAtual + '/' + totalPaginas + ' (' + mensagensFiltradas.length + ')</span>';
-
             container.innerHTML = html;
         }
 
@@ -692,47 +682,30 @@
             document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ===== DETALHES =====
         function verDetalhes(id) {
             const msg = todasMensagens.find(function(m) { return m.id === id; });
             if (!msg) return;
-
             let detalhes = [
                 '📱 Número: ' + formatarNumero(msg.numero),
                 '👤 Cliente: ' + (msg.cliente || '-'),
                 '📤 Origem: ' + badgeOrigem(msg.origem),
                 '✅ Status: ' + badgeStatus(msg.status),
-                '🕐 Data: ' + formatarDataHora(msg.data),
-                ''
+                '🕐 Data: ' + formatarDataHora(msg.data), ''
             ];
-
-            if (msg.valor) {
-                detalhes.push('💰 Valor: ' + formatarMoeda(msg.valor));
-            }
-
+            if (msg.valor) detalhes.push('💰 Valor: ' + formatarMoeda(msg.valor));
             detalhes.push('💬 Mensagem:', msg.mensagem || '-', '');
-
             if (msg.metadata && Object.keys(msg.metadata).length > 0) {
                 detalhes.push('📋 Metadados:', JSON.stringify(msg.metadata, null, 2));
             }
-
             alert(detalhes.join('\n'));
         }
 
-        // ===== ESTATISTICAS =====
+        // ===== STATS =====
         function atualizarStats() {
-            const enviados = mensagensFiltradas.filter(function(m) {
-                return m.status === 'enviado' || m.status === 'entregue' || m.status === 'lido';
-            }).length;
-            const entregues = mensagensFiltradas.filter(function(m) {
-                return m.status === 'entregue' || m.status === 'lido';
-            }).length;
-            const falhas = mensagensFiltradas.filter(function(m) {
-                return m.status === 'falha';
-            }).length;
-            const pendentes = mensagensFiltradas.filter(function(m) {
-                return m.status === 'pendente';
-            }).length;
+            const enviados = mensagensFiltradas.filter(function(m) { return m.status === 'enviado' || m.status === 'entregue' || m.status === 'lido'; }).length;
+            const entregues = mensagensFiltradas.filter(function(m) { return m.status === 'entregue' || m.status === 'lido'; }).length;
+            const falhas = mensagensFiltradas.filter(function(m) { return m.status === 'falha'; }).length;
+            const pendentes = mensagensFiltradas.filter(function(m) { return m.status === 'pendente'; }).length;
 
             document.getElementById('statTotal').textContent = mensagensFiltradas.length;
             document.getElementById('statEnviados').textContent = enviados;
@@ -747,42 +720,26 @@
             if (isNaN(d.getTime())) return data;
             return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         }
-
         function formatarMoeda(valor) {
             if (valor === null || valor === undefined) return '-';
             return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',');
         }
-
         function formatarNumero(num) {
             if (!num) return '-';
             const n = num.toString().replace(/\D/g, '');
-            if (n.length === 13 && n.startsWith('55')) {
-                return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 9) + '-' + n.slice(9);
-            }
-            if (n.length === 12 && n.startsWith('55')) {
-                return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 8) + '-' + n.slice(8);
-            }
+            if (n.length === 13 && n.startsWith('55')) return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 9) + '-' + n.slice(9);
+            if (n.length === 12 && n.startsWith('55')) return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 8) + '-' + n.slice(8);
             return num;
         }
-
-        function truncar(str, len) {
-            if (!str) return '';
-            return str.length > len ? str.substring(0, len) + '...' : str;
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        function truncar(str, len) { if (!str) return ''; return str.length > len ? str.substring(0, len) + '...' : str; }
+        function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
         function badgeOrigem(origem) {
             const badges = {
                 'coblive': '<span class="origem-badge origem-coblive">💳 Cobrança Live</span>',
                 'rastreamento': '<span class="origem-badge origem-rastreamento">📦 Rastreamento</span>',
                 'solicitacao': '<span class="origem-badge origem-solicitacao">🚚 Solicitação</span>',
-                'pix_pagamento': '<span class="origem-badge origem-pix">💰 PIX Pagamento</span>',
+                'pix_pagamento': '<span class="origem-badge origem-pix">💰 PIX</span>',
                 'outro': '<span class="origem-badge origem-outro">📄 Outro</span>'
             };
             return badges[origem] || badges['outro'];
@@ -801,17 +758,18 @@
 
         function mostrarLoading(show) {
             const tbody = document.getElementById('tbodyPrincipal');
-            if (show) {
-                tbody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div><p>Buscando envios...</p></div></td></tr>';
-            }
+            if (show) tbody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div><p>Buscando envios...</p></div></td></tr>';
         }
-
         function mostrarErro(mensagem) {
             const alerta = document.getElementById('alertaErro');
             alerta.textContent = mensagem;
             alerta.classList.add('ativo');
             setTimeout(function() { alerta.classList.remove('ativo'); }, 5000);
         }
+
+        document.getElementById('modalDetalhes').addEventListener('click', function(e) {
+            if (e.target === e.currentTarget) fecharModal();
+        });
     </script>
     <script src="navmenu.js"></script>
 </body>
