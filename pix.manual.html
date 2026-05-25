@@ -47,7 +47,7 @@
     .tab.infinite-tab.ativo { background: linear-gradient(135deg, #7B1FA2, #9C27B0); color: white; }
     .tab-content { display: none; }
     .tab-content.ativo { display: block; }
-    .filtros { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+    .filtros { display: flex !important; gap: 10px !important; margin-bottom: 20px !important; flex-wrap: wrap !important; justify-content: center !important; width: 100%; }
     .filtros button { padding: 10px 18px; border: 2px solid #0B193F; background: white; color: #0B193F; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
     .filtros button:hover { background: #0B193F; color: white; }
     .filtros button.ativo { background: #0B193F; color: white; }
@@ -158,8 +158,28 @@
     .webhook-status-box code { background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; word-break: break-all; }
     .webhook-status-box a { color: inherit; text-decoration: underline; font-weight: 600; }
 
+    
+    .filtros-centro { justify-content: center !important; }
+    .card .filtros { justify-content: center !important; }
+
     @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } .header h1 { font-size: 1.5rem; } .stats { grid-template-columns: repeat(2, 1fr); } }
-  </style>
+  
+    /* ===== OVERRIDE FILTROS - GARANTIR CENTRALIZAÇÃO ===== */
+    #aba-pix .filtros,
+    #aba-asaas .filtros,
+    #aba-mp .filtros,
+    #aba-infinite .filtros,
+    .card > .filtros,
+    .tab-content .card .filtros,
+    .tab-content.ativo .card .filtros {
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .card .filtros button {
+        margin: 0 5px;
+    }
+</style>
 
 <base target="_blank">
 <base target="_blank">
@@ -202,7 +222,7 @@
                     <div class="stat-card cancelado-link"><h3 id="stat-cancelado-link">0</h3><p>Cancelados Link</p></div>
                     <div class="stat-card"><h3 id="stat-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros">
+                <div class="filtros filtros-centro">
                     <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
                     <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
                     <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
@@ -227,7 +247,7 @@
                     <div class="stat-card asaas refunded"><h3 id="stat-asaas-refunded">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card asaas"><h3 id="stat-asaas-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros">
+                <div class="filtros filtros-centro">
                     <button class="ativo" onclick="filtrarAsaas('todos')">📋 Todos</button>
                     <button onclick="filtrarAsaas('PENDING')">⏳ Pendentes</button>
                     <button onclick="filtrarAsaas('RECEIVED')">✅ Recebidos</button>
@@ -254,7 +274,7 @@
                     <div class="stat-card mp refunded"><h3 id="stat-mp-reembolsados">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card mp"><h3 id="stat-mp-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros">
+                <div class="filtros filtros-centro">
                     <button class="ativo" onclick="filtrarMp('todos')">📋 Todos</button>
                     <button onclick="filtrarMp('pendente')">⏳ Pendentes</button>
                     <button onclick="filtrarMp('aprovado')">✅ Aprovados</button>
@@ -282,7 +302,7 @@
                     <div class="stat-card infinite"><h3 id="stat-infinite-cancelados">0</h3><p>Cancelados</p></div>
                     <div class="stat-card infinite"><h3 id="stat-infinite-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros">
+                <div class="filtros filtros-centro">
                     <button class="ativo" onclick="filtrarInfinite('todos')">📋 Todos</button>
                     <button onclick="filtrarInfinite('pending')">⏳ Pendentes</button>
                     <button onclick="filtrarInfinite('paid')">✅ Pagos</button>
@@ -1313,5 +1333,26 @@
         }
     </script>
     <script src="navmenu.js"></script>
+
+<script>
+// Forçar centralização dos filtros via JS
+(function() {
+    function centralizarFiltros() {
+        document.querySelectorAll('.filtros').forEach(function(el) {
+            el.style.justifyContent = 'center';
+            el.style.display = 'flex';
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', centralizarFiltros);
+    } else {
+        centralizarFiltros();
+    }
+    // Reaplicar após 1 segundo (caso navmenu.js altere)
+    setTimeout(centralizarFiltros, 1000);
+    setTimeout(centralizarFiltros, 2000);
+})();
+</script>
+
 </body>
 </html>
