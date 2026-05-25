@@ -12,8 +12,10 @@
     <script src="version.js?v=2026-05-04-v1"></script>
 
     <title>Gerenciamento de Clientes - Pingo de Gente</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="auth.js?v=2026-05-07-1735"></script>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+    <!-- Auth.js -->
+    <script src="auth.js?v=2026-05-07-1735" defer></script>
     <link rel="stylesheet" href="navmenu.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,9 +25,9 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
@@ -63,15 +65,15 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        .header-center h1 { 
-            color: #0B193F; 
-            font-size: 1.5rem; 
+        .header-center h1 {
+            color: #0B193F;
+            font-size: 1.5rem;
             margin-bottom: 4px;
             font-weight: 700;
         }
-        .header-center p { 
-            color: #8898aa; 
-            font-size: 0.85rem; 
+        .header-center p {
+            color: #8898aa;
+            font-size: 0.85rem;
         }
         .user-info {
             display: flex;
@@ -90,9 +92,9 @@
             align-items: center;
             gap: 8px;
         }
-        #userInfo .cliente-nome { 
-            color: #0B193F; 
-            font-weight: 500; 
+        #userInfo .cliente-nome {
+            color: #0B193F;
+            font-weight: 500;
         }
         .btn-logout {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
@@ -128,18 +130,18 @@
             border-radius: 15px;
             text-align: center;
         }
-        .stat-label { 
-            color: rgba(255,255,255,0.85); 
-            font-size: 0.75rem; 
+        .stat-label {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 600;
             margin-bottom: 12px;
         }
-        .stat-value { 
-            font-size: 2.2rem; 
-            font-weight: 700; 
-            color: white; 
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
         }
         .search-section {
             background: white;
@@ -501,36 +503,36 @@
                 </div>
             </div>
             <div class="search-section">
-            <div class="search-grid">
-                <div class="form-group">
-                    <label for="buscaNome">Nome ou CPF</label>
-                    <input type="text" id="buscaNome" placeholder="Digite nome ou CPF...">
-                </div>
-                <div class="form-group">
-                    <label for="buscaCidade">Cidade</label>
-                    <input type="text" id="buscaCidade" placeholder="Digite a cidade...">
-                </div>
-                <div class="form-group">
-                    <label for="buscaRegiao">Região</label>
-                    <select id="buscaRegiao">
-                        <option value="">Todas</option>
-                        <option value="Norte">Norte</option>
-                        <option value="Sul">Sul</option>
-                        <option value="Leste">Leste</option>
-                        <option value="Oeste">Oeste</option>
-                        <option value="Centro">Centro</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-buscar" onclick="buscarClientes()">🔍 Buscar</button>
-                    <button class="btn-limpar" onclick="limparBusca()">Limpar</button>
+                <div class="search-grid">
+                    <div class="form-group">
+                        <label for="buscaNome">Nome ou CPF</label>
+                        <input type="text" id="buscaNome" placeholder="Digite nome ou CPF...">
+                    </div>
+                    <div class="form-group">
+                        <label for="buscaCidade">Cidade</label>
+                        <input type="text" id="buscaCidade" placeholder="Digite a cidade...">
+                    </div>
+                    <div class="form-group">
+                        <label for="buscaRegiao">Região</label>
+                        <select id="buscaRegiao">
+                            <option value="">Todas</option>
+                            <option value="Norte">Norte</option>
+                            <option value="Sul">Sul</option>
+                            <option value="Leste">Leste</option>
+                            <option value="Oeste">Oeste</option>
+                            <option value="Centro">Centro</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-buscar" onclick="buscarClientes()">🔍 Buscar</button>
+                        <button class="btn-limpar" onclick="limparBusca()">Limpar</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <button class="btn-novo" onclick="abrirModalCliente()">➕ Novo Cliente</button>
-        <div class="clientes-list" id="listaClientes">
-            <div class="loading"><div>Carregando clientes...</div></div>
-        </div>
+            <button class="btn-novo" onclick="abrirModalCliente()">➕ Novo Cliente</button>
+            <div class="clientes-list" id="listaClientes">
+                <div class="loading"><div>Carregando clientes...</div></div>
+            </div>
         </div>
     </div>
     <div class="modal-overlay" id="modalCliente">
@@ -586,445 +588,454 @@
     </div>
     <div class="toast" id="toast"></div>
     <script>
-// ============================================
-// PROTEÇÃO CONTRA INICIALIZAÇÃO DUPLICADA
-// ============================================
-if (window.__clientesInitialized) {
-    console.log('[CLIENTES] ⚠️ Script já inicializado anteriormente. Abortando.');
-    throw new Error('CLIENTES_ALREADY_INITIALIZED');
-}
-window.__clientesInitialized = true;
-console.log('[CLIENTES] 🚀 Primeira inicialização. Prosseguindo...');
+        // ==========================================
+        // VARIÁVEIS GLOBAIS
+        // ==========================================
+        let supabaseClient = null;
+        let usuarioAtual = null;
+        let clienteSistemaId = null;
+        let clientesData = [];
+        let appInicializado = false;
+        let carregandoClientes = false;
 
-// ============================================
-// NAVEGAÇÃO - VOLTAR PARA DASHBOARD (FORÇADO)
-// ============================================
-document.getElementById('btnVoltar').addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    location.href='dashboard.html';
-    return false;
-});
-
-// ============================================
-// VARIÁVEIS GLOBAIS
-// ============================================
-let supabaseClient = null;
-let usuarioAtual = null;
-let clienteSistemaId = null;
-let clientesData = [];
-let authCheckInterval = null;
-
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('[CLIENTES] DOM carregado. Iniciando...');
-
-    let tentativas = 0;
-    const maxTentativas = 100;
-
-    authCheckInterval = setInterval(() => {
-        tentativas++;
-
-        supabaseClient = window.supabaseClient;
-        usuarioAtual = window.authUsuario;
-        clienteSistemaId = window.authClienteId;
-
-        if (supabaseClient && clienteSistemaId) {
-            clearInterval(authCheckInterval);
-            authCheckInterval = null;
-            console.log('[CLIENTES] ✅ auth.js pronto. Cliente ID:', clienteSistemaId);
-            inicializarInterface();
-        } else if (tentativas >= maxTentativas) {
-            clearInterval(authCheckInterval);
-            authCheckInterval = null;
-            console.error('[CLIENTES] Timeout aguardando auth.js');
-            mostrarToast('Erro ao inicializar. Recarregue a página.', 'error');
-        }
-    }, 100);
-});
-
-function inicializarInterface() {
-    if (window.__clientesInterfaceInitialized) {
-        console.log('[CLIENTES] Interface já inicializada. Pulando.');
-        return;
-    }
-    window.__clientesInterfaceInitialized = true;
-
-    console.log('[CLIENTES] Inicializando. Cliente Sistema ID:', clienteSistemaId);
-    carregarDados();
-}
-
-async function carregarDados() {
-    await Promise.all([carregarEstatisticas(), buscarClientes()]);
-}
-
-async function carregarEstatisticas() {
-    try {
-        const { count: totalClientes } = await supabaseClient.from('clientes_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId);
-        const { count: totalEnderecos } = await supabaseClient.from('enderecos_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId);
-        const inicioMes = new Date();
-        inicioMes.setDate(1);
-        inicioMes.setHours(0, 0, 0, 0);
-        const { count: clientesMes } = await supabaseClient.from('clientes_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId).gte('criado_em', inicioMes.toISOString());
-        document.getElementById('statTotalClientes').textContent = totalClientes || 0;
-        document.getElementById('statTotalEnderecos').textContent = totalEnderecos || 0;
-        document.getElementById('statClientesMes').textContent = clientesMes || 0;
-    } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error);
-    }
-}
-
-async function buscarClientes() {
-    const nome = document.getElementById('buscaNome').value.trim();
-    const cidade = document.getElementById('buscaCidade').value.trim();
-    const regiao = document.getElementById('buscaRegiao').value;
-    try {
-        let query = supabaseClient.from('clientes_pg').select(`*,enderecos_pg (*)`).eq('cliente_id', clienteSistemaId).order('nome');
-        if (nome) {
-            const cpfLimpo = nome.replace(/\D/g, '');
-            if (cpfLimpo.length > 0) {
-                query = query.or(`nome.ilike.%${nome}%,cpf.ilike.%${nome}%`);
-            } else {
-                query = query.ilike('nome', `%${nome}%`);
-            }
-        }
-        const { data: clientes, error } = await query;
-        if (error) throw error;
-        let clientesFiltrados = clientes || [];
-        if (cidade || regiao) {
-            clientesFiltrados = clientesFiltrados.filter(cliente => {
-                const enderecos = cliente.enderecos_pg || [];
-                return enderecos.some(end => {
-                    const matchCidade = !cidade || (end.cidade && end.cidade.toLowerCase().includes(cidade.toLowerCase()));
-                    const matchRegiao = !regiao || end.regiao === regiao;
-                    return matchCidade && matchRegiao;
-                });
-            });
-        }
-        clientesData = clientesFiltrados;
-        renderizarClientes(clientesFiltrados);
-    } catch (error) {
-        console.error('Erro ao buscar clientes:', error);
-        mostrarToast('Erro ao buscar clientes', 'error');
-    }
-}
-
-function renderizarClientes(clientes) {
-    const container = document.getElementById('listaClientes');
-    if (clientes.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>Nenhum cliente encontrado</h3><p>Tente ajustar os filtros de busca ou cadastre um novo cliente.</p></div>`;
-        return;
-    }
-    container.innerHTML = clientes.map(cliente => {
-        const enderecos = cliente.enderecos_pg || [];
-        const enderecoPrincipal = enderecos.find(e => e.ativo) || enderecos[0];
-        return `<div class="cliente-item" data-id="${cliente.id}">
-            <div class="cliente-header" onclick="toggleDetalhes('${cliente.id}')">
-                <div class="cliente-info">
-                    <div class="cliente-nome">${escapeHtml(cliente.nome)}</div>
-                    <div class="cliente-dados">
-                        <span>🆔 ${formatarCPF(cliente.cpf)}</span>
-                        ${cliente.whatsapp ? `<span>📱 ${escapeHtml(cliente.whatsapp)}</span>` : ''}
-                        ${enderecoPrincipal ? `<span>📍 ${escapeHtml(enderecoPrincipal.cidade)}/${escapeHtml(enderecoPrincipal.estado)}</span>` : ''}
-                        <span>🏠 ${enderecos.length} endereço(s)</span>
-                    </div>
-                </div>
-                <div class="cliente-actions">
-                    <button class="btn-icon btn-editar" onclick="event.stopPropagation(); editarCliente('${cliente.id}')" title="Editar">✏️</button>
-                    <button class="btn-icon btn-excluir" onclick="event.stopPropagation(); excluirCliente('${cliente.id}')" title="Excluir">🗑️</button>
-                    <button class="btn-icon btn-expand" onclick="event.stopPropagation(); toggleDetalhes('${cliente.id}')" title="Ver detalhes">▼</button>
-                </div>
-            </div>
-            <div class="cliente-detalhes" id="detalhes-${cliente.id}">
-                <div class="secao-enderecos">
-                    <h3 class="secao-titulo">📍 Endereços</h3>
-                    ${enderecos.length === 0 ? '<p style="color: #636E72;">Nenhum endereço cadastrado</p>' : ''}
-                    ${enderecos.map(end => `
-                        <div class="endereco-card">
-                            <div class="endereco-info">
-                                <div class="endereco-principal">
-                                    ${escapeHtml(end.rua)}, ${escapeHtml(end.numero || 'S/N')}
-                                    ${end.ativo ? '<span class="badge badge-ativo">Ativo</span>' : '<span class="badge badge-inativo">Inativo</span>'}
-                                </div>
-                                <div class="endereco-complemento">
-                                    ${end.complemento ? escapeHtml(end.complemento) + ' - ' : ''}
-                                    ${escapeHtml(end.bairro || '')} - ${escapeHtml(end.cidade)}/${escapeHtml(end.estado)}
-                                    ${end.cep ? `- CEP: ${escapeHtml(end.cep)}` : ''}
-                                    ${end.regiao ? `<span style="color: #0B193F; font-weight: 600;">[${escapeHtml(end.regiao)}]</span>` : ''}
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn-icon btn-editar" onclick="editarEndereco('${end.id}')" title="Editar">✏️</button>
-                                <button class="btn-icon btn-excluir" onclick="excluirEndereco('${end.id}')" title="Excluir">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                    <button class="btn-add-endereco" onclick="abrirModalEndereco('${cliente.id}')">➕ Adicionar Endereço</button>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-function toggleDetalhes(clienteId) {
-    const detalhes = document.getElementById(`detalhes-${clienteId}`);
-    const item = document.querySelector(`[data-id="${clienteId}"]`);
-    if (!detalhes || !item) {
-        console.error('[CLIENTES] Elemento não encontrado para clienteId:', clienteId);
-        return;
-    }
-    const btnExpand = item.querySelector('.btn-expand');
-    detalhes.classList.toggle('active');
-    if (btnExpand) {
-        btnExpand.textContent = detalhes.classList.contains('active') ? '▲' : '▼';
-        btnExpand.title = detalhes.classList.contains('active') ? 'Ocultar detalhes' : 'Ver detalhes';
-    }
-    console.log('[CLIENTES] Toggle detalhes cliente', clienteId, '- ativo:', detalhes.classList.contains('active'));
-}
-
-function abrirModalCliente(clienteId = null) {
-    const modal = document.getElementById('modalCliente');
-    const titulo = document.getElementById('modalClienteTitulo');
-    const form = document.getElementById('formCliente');
-    form.reset();
-    document.getElementById('clienteId').value = '';
-    if (clienteId) {
-        const cliente = clientesData.find(c => c.id === clienteId);
-        if (cliente) {
-            titulo.textContent = 'Editar Cliente';
-            document.getElementById('clienteId').value = cliente.id;
-            document.getElementById('nome').value = cliente.nome || '';
-            document.getElementById('cpf').value = cliente.cpf || '';
-            document.getElementById('whatsapp').value = cliente.whatsapp || '';
-            document.getElementById('instagram').value = cliente.instagram || '';
-            document.getElementById('email').value = cliente.email || '';
-        }
-    } else {
-        titulo.textContent = 'Novo Cliente';
-    }
-    modal.classList.add('active');
-}
-
-function fecharModalCliente() {
-    document.getElementById('modalCliente').classList.remove('active');
-}
-
-async function salvarCliente() {
-    const id = document.getElementById('clienteId').value;
-    const dados = {
-        cliente_id: clienteSistemaId,
-        nome: document.getElementById('nome').value.trim(),
-        cpf: document.getElementById('cpf').value.trim() || null,
-        whatsapp: document.getElementById('whatsapp').value.trim() || null,
-        instagram: document.getElementById('instagram').value.trim() || null,
-        email: document.getElementById('email').value.trim() || null
-    };
-    if (!dados.nome) {
-        mostrarToast('Nome é obrigatório', 'error');
-        return;
-    }
-    try {
-        let result;
-        if (id) {
-            result = await supabaseClient.from('clientes_pg').update(dados).eq('id', id).eq('cliente_id', clienteSistemaId).select();
-        } else {
-            result = await supabaseClient.from('clientes_pg').insert([dados]).select();
-        }
-        if (result.error) {
-            if (result.error.code === '23505') {
-                mostrarToast('CPF já cadastrado', 'error');
+        // ==========================================
+        // INICIALIZAÇÃO - Mesmo padrão do vendas.html
+        // ==========================================
+        function inicializarApp() {
+            if (appInicializado) {
+                console.log('[CLIENTES] App já inicializado');
                 return;
             }
-            throw result.error;
+
+            // Usar variáveis globais do auth.js
+            supabaseClient = window.supabaseClient;
+            clienteSistemaId = window.authClienteId;
+
+            if (!clienteSistemaId) {
+                console.log('[CLIENTES] ⏳ auth.js ainda não definiu clienteId, aguardando...');
+                return false;
+            }
+
+            appInicializado = true;
+            console.log('[CLIENTES] ✅ Inicializando app com clienteId:', clienteSistemaId);
+            carregarDados();
+            return true;
         }
-        mostrarToast(id ? 'Cliente atualizado com sucesso!' : 'Cliente cadastrado com sucesso!', 'success');
-        fecharModalCliente();
-        await buscarClientes();
-        await carregarEstatisticas();
-    } catch (error) {
-        console.error('Erro ao salvar cliente:', error);
-        mostrarToast('Erro ao salvar cliente', 'error');
-    }
-}
 
-function editarCliente(id) {
-    abrirModalCliente(id);
-}
+        // Aguardar auth.js inicializar (ele já fez autenticação e redirecionamento se necessário)
+        document.addEventListener('DOMContentLoaded', () => {
+            let tentativas = 0;
+            const maxTentativas = 100; // 10 segundos máximo
 
-async function excluirCliente(id) {
-    if (!confirm('Tem certeza que deseja excluir este cliente? Todos os endereços associados também serão excluídos.')) {
-        return;
-    }
-    try {
-        const { error } = await supabaseClient.from('clientes_pg').delete().eq('id', id).eq('cliente_id', clienteSistemaId);
-        if (error) throw error;
-        mostrarToast('Cliente excluído com sucesso!', 'success');
-        await buscarClientes();
-        await carregarEstatisticas();
-    } catch (error) {
-        console.error('Erro ao excluir cliente:', error);
-        mostrarToast('Erro ao excluir cliente', 'error');
-    }
-}
+            const checkAuth = setInterval(() => {
+                tentativas++;
 
-function abrirModalEndereco(clienteId, enderecoId = null) {
-    const modal = document.getElementById('modalEndereco');
-    const titulo = document.getElementById('modalEnderecoTitulo');
-    const form = document.getElementById('formEndereco');
-    form.reset();
-    document.getElementById('enderecoId').value = '';
-    document.getElementById('enderecoClienteId').value = clienteId;
-    if (enderecoId) {
-        let endereco = null;
-        clientesData.forEach(c => {
-            const end = c.enderecos_pg?.find(e => e.id === enderecoId);
-            if (end) endereco = end;
+                // Tentar inicializar - retorna false se ainda não está pronto
+                const iniciado = inicializarApp();
+
+                if (iniciado) {
+                    clearInterval(checkAuth);
+                    console.log('[CLIENTES] ✅ App inicializado com sucesso');
+                } else if (tentativas >= maxTentativas) {
+                    clearInterval(checkAuth);
+                    console.error('[CLIENTES] Timeout aguardando auth.js');
+                    mostrarToast('Erro ao inicializar. Recarregue a página.', 'error');
+                }
+            }, 100);
         });
-        if (endereco) {
-            titulo.textContent = 'Editar Endereço';
-            document.getElementById('enderecoId').value = endereco.id;
-            document.getElementById('enderecoClienteId').value = endereco.cliente_id;
-            document.getElementById('cep').value = endereco.cep || '';
-            document.getElementById('rua').value = endereco.rua || '';
-            document.getElementById('numero').value = endereco.numero || '';
-            document.getElementById('complemento').value = endereco.complemento || '';
-            document.getElementById('bairro').value = endereco.bairro || '';
-            document.getElementById('cidade').value = endereco.cidade || '';
-            document.getElementById('estado').value = endereco.estado || 'SC';
-            document.getElementById('regiao').value = endereco.regiao || '';
+
+        // ============================================
+        // NAVEGAÇÃO - VOLTAR PARA DASHBOARD
+        // ============================================
+        document.getElementById('btnVoltar').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            location.href = 'dashboard.html';
+            return false;
+        });
+
+        // ==========================================
+        // CARREGAMENTO DE DADOS
+        // ==========================================
+        async function carregarDados() {
+            await Promise.all([carregarEstatisticas(), buscarClientes()]);
         }
-    } else {
-        titulo.textContent = 'Novo Endereço';
-    }
-    modal.classList.add('active');
-}
 
-function fecharModalEndereco() {
-    document.getElementById('modalEndereco').classList.remove('active');
-}
-
-async function salvarEndereco() {
-    const id = document.getElementById('enderecoId').value;
-    const clienteId = document.getElementById('enderecoClienteId').value;
-    const dados = {
-        cliente_id: clienteSistemaId,
-        cliente_pg_id: clienteId,
-        cep: document.getElementById('cep').value.trim(),
-        rua: document.getElementById('rua').value.trim(),
-        numero: document.getElementById('numero').value.trim() || null,
-        complemento: document.getElementById('complemento').value.trim() || null,
-        bairro: document.getElementById('bairro').value.trim() || null,
-        cidade: document.getElementById('cidade').value.trim(),
-        estado: document.getElementById('estado').value.trim() || 'SC',
-        regiao: document.getElementById('regiao').value || null
-    };
-    if (!dados.cep || !dados.rua || !dados.cidade) {
-        mostrarToast('CEP, Rua e Cidade são obrigatórios', 'error');
-        return;
-    }
-    try {
-        let result;
-        if (id) {
-            result = await supabaseClient.from('enderecos_pg').update(dados).eq('id', id).eq('cliente_id', clienteSistemaId).select();
-        } else {
-            result = await supabaseClient.from('enderecos_pg').insert([dados]).select();
+        async function carregarEstatisticas() {
+            try {
+                const { count: totalClientes } = await supabaseClient.from('clientes_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId);
+                const { count: totalEnderecos } = await supabaseClient.from('enderecos_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId);
+                const inicioMes = new Date();
+                inicioMes.setDate(1);
+                inicioMes.setHours(0, 0, 0, 0);
+                const { count: clientesMes } = await supabaseClient.from('clientes_pg').select('*', { count: 'exact', head: true }).eq('cliente_id', clienteSistemaId).gte('criado_em', inicioMes.toISOString());
+                document.getElementById('statTotalClientes').textContent = totalClientes || 0;
+                document.getElementById('statTotalEnderecos').textContent = totalEnderecos || 0;
+                document.getElementById('statClientesMes').textContent = clientesMes || 0;
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao carregar estatísticas:', error);
+            }
         }
-        if (result.error) throw result.error;
-        mostrarToast(id ? 'Endereço atualizado com sucesso!' : 'Endereço cadastrado com sucesso!', 'success');
-        fecharModalEndereco();
-        await buscarClientes();
-    } catch (error) {
-        console.error('Erro ao salvar endereço:', error);
-        mostrarToast('Erro ao salvar endereço', 'error');
-    }
-}
 
-function editarEndereco(id) {
-    const clienteId = document.getElementById(`detalhes-${getClienteIdByEndereco(id)}`)?.closest('.cliente-item')?.dataset.id;
-    abrirModalEndereco(clienteId, id);
-}
+        async function buscarClientes() {
+            if (carregandoClientes) {
+                console.log('[CLIENTES] Carregamento já em andamento');
+                return;
+            }
+            carregandoClientes = true;
 
-function getClienteIdByEndereco(enderecoId) {
-    for (const cliente of clientesData) {
-        if (cliente.enderecos_pg?.some(e => e.id === enderecoId)) {
-            return cliente.id;
+            const nome = document.getElementById('buscaNome').value.trim();
+            const cidade = document.getElementById('buscaCidade').value.trim();
+            const regiao = document.getElementById('buscaRegiao').value;
+
+            try {
+                let query = supabaseClient.from('clientes_pg').select(`*,enderecos_pg (*)`).eq('cliente_id', clienteSistemaId).order('nome');
+                if (nome) {
+                    const cpfLimpo = nome.replace(/\D/g, '');
+                    if (cpfLimpo.length > 0) {
+                        query = query.or(`nome.ilike.%${nome}%,cpf.ilike.%${nome}%`);
+                    } else {
+                        query = query.ilike('nome', `%${nome}%`);
+                    }
+                }
+                const { data: clientes, error } = await query;
+                if (error) throw error;
+
+                let clientesFiltrados = clientes || [];
+                if (cidade || regiao) {
+                    clientesFiltrados = clientesFiltrados.filter(cliente => {
+                        const enderecos = cliente.enderecos_pg || [];
+                        return enderecos.some(end => {
+                            const matchCidade = !cidade || (end.cidade && end.cidade.toLowerCase().includes(cidade.toLowerCase()));
+                            const matchRegiao = !regiao || end.regiao === regiao;
+                            return matchCidade && matchRegiao;
+                        });
+                    });
+                }
+                clientesData = clientesFiltrados;
+                renderizarClientes(clientesFiltrados);
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao buscar clientes:', error);
+                mostrarToast('Erro ao buscar clientes', 'error');
+            } finally {
+                carregandoClientes = false;
+            }
         }
-    }
-    return null;
-}
 
-async function excluirEndereco(id) {
-    if (!confirm('Tem certeza que deseja excluir este endereço?')) {
-        return;
-    }
-    try {
-        const { error } = await supabaseClient.from('enderecos_pg').delete().eq('id', id).eq('cliente_id', clienteSistemaId);
-        if (error) throw error;
-        mostrarToast('Endereço excluído com sucesso!', 'success');
-        await buscarClientes();
-    } catch (error) {
-        console.error('Erro ao excluir endereço:', error);
-        mostrarToast('Erro ao excluir endereço', 'error');
-    }
-}
-
-function limparBusca() {
-    document.getElementById('buscaNome').value = '';
-    document.getElementById('buscaCidade').value = '';
-    document.getElementById('buscaRegiao').value = '';
-    buscarClientes();
-}
-
-function formatarCPF(cpf) {
-    if (!cpf) return 'Não informado';
-    const cpfLimpo = cpf.replace(/\D/g, '');
-    if (cpfLimpo.length !== 11) return cpf;
-    return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function mostrarToast(mensagem, tipo = 'success') {
-    const toast = document.getElementById('toast');
-    toast.textContent = mensagem;
-    toast.className = `toast ${tipo} show`;
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
+        function renderizarClientes(clientes) {
+            const container = document.getElementById('listaClientes');
+            if (clientes.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>Nenhum cliente encontrado</h3><p>Tente ajustar os filtros de busca ou cadastre um novo cliente.</p></div>`;
+                return;
+            }
+            container.innerHTML = clientes.map(cliente => {
+                const enderecos = cliente.enderecos_pg || [];
+                const enderecoPrincipal = enderecos.find(e => e.ativo) || enderecos[0];
+                return `<div class="cliente-item" data-id="${cliente.id}">
+                    <div class="cliente-header" onclick="toggleDetalhes('${cliente.id}')">
+                        <div class="cliente-info">
+                            <div class="cliente-nome">${escapeHtml(cliente.nome)}</div>
+                            <div class="cliente-dados">
+                                <span>🆔 ${formatarCPF(cliente.cpf)}</span>
+                                ${cliente.whatsapp ? `<span>📱 ${escapeHtml(cliente.whatsapp)}</span>` : ''}
+                                ${enderecoPrincipal ? `<span>📍 ${escapeHtml(enderecoPrincipal.cidade)}/${escapeHtml(enderecoPrincipal.estado)}</span>` : ''}
+                                <span>🏠 ${enderecos.length} endereço(s)</span>
+                            </div>
+                        </div>
+                        <div class="cliente-actions">
+                            <button class="btn-icon btn-editar" onclick="event.stopPropagation(); editarCliente('${cliente.id}')" title="Editar">✏️</button>
+                            <button class="btn-icon btn-excluir" onclick="event.stopPropagation(); excluirCliente('${cliente.id}')" title="Excluir">🗑️</button>
+                            <button class="btn-icon btn-expand" onclick="event.stopPropagation(); toggleDetalhes('${cliente.id}')" title="Ver detalhes">▼</button>
+                        </div>
+                    </div>
+                    <div class="cliente-detalhes" id="detalhes-${cliente.id}">
+                        <div class="secao-enderecos">
+                            <h3 class="secao-titulo">📍 Endereços</h3>
+                            ${enderecos.length === 0 ? '<p style="color: #636E72;">Nenhum endereço cadastrado</p>' : ''}
+                            ${enderecos.map(end => `
+                                <div class="endereco-card">
+                                    <div class="endereco-info">
+                                        <div class="endereco-principal">
+                                            ${escapeHtml(end.rua)}, ${escapeHtml(end.numero || 'S/N')}
+                                            ${end.ativo ? '<span class="badge badge-ativo">Ativo</span>' : '<span class="badge badge-inativo">Inativo</span>'}
+                                        </div>
+                                        <div class="endereco-complemento">
+                                            ${end.complemento ? escapeHtml(end.complemento) + ' - ' : ''}
+                                            ${escapeHtml(end.bairro || '')} - ${escapeHtml(end.cidade)}/${escapeHtml(end.estado)}
+                                            ${end.cep ? `- CEP: ${escapeHtml(end.cep)}` : ''}
+                                            ${end.regiao ? `<span style="color: #0B193F; font-weight: 600;">[${escapeHtml(end.regiao)}]</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-icon btn-editar" onclick="editarEndereco('${end.id}')" title="Editar">✏️</button>
+                                        <button class="btn-icon btn-excluir" onclick="excluirEndereco('${end.id}')" title="Excluir">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <button class="btn-add-endereco" onclick="abrirModalEndereco('${cliente.id}')">➕ Adicionar Endereço</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
         }
-    });
-});
 
-document.getElementById('cpf').addEventListener('input', (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 11) {
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    }
-    e.target.value = value;
-});
+        function toggleDetalhes(clienteId) {
+            const detalhes = document.getElementById(`detalhes-${clienteId}`);
+            const item = document.querySelector(`[data-id="${clienteId}"]`);
+            if (!detalhes || !item) {
+                console.error('[CLIENTES] Elemento não encontrado para clienteId:', clienteId);
+                return;
+            }
+            const btnExpand = item.querySelector('.btn-expand');
+            detalhes.classList.toggle('active');
+            if (btnExpand) {
+                btnExpand.textContent = detalhes.classList.contains('active') ? '▲' : '▼';
+                btnExpand.title = detalhes.classList.contains('active') ? 'Ocultar detalhes' : 'Ver detalhes';
+            }
+            console.log('[CLIENTES] Toggle detalhes cliente', clienteId, '- ativo:', detalhes.classList.contains('active'));
+        }
 
-document.getElementById('cep').addEventListener('input', (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 8) {
-        value = value.replace(/(\d{5})(\d)/, '$1-$2');
-    }
-    e.target.value = value;
-});
+        function abrirModalCliente(clienteId = null) {
+            const modal = document.getElementById('modalCliente');
+            const titulo = document.getElementById('modalClienteTitulo');
+            const form = document.getElementById('formCliente');
+            form.reset();
+            document.getElementById('clienteId').value = '';
+            if (clienteId) {
+                const cliente = clientesData.find(c => c.id === clienteId);
+                if (cliente) {
+                    titulo.textContent = 'Editar Cliente';
+                    document.getElementById('clienteId').value = cliente.id;
+                    document.getElementById('nome').value = cliente.nome || '';
+                    document.getElementById('cpf').value = cliente.cpf || '';
+                    document.getElementById('whatsapp').value = cliente.whatsapp || '';
+                    document.getElementById('instagram').value = cliente.instagram || '';
+                    document.getElementById('email').value = cliente.email || '';
+                }
+            } else {
+                titulo.textContent = 'Novo Cliente';
+            }
+            modal.classList.add('active');
+        }
+
+        function fecharModalCliente() {
+            document.getElementById('modalCliente').classList.remove('active');
+        }
+
+        async function salvarCliente() {
+            const id = document.getElementById('clienteId').value;
+            const dados = {
+                cliente_id: clienteSistemaId,
+                nome: document.getElementById('nome').value.trim(),
+                cpf: document.getElementById('cpf').value.trim() || null,
+                whatsapp: document.getElementById('whatsapp').value.trim() || null,
+                instagram: document.getElementById('instagram').value.trim() || null,
+                email: document.getElementById('email').value.trim() || null
+            };
+            if (!dados.nome) {
+                mostrarToast('Nome é obrigatório', 'error');
+                return;
+            }
+            try {
+                let result;
+                if (id) {
+                    result = await supabaseClient.from('clientes_pg').update(dados).eq('id', id).eq('cliente_id', clienteSistemaId).select();
+                } else {
+                    result = await supabaseClient.from('clientes_pg').insert([dados]).select();
+                }
+                if (result.error) {
+                    if (result.error.code === '23505') {
+                        mostrarToast('CPF já cadastrado', 'error');
+                        return;
+                    }
+                    throw result.error;
+                }
+                mostrarToast(id ? 'Cliente atualizado com sucesso!' : 'Cliente cadastrado com sucesso!', 'success');
+                fecharModalCliente();
+                await buscarClientes();
+                await carregarEstatisticas();
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao salvar cliente:', error);
+                mostrarToast('Erro ao salvar cliente', 'error');
+            }
+        }
+
+        function editarCliente(id) {
+            abrirModalCliente(id);
+        }
+
+        async function excluirCliente(id) {
+            if (!confirm('Tem certeza que deseja excluir este cliente? Todos os endereços associados também serão excluídos.')) {
+                return;
+            }
+            try {
+                const { error } = await supabaseClient.from('clientes_pg').delete().eq('id', id).eq('cliente_id', clienteSistemaId);
+                if (error) throw error;
+                mostrarToast('Cliente excluído com sucesso!', 'success');
+                await buscarClientes();
+                await carregarEstatisticas();
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao excluir cliente:', error);
+                mostrarToast('Erro ao excluir cliente', 'error');
+            }
+        }
+
+        function abrirModalEndereco(clienteId, enderecoId = null) {
+            const modal = document.getElementById('modalEndereco');
+            const titulo = document.getElementById('modalEnderecoTitulo');
+            const form = document.getElementById('formEndereco');
+            form.reset();
+            document.getElementById('enderecoId').value = '';
+            document.getElementById('enderecoClienteId').value = clienteId;
+            if (enderecoId) {
+                let endereco = null;
+                clientesData.forEach(c => {
+                    const end = c.enderecos_pg?.find(e => e.id === enderecoId);
+                    if (end) endereco = end;
+                });
+                if (endereco) {
+                    titulo.textContent = 'Editar Endereço';
+                    document.getElementById('enderecoId').value = endereco.id;
+                    document.getElementById('enderecoClienteId').value = endereco.cliente_id;
+                    document.getElementById('cep').value = endereco.cep || '';
+                    document.getElementById('rua').value = endereco.rua || '';
+                    document.getElementById('numero').value = endereco.numero || '';
+                    document.getElementById('complemento').value = endereco.complemento || '';
+                    document.getElementById('bairro').value = endereco.bairro || '';
+                    document.getElementById('cidade').value = endereco.cidade || '';
+                    document.getElementById('estado').value = endereco.estado || 'SC';
+                    document.getElementById('regiao').value = endereco.regiao || '';
+                }
+            } else {
+                titulo.textContent = 'Novo Endereço';
+            }
+            modal.classList.add('active');
+        }
+
+        function fecharModalEndereco() {
+            document.getElementById('modalEndereco').classList.remove('active');
+        }
+
+        async function salvarEndereco() {
+            const id = document.getElementById('enderecoId').value;
+            const clienteId = document.getElementById('enderecoClienteId').value;
+            const dados = {
+                cliente_id: clienteSistemaId,
+                cliente_pg_id: clienteId,
+                cep: document.getElementById('cep').value.trim(),
+                rua: document.getElementById('rua').value.trim(),
+                numero: document.getElementById('numero').value.trim() || null,
+                complemento: document.getElementById('complemento').value.trim() || null,
+                bairro: document.getElementById('bairro').value.trim() || null,
+                cidade: document.getElementById('cidade').value.trim(),
+                estado: document.getElementById('estado').value.trim() || 'SC',
+                regiao: document.getElementById('regiao').value || null
+            };
+            if (!dados.cep || !dados.rua || !dados.cidade) {
+                mostrarToast('CEP, Rua e Cidade são obrigatórios', 'error');
+                return;
+            }
+            try {
+                let result;
+                if (id) {
+                    result = await supabaseClient.from('enderecos_pg').update(dados).eq('id', id).eq('cliente_id', clienteSistemaId).select();
+                } else {
+                    result = await supabaseClient.from('enderecos_pg').insert([dados]).select();
+                }
+                if (result.error) throw result.error;
+                mostrarToast(id ? 'Endereço atualizado com sucesso!' : 'Endereço cadastrado com sucesso!', 'success');
+                fecharModalEndereco();
+                await buscarClientes();
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao salvar endereço:', error);
+                mostrarToast('Erro ao salvar endereço', 'error');
+            }
+        }
+
+        function editarEndereco(id) {
+            const clienteId = document.getElementById(`detalhes-${getClienteIdByEndereco(id)}`)?.closest('.cliente-item')?.dataset.id;
+            abrirModalEndereco(clienteId, id);
+        }
+
+        function getClienteIdByEndereco(enderecoId) {
+            for (const cliente of clientesData) {
+                if (cliente.enderecos_pg?.some(e => e.id === enderecoId)) {
+                    return cliente.id;
+                }
+            }
+            return null;
+        }
+
+        async function excluirEndereco(id) {
+            if (!confirm('Tem certeza que deseja excluir este endereço?')) {
+                return;
+            }
+            try {
+                const { error } = await supabaseClient.from('enderecos_pg').delete().eq('id', id).eq('cliente_id', clienteSistemaId);
+                if (error) throw error;
+                mostrarToast('Endereço excluído com sucesso!', 'success');
+                await buscarClientes();
+            } catch (error) {
+                console.error('[CLIENTES] Erro ao excluir endereço:', error);
+                mostrarToast('Erro ao excluir endereço', 'error');
+            }
+        }
+
+        function limparBusca() {
+            document.getElementById('buscaNome').value = '';
+            document.getElementById('buscaCidade').value = '';
+            document.getElementById('buscaRegiao').value = '';
+            buscarClientes();
+        }
+
+        function formatarCPF(cpf) {
+            if (!cpf) return 'Não informado';
+            const cpfLimpo = cpf.replace(/\D/g, '');
+            if (cpfLimpo.length !== 11) return cpf;
+            return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function mostrarToast(mensagem, tipo = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.className = `toast ${tipo} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        document.getElementById('cpf').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        document.getElementById('cep').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 8) {
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+        });
     </script>
     <script src="navmenu.js"></script>
 </body>
