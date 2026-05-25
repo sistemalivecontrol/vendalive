@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Monitoramento WhatsApp - Pingo de Gente</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="navmenu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .header h1 { color: #0B193F; font-size: 1.8rem; margin-bottom: 5px; }
+        .header p { color: #636E72; font-size: 0.9rem; }
+        .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
+        .user-info { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 10px 20px; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #1565C0; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); text-align: center; }
+        .stat-card h3 { color: #636E72; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-card .valor { color: #0B193F; font-size: 2rem; font-weight: bold; }
+        .stat-card .sub { color: #888; font-size: 0.75rem; margin-top: 4px; }
+        .stat-card.enviado { border-top: 4px solid #28a745; }
+        .stat-card.falha { border-top: 4px solid #dc3545; }
+        .stat-card.pendente { border-top: 4px solid #ffc107; }
+        .stat-card.total { border-top: 4px solid #0B193F; }
+
+        .filtros-container { background: white; padding: 25px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .filtros-titulo { color: #0B193F; font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .filtros-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .campo-filtro { display: flex; flex-direction: column; gap: 8px; }
+        .campo-filtro label { font-weight: 600; color: #2D3436; font-size: 0.85rem; }
+        .campo-filtro input, .campo-filtro select { padding: 10px 14px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 0.95rem; }
+        .campo-filtro input:focus, .campo-filtro select:focus { outline: none; border-color: #0B193F; }
+        .botoes-filtro { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #0B193F; color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(11,25,63,0.3); }
+        .btn-secondary { background: #e9ecef; color: #2D3436; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+
+        .origem-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .origem-coblive { background: #E3F2FD; color: #1565C0; }
+        .origem-rastreamento { background: #FFF3E0; color: #E65100; }
+        .origem-solicitacao { background: #F3E5F5; color: #7B1FA2; }
+        .origem-pix { background: #E8F5E9; color: #2E7D32; }
+        .origem-outro { background: #ECEFF1; color: #455A64; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-enviado { background: #C8E6C9; color: #2E7D32; }
+        .status-entregue { background: #BBDEFB; color: #1565C0; }
+        .status-lido { background: #D1C4E9; color: #4527A0; }
+        .status-falha { background: #FFCDD2; color: #C62828; }
+        .status-pendente { background: #FFF9C4; color: #F57F17; }
+
+        .tabela-container { background: white; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .tabela-header { padding: 20px 25px; background: #0B193F; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .tabela-header h2 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        thead { background: #F8F9FA; }
+        th { padding: 14px; text-align: left; font-weight: 600; color: #2D3436; border-bottom: 2px solid #E0E0E0; white-space: nowrap; }
+        td { padding: 14px; border-bottom: 1px solid #E0E0E0; color: #636E72; }
+        tr:hover { background: #F3E5F5; }
+        .data-envio { font-size: 0.82rem; color: #555; white-space: nowrap; }
+        .numero-destino { font-family: monospace; font-size: 0.85rem; color: #0B193F; font-weight: 600; }
+        .cliente-nome { font-weight: 600; color: #2D3436; }
+        .mensagem-preview { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.82rem; }
+        .mensagem-preview:hover { white-space: normal; overflow: visible; }
+        .valor-tag { background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+
+        .loading { text-align: center; padding: 40px; color: #0B193F; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0B193F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 50px 20px; color: #636E72; }
+        .empty-state-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .alerta-erro { background: #FFEBEE; border: 2px solid #EF5350; color: #C62828; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .alerta-erro.ativo { display: block; }
+        .info-box { background: #E3F2FD; border-left: 4px solid #42A5F5; padding: 15px 20px; margin-bottom: 20px; border-radius: 0 10px 10px 0; color: #1565C0; font-size: 0.9rem; }
+
+        .paginacao { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 20px; border-top: 1px solid #E0E0E0; }
+        .paginacao button { padding: 8px 14px; border: 2px solid #0B193F; background: white; color: #0B193F; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .paginacao button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .paginacao button.ativo { background: #0B193F; color: white; }
+        .paginacao-info { color: #636E72; font-size: 0.85rem; margin-left: 10px; }
+
+        .refresh-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: #F8F9FA; border-bottom: 1px solid #E0E0E0; }
+        .refresh-bar span { color: #888; font-size: 0.85rem; }
+        .refresh-bar button { background: white; border: 1px solid #ddd; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .refresh-bar button:hover { background: #f5f5f5; }
+
+        @media (max-width: 768px) { 
+            .header { flex-direction: column; text-align: center; } 
+            .header-left { flex-direction: column; }
+            .filtros-grid { grid-template-columns: 1fr; }
+            th, td { padding: 10px; font-size: 0.78rem; }
+            .mensagem-preview { max-width: 120px; }
+            .numero-destino { font-size: 0.75rem; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="location.href='dashboard.html'">← Voltar ao Dashboard</button>
+                <div>
+                    <h1>📱 Monitoramento WhatsApp</h1>
+                    <p>Visualização de envios da instância pingodegente</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span>👤</span>
+                    <span id="userEmail"></span>
+                </div>
+                <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="alerta-erro" id="alertaErro"></div>
+        <div class="info-box" id="infoBox">
+            ℹ️ Esta página mostra os envios de WhatsApp registrados no sistema. 
+            Os dados vêm do Supabase (tabelas de vendas, rastreamentos e solicitações) 
+            e da Evolution API (mensagens enviadas pela instância <strong>pingodegente</strong>).
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card total">
+                <h3>Total</h3>
+                <div class="valor" id="statTotal">-</div>
+                <div class="sub">envios encontrados</div>
+            </div>
+            <div class="stat-card enviado">
+                <h3>Enviados</h3>
+                <div class="valor" id="statEnviados">-</div>
+                <div class="sub">com sucesso</div>
+            </div>
+            <div class="stat-card pendente">
+                <h3>Pendentes</h3>
+                <div class="valor" id="statPendentes">-</div>
+                <div class="sub">aguardando</div>
+            </div>
+            <div class="stat-card falha">
+                <h3>Falhas</h3>
+                <div class="valor" id="statFalhas">-</div>
+                <div class="sub">não entregues</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros-container">
+            <h2 class="filtros-titulo">🔍 Filtros</h2>
+            <div class="filtros-grid">
+                <div class="campo-filtro">
+                    <label>Data Início</label>
+                    <input type="date" id="filtroDataInicio">
+                </div>
+                <div class="campo-filtro">
+                    <label>Data Fim</label>
+                    <input type="date" id="filtroDataFim">
+                </div>
+                <div class="campo-filtro">
+                    <label>Origem</label>
+                    <select id="filtroOrigem">
+                        <option value="">Todas</option>
+                        <option value="coblive">Cobrança Live (coblive)</option>
+                        <option value="rastreamento">Rastreamento</option>
+                        <option value="solicitacao">Solicitação Entrega</option>
+                        <option value="pix_pagamento">PIX Pagamento</option>
+                        <option value="outro">Outros</option>
+                    </select>
+                </div>
+                <div class="campo-filtro">
+                    <label>Status</label>
+                    <select id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="enviado">Enviado</option>
+                        <option value="entregue">Entregue</option>
+                        <option value="lido">Lido</option>
+                        <option value="falha">Falha</option>
+                        <option value="pendente">Pendente</option>
+                    </select>
+                </div>
+                <div class="campo-filtro">
+                    <label>Cliente / Número</label>
+                    <input type="text" id="filtroBusca" placeholder="Nome ou número...">
+                </div>
+            </div>
+            <div class="botoes-filtro">
+                <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Filtrar</button>
+                <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar</button>
+                <button class="btn btn-success" onclick="carregarDados()">🔄 Atualizar</button>
+            </div>
+        </div>
+
+        <!-- Tabela Principal -->
+        <div class="tabela-container">
+            <div class="tabela-header">
+                <h2>📋 Envios de WhatsApp</h2>
+                <span id="infoResultados" style="font-size: 0.85rem; opacity: 0.9;"></span>
+            </div>
+            <div class="refresh-bar">
+                <span>🕐 Última atualização: <strong id="lastUpdate">-</strong></span>
+                <button onclick="carregarDados()">🔄 Atualizar agora</button>
+            </div>
+            <div class="table-responsive">
+                <table id="tabelaPrincipal">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Origem</th>
+                            <th>Status</th>
+                            <th>Número Destino</th>
+                            <th>Cliente</th>
+                            <th>Mensagem / Conteúdo</th>
+                            <th>Valor</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyPrincipal"></tbody>
+                </table>
+            </div>
+            <div class="paginacao" id="paginacaoPrincipal"></div>
+        </div>
+    </div>
+
+    <script>
+
+        // ===== CONFIGURACAO =====
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+
+        let supabaseClient = null;
+        let clienteSistemaId = null;
+        let todasMensagens = [];
+        let mensagensFiltradas = [];
+        let paginaAtual = 1;
+        const ITENS_POR_PAGINA = 25;
+
+        // ===== INICIALIZACAO =====
+        document.addEventListener('DOMContentLoaded', async function() {
+            await new Promise(resolve => {
+                const check = () => {
+                    if (window.supabaseClient) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+
+            supabaseClient = window.supabaseClient;
+            const session = await verificarSessao();
+            if (!session) return;
+
+            await carregarUsuarioLogado();
+            clienteSistemaId = window.authClienteId;
+
+            if (!clienteSistemaId) {
+                mostrarErro('Erro: Cliente não identificado.');
+                setTimeout(() => { location.href='login.html'; }, 3000);
+                return;
+            }
+
+            // Datas padrão: últimos 7 dias
+            const hoje = new Date();
+            const seteDiasAtras = new Date();
+            seteDiasAtras.setDate(hoje.getDate() - 7);
+            document.getElementById('filtroDataInicio').value = seteDiasAtras.toISOString().split('T')[0];
+            document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+
+            carregarDados();
+        });
+
+        // ===== CARREGAR DADOS - APENAS LEITURA =====
+        async function carregarDados() {
+            mostrarLoading(true);
+            todasMensagens = [];
+
+            try {
+                // 1. Buscar da tabela whatsapp_envios (se existir)
+                await buscarWhatsappEnvios();
+
+                // 2. Buscar de vendas_pg (cobranças PIX)
+                await buscarVendasWhatsapp();
+
+                // 3. Buscar de solicitacoes_pg (confirmações enviadas)
+                await buscarSolicitacoesWhatsapp();
+
+                // 4. Buscar da Evolution API (mensagens enviadas fromMe)
+                await buscarEvolutionAPI();
+
+                // Ordenar por data (mais recente primeiro)
+                todasMensagens.sort(function(a, b) {
+                    return new Date(b.enviado_em || 0) - new Date(a.enviado_em || 0);
+                });
+
+                // Remover duplicatas (mesmo ID)
+                const vistas = new Set();
+                todasMensagens = todasMensagens.filter(function(m) {
+                    if (vistas.has(m.id)) return false;
+                    vistas.add(m.id);
+                    return true;
+                });
+
+                aplicarFiltros();
+                atualizarStats();
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('pt-BR');
+
+            } catch (e) {
+                console.error('[MONITOR] Erro:', e);
+                mostrarErro('Erro ao carregar dados: ' + e.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        // ===== BUSCAR DA TABELA WHATSAPP_ENVIOS =====
+        async function buscarWhatsappEnvios() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('enviado_em', { ascending: false })
+                    .limit(300);
+
+                if (error) {
+                    // Tabela pode não existir ainda - não é erro crítico
+                    console.log('[MONITOR] Tabela whatsapp_envios não disponível');
+                    return;
+                }
+
+                (data || []).forEach(function(item) {
+                    todasMensagens.push({
+                        id: item.id,
+                        data: item.enviado_em,
+                        origem: item.origem || 'outro',
+                        status: item.status || 'enviado',
+                        numero: item.numero,
+                        cliente: item.destinatario,
+                        mensagem: item.mensagem,
+                        valor: item.metadata?.valor || null,
+                        metadata: item.metadata
+                    });
+                });
+            } catch (e) {
+                console.log('[MONITOR] Erro whatsapp_envios:', e.message);
+            }
+        }
+
+        // ===== BUSCAR DE VENDAS_PG (COBRANÇAS) =====
+        async function buscarVendasWhatsapp() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('id, comprador, total, status_pagamento, origem, codigo_live, criado_em, atualizado_em, clientes_pg(nome, whatsapp)')
+                    .eq('cliente_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false })
+                    .limit(200);
+
+                if (error) {
+                    console.log('[MONITOR] Erro vendas_pg:', error.message);
+                    return;
+                }
+
+                (data || []).forEach(function(v) {
+                    // Detectar se foi envio WhatsApp pela origem
+                    const origensWhatsapp = ['coblive', 'coblive_infinite', 'coblive_pix', 'whatsapp', 'pix_whatsapp'];
+                    const ehWhatsapp = origensWhatsapp.some(function(o) {
+                        return (v.origem || '').toLowerCase().includes(o);
+                    });
+
+                    if (!ehWhatsapp && !v.clientes_pg?.whatsapp) return;
+
+                    const numero = v.clientes_pg?.whatsapp || '';
+                    if (!numero) return;
+
+                    todasMensagens.push({
+                        id: 'venda_' + v.id,
+                        data: v.criado_em,
+                        origem: detectarOrigem(v.origem),
+                        status: v.status_pagamento === 'pago' ? 'entregue' : 'enviado',
+                        numero: numero,
+                        cliente: v.comprador || v.clientes_pg?.nome || 'Cliente',
+                        mensagem: 'Cobrança PIX: ' + formatarMoeda(v.total),
+                        valor: v.total,
+                        metadata: {
+                            venda_id: v.id,
+                            codigo_live: v.codigo_live,
+                            origem_raw: v.origem
+                        }
+                    });
+                });
+            } catch (e) {
+                console.log('[MONITOR] Erro vendas:', e.message);
+            }
+        }
+
+        // ===== BUSCAR DE SOLICITACOES_PG =====
+        async function buscarSolicitacoesWhatsapp() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, nome, telefone, numero_solicitacao, status, criado_em, atualizado_em, cliente_sistema_id, whatsapp_enviado_em, whatsapp_enviado_status')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false })
+                    .limit(200);
+
+                if (error) {
+                    console.log('[MONITOR] Erro solicitacoes:', error.message);
+                    return;
+                }
+
+                (data || []).forEach(function(s) {
+                    // Se tem whatsapp_enviado_em, foi enviado
+                    if (!s.whatsapp_enviado_em && !s.telefone) return;
+
+                    todasMensagens.push({
+                        id: 'solic_' + s.id,
+                        data: s.whatsapp_enviado_em || s.criado_em,
+                        origem: 'solicitacao',
+                        status: s.whatsapp_enviado_status || 'enviado',
+                        numero: s.telefone || '',
+                        cliente: s.nome || 'Cliente',
+                        mensagem: 'Solicitação de entrega #' + (s.numero_solicitacao || s.id),
+                        valor: null,
+                        metadata: {
+                            solicitacao_id: s.id,
+                            numero_solicitacao: s.numero_solicitacao,
+                            status_solicitacao: s.status
+                        }
+                    });
+                });
+            } catch (e) {
+                console.log('[MONITOR] Erro solicitacoes:', e.message);
+            }
+        }
+
+        // ===== BUSCAR DA EVOLUTION API =====
+        async function buscarEvolutionAPI() {
+            try {
+                // Buscar chats da instância
+                const response = await fetch(EVOLUTION_API_URL + '/chat/findChats/' + EVOLUTION_INSTANCE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_API_KEY
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    console.log('[MONITOR] Evolution API indisponível');
+                    return;
+                }
+
+                const chats = await response.json();
+                if (!chats || !Array.isArray(chats)) {
+                    console.log('[MONITOR] Nenhum chat na Evolution');
+                    return;
+                }
+
+                // Para cada chat, buscar mensagens enviadas (fromMe)
+                const promessas = chats.slice(0, 15).map(function(chat) {
+                    return buscarMensagensChat(chat.id || chat.remoteJid);
+                });
+
+                await Promise.all(promessas);
+
+            } catch (e) {
+                console.log('[MONITOR] Erro Evolution:', e.message);
+            }
+        }
+
+        async function buscarMensagensChat(chatId) {
+            if (!chatId) return;
+
+            try {
+                const response = await fetch(EVOLUTION_API_URL + '/chat/findMessages/' + EVOLUTION_INSTANCE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': EVOLUTION_API_KEY
+                    },
+                    body: JSON.stringify({
+                        where: { key: { remoteJid: chatId } },
+                        limit: 30
+                    })
+                });
+
+                if (!response.ok) return;
+
+                const messages = await response.json();
+                if (!messages || !Array.isArray(messages)) return;
+
+                messages.forEach(function(msg) {
+                    if (!msg.key || !msg.key.fromMe) return; // Só mensagens enviadas por nós
+
+                    const numero = (msg.key.remoteJid || '').replace(/@s\.whatsapp\.net/g, '').replace(/@g\.us/g, '');
+                    const jaExiste = todasMensagens.some(function(m) {
+                        return m.id === msg.key.id || (m.numero === numero && Math.abs(new Date(m.data) - new Date(msg.messageTimestamp * 1000)) < 60000);
+                    });
+
+                    if (jaExiste) return;
+
+                    const texto = extrairTextoMensagem(msg);
+                    const origem = detectarOrigemPorTexto(texto);
+
+                    todasMensagens.push({
+                        id: msg.key.id,
+                        data: new Date(msg.messageTimestamp * 1000).toISOString(),
+                        origem: origem,
+                        status: msg.status === 'READ' ? 'lido' : (msg.status === 'DELIVERY_ACK' ? 'entregue' : 'enviado'),
+                        numero: numero,
+                        cliente: msg.pushName || 'Cliente',
+                        mensagem: texto,
+                        valor: extrairValorDoTexto(texto),
+                        metadata: {
+                            evolution_raw: msg,
+                            messageTimestamp: msg.messageTimestamp
+                        }
+                    });
+                });
+            } catch (e) {
+                // Ignorar erro individual de chat
+            }
+        }
+
+        // ===== DETECTAR ORIGEM =====
+        function detectarOrigem(origemRaw) {
+            if (!origemRaw) return 'outro';
+            const o = origemRaw.toLowerCase();
+            if (o.includes('coblive') || o.includes('live')) return 'coblive';
+            if (o.includes('rastreamento') || o.includes('correio')) return 'rastreamento';
+            if (o.includes('solicitacao') || o.includes('entrega')) return 'solicitacao';
+            if (o.includes('pix') || o.includes('pagamento')) return 'pix_pagamento';
+            return 'outro';
+        }
+
+        function detectarOrigemPorTexto(texto) {
+            if (!texto) return 'outro';
+            const t = texto.toLowerCase();
+            if (t.includes('pix') && (t.includes('cobran') || t.includes('compra') || t.includes('valor'))) return 'coblive';
+            if (t.includes('rastreamento') || t.includes('correio') || t.includes('sedex') || t.includes('pac')) return 'rastreamento';
+            if (t.includes('solicita') || t.includes('entrega') || t.includes('endereço')) return 'solicitacao';
+            if (t.includes('pagamento') || t.includes('link') || t.includes('checkout')) return 'pix_pagamento';
+            return 'outro';
+        }
+
+        function extrairTextoMensagem(msg) {
+            if (!msg.message) return '[Mídia]';
+            if (msg.message.conversation) return msg.message.conversation;
+            if (msg.message.extendedTextMessage) return msg.message.extendedTextMessage.text || '[Texto estendido]';
+            if (msg.message.imageMessage) return '[Imagem] ' + (msg.message.imageMessage.caption || '');
+            if (msg.message.documentMessage) return '[Documento] ' + (msg.message.documentMessage.caption || '');
+            if (msg.message.videoMessage) return '[Vídeo]';
+            if (msg.message.audioMessage) return '[Áudio]';
+            return '[Mídia]';
+        }
+
+        function extrairValorDoTexto(texto) {
+            if (!texto) return null;
+            const match = texto.match(/R\$\s*([\d.,]+)/);
+            if (match) {
+                return parseFloat(match[1].replace('.', '').replace(',', '.'));
+            }
+            return null;
+        }
+
+        // ===== FILTROS =====
+        function aplicarFiltros() {
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
+            const origem = document.getElementById('filtroOrigem').value;
+            const status = document.getElementById('filtroStatus').value;
+            const busca = document.getElementById('filtroBusca').value.trim().toLowerCase();
+
+            mensagensFiltradas = todasMensagens.filter(function(m) {
+                let ok = true;
+
+                if (dataInicio) {
+                    const d = new Date(m.data || 0);
+                    ok = ok && d >= new Date(dataInicio + 'T00:00:00');
+                }
+                if (dataFim) {
+                    const d = new Date(m.data || 0);
+                    ok = ok && d <= new Date(dataFim + 'T23:59:59');
+                }
+                if (origem) ok = ok && m.origem === origem;
+                if (status) ok = ok && m.status === status;
+                if (busca) {
+                    ok = ok && (
+                        (m.cliente || '').toLowerCase().includes(busca) ||
+                        (m.numero || '').includes(busca) ||
+                        (m.mensagem || '').toLowerCase().includes(busca)
+                    );
+                }
+
+                return ok;
+            });
+
+            paginaAtual = 1;
+            renderizarTabela();
+            atualizarStats();
+        }
+
+        function limparFiltros() {
+            const hoje = new Date();
+            const seteDiasAtras = new Date();
+            seteDiasAtras.setDate(hoje.getDate() - 7);
+            document.getElementById('filtroDataInicio').value = seteDiasAtras.toISOString().split('T')[0];
+            document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+            document.getElementById('filtroOrigem').value = '';
+            document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroBusca').value = '';
+            aplicarFiltros();
+        }
+
+        // ===== RENDERIZAR TABELA =====
+        function renderizarTabela() {
+            const tbody = document.getElementById('tbodyPrincipal');
+            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+            const fim = inicio + ITENS_POR_PAGINA;
+            const pagina = mensagensFiltradas.slice(inicio, fim);
+
+            if (pagina.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><h3>Nenhum envio encontrado</h3><p>Tente ajustar os filtros ou atualizar os dados</p></div></td></tr>';
+                document.getElementById('paginacaoPrincipal').innerHTML = '';
+                document.getElementById('infoResultados').textContent = '0 resultados';
+                return;
+            }
+
+            let html = '';
+            pagina.forEach(function(m) {
+                html += '<tr>' +
+                    '<td class="data-envio">' + formatarDataHora(m.data) + '</td>' +
+                    '<td>' + badgeOrigem(m.origem) + '</td>' +
+                    '<td>' + badgeStatus(m.status) + '</td>' +
+                    '<td class="numero-destino">' + formatarNumero(m.numero) + '</td>' +
+                    '<td class="cliente-nome">' + escapeHtml(m.cliente || '-') + '</td>' +
+                    '<td class="mensagem-preview" title="' + escapeHtml(m.mensagem || '') + '">' + escapeHtml(truncar(m.mensagem || '-', 45)) + '</td>' +
+                    '<td>' + (m.valor ? '<span class="valor-tag">' + formatarMoeda(m.valor) + '</span>' : '-') + '</td>' +
+                    '<td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="verDetalhes(\'' + m.id + '\')">👁️ Ver</button></td>' +
+                    '</tr>';
+            });
+            tbody.innerHTML = html;
+
+            renderizarPaginacao();
+            document.getElementById('infoResultados').textContent = mensagensFiltradas.length + ' envio(s) encontrado(s)';
+        }
+
+        function renderizarPaginacao() {
+            const totalPaginas = Math.ceil(mensagensFiltradas.length / ITENS_POR_PAGINA);
+            const container = document.getElementById('paginacaoPrincipal');
+
+            if (totalPaginas <= 1) {
+                container.innerHTML = '<span class="paginacao-info">Página 1 de 1</span>';
+                return;
+            }
+
+            let html = '<button onclick="mudarPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + '>←</button>';
+
+            for (let i = 1; i <= totalPaginas; i++) {
+                if (i === 1 || i === totalPaginas || (i >= paginaAtual - 1 && i <= paginaAtual + 1)) {
+                    html += '<button class="' + (i === paginaAtual ? 'ativo' : '') + '" onclick="mudarPagina(' + i + ')">' + i + '</button>';
+                } else if (i === paginaAtual - 2 || i === paginaAtual + 2) {
+                    html += '<span style="color:#888">...</span>';
+                }
+            }
+
+            html += '<button onclick="mudarPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>→</button>';
+            html += '<span class="paginacao-info">' + paginaAtual + '/' + totalPaginas + ' (' + mensagensFiltradas.length + ')</span>';
+
+            container.innerHTML = html;
+        }
+
+        function mudarPagina(novaPagina) {
+            const totalPaginas = Math.ceil(mensagensFiltradas.length / ITENS_POR_PAGINA);
+            if (novaPagina < 1 || novaPagina > totalPaginas) return;
+            paginaAtual = novaPagina;
+            renderizarTabela();
+            document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== DETALHES =====
+        function verDetalhes(id) {
+            const msg = todasMensagens.find(function(m) { return m.id === id; });
+            if (!msg) return;
+
+            let detalhes = [
+                '📱 Número: ' + formatarNumero(msg.numero),
+                '👤 Cliente: ' + (msg.cliente || '-'),
+                '📤 Origem: ' + badgeOrigem(msg.origem),
+                '✅ Status: ' + badgeStatus(msg.status),
+                '🕐 Data: ' + formatarDataHora(msg.data),
+                ''
+            ];
+
+            if (msg.valor) {
+                detalhes.push('💰 Valor: ' + formatarMoeda(msg.valor));
+            }
+
+            detalhes.push('💬 Mensagem:', msg.mensagem || '-', '');
+
+            if (msg.metadata && Object.keys(msg.metadata).length > 0) {
+                detalhes.push('📋 Metadados:', JSON.stringify(msg.metadata, null, 2));
+            }
+
+            alert(detalhes.join('\n'));
+        }
+
+        // ===== ESTATISTICAS =====
+        function atualizarStats() {
+            const enviados = mensagensFiltradas.filter(function(m) {
+                return m.status === 'enviado' || m.status === 'entregue' || m.status === 'lido';
+            }).length;
+            const entregues = mensagensFiltradas.filter(function(m) {
+                return m.status === 'entregue' || m.status === 'lido';
+            }).length;
+            const falhas = mensagensFiltradas.filter(function(m) {
+                return m.status === 'falha';
+            }).length;
+            const pendentes = mensagensFiltradas.filter(function(m) {
+                return m.status === 'pendente';
+            }).length;
+
+            document.getElementById('statTotal').textContent = mensagensFiltradas.length;
+            document.getElementById('statEnviados').textContent = enviados;
+            document.getElementById('statPendentes').textContent = pendentes;
+            document.getElementById('statFalhas').textContent = falhas;
+        }
+
+        // ===== UTILITARIOS =====
+        function formatarDataHora(data) {
+            if (!data) return '-';
+            const d = new Date(data);
+            if (isNaN(d.getTime())) return data;
+            return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatarMoeda(valor) {
+            if (valor === null || valor === undefined) return '-';
+            return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',');
+        }
+
+        function formatarNumero(num) {
+            if (!num) return '-';
+            const n = num.toString().replace(/\D/g, '');
+            if (n.length === 13 && n.startsWith('55')) {
+                return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 9) + '-' + n.slice(9);
+            }
+            if (n.length === 12 && n.startsWith('55')) {
+                return '+' + n.slice(0, 2) + ' ' + n.slice(2, 4) + ' ' + n.slice(4, 8) + '-' + n.slice(8);
+            }
+            return num;
+        }
+
+        function truncar(str, len) {
+            if (!str) return '';
+            return str.length > len ? str.substring(0, len) + '...' : str;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function badgeOrigem(origem) {
+            const badges = {
+                'coblive': '<span class="origem-badge origem-coblive">💳 Cobrança Live</span>',
+                'rastreamento': '<span class="origem-badge origem-rastreamento">📦 Rastreamento</span>',
+                'solicitacao': '<span class="origem-badge origem-solicitacao">🚚 Solicitação</span>',
+                'pix_pagamento': '<span class="origem-badge origem-pix">💰 PIX Pagamento</span>',
+                'outro': '<span class="origem-badge origem-outro">📄 Outro</span>'
+            };
+            return badges[origem] || badges['outro'];
+        }
+
+        function badgeStatus(status) {
+            const badges = {
+                'enviado': '<span class="status-badge status-enviado">📤 Enviado</span>',
+                'entregue': '<span class="status-badge status-entregue">✅ Entregue</span>',
+                'lido': '<span class="status-badge status-lido">👁️ Lido</span>',
+                'falha': '<span class="status-badge status-falha">❌ Falha</span>',
+                'pendente': '<span class="status-badge status-pendente">⏳ Pendente</span>'
+            };
+            return badges[status] || '<span class="status-badge status-pendente">⏳ ' + (status || '-') + '</span>';
+        }
+
+        function mostrarLoading(show) {
+            const tbody = document.getElementById('tbodyPrincipal');
+            if (show) {
+                tbody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div><p>Buscando envios...</p></div></td></tr>';
+            }
+        }
+
+        function mostrarErro(mensagem) {
+            const alerta = document.getElementById('alertaErro');
+            alerta.textContent = mensagem;
+            alerta.classList.add('ativo');
+            setTimeout(function() { alerta.classList.remove('ativo'); }, 5000);
+        }
+    </script>
+    <script src="navmenu.js"></script>
+</body>
+</html>
