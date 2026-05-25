@@ -173,7 +173,6 @@
         }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
@@ -227,6 +226,11 @@
     <script>
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        // Evolution API config (da memória)
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
 
         let supabaseClient = null;
 
@@ -466,13 +470,23 @@
                     }
                 }
 
-                // 6. Salvar dados da solicitação para exibição
+                // 6. Enviar mensagem WhatsApp via Evolution API
+                if (dados.whatsapp) {
+                    try {
+                        await enviarMensagemWhatsApp(dados.whatsapp, dados.nome, numeroSolicitacao, dados.regiao, dados.valor, dados.rua, dados.numero, dados.bairro, dados.cidade);
+                        console.log('✅ Mensagem WhatsApp enviada com sucesso');
+                    } catch (waError) {
+                        console.error('Erro ao enviar mensagem WhatsApp:', waError);
+                    }
+                }
+
+                // 7. Salvar dados da solicitação para exibição
                 sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
                 sessionStorage.setItem('pix_sucesso_nome', dados.nome);
                 sessionStorage.setItem('pix_sucesso_regiao', dados.regiao);
                 sessionStorage.setItem('pix_sucesso_valor', (dados.valor || '0,00').toString());
 
-                // 7. Mostrar resultado na tela
+                // 8. Mostrar resultado na tela
                 loadingOverlay.classList.remove('ativo');
 
                 document.getElementById('statusText').textContent = '✅ Solicitação enviada com sucesso!';
@@ -504,6 +518,61 @@
                     voltarParaSolicitacoes();
                 };
             }
+        }
+
+        // ===== FUNÇÃO PARA ENVIAR MENSAGEM WHATSAPP VIA EVOLUTION API =====
+        async function enviarMensagemWhatsApp(whatsapp, nome, numeroSolicitacao, regiao, valor, rua, numero, bairro, cidade) {
+            console.log('[WHATSAPP] Enviando mensagem para:', whatsapp);
+
+            // Formatar número (remover não-dígitos e garantir 55 no início)
+            let numeroLimpo = whatsapp.replace(/\D/g, '');
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+
+            const mensagem = `🎉 *PAGAMENTO CONFIRMADO!*
+
+Olá ${nome}, seu pagamento foi processado com sucesso!
+
+📋 *Resumo da Solicitação:*
+• Número: ${numeroSolicitacao}
+• Data: ${dataAtual}
+• Região: ${regiao}
+• Valor: R$ ${valor || '0,00'}
+
+📍 *Endereço de Entrega:*
+${rua}, ${numero}
+${bairro} - ${cidade}
+
+⏳ Seu pedido está em análise e em breve será enviado.
+
+Dúvidas? Fale conosco no Instagram @pingodegentelojaebrecho 💕`;
+
+            const url = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': EVOLUTION_API_KEY
+                },
+                body: JSON.stringify({
+                    number: numeroLimpo,
+                    text: mensagem,
+                    delay: 1200
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Evolution API error ${response.status}: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('[WHATSAPP] Resposta:', result);
+            return result;
         }
 
         function voltarParaSolicitacoes() {
