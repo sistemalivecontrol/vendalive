@@ -162,7 +162,11 @@
     .filtros-centro { justify-content: center !important; }
     .card .filtros { justify-content: center !important; }
 
+    .filtros-tabela-centro { width: 100%; border-collapse: collapse; margin: 0 auto; }
+    .filtros-tabela-centro td { border: none; padding: 0; text-align: center; vertical-align: middle; }
+    .filtros-tabela-centro .filtros { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; margin: 0 auto; }
     @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } .header h1 { font-size: 1.5rem; } .stats { grid-template-columns: repeat(2, 1fr); } }
+
   
     /* ===== OVERRIDE FILTROS - GARANTIR CENTRALIZAÇÃO ===== */
     #aba-pix .filtros,
@@ -222,7 +226,7 @@
                     <div class="stat-card cancelado-link"><h3 id="stat-cancelado-link">0</h3><p>Cancelados Link</p></div>
                     <div class="stat-card"><h3 id="stat-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros filtros-centro">
+                <table class="filtros-tabela-centro"><tr><td><div class="filtros">
                     <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
                     <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
                     <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
@@ -230,7 +234,7 @@
                     <button class="cancelado-link-btn" onclick="filtrarPix('cancelado-link')">🔗 Cancelados Link</button>
                     <button onclick="filtrarPix('todos')">📋 Todos</button>
                     <button onclick="carregarPix()">🔄 Atualizar</button>
-                </div>
+                </div></td></tr></table>
                 <div id="loading-pix" class="loading" style="display:none;"><p>Carregando...</p></div>
                 <div id="pix-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
             </div>
@@ -247,7 +251,7 @@
                     <div class="stat-card asaas refunded"><h3 id="stat-asaas-refunded">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card asaas"><h3 id="stat-asaas-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros filtros-centro">
+                <table class="filtros-tabela-centro"><tr><td><div class="filtros">
                     <button class="ativo" onclick="filtrarAsaas('todos')">📋 Todos</button>
                     <button onclick="filtrarAsaas('PENDING')">⏳ Pendentes</button>
                     <button onclick="filtrarAsaas('RECEIVED')">✅ Recebidos</button>
@@ -257,7 +261,7 @@
                     <button class="refunded-btn" onclick="filtrarAsaas('REFUNDED')">↩️ Reembolsados</button>
                     <button onclick="carregarAsaas()">🔄 Atualizar</button>
                     <button onclick="carregarAsaasTodas()" style="background:#28a745;color:white;border-color:#28a745;">🌍 Ver Todas</button>
-                </div>
+                </div></td></tr></table>
                 <div id="loading-asaas" class="loading" style="display:none;"><p>Carregando cobranças Asaas...</p></div>
                 <div id="asaas-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
             </div>
@@ -274,7 +278,7 @@
                     <div class="stat-card mp refunded"><h3 id="stat-mp-reembolsados">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card mp"><h3 id="stat-mp-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros filtros-centro">
+                <table class="filtros-tabela-centro"><tr><td><div class="filtros">
                     <button class="ativo" onclick="filtrarMp('todos')">📋 Todos</button>
                     <button onclick="filtrarMp('pendente')">⏳ Pendentes</button>
                     <button onclick="filtrarMp('aprovado')">✅ Aprovados</button>
@@ -284,7 +288,7 @@
                     <button class="refunded-btn" onclick="filtrarMp('reembolsado')">↩️ Reembolsados</button>
                     <button onclick="carregarMp()">🔄 Atualizar</button>
                     <button onclick="carregarMpTodas()" style="background:#009EE3;color:white;border-color:#009EE3;">🌍 Ver Todas</button>
-                </div>
+                </div></td></tr></table>
                 <div id="loading-mp" class="loading" style="display:none;"><p>Carregando cobranças Mercado Pago...</p></div>
                 <div id="mp-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
             </div>
@@ -302,14 +306,14 @@
                     <div class="stat-card infinite"><h3 id="stat-infinite-cancelados">0</h3><p>Cancelados</p></div>
                     <div class="stat-card infinite"><h3 id="stat-infinite-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="filtros filtros-centro">
+                <table class="filtros-tabela-centro"><tr><td><div class="filtros">
                     <button class="ativo" onclick="filtrarInfinite('todos')">📋 Todos</button>
                     <button onclick="filtrarInfinite('pending')">⏳ Pendentes</button>
                     <button onclick="filtrarInfinite('paid')">✅ Pagos</button>
                     <button onclick="filtrarInfinite('cancelled')">❌ Cancelados</button>
                     <button onclick="carregarInfinite()">🔄 Atualizar</button>
                     <button onclick="carregarInfiniteTodas()" style="background:#7B1FA2;color:white;border-color:#7B1FA2;">🌍 Ver Todas</button>
-                </div>
+                </div></td></tr></table>
                 <div id="loading-infinite" class="loading" style="display:none;"><p>Carregando cobranças InfinitePay...</p></div>
                 <div id="infinite-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
             </div>
