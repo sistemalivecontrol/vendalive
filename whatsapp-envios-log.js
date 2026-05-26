@@ -1,24 +1,11 @@
 
 // ============================================================
-// WHATSAPP ENVIOS - Função de Log Automático
+// WHATSAPP ENVIOS - Função de Log Automático v2
 // Registra na tabela whatsapp_envios automaticamente
 // ============================================================
 
 /**
  * Registra um envio de WhatsApp na tabela whatsapp_envios
- * @param {Object} params - Parâmetros do envio
- * @param {string} params.tipo_envio - Tipo: 'pix_cobranca', 'rastreamento', 'notificacao'
- * @param {string} params.origem - Origem: 'coblive', 'rastreamento', 'dashboard'
- * @param {string} params.numero_destino - Número formatado (com 55)
- * @param {string} params.nome_destino - Nome do destinatário
- * @param {string} params.mensagem - Conteúdo da mensagem
- * @param {string} params.status_envio - 'enviado', 'falha', 'timeout', 'numero_invalido'
- * @param {Object} params.resposta_api - Resposta da Evolution API (opcional)
- * @param {string} params.erro_envio - Mensagem de erro (opcional)
- * @param {string} params.referencia_id - ID da venda/solicitação (opcional)
- * @param {string} params.referencia_tipo - Tipo da referência (opcional)
- * @param {string} params.codigo_rastreio - Código de rastreio (opcional)
- * @param {number} params.valor - Valor da cobrança (opcional)
  */
 async function registrarEnvioWhatsApp(params) {
     if (!window.supabaseClient) {
@@ -59,6 +46,16 @@ async function registrarEnvioWhatsApp(params) {
 
         if (error) {
             console.error('[WHATSAPP_LOG] Erro ao registrar:', error);
+
+            // Se for erro de RLS (403), mostrar instrução clara
+            if (error.code === '42501' || error.message.includes('row-level security')) {
+                console.error('%c[WHATSAPP_LOG] ERRO RLS DETECTADO!', 'color: red; font-size: 14px; font-weight: bold;');
+                console.error('%cA tabela whatsapp_envios precisa de políticas RLS.', 'color: orange;');
+                console.error('%cExecute no SQL Editor do Supabase:', 'color: orange;');
+                console.error('%cALTER TABLE public.whatsapp_envios ENABLE ROW LEVEL SECURITY;', 'color: cyan;');
+                console.error('%cCREATE POLICY "Allow all authenticated" ON public.whatsapp_envios FOR ALL TO authenticated USING (true) WITH CHECK (true);', 'color: cyan;');
+            }
+
             return null;
         }
 
