@@ -28,7 +28,7 @@
         { url: 'coblive.html', icon: '💰', label: 'Cobrança de Lives', section: 'main' },
         { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento', section: 'main' },
         { url: 'solicitacoes.html', icon: '📝', label: 'Formulário de Entregas', section: 'main' },
-         { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp', section: 'main' },
+        { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp', section: 'main' },
     ];
 
     // Mapeamento de nomes de arquivo para facilitar detecção
@@ -114,10 +114,8 @@
         var currentSection = '';
 
         MENU_ITEMS.forEach(function (item) {
-            // Separador de seção (se mudar)
             if (item.section && item.section !== currentSection) {
                 currentSection = item.section;
-                // Não adicionar título de seção por enquanto, manter limpo
             }
 
             var isActive = isCurrentPage(item.url);
@@ -134,7 +132,6 @@
                 '<span class="nav-label">' + escapeHtml(item.label) + '</span>' +
                 badgeHtml;
 
-            // Se for página atual, prevenir navegação e apenas fechar
             if (isActive) {
                 link.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -157,7 +154,7 @@
         footer.className = 'nav-menu-footer';
         footer.innerHTML =
             '<div class="nav-menu-separator"></div>' +
-            '<a href="dashboard.html" class="nav-menu-item" onclick="window.navMenuGoTo(event, \'dashboard.html\')">' +
+            '<a href="dashboard.html" class="nav-menu-item" onclick="window.navMenuGoTo(event, 'dashboard.html')">' +
             '<span class="nav-icon">🏠</span>' +
             '<span class="nav-label">Dashboard</span>' +
             '</a>' +
@@ -209,7 +206,6 @@
             panel.classList.add('active');
             document.body.classList.add('nav-menu-open');
             if (btn) btn.setAttribute('aria-expanded', 'true');
-            // Focar no botão de fechar para acessibilidade
             var closeBtn = panel.querySelector('.nav-menu-close');
             if (closeBtn) closeBtn.focus();
         }
@@ -249,21 +245,18 @@
     function insertMenuButton() {
         var btn = createMenuButton();
 
-        // Estratégia: encontrar .header-left e inserir o botão no início
         var headerLeft = document.querySelector('.header-left');
         if (headerLeft) {
             headerLeft.insertBefore(btn, headerLeft.firstChild);
             return true;
         }
 
-        // Fallback: procurar por .header e adicionar no início
         var header = document.querySelector('.header');
         if (header) {
             header.insertBefore(btn, header.firstChild);
             return true;
         }
 
-        // Último fallback: adicionar no início do body como fixed
         btn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:9997;background:#0B193F;color:white;border-radius:8px;padding:8px;box-shadow:0 2px 10px rgba(0,0,0,0.2);';
         document.body.appendChild(btn);
         return true;
@@ -273,22 +266,15 @@
     // INICIALIZAÇÃO
     // ========================================
     function init() {
-        // Verificar se já existe
         if (document.getElementById('navMenuOverlay')) {
             return;
         }
 
-        // Inserir botão no header
         insertMenuButton();
-
-        // Inserir overlay e panel no body
         document.body.appendChild(createOverlay());
         document.body.appendChild(createMenuPanel());
-
-        // Event listeners
         document.addEventListener('keydown', handleKeyDown);
 
-        // Expor funções globais
         window.navMenuOpen = openMenu;
         window.navMenuClose = closeMenu;
         window.navMenuGoTo = function (e, url) {
@@ -298,19 +284,16 @@
         window.navMenuLogout = function () {
             closeMenu();
             setTimeout(function () {
-                // Tentar usar a função de logout existente
                 if (typeof logout === 'function') {
                     logout();
                 } else if (typeof window.fazerLogout === 'function') {
                     window.fazerLogout();
                 } else {
-                    // Fallback: redirecionar para login
                     window.location.href = 'login.html';
                 }
             }, 280);
         };
 
-        // Sincronizar badge de pix pendentes se existir na página
         syncPixBadge();
     }
 
@@ -318,7 +301,6 @@
     // SINCRONIZAR BADGE PIX
     // ========================================
     function syncPixBadge() {
-        // Observar mudanças no badge da página principal
         var observer = new MutationObserver(function () {
             updateNavPixBadge();
         });
@@ -338,7 +320,6 @@
     }
 
     function updateNavPixBadge() {
-        // Pegar valor de badges existentes na página
         var sources = ['pix-badge', 'mobile-pix-badge'];
         var total = 0;
 
@@ -350,7 +331,6 @@
             }
         });
 
-        // Atualizar badge do menu
         var navBadge = document.getElementById('nav-pix-badge');
         if (navBadge) {
             if (total > 0) {
