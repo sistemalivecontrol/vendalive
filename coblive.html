@@ -1806,12 +1806,12 @@
                 numeroLimpo = '55' + numeroLimpo;
             }
 
-            let resultado = await _enviarPixWhatsapp(numeroLimpo, texto, 20000);
+            let resultado = await _enviarPixWhatsapp(numeroLimpo, texto, TIMEOUT_EVOLUTION || 60000);
 
             if (!resultado.sucesso && resultado.erro === 'Timeout') {
                 console.log('[EVOLUTION PIX] Timeout na tentativa 1, aguardando 3s para retry...');
                 await new Promise(r => setTimeout(r, 3000));
-                resultado = await _enviarPixWhatsapp(numeroLimpo, texto, 25000);
+                resultado = await _enviarPixWhatsapp(numeroLimpo, texto, TIMEOUT_EVOLUTION || 60000);
             }
 
             return resultado;
