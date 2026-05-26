@@ -55,7 +55,6 @@
         .origem-coblive { background: #E3F2FD; color: #1565C0; }
         .origem-rastreamento { background: #F3E5F5; color: #7B1FA2; }
 
-        /* Botão Reenviar */
         .btn-reenviar {
             background: linear-gradient(135deg, #FF8BA7, #FF6B8A);
             color: white;
@@ -75,7 +74,6 @@
         .btn-reenviar.reenviando { background: linear-gradient(135deg, #f39c12, #e67e22); }
         .btn-reenviar.sucesso { background: linear-gradient(135deg, #27ae60, #2ecc71); }
 
-        /* Toast */
         .toast-reenvio {
             position: fixed;
             bottom: 20px;
@@ -105,16 +103,14 @@
         .user-info { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 10px 18px; border-radius: 12px; border: 1px solid #e9ecef; }
         .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 
-        /* ============================================
-           NAVEGAÇÃO - Menu Mobile/Responsive
-           ============================================ */
+        /* ===== MENU HAMBURGER ===== */
         .nav-menu-btn {
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
             background: none;
             border: none;
-            color: inherit;
+            color: #0B193F;
             cursor: pointer;
             padding: 8px;
             margin-right: 8px;
@@ -122,18 +118,13 @@
             transition: background 0.2s;
             flex-shrink: 0;
         }
-        .nav-menu-btn:hover {
-            background: rgba(0, 0, 0, 0.08);
-        }
-        .nav-menu-btn svg {
-            width: 24px;
-            height: 24px;
-        }
+        .nav-menu-btn:hover { background: rgba(0,0,0,0.08); }
+        .nav-menu-btn svg { width: 24px; height: 24px; }
         .nav-menu-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             z-index: 9998;
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
@@ -154,18 +145,18 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.3);
         }
         .nav-menu-panel.active { left: 0; }
         .nav-menu-panel::-webkit-scrollbar { width: 5px; }
         .nav-menu-panel::-webkit-scrollbar-track { background: transparent; }
-        .nav-menu-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        .nav-menu-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
         .nav-menu-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px 20px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             flex-shrink: 0;
             position: sticky;
             top: 0;
@@ -180,12 +171,9 @@
             font-size: 16px;
             font-weight: 700;
         }
-        .nav-menu-header .nav-menu-brand svg {
-            width: 28px;
-            height: 28px;
-        }
+        .nav-menu-header .nav-menu-brand svg { width: 28px; height: 28px; }
         .nav-menu-close {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.08);
             border: none;
             color: white;
             width: 36px;
@@ -200,14 +188,14 @@
             line-height: 1;
             padding: 0;
         }
-        .nav-menu-close:hover { background: rgba(255, 255, 255, 0.15); }
+        .nav-menu-close:hover { background: rgba(255,255,255,0.15); }
         .nav-menu-links { padding: 12px 14px; flex: 1; }
         .nav-menu-item {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 13px 14px;
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255,255,255,0.75);
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
@@ -222,27 +210,10 @@
             font-family: inherit;
             position: relative;
         }
-        .nav-menu-item .nav-icon {
-            font-size: 20px;
-            width: 26px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .nav-menu-item .nav-label {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .nav-menu-item:hover {
-            background: rgba(0, 102, 255, 0.15);
-            color: white;
-        }
-        .nav-menu-item.active {
-            background: rgba(0, 102, 255, 0.22);
-            color: white;
-            font-weight: 600;
-        }
+        .nav-menu-item .nav-icon { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+        .nav-menu-item .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-menu-item:hover { background: rgba(0,102,255,0.15); color: white; }
+        .nav-menu-item.active { background: rgba(0,102,255,0.22); color: white; font-weight: 600; }
         .nav-menu-item.active::before {
             content: '';
             position: absolute;
@@ -267,7 +238,7 @@
         }
         .nav-menu-separator {
             height: 1px;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.06);
             margin: 10px 16px;
         }
         .nav-menu-section-title {
@@ -276,32 +247,18 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.35);
+            color: rgba(255,255,255,0.35);
         }
         .nav-menu-footer {
             padding: 14px 18px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255,255,255,0.06);
             flex-shrink: 0;
             background: #0a1628;
         }
-        .nav-menu-footer .nav-menu-item {
-            padding: 10px 12px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .nav-menu-footer .nav-menu-item:hover {
-            color: rgba(255, 255, 255, 0.8);
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .nav-menu-version {
-            text-align: center;
-            padding: 8px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.2);
-        }
-        .nav-menu-panel.active .nav-menu-item {
-            animation: navItemSlide 0.35s ease backwards;
-        }
+        .nav-menu-footer .nav-menu-item { padding: 10px 12px; font-size: 13px; color: rgba(255,255,255,0.5); }
+        .nav-menu-footer .nav-menu-item:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); }
+        .nav-menu-version { text-align: center; padding: 8px; font-size: 11px; color: rgba(255,255,255,0.2); }
+        .nav-menu-panel.active .nav-menu-item { animation: navItemSlide 0.35s ease backwards; }
         .nav-menu-panel.active .nav-menu-item:nth-child(1) { animation-delay: 0.03s; }
         .nav-menu-panel.active .nav-menu-item:nth-child(2) { animation-delay: 0.06s; }
         .nav-menu-panel.active .nav-menu-item:nth-child(3) { animation-delay: 0.09s; }
@@ -329,6 +286,14 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
+                <!-- BOTÃO MENU HAMBURGER - INLINE -->
+                <button class="nav-menu-btn" id="navMenuBtn" aria-label="Abrir menu" onclick="openMenu()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
                 <button class="btn-voltar" onclick="window.location.href='dashboard.html'">← Voltar</button>
                 <div class="header-center">
                     <h1>📱 Monitor de Envios WhatsApp</h1>
@@ -426,7 +391,119 @@
         </div>
     </div>
 
+    <!-- OVERLAY E PAINEL DO MENU - INLINE -->
+    <div class="nav-menu-overlay" id="navMenuOverlay" onclick="closeMenu()"></div>
+    <nav class="nav-menu-panel" id="navMenuPanel">
+        <div class="nav-menu-header">
+            <div class="nav-menu-brand">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
+                    <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
+                    <path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+                    <circle cx="72" cy="25" r="22" fill="#ffffff"/>
+                    <text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
+                </svg>
+                <span>Menu</span>
+            </div>
+            <button class="nav-menu-close" onclick="closeMenu()">&times;</button>
+        </div>
+        <div class="nav-menu-links" id="navMenuLinks"></div>
+        <div class="nav-menu-footer">
+            <div class="nav-menu-separator"></div>
+            <a href="dashboard.html" class="nav-menu-item" onclick="event.preventDefault();goTo('dashboard.html');">
+                <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+            </a>
+            <button class="nav-menu-item" onclick="doLogout()">
+                <span class="nav-icon">🚪</span><span class="nav-label">Sair</span>
+            </button>
+        </div>
+    </nav>
+
     <script>
+        // ===== MENU HAMBURGER - FUNÇÕES GLOBAIS =====
+        var MENU_ITEMS = [
+            { url: 'dashboard.html', icon: '📊', label: 'Dashboard' },
+            { url: 'live.html', icon: '🎥', label: 'Lives de Vendas' },
+            { url: 'clientes.html', icon: '👥', label: 'Clientes' },
+            { url: 'vendas.html', icon: '🛒', label: 'Vendas' },
+            { url: 'enderecos.html', icon: '📍', label: 'Enderecos' },
+            { url: 'pix.automatizado.html', icon: '💳', label: 'Pix Automacao' },
+            { url: 'pix.manual.html', icon: '✅', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
+            { url: 'coblive.html', icon: '💰', label: 'Cobranca de Lives' },
+            { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento' },
+            { url: 'solicitacoes.html', icon: '📝', label: 'Formulario de Entregas' },
+            { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' }
+        ];
+
+        function getCurrentPage() {
+            var path = window.location.pathname;
+            return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
+        }
+        function isCurrent(url) {
+            var current = getCurrentPage();
+            return current === url || current.indexOf(url + '?') === 0;
+        }
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        function openMenu() {
+            document.getElementById('navMenuOverlay').classList.add('active');
+            document.getElementById('navMenuPanel').classList.add('active');
+            document.body.classList.add('nav-menu-open');
+        }
+        function closeMenu() {
+            document.getElementById('navMenuOverlay').classList.remove('active');
+            document.getElementById('navMenuPanel').classList.remove('active');
+            document.body.classList.remove('nav-menu-open');
+        }
+        function goTo(url) {
+            closeMenu();
+            setTimeout(function() { window.location.href = url; }, 280);
+        }
+        function doLogout() {
+            closeMenu();
+            setTimeout(function() {
+                if (typeof window.fazerLogout === 'function') {
+                    window.fazerLogout();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            }, 280);
+        }
+
+        // Renderizar links do menu
+        function renderMenuLinks() {
+            var linksContainer = document.getElementById('navMenuLinks');
+            if (!linksContainer) return;
+            linksContainer.innerHTML = '';
+            for (var i = 0; i < MENU_ITEMS.length; i++) {
+                var item = MENU_ITEMS[i];
+                var active = isCurrent(item.url) ? ' active' : '';
+                var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : '';
+                var a = document.createElement('a');
+                a.href = item.url;
+                a.className = 'nav-menu-item' + active;
+                a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + escapeHtml(item.label) + '</span>' + badge;
+                if (active) {
+                    a.onclick = function(e) { e.preventDefault(); closeMenu(); };
+                } else {
+                    (function(url) {
+                        a.onclick = function(e) { e.preventDefault(); goTo(url); };
+                    })(item.url);
+                }
+                linksContainer.appendChild(a);
+            }
+        }
+
+        // Inicializar menu no DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMenuLinks();
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
+        });
+        // ===== FIM DO MENU =====
+
         // Constantes
         const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
         const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
@@ -438,154 +515,6 @@
         let canalRealtime = null;
         let enviosData = [];
 
-        // ===== MENU HAMBURGER INTEGRADO =====
-        (function() {
-            'use strict';
-            if (window.__NAVMENU_INITIALIZED) return;
-            window.__NAVMENU_INITIALIZED = true;
-
-            var MENU_ITEMS = [
-                { url: 'dashboard.html', icon: '📊', label: 'Dashboard' },
-                { url: 'live.html', icon: '🎥', label: 'Lives de Vendas' },
-                { url: 'clientes.html', icon: '👥', label: 'Clientes' },
-                { url: 'vendas.html', icon: '🛒', label: 'Vendas' },
-                { url: 'enderecos.html', icon: '📍', label: 'Enderecos' },
-                { url: 'pix.automatizado.html', icon: '💳', label: 'Pix Automacao' },
-                { url: 'pix.manual.html', icon: '✅', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
-                { url: 'coblive.html', icon: '💰', label: 'Cobranca de Lives' },
-                { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento' },
-                { url: 'solicitacoes.html', icon: '📝', label: 'Formulario de Entregas' },
-                { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' }
-            ];
-
-            function getCurrentPage() {
-                var path = window.location.pathname;
-                return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
-            }
-            function isCurrent(url) {
-                var current = getCurrentPage();
-                return current === url || current.indexOf(url + '?') === 0;
-            }
-            function escapeHtml(text) {
-                var div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            function createOverlay() {
-                var div = document.createElement('div');
-                div.className = 'nav-menu-overlay';
-                div.id = 'navMenuOverlay';
-                div.onclick = closeMenu;
-                return div;
-            }
-            function createPanel() {
-                var panel = document.createElement('nav');
-                panel.className = 'nav-menu-panel';
-                panel.id = 'navMenuPanel';
-                var header = document.createElement('div');
-                header.className = 'nav-menu-header';
-                header.innerHTML = '<div class="nav-menu-brand"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/><path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/><path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/><circle cx="72" cy="25" r="22" fill="#ffffff"/><text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text></svg><span>Menu</span></div><button class="nav-menu-close" onclick="window.navMenuClose()">&times;</button>';
-                panel.appendChild(header);
-                var links = document.createElement('div');
-                links.className = 'nav-menu-links';
-                for (var i = 0; i < MENU_ITEMS.length; i++) {
-                    var item = MENU_ITEMS[i];
-                    var active = isCurrent(item.url) ? ' active' : '';
-                    var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : '';
-                    var a = document.createElement('a');
-                    a.href = item.url;
-                    a.className = 'nav-menu-item' + active;
-                    a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + escapeHtml(item.label) + '</span>' + badge;
-                    if (active) {
-                        a.onclick = function(e) { e.preventDefault(); closeMenu(); };
-                    } else {
-                        (function(url) {
-                            a.onclick = function(e) { e.preventDefault(); goTo(url); };
-                        })(item.url);
-                    }
-                    links.appendChild(a);
-                }
-                panel.appendChild(links);
-                var footer = document.createElement('div');
-                footer.className = 'nav-menu-footer';
-                footer.innerHTML = '<div class="nav-menu-separator"></div><a href="dashboard.html" class="nav-menu-item" onclick="event.preventDefault();goTo('dashboard.html');"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a><button class="nav-menu-item" onclick="doLogout()"><span class="nav-icon">🚪</span><span class="nav-label">Sair</span></button>';
-                panel.appendChild(footer);
-                return panel;
-            }
-            function createButton() {
-                var btn = document.createElement('button');
-                btn.className = 'nav-menu-btn';
-                btn.id = 'navMenuBtn';
-                btn.setAttribute('aria-label', 'Abrir menu');
-                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
-                btn.onclick = openMenu;
-                return btn;
-            }
-            function openMenu() {
-                var overlay = document.getElementById('navMenuOverlay');
-                var panel = document.getElementById('navMenuPanel');
-                if (overlay && panel) {
-                    overlay.classList.add('active');
-                    panel.classList.add('active');
-                    document.body.classList.add('nav-menu-open');
-                }
-            }
-            function closeMenu() {
-                var overlay = document.getElementById('navMenuOverlay');
-                var panel = document.getElementById('navMenuPanel');
-                if (overlay && panel) {
-                    overlay.classList.remove('active');
-                    panel.classList.remove('active');
-                    document.body.classList.remove('nav-menu-open');
-                }
-            }
-            function goTo(url) {
-                closeMenu();
-                setTimeout(function() { window.location.href = url; }, 280);
-            }
-            function doLogout() {
-                closeMenu();
-                setTimeout(function() {
-                    if (typeof window.fazerLogout === 'function') {
-                        window.fazerLogout();
-                    } else {
-                        window.location.href = 'login.html';
-                    }
-                }, 280);
-            }
-            function insertButton() {
-                var btn = createButton();
-                var headerLeft = document.querySelector('.header-left');
-                if (headerLeft) {
-                    headerLeft.insertBefore(btn, headerLeft.firstChild);
-                    return;
-                }
-                var header = document.querySelector('.header');
-                if (header) {
-                    header.insertBefore(btn, header.firstChild);
-                    return;
-                }
-                document.body.appendChild(btn);
-            }
-            function init() {
-                if (document.getElementById('navMenuOverlay')) return;
-                insertButton();
-                document.body.appendChild(createOverlay());
-                document.body.appendChild(createPanel());
-                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
-                window.navMenuClose = closeMenu;
-                window.navMenuGoTo = function(e, url) { if (e) e.preventDefault(); goTo(url); };
-                window.navMenuLogout = doLogout;
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        })();
-        // ===== FIM DO MENU =====
-
-        // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
             await new Promise(resolve => {
                 const check = () => {
@@ -650,7 +579,7 @@
                 renderizarTabela();
                 atualizarEstatisticas();
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Erro: ${e.message}</td></tr>`;
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + e.message + '</td></tr>';
             }
         }
 
@@ -674,19 +603,19 @@
                 const tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : tipo);
                 const origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 SOLICITAÇÃO' : origem);
                 const btnReenviar = (status === 'timeout')
-                    ? `<button class="btn-reenviar" id="btn-reenviar-${envio.id}" onclick="clickReenviar('${envio.id}', '${numero}', '${mensagem.replace(/'/g, "\'")}', '${tipo}')">🔄 Reenviar</button>`
+                    ? '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar('' + envio.id + '', '' + numero + '', '' + mensagem.replace(/'/g, "\'") + '', '' + tipo + '')">🔄 Reenviar</button>'
                     : '';
-                return `<tr>
-                    <td>${data}</td>
-                    <td><span class="origem-badge ${origemClass}">${origemLabel}</span></td>
-                    <td>${tipoLabel}</td>
-                    <td><span class="status-badge ${statusClass}">${status}</span></td>
-                    <td>${numero}</td>
-                    <td><strong>${nome}</strong></td>
-                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${mensagem}">${mensagem}</td>
-                    <td><strong>${valor}</strong></td>
-                    <td>${btnReenviar}</td>
-                </tr>`;
+                return '<tr>' +
+                    '<td>' + data + '</td>' +
+                    '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
+                    '<td>' + tipoLabel + '</td>' +
+                    '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>' +
+                    '<td>' + numero + '</td>' +
+                    '<td><strong>' + nome + '</strong></td>' +
+                    '<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + mensagem + '">' + mensagem + '</td>' +
+                    '<td><strong>' + valor + '</strong></td>' +
+                    '<td>' + btnReenviar + '</td>' +
+                '</tr>';
             }).join('');
         }
 
@@ -710,7 +639,7 @@
                     event: 'INSERT',
                     schema: 'public',
                     table: 'whatsapp_envios',
-                    filter: `cliente_sistema_id=eq.${clienteSistemaId}`
+                    filter: 'cliente_sistema_id=eq.' + clienteSistemaId
                 }, (payload) => {
                     enviosData.unshift(payload.new);
                     renderizarTabela();
@@ -721,7 +650,7 @@
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'whatsapp_envios',
-                    filter: `cliente_sistema_id=eq.${clienteSistemaId}`
+                    filter: 'cliente_sistema_id=eq.' + clienteSistemaId
                 }, (payload) => {
                     const idx = enviosData.findIndex(e => e.id === payload.new.id);
                     if (idx >= 0) {
@@ -745,7 +674,7 @@
         }
 
         async function clickReenviar(logId, numero, mensagem, tipo) {
-            const btn = document.getElementById(`btn-reenviar-${logId}`);
+            const btn = document.getElementById('btn-reenviar-' + logId);
             if (!btn || btn.disabled) return;
             btn.disabled = true;
             btn.classList.add('reenviando');
@@ -779,7 +708,7 @@
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_EVOLUTION);
-                const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                const response = await fetch(EVOLUTION_API_URL + '/message/sendText/' + EVOLUTION_INSTANCE, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
                     body: JSON.stringify({ number: numeroLimpo, text: mensagem }),
@@ -814,7 +743,7 @@
             const anterior = document.querySelector('.toast-reenvio');
             if (anterior) anterior.remove();
             const toast = document.createElement('div');
-            toast.className = `toast-reenvio ${tipo}`;
+            toast.className = 'toast-reenvio ' + tipo;
             toast.textContent = mensagem;
             document.body.appendChild(toast);
             setTimeout(() => {
