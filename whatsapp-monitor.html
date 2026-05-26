@@ -104,6 +104,223 @@
 
         .user-info { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 10px 18px; border-radius: 12px; border: 1px solid #e9ecef; }
         .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+
+        /* ============================================
+           NAVEGAÇÃO - Menu Mobile/Responsive
+           ============================================ */
+        .nav-menu-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .nav-menu-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        .nav-menu-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        .nav-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .nav-menu-overlay.active { display: block; }
+        .nav-menu-panel {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            max-width: 85vw;
+            height: 100vh;
+            height: 100dvh;
+            background: #0a1628;
+            z-index: 9999;
+            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+        }
+        .nav-menu-panel.active { left: 0; }
+        .nav-menu-panel::-webkit-scrollbar { width: 5px; }
+        .nav-menu-panel::-webkit-scrollbar-track { background: transparent; }
+        .nav-menu-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        .nav-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            background: #0a1628;
+            z-index: 2;
+        }
+        .nav-menu-header .nav-menu-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .nav-menu-header .nav-menu-brand svg {
+            width: 28px;
+            height: 28px;
+        }
+        .nav-menu-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            line-height: 1;
+            padding: 0;
+        }
+        .nav-menu-close:hover { background: rgba(255, 255, 255, 0.15); }
+        .nav-menu-links { padding: 12px 14px; flex: 1; }
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            margin-bottom: 3px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            position: relative;
+        }
+        .nav-menu-item .nav-icon {
+            font-size: 20px;
+            width: 26px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .nav-menu-item .nav-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-menu-item:hover {
+            background: rgba(0, 102, 255, 0.15);
+            color: white;
+        }
+        .nav-menu-item.active {
+            background: rgba(0, 102, 255, 0.22);
+            color: white;
+            font-weight: 600;
+        }
+        .nav-menu-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: #0066ff;
+            border-radius: 0 3px 3px 0;
+        }
+        .nav-menu-badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+            min-width: 20px;
+            text-align: center;
+        }
+        .nav-menu-separator {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 10px 16px;
+        }
+        .nav-menu-section-title {
+            padding: 10px 18px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.35);
+        }
+        .nav-menu-footer {
+            padding: 14px 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+            background: #0a1628;
+        }
+        .nav-menu-footer .nav-menu-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .nav-menu-footer .nav-menu-item:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-menu-version {
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+        .nav-menu-panel.active .nav-menu-item {
+            animation: navItemSlide 0.35s ease backwards;
+        }
+        .nav-menu-panel.active .nav-menu-item:nth-child(1) { animation-delay: 0.03s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(2) { animation-delay: 0.06s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(3) { animation-delay: 0.09s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(4) { animation-delay: 0.12s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(5) { animation-delay: 0.15s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(6) { animation-delay: 0.18s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(7) { animation-delay: 0.21s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(8) { animation-delay: 0.24s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(9) { animation-delay: 0.27s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(10) { animation-delay: 0.30s; }
+        .nav-menu-panel.active .nav-menu-item:nth-child(11) { animation-delay: 0.33s; }
+        @keyframes navItemSlide {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        body.nav-menu-open { overflow: hidden; }
+        @media (max-width: 480px) {
+            .nav-menu-panel { width: 280px; }
+        }
     </style>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📱%3C/text%3E%3C/svg%3E">
 <base target="_blank">
@@ -214,12 +431,159 @@
         const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
         const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
         const EVOLUTION_INSTANCE = 'pingodegente';
-        const TIMEOUT_EVOLUTION = 60000; // 60 segundos
+        const TIMEOUT_EVOLUTION = 60000;
 
         let supabaseClient = null;
         let clienteSistemaId = null;
         let canalRealtime = null;
         let enviosData = [];
+
+        // ===== MENU HAMBURGER INTEGRADO =====
+        (function() {
+            'use strict';
+            if (window.__NAVMENU_INITIALIZED) return;
+            window.__NAVMENU_INITIALIZED = true;
+
+            var MENU_ITEMS = [
+                { url: 'dashboard.html', icon: '📊', label: 'Dashboard' },
+                { url: 'live.html', icon: '🎥', label: 'Lives de Vendas' },
+                { url: 'clientes.html', icon: '👥', label: 'Clientes' },
+                { url: 'vendas.html', icon: '🛒', label: 'Vendas' },
+                { url: 'enderecos.html', icon: '📍', label: 'Enderecos' },
+                { url: 'pix.automatizado.html', icon: '💳', label: 'Pix Automacao' },
+                { url: 'pix.manual.html', icon: '✅', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
+                { url: 'coblive.html', icon: '💰', label: 'Cobranca de Lives' },
+                { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento' },
+                { url: 'solicitacoes.html', icon: '📝', label: 'Formulario de Entregas' },
+                { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' }
+            ];
+
+            function getCurrentPage() {
+                var path = window.location.pathname;
+                return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
+            }
+            function isCurrent(url) {
+                var current = getCurrentPage();
+                return current === url || current.indexOf(url + '?') === 0;
+            }
+            function escapeHtml(text) {
+                var div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            function createOverlay() {
+                var div = document.createElement('div');
+                div.className = 'nav-menu-overlay';
+                div.id = 'navMenuOverlay';
+                div.onclick = closeMenu;
+                return div;
+            }
+            function createPanel() {
+                var panel = document.createElement('nav');
+                panel.className = 'nav-menu-panel';
+                panel.id = 'navMenuPanel';
+                var header = document.createElement('div');
+                header.className = 'nav-menu-header';
+                header.innerHTML = '<div class="nav-menu-brand"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/><path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/><path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/><circle cx="72" cy="25" r="22" fill="#ffffff"/><text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text></svg><span>Menu</span></div><button class="nav-menu-close" onclick="window.navMenuClose()">&times;</button>';
+                panel.appendChild(header);
+                var links = document.createElement('div');
+                links.className = 'nav-menu-links';
+                for (var i = 0; i < MENU_ITEMS.length; i++) {
+                    var item = MENU_ITEMS[i];
+                    var active = isCurrent(item.url) ? ' active' : '';
+                    var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : '';
+                    var a = document.createElement('a');
+                    a.href = item.url;
+                    a.className = 'nav-menu-item' + active;
+                    a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + escapeHtml(item.label) + '</span>' + badge;
+                    if (active) {
+                        a.onclick = function(e) { e.preventDefault(); closeMenu(); };
+                    } else {
+                        (function(url) {
+                            a.onclick = function(e) { e.preventDefault(); goTo(url); };
+                        })(item.url);
+                    }
+                    links.appendChild(a);
+                }
+                panel.appendChild(links);
+                var footer = document.createElement('div');
+                footer.className = 'nav-menu-footer';
+                footer.innerHTML = '<div class="nav-menu-separator"></div><a href="dashboard.html" class="nav-menu-item" onclick="event.preventDefault();goTo('dashboard.html');"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a><button class="nav-menu-item" onclick="doLogout()"><span class="nav-icon">🚪</span><span class="nav-label">Sair</span></button>';
+                panel.appendChild(footer);
+                return panel;
+            }
+            function createButton() {
+                var btn = document.createElement('button');
+                btn.className = 'nav-menu-btn';
+                btn.id = 'navMenuBtn';
+                btn.setAttribute('aria-label', 'Abrir menu');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+                btn.onclick = openMenu;
+                return btn;
+            }
+            function openMenu() {
+                var overlay = document.getElementById('navMenuOverlay');
+                var panel = document.getElementById('navMenuPanel');
+                if (overlay && panel) {
+                    overlay.classList.add('active');
+                    panel.classList.add('active');
+                    document.body.classList.add('nav-menu-open');
+                }
+            }
+            function closeMenu() {
+                var overlay = document.getElementById('navMenuOverlay');
+                var panel = document.getElementById('navMenuPanel');
+                if (overlay && panel) {
+                    overlay.classList.remove('active');
+                    panel.classList.remove('active');
+                    document.body.classList.remove('nav-menu-open');
+                }
+            }
+            function goTo(url) {
+                closeMenu();
+                setTimeout(function() { window.location.href = url; }, 280);
+            }
+            function doLogout() {
+                closeMenu();
+                setTimeout(function() {
+                    if (typeof window.fazerLogout === 'function') {
+                        window.fazerLogout();
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                }, 280);
+            }
+            function insertButton() {
+                var btn = createButton();
+                var headerLeft = document.querySelector('.header-left');
+                if (headerLeft) {
+                    headerLeft.insertBefore(btn, headerLeft.firstChild);
+                    return;
+                }
+                var header = document.querySelector('.header');
+                if (header) {
+                    header.insertBefore(btn, header.firstChild);
+                    return;
+                }
+                document.body.appendChild(btn);
+            }
+            function init() {
+                if (document.getElementById('navMenuOverlay')) return;
+                insertButton();
+                document.body.appendChild(createOverlay());
+                document.body.appendChild(createPanel());
+                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
+                window.navMenuClose = closeMenu;
+                window.navMenuGoTo = function(e, url) { if (e) e.preventDefault(); goTo(url); };
+                window.navMenuLogout = doLogout;
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+        // ===== FIM DO MENU =====
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
@@ -244,7 +608,6 @@
                 return;
             }
 
-            // Definir datas padrão (últimos 7 dias)
             const hoje = new Date();
             const seteDiasAtras = new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
             document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
@@ -254,39 +617,29 @@
             iniciarRealtime();
         });
 
-        // Carregar envios do Supabase
         async function carregarEnvios() {
             const tbody = document.getElementById('tbodyEnvios');
             tbody.innerHTML = '<tr><td colspan="9" class="loading">Carregando envios...</td></tr>';
-
             try {
                 let query = supabaseClient
                     .from('whatsapp_envios')
                     .select('*')
                     .eq('cliente_sistema_id', clienteSistemaId)
                     .order('criado_em', { ascending: false });
-
-                // Aplicar filtros
                 const dataInicio = document.getElementById('filtroDataInicio').value;
                 const dataFim = document.getElementById('filtroDataFim').value;
                 const tipo = document.getElementById('filtroTipo').value;
                 const status = document.getElementById('filtroStatus').value;
                 const origem = document.getElementById('filtroOrigem').value;
                 const busca = document.getElementById('filtroBusca').value.trim().toLowerCase();
-
                 if (dataInicio) query = query.gte('criado_em', dataInicio + 'T00:00:00');
                 if (dataFim) query = query.lte('criado_em', dataFim + 'T23:59:59');
                 if (tipo) query = query.eq('tipo_envio', tipo);
                 if (status) query = query.eq('status_envio', status);
                 if (origem) query = query.eq('origem', origem);
-
                 const { data, error } = await query.limit(200);
-
                 if (error) throw error;
-
                 enviosData = data || [];
-
-                // Filtro de busca local (nome ou número)
                 if (busca) {
                     enviosData = enviosData.filter(e => {
                         const nome = (e.nome_destino || e.destinatario || '').toLowerCase();
@@ -294,7 +647,6 @@
                         return nome.includes(busca) || numero.includes(busca);
                     });
                 }
-
                 renderizarTabela();
                 atualizarEstatisticas();
             } catch (e) {
@@ -304,12 +656,10 @@
 
         function renderizarTabela() {
             const tbody = document.getElementById('tbodyEnvios');
-
             if (enviosData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><p>Nenhum envio encontrado</p></td></tr>';
                 return;
             }
-
             tbody.innerHTML = enviosData.map(envio => {
                 const data = new Date(envio.criado_em).toLocaleString('pt-BR');
                 const tipo = envio.tipo_envio || envio.tipo || '-';
@@ -319,17 +669,13 @@
                 const nome = envio.nome_destino || envio.destinatario || '-';
                 const mensagem = envio.mensagem || '-';
                 const valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
-
                 const statusClass = 'status-' + status;
                 const origemClass = 'origem-' + origem;
                 const tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : tipo);
                 const origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 SOLICITAÇÃO' : origem);
-
-                // Botão reenviar só aparece quando status é timeout
-                const btnReenviar = (status === 'timeout') 
+                const btnReenviar = (status === 'timeout')
                     ? `<button class="btn-reenviar" id="btn-reenviar-${envio.id}" onclick="clickReenviar('${envio.id}', '${numero}', '${mensagem.replace(/'/g, "\'")}', '${tipo}')">🔄 Reenviar</button>`
                     : '';
-
                 return `<tr>
                     <td>${data}</td>
                     <td><span class="origem-badge ${origemClass}">${origemLabel}</span></td>
@@ -350,7 +696,6 @@
             const timeouts = enviosData.filter(e => (e.status_envio || e.status) === 'timeout').length;
             const falhas = enviosData.filter(e => ['falha', 'numero_invalido'].includes(e.status_envio || e.status)).length;
             const reenviados = enviosData.filter(e => (e.status_envio || e.status) === 'reenviado').length;
-
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statEnviados').textContent = enviados;
             document.getElementById('statTimeouts').textContent = timeouts;
@@ -358,7 +703,6 @@
             document.getElementById('statReenviados').textContent = reenviados;
         }
 
-        // Realtime - atualizações em tempo real
         function iniciarRealtime() {
             canalRealtime = supabaseClient
                 .channel('whatsapp_envios_changes')
@@ -368,7 +712,6 @@
                     table: 'whatsapp_envios',
                     filter: `cliente_sistema_id=eq.${clienteSistemaId}`
                 }, (payload) => {
-                    console.log('[REALTIME] Novo envio detectado:', payload);
                     enviosData.unshift(payload.new);
                     renderizarTabela();
                     atualizarEstatisticas();
@@ -380,7 +723,6 @@
                     table: 'whatsapp_envios',
                     filter: `cliente_sistema_id=eq.${clienteSistemaId}`
                 }, (payload) => {
-                    console.log('[REALTIME] Envio atualizado:', payload);
                     const idx = enviosData.findIndex(e => e.id === payload.new.id);
                     if (idx >= 0) {
                         enviosData[idx] = payload.new;
@@ -389,7 +731,6 @@
                     }
                 })
                 .subscribe((status) => {
-                    console.log('[REALTIME] Status:', status);
                     const indicator = document.getElementById('realtimeIndicator');
                     if (status === 'SUBSCRIBED') {
                         indicator.innerHTML = '<span class="realtime-dot"></span> Tempo real ativo';
@@ -403,35 +744,20 @@
                 });
         }
 
-        // Botão Reenviar
         async function clickReenviar(logId, numero, mensagem, tipo) {
             const btn = document.getElementById(`btn-reenviar-${logId}`);
             if (!btn || btn.disabled) return;
-
             btn.disabled = true;
             btn.classList.add('reenviando');
             btn.innerHTML = '⏳ Reenviando...';
-
             try {
                 const resultado = await reenviarWhatsApp(numero, mensagem);
-
                 if (resultado.sucesso) {
-                    // Atualizar no banco
-                    await supabaseClient
-                        .from('whatsapp_envios')
-                        .update({ 
-                            status_envio: 'reenviado',
-                            atualizado_em: new Date().toISOString()
-                        })
-                        .eq('id', logId);
-
+                    await supabaseClient.from('whatsapp_envios').update({ status_envio: 'reenviado', atualizado_em: new Date().toISOString() }).eq('id', logId);
                     btn.classList.remove('reenviando');
                     btn.classList.add('sucesso');
                     btn.innerHTML = '✅ Reenviado';
-
                     showToast('✅ Mensagem reenviada com sucesso!', 'sucesso');
-
-                    // Atualizar dados
                     setTimeout(() => carregarEnvios(), 1500);
                 } else {
                     btn.disabled = false;
@@ -447,32 +773,23 @@
             }
         }
 
-        // Função de reenvio
         async function reenviarWhatsApp(numero, mensagem) {
             let numeroLimpo = numero.replace(/\D/g, '');
             if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
-
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_EVOLUTION);
-
                 const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': EVOLUTION_API_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
                     body: JSON.stringify({ number: numeroLimpo, text: mensagem }),
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-
                 const data = await response.json();
-
                 if (!response.ok) {
                     return { sucesso: false, erro: data.error || 'HTTP ' + response.status, mensagem: 'Erro ao reenviar' };
                 }
-
                 return { sucesso: true, mensagem: 'Mensagem reenviada!' };
             } catch (erro) {
                 if (erro.name === 'AbortError') {
@@ -482,7 +799,6 @@
             }
         }
 
-        // Filtros
         function aplicarFiltros() { carregarEnvios(); }
         function limparFiltros() {
             document.getElementById('filtroDataInicio').value = '';
@@ -494,16 +810,13 @@
             carregarEnvios();
         }
 
-        // Toast
         function showToast(mensagem, tipo) {
             const anterior = document.querySelector('.toast-reenvio');
             if (anterior) anterior.remove();
-
             const toast = document.createElement('div');
             toast.className = `toast-reenvio ${tipo}`;
             toast.textContent = mensagem;
             document.body.appendChild(toast);
-
             setTimeout(() => {
                 toast.style.animation = 'slideUp 0.3s ease reverse';
                 setTimeout(() => toast.remove(), 300);
