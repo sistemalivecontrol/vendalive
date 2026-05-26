@@ -1,17 +1,26 @@
-
 // ============================================================
 // WHATSAPP ENVIOS - Função de Log Automático v5
 // Timeout 60s + Botão Reenviar
 // ============================================================
 
-// Constantes
-const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
-const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
-const EVOLUTION_INSTANCE = 'pingodegente';
-const TIMEOUT_EVOLUTION = 60000; // 60 segundos
+// Constantes (só declarar se não existirem)
+if (typeof EVOLUTION_API_URL === 'undefined') {
+    var EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+}
+if (typeof EVOLUTION_API_KEY === 'undefined') {
+    var EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+}
+if (typeof EVOLUTION_INSTANCE === 'undefined') {
+    var EVOLUTION_INSTANCE = 'pingodegente';
+}
+if (typeof TIMEOUT_EVOLUTION === 'undefined') {
+    var TIMEOUT_EVOLUTION = 60000; // 60 segundos
+}
 
 // Cache de mensagens para reenvio
-const mensagensCache = {};
+if (typeof mensagensCache === 'undefined') {
+    var mensagensCache = {};
+}
 
 /**
  * Registra um envio de WhatsApp na tabela whatsapp_envios
@@ -22,15 +31,15 @@ async function registrarEnvioWhatsApp(params) {
         return null;
     }
 
-    const clienteSistemaId = window.authClienteId || window.clienteSistemaId;
+    var clienteSistemaId = window.authClienteId || window.clienteSistemaId;
     if (!clienteSistemaId) {
         console.warn('[WHATSAPP_LOG] clienteSistemaId não identificado');
         return null;
     }
 
-    const agora = new Date().toISOString();
+    var agora = new Date().toISOString();
 
-    const dados = {
+    var dados = {
         cliente_sistema_id: clienteSistemaId,
         criado_em: agora,
         atualizado_em: agora
@@ -58,23 +67,23 @@ async function registrarEnvioWhatsApp(params) {
     dados.created_at = agora;
 
     try {
-        const { data, error } = await window.supabaseClient
+        var result = await window.supabaseClient
             .from('whatsapp_envios')
             .insert([dados])
             .select()
             .single();
 
-        if (error) {
-            console.error('[WHATSAPP_LOG] Erro ao registrar:', error);
-            if (error.code === '42501') {
+        if (result.error) {
+            console.error('[WHATSAPP_LOG] Erro ao registrar:', result.error);
+            if (result.error.code === '42501') {
                 console.error('%c[WHATSAPP_LOG] ERRO RLS! Execute:', 'color: red; font-weight: bold;');
                 console.error('%cCREATE POLICY "Allow all authenticated" ON public.whatsapp_envios FOR ALL TO authenticated USING (true) WITH CHECK (true);', 'color: cyan;');
             }
             return null;
         }
 
-        console.log('[WHATSAPP_LOG] ✅ Registrado com sucesso. ID:', data.id);
-        return data;
+        console.log('[WHATSAPP_LOG] Registrado com sucesso. ID:', result.data.id);
+        return result.data;
     } catch (e) {
         console.error('[WHATSAPP_LOG] Erro inesperado:', e);
         return null;
@@ -84,19 +93,20 @@ async function registrarEnvioWhatsApp(params) {
 /**
  * Envia mensagem WhatsApp via Evolution API (com timeout 60s)
  */
-async function enviarWhatsAppEvolution(numero, texto, timeoutMs = TIMEOUT_EVOLUTION) {
-    let numeroLimpo = numero.toString().replace(/\D/g, '');
+async function enviarWhatsAppEvolution(numero, texto, timeoutMs) {
+    timeoutMs = timeoutMs || TIMEOUT_EVOLUTION;
+    var numeroLimpo = numero.toString().replace(/\D/g, '');
     if (!numeroLimpo.startsWith('55')) {
         numeroLimpo = '55' + numeroLimpo;
     }
 
     // Tentativa 1
-    let resultado = await _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs);
+    var resultado = await _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs);
 
     // Se timeout, tentar mais uma vez
     if (!resultado.sucesso && resultado.erro === 'Timeout') {
         console.log('[EVOLUTION] Timeout na tentativa 1, aguardando 3s para retry...');
-        await new Promise(r => setTimeout(r, 3000));
+        await new Promise(function(r) { setTimeout(r, 3000); });
         resultado = await _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs);
     }
 
@@ -105,10 +115,10 @@ async function enviarWhatsAppEvolution(numero, texto, timeoutMs = TIMEOUT_EVOLUT
 
 async function _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs) {
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, timeoutMs);
 
-        const response = await fetch(EVOLUTION_API_URL + '/message/sendText/' + EVOLUTION_INSTANCE, {
+        var response = await fetch(EVOLUTION_API_URL + '/message/sendText/' + EVOLUTION_INSTANCE, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -122,19 +132,19 @@ async function _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs) {
         });
         clearTimeout(timeoutId);
 
-        const data = await response.json();
+        var data = await response.json();
         console.log('[EVOLUTION] Response:', JSON.stringify(data));
 
         if (!response.ok) {
             if (data.response && data.response.message && Array.isArray(data.response.message)) {
-                const msg = data.response.message[0];
+                var msg = data.response.message[0];
                 if (msg && msg.exists === false) {
-                    return { sucesso: false, erro: 'NÚMERO_INVÁLIDO', dados: data, mensagem: 'Este número não está cadastrado no WhatsApp: ' + msg.number };
+                    return { sucesso: false, erro: 'NUMERO_INVALIDO', dados: data, mensagem: 'Este numero nao esta cadastrado no WhatsApp: ' + msg.number };
                 }
             }
 
-            const isPrismaError = data.response && data.response.message && Array.isArray(data.response.message) &&
-                data.response.message.some(m => typeof m === 'string' && m.includes('Prisma'));
+            var isPrismaError = data.response && data.response.message && Array.isArray(data.response.message) &&
+                data.response.message.some(function(m) { return typeof m === 'string' && m.indexOf('Prisma') >= 0; });
 
             if (isPrismaError) {
                 return { sucesso: true, dados: data, warning: 'Erro interno do servidor (Prisma), mas mensagem foi enviada' };
@@ -158,19 +168,19 @@ async function _enviarWhatsAppEvolution(numeroLimpo, texto, timeoutMs) {
  * Wrapper para envio de PIX via WhatsApp com log automático
  */
 async function enviarPixWhatsAppComLog(cliente, linkPagamento, resultadoEnvio, vendaId, valor) {
-    const numeroLimpo = (cliente.whatsapp || '').replace(/\D/g, '');
-    const numeroFormatado = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
+    var numeroLimpo = (cliente.whatsapp || '').replace(/\D/g, '');
+    var numeroFormatado = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
 
-    let status = 'falha';
-    let erro = null;
-    let resposta = null;
+    var status = 'falha';
+    var erro = null;
+    var resposta = null;
 
     if (resultadoEnvio.sucesso) {
         status = 'enviado';
         resposta = resultadoEnvio.dados;
-    } else if (resultadoEnvio.erro === 'NÚMERO_INVÁLIDO') {
+    } else if (resultadoEnvio.erro === 'NUMERO_INVALIDO') {
         status = 'numero_invalido';
-        erro = resultadoEnvio.mensagem || 'Número não cadastrado no WhatsApp';
+        erro = resultadoEnvio.mensagem || 'Numero nao cadastrado no WhatsApp';
     } else if (resultadoEnvio.erro === 'Timeout') {
         status = 'timeout';
         erro = 'Timeout na API do WhatsApp';
@@ -199,19 +209,19 @@ async function enviarPixWhatsAppComLog(cliente, linkPagamento, resultadoEnvio, v
  * Wrapper para envio de rastreamento via WhatsApp com log automático
  */
 async function enviarRastreamentoWhatsAppComLog(cliente, sol, resultadoEnvio) {
-    const numeroLimpo = (cliente.whatsapp || '').replace(/\D/g, '');
-    const numeroFormatado = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
+    var numeroLimpo = (cliente.whatsapp || '').replace(/\D/g, '');
+    var numeroFormatado = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
 
-    let status = 'falha';
-    let erro = null;
-    let resposta = null;
+    var status = 'falha';
+    var erro = null;
+    var resposta = null;
 
     if (resultadoEnvio.sucesso) {
         status = 'enviado';
         resposta = resultadoEnvio.dados;
-    } else if (resultadoEnvio.erro === 'NÚMERO_INVÁLIDO') {
+    } else if (resultadoEnvio.erro === 'NUMERO_INVALIDO') {
         status = 'numero_invalido';
-        erro = resultadoEnvio.mensagem || 'Número não cadastrado no WhatsApp';
+        erro = resultadoEnvio.mensagem || 'Numero nao cadastrado no WhatsApp';
     } else if (resultadoEnvio.erro === 'Timeout') {
         status = 'timeout';
         erro = 'Timeout na API do WhatsApp';
@@ -238,18 +248,13 @@ async function enviarRastreamentoWhatsAppComLog(cliente, sol, resultadoEnvio) {
 
 /**
  * Função para reenviar mensagem WhatsApp (usada pelo botão Reenviar)
- * @param {string} logId - ID do registro na tabela whatsapp_envios
- * @param {string} numero - Número de telefone
- * @param {string} mensagem - Texto da mensagem
- * @param {string} tipo - Tipo: 'pix' ou 'rastreamento'
  */
 async function reenviarWhatsApp(logId, numero, mensagem, tipo) {
     console.log('[REENVIAR] Reenviando mensagem. Log ID:', logId);
 
-    const resultado = await enviarWhatsAppEvolution(numero, mensagem);
+    var resultado = await enviarWhatsAppEvolution(numero, mensagem);
 
     if (resultado.sucesso) {
-        // Atualizar status no banco para "reenviado"
         if (window.supabaseClient && logId) {
             await window.supabaseClient
                 .from('whatsapp_envios')
