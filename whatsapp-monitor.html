@@ -663,6 +663,8 @@
                     '<td><strong>' + valor + '</strong></td>' +
                     '<td>' + btnReenviar + '</td>' +
                 '</tr>';
+                } catch (err) {
+                    console.error('[MONITOR] Erro ao renderizar linha', i, ':', err);
                 }
             }
             tbody.innerHTML = html;
