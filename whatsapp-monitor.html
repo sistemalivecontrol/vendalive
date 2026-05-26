@@ -459,6 +459,7 @@
                 <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Filtrar</button>
                 <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar</button>
                 <button class="btn btn-success" onclick="carregarEnvios()">🔄 Atualizar</button>
+                <button class="btn" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;" onclick="carregarTodosSemFiltroData()">📋 Mostrar Todos (Sem Data)</button>
             </div>
         </div>
 
@@ -573,6 +574,9 @@
             document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
             document.getElementById('filtroDataInicio').value = seteDiasAtras.toISOString().split('T')[0];
 
+            console.log('[MONITOR] Inicializando monitor. Cliente ID:', clienteSistemaId);
+            console.log('[MONITOR] Data início:', document.getElementById('filtroDataInicio').value);
+            console.log('[MONITOR] Data fim:', document.getElementById('filtroDataFim').value);
             await carregarEnvios();
             iniciarRealtime();
         });
@@ -581,6 +585,8 @@
             const tbody = document.getElementById('tbodyEnvios');
             tbody.innerHTML = '<tr><td colspan="9" class="loading">Carregando envios...</td></tr>';
             try {
+                console.log('[MONITOR] Carregando envios para cliente:', clienteSistemaId);
+                console.log('[MONITOR] Query cliente_sistema_id:', clienteSistemaId, 'tipo:', typeof clienteSistemaId);
                 let query = supabaseClient
                     .from('whatsapp_envios')
                     .select('*')
@@ -599,6 +605,10 @@
                 if (origem) query = query.eq('origem', origem);
                 const { data, error } = await query.limit(200);
                 if (error) throw error;
+                console.log('[MONITOR] Registros retornados:', data ? data.length : 0);
+                if (data && data.length > 0) {
+                    console.log('[MONITOR] Primeiro registro:', data[0]);
+                }
                 enviosData = data || [];
                 if (busca) {
                     enviosData = enviosData.filter(e => {
@@ -610,18 +620,21 @@
                 renderizarTabela();
                 atualizarEstatisticas();
             } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + e.message + '</td></tr>';
+                console.error('[MONITOR] Erro ao carregar envios:', e);
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
             }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tbodyEnvios');
+            console.log('[MONITOR] Renderizando', enviosData.length, 'registros');
             if (enviosData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><p>Nenhum envio encontrado</p></td></tr>';
                 return;
             }
             var html = '';
             for (var i = 0; i < enviosData.length; i++) {
+                try {
                 var envio = enviosData[i];
                 var data = new Date(envio.criado_em).toLocaleString('pt-BR');
                 var tipo = envio.tipo_envio || envio.tipo || '-';
@@ -650,6 +663,7 @@
                     '<td><strong>' + valor + '</strong></td>' +
                     '<td>' + btnReenviar + '</td>' +
                 '</tr>';
+                }
             }
             tbody.innerHTML = html;
             setupReenviarListeners();
@@ -777,6 +791,34 @@ async function reenviarWhatsApp(numero, mensagem) {
                     return { sucesso: false, erro: 'Timeout', mensagem: 'Timeout novamente. Tente mais tarde.' };
                 }
                 return { sucesso: false, erro: erro.message, mensagem: 'Erro: ' + erro.message };
+            }
+        }
+
+        async function carregarTodosSemFiltroData() {
+            console.log('[MONITOR] Carregando TODOS os registros sem filtro de data...');
+            const tbody = document.getElementById('tbodyEnvios');
+            tbody.innerHTML = '<tr><td colspan="9" class="loading">Carregando todos os envios...</td></tr>';
+            try {
+                let query = supabaseClient
+                    .from('whatsapp_envios')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+
+                const { data, error } = await query.limit(500);
+                if (error) throw error;
+                console.log('[MONITOR] Todos os registros (sem filtro data):', data ? data.length : 0);
+                if (data && data.length > 0) {
+                    console.log('[MONITOR] Primeiro registro:', data[0]);
+                    console.log('[MONITOR] Último registro:', data[data.length - 1]);
+                }
+                enviosData = data || [];
+                renderizarTabela();
+                atualizarEstatisticas();
+                showToast('📋 Mostrando ' + enviosData.length + ' registros (sem filtro de data)', 'sucesso');
+            } catch (e) {
+                console.error('[MONITOR] Erro ao carregar todos:', e);
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
             }
         }
 
