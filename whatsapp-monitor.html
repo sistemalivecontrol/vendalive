@@ -635,34 +635,37 @@
             var html = '';
             for (var i = 0; i < enviosData.length; i++) {
                 try {
-                var envio = enviosData[i];
-                var data = new Date(envio.criado_em).toLocaleString('pt-BR');
-                var tipo = envio.tipo_envio || envio.tipo || '-';
-                var status = envio.status_envio || envio.status || '-';
-                var origem = envio.origem || '-';
-                var numero = envio.numero_destino || envio.numero || '-';
-                var nome = envio.nome_destino || envio.destinatario || '-';
-                var mensagem = envio.mensagem || '-';
-                var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
-                var statusClass = 'status-' + status;
-                var origemClass = 'origem-' + origem;
-                var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitação' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
-                var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
+                    var envio = enviosData[i];
+                    var data = new Date(envio.criado_em).toLocaleString('pt-BR');
+                    var tipo = envio.tipo_envio || envio.tipo || '-';
+                    var status = envio.status_envio || envio.status || '-';
+                    var origem = envio.origem || '-';
+                    var numero = envio.numero_destino || envio.numero || '-';
+                    var nome = envio.nome_destino || envio.destinatario || '-';
+                    var mensagem = envio.mensagem || '-';
+                    var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
+                    var statusClass = 'status-' + status;
+                    var origemClass = 'origem-' + origem;
+                    var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitação' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
+                    var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
 
-                var btnReenviar = '';
-                if (status === 'timeout') {
-                    var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
-                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
-                }     '<td>' + data + '</td>' +
-                    '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
-                    '<td>' + tipoLabel + '</td>' +
-                    '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>' +
-                    '<td>' + numero + '</td>' +
-                    '<td><strong>' + nome + '</strong></td>' +
-                    '<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + mensagem + '">' + mensagem + '</td>' +
-                    '<td><strong>' + valor + '</strong></td>' +
-                    '<td>' + btnReenviar + '</td>' +
-                '</tr>';
+                    var btnReenviar = '';
+                    if (status === 'timeout') {
+                        var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+                        btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
+                    }
+
+                    html += '<tr>' +
+                        '<td>' + data + '</td>' +
+                        '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
+                        '<td>' + tipoLabel + '</td>' +
+                        '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>' +
+                        '<td>' + numero + '</td>' +
+                        '<td><strong>' + nome + '</strong></td>' +
+                        '<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + mensagem + '">' + mensagem + '</td>' +
+                        '<td><strong>' + valor + '</strong></td>' +
+                        '<td>' + btnReenviar + '</td>' +
+                    '</tr>';
                 } catch (err) {
                     console.error('[MONITOR] Erro ao renderizar linha', i, ':', err);
                 }
