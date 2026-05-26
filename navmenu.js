@@ -28,6 +28,7 @@
         { url: 'coblive.html', icon: '💰', label: 'Cobrança de Lives', section: 'main' },
         { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento', section: 'main' },
         { url: 'solicitacoes.html', icon: '📝', label: 'Formulário de Entregas', section: 'main' },
+         { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp', section: 'main' },
     ];
 
     // Mapeamento de nomes de arquivo para facilitar detecção
@@ -42,6 +43,7 @@
         'coblive.html': ['coblive.html'],
         'configuracao-pagamento.html': ['configuracao-pagamento.html'],
         'solicitacoes.html': ['solicitacoes.html'],
+        'whatsapp-monitor.html': ['whatsapp-monitor.html'],
     };
 
     // ========================================
