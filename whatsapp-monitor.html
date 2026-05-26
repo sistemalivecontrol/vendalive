@@ -54,6 +54,7 @@
         .origem-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; }
         .origem-coblive { background: #E3F2FD; color: #1565C0; }
         .origem-rastreamento { background: #F3E5F5; color: #7B1FA2; }
+        .origem-solicitacao-entrega { background: #E8F5E9; color: #2E7D32; }
 
         .btn-reenviar {
             background: linear-gradient(135deg, #FF8BA7, #FF6B8A);
@@ -370,6 +371,7 @@
     </script>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -424,6 +426,8 @@
                         <option value="">Todos</option>
                         <option value="pix_cobranca">PIX Cobrança</option>
                         <option value="rastreamento">Rastreamento</option>
+                        <option value="confirmacao_solicitacao">Confirmação Solicitação</option>
+                        <option value="confirmacao_pagamento">Confirmação Pagamento</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -443,6 +447,7 @@
                         <option value="">Todas</option>
                         <option value="coblive">Cobrança Live</option>
                         <option value="rastreamento">Rastreamento</option>
+                        <option value="solicitacao-entrega">Solicitação Entrega</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -628,17 +633,14 @@
                 var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
                 var statusClass = 'status-' + status;
                 var origemClass = 'origem-' + origem;
-                var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : tipo);
-                var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 SOLICITAÇÃO' : origem);
+                var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitação' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
+                var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
 
                 var btnReenviar = '';
                 if (status === 'timeout') {
                     var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
-                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar(\'' + envio.id + '\', \'' + numero + '\', \'' + safeMsg + '\', \'' + tipo + '\')">🔄 Reenviar</button>';
-                }
-
-                html += '<tr>' +
-                    '<td>' + data + '</td>' +
+                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
+                }     '<td>' + data + '</td>' +
                     '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
                     '<td>' + tipoLabel + '</td>' +
                     '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>' +
@@ -650,6 +652,7 @@
                 '</tr>';
             }
             tbody.innerHTML = html;
+            setupReenviarListeners();
         }
 
         function atualizarEstatisticas() {
@@ -706,8 +709,12 @@
                 });
         }
 
-        async function clickReenviar(logId, numero, mensagem, tipo) {
-            const btn = document.getElementById('btn-reenviar-' + logId);
+        async function clickReenviar(btn) {
+            const logId = btn.getAttribute('data-log-id');
+            const numero = btn.getAttribute('data-numero');
+            const mensagem = btn.getAttribute('data-mensagem');
+            const tipo = btn.getAttribute('data-tipo');
+
             if (!btn || btn.disabled) return;
             btn.disabled = true;
             btn.classList.add('reenviando');
@@ -735,7 +742,19 @@
             }
         }
 
-        async function reenviarWhatsApp(numero, mensagem) {
+        // Event delegation para botões de reenvio
+        function setupReenviarListeners() {
+            const tbody = document.getElementById('tbodyEnvios');
+            if (!tbody) return;
+            tbody.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-reenviar');
+                if (btn) {
+                    e.preventDefault();
+                    clickReenviar(btn);
+                }
+            });
+        }
+async function reenviarWhatsApp(numero, mensagem) {
             let numeroLimpo = numero.replace(/\D/g, '');
             if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
             try {
