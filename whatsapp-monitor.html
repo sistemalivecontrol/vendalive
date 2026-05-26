@@ -281,7 +281,7 @@
     </style>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📱%3C/text%3E%3C/svg%3E">
 
-    <!-- MENU FUNCTIONS NO HEAD - DEFINIDAS ANTES DO BODY -->
+    <!-- MENU FUNCTIONS NO HEAD -->
     <script>
     (function() {
         window.NAV_MENU_ITEMS = [
@@ -374,7 +374,6 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <!-- BOTÃO MENU HAMBURGER - SEM onclick inline, usa addEventListener -->
                 <button class="nav-menu-btn" id="navMenuBtn" aria-label="Abrir menu">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -508,32 +507,25 @@
     </nav>
 
     <script>
-        // ===== INICIALIZAÇÃO DO MENU (addEventListener) =====
+        // ===== INICIALIZAÇÃO DO MENU =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Botão hamburger
             var btn = document.getElementById('navMenuBtn');
             if (btn) btn.addEventListener('click', window.openMenu);
 
-            // Overlay
             var overlay = document.getElementById('navMenuOverlay');
             if (overlay) overlay.addEventListener('click', window.closeMenu);
 
-            // Botão fechar
             var closeBtn = document.getElementById('navMenuCloseBtn');
             if (closeBtn) closeBtn.addEventListener('click', window.closeMenu);
 
-            // Dashboard no menu
             var dash = document.getElementById('navMenuDashboard');
             if (dash) dash.addEventListener('click', function(e) { e.preventDefault(); window.navGoTo('dashboard.html'); });
 
-            // Logout no menu
             var logout = document.getElementById('navMenuLogout');
             if (logout) logout.addEventListener('click', window.navDoLogout);
 
-            // Escape para fechar
             document.addEventListener('keydown', function(e) { if (e.key === 'Escape') window.closeMenu(); });
 
-            // Renderizar links
             window.renderMenuLinks();
         });
 
@@ -622,23 +614,29 @@
                 tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><p>Nenhum envio encontrado</p></td></tr>';
                 return;
             }
-            tbody.innerHTML = enviosData.map(envio => {
-                const data = new Date(envio.criado_em).toLocaleString('pt-BR');
-                const tipo = envio.tipo_envio || envio.tipo || '-';
-                const status = envio.status_envio || envio.status || '-';
-                const origem = envio.origem || '-';
-                const numero = envio.numero_destino || envio.numero || '-';
-                const nome = envio.nome_destino || envio.destinatario || '-';
-                const mensagem = envio.mensagem || '-';
-                const valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
-                const statusClass = 'status-' + status;
-                const origemClass = 'origem-' + origem;
-                const tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : tipo);
-                const origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 SOLICITAÇÃO' : origem);
-                const btnReenviar = (status === 'timeout')
-                    ? '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar('' + envio.id + '', '' + numero + '', '' + mensagem.replace(/'/g, "\'") + '', '' + tipo + '')">🔄 Reenviar</button>'
-                    : '';
-                return '<tr>' +
+            var html = '';
+            for (var i = 0; i < enviosData.length; i++) {
+                var envio = enviosData[i];
+                var data = new Date(envio.criado_em).toLocaleString('pt-BR');
+                var tipo = envio.tipo_envio || envio.tipo || '-';
+                var status = envio.status_envio || envio.status || '-';
+                var origem = envio.origem || '-';
+                var numero = envio.numero_destino || envio.numero || '-';
+                var nome = envio.nome_destino || envio.destinatario || '-';
+                var mensagem = envio.mensagem || '-';
+                var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
+                var statusClass = 'status-' + status;
+                var origemClass = 'origem-' + origem;
+                var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : tipo);
+                var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 SOLICITAÇÃO' : origem);
+
+                var btnReenviar = '';
+                if (status === 'timeout') {
+                    var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar(' + envio.id + ', ' + numero + ', ' + safeMsg + ', ' + tipo + ')">🔄 Reenviar</button>';
+                }
+
+                html += '<tr>' +
                     '<td>' + data + '</td>' +
                     '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
                     '<td>' + tipoLabel + '</td>' +
@@ -649,7 +647,8 @@
                     '<td><strong>' + valor + '</strong></td>' +
                     '<td>' + btnReenviar + '</td>' +
                 '</tr>';
-            }).join('');
+            }
+            tbody.innerHTML = html;
         }
 
         function atualizarEstatisticas() {
