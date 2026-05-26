@@ -211,6 +211,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -1771,6 +1772,17 @@
 
             const envioResult = await enviarPixWhatsapp(cliente.whatsapp, mensagem);
 
+            // ✅ REGISTRAR LOG AUTOMÁTICO NA TABELA whatsapp_envios
+            if (typeof enviarPixWhatsAppComLog === 'function') {
+                await enviarPixWhatsAppComLog(
+                    cliente,
+                    resultado.link,
+                    envioResult,
+                    resultado.vendaId,
+                    cliente.total
+                );
+            }
+
             if (envioResult.sucesso) {
                 showStatus('✅ PIX Grátis enviado via WhatsApp com sucesso!', 'success');
             } else if (envioResult.erro === 'NÚMERO_INVÁLIDO') {
@@ -2315,6 +2327,7 @@
             }
         }
     </script>
+    <script src="whatsapp-envios-log.js"></script>
     <script src="navmenu.js"></script>
 </body>
 </html>
