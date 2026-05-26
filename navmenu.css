@@ -1,0 +1,136 @@
+/* ============================================================
+   NAVMENU - Estilos do Menu Hamburger
+   ============================================================ */
+
+/* Botão Hamburger */
+.nav-menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9998;
+    width: 44px;
+    height: 44px;
+    background: #0B193F;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+}
+.nav-menu-btn:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.nav-menu-btn svg { width: 24px; height: 24px; }
+
+/* Overlay */
+.nav-menu-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+.nav-menu-overlay.active { opacity: 1; visibility: visible; }
+
+/* Painel do Menu */
+.nav-menu-panel {
+    position: fixed;
+    top: 0; left: 0;
+    width: 280px;
+    height: 100vh;
+    background: white;
+    z-index: 9999;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+.nav-menu-panel.active { transform: translateX(0); }
+
+/* Header do Menu */
+.nav-menu-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #0B193F, #1a3a6e);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-menu-brand { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.2rem; }
+.nav-menu-brand svg { width: 40px; height: 40px; }
+.nav-menu-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+.nav-menu-close:hover { background: rgba(255,255,255,0.2); }
+
+/* Links */
+.nav-menu-links {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+.nav-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+.nav-menu-item:hover { background: #f5f5f5; border-left-color: #0B193F; }
+.nav-menu-item.active {
+    background: #E3F2FD;
+    border-left-color: #0B193F;
+    color: #0B193F;
+    font-weight: 600;
+}
+.nav-icon { font-size: 20px; min-width: 24px; text-align: center; }
+.nav-label { font-size: 14px; }
+.nav-menu-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+/* Footer */
+.nav-menu-footer {
+    padding: 15px;
+    border-top: 1px solid #eee;
+}
+.nav-menu-separator {
+    height: 1px;
+    background: #eee;
+    margin: 10px 0;
+}
+
+/* Body quando menu aberto */
+body.nav-menu-open { overflow: hidden; }
+
+/* Ajuste para mobile */
+@media (max-width: 768px) {
+    .nav-menu-panel { width: 260px; }
+    .nav-menu-btn { top: 10px; left: 10px; width: 40px; height: 40px; }
+}
