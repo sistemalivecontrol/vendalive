@@ -1,11 +1,12 @@
 
 // ============================================================
-// WHATSAPP ENVIOS - Função de Log Automático v2
-// Registra na tabela whatsapp_envios automaticamente
+// WHATSAPP ENVIOS - Função de Log Automático v4
+// Compatível com schema misto da tabela
 // ============================================================
 
 /**
  * Registra um envio de WhatsApp na tabela whatsapp_envios
+ * Envia apenas campos que existem na tabela (schema misto)
  */
 async function registrarEnvioWhatsApp(params) {
     if (!window.supabaseClient) {
@@ -19,23 +20,44 @@ async function registrarEnvioWhatsApp(params) {
         return null;
     }
 
+    // Schema da tabela (colunas que existem)
+    // id, cliente_sistema_id, numero, destinatario, mensagem, status, origem, 
+    // enviado_em, metadata, evolution_message_id, created_at,
+    // tipo_envio, numero_destino, nome_destino, status_envio, resposta_api, 
+    // erro_envio, referencia_id, referencia_tipo, codigo_rastreio, valor,
+    // criado_em, atualizado_em
+
+    const agora = new Date().toISOString();
+
+    // Construir objeto apenas com campos existentes
     const dados = {
+        // Campos obrigatórios (NO)
         cliente_sistema_id: clienteSistemaId,
-        tipo_envio: params.tipo_envio,
-        origem: params.origem,
-        numero_destino: params.numero_destino,
-        nome_destino: params.nome_destino || null,
-        mensagem: params.mensagem ? params.mensagem.substring(0, 2000) : null,
-        status_envio: params.status_envio,
-        resposta_api: params.resposta_api ? JSON.stringify(params.resposta_api).substring(0, 5000) : null,
-        erro_envio: params.erro_envio || null,
-        referencia_id: params.referencia_id || null,
-        referencia_tipo: params.referencia_tipo || null,
-        codigo_rastreio: params.codigo_rastreio || null,
-        valor: params.valor || null,
-        criado_em: new Date().toISOString(),
-        atualizado_em: new Date().toISOString()
+        criado_em: agora,
+        atualizado_em: agora
     };
+
+    // Campos opcionais (YES) - só adicionar se tiver valor
+    if (params.tipo_envio) dados.tipo_envio = params.tipo_envio;
+    if (params.origem) dados.origem = params.origem;
+    if (params.numero_destino) dados.numero_destino = params.numero_destino;
+    if (params.nome_destino) dados.nome_destino = params.nome_destino;
+    if (params.mensagem) dados.mensagem = params.mensagem.substring(0, 2000);
+    if (params.status_envio) dados.status_envio = params.status_envio;
+    if (params.resposta_api) dados.resposta_api = params.resposta_api;
+    if (params.erro_envio) dados.erro_envio = params.erro_envio;
+    if (params.referencia_id) dados.referencia_id = params.referencia_id;
+    if (params.referencia_tipo) dados.referencia_tipo = params.referencia_tipo;
+    if (params.codigo_rastreio) dados.codigo_rastreio = params.codigo_rastreio;
+    if (params.valor !== null && params.valor !== undefined) dados.valor = params.valor;
+
+    // Campos antigos (para compatibilidade)
+    if (params.numero_destino) dados.numero = params.numero_destino;
+    if (params.nome_destino) dados.destinatario = params.nome_destino;
+    if (params.status_envio) dados.status = params.status_envio;
+    dados.enviado_em = agora;
+    if (params.resposta_api) dados.metadata = params.resposta_api;
+    dados.created_at = agora;
 
     try {
         const { data, error } = await window.supabaseClient
@@ -47,12 +69,8 @@ async function registrarEnvioWhatsApp(params) {
         if (error) {
             console.error('[WHATSAPP_LOG] Erro ao registrar:', error);
 
-            // Se for erro de RLS (403), mostrar instrução clara
-            if (error.code === '42501' || error.message.includes('row-level security')) {
-                console.error('%c[WHATSAPP_LOG] ERRO RLS DETECTADO!', 'color: red; font-size: 14px; font-weight: bold;');
-                console.error('%cA tabela whatsapp_envios precisa de políticas RLS.', 'color: orange;');
-                console.error('%cExecute no SQL Editor do Supabase:', 'color: orange;');
-                console.error('%cALTER TABLE public.whatsapp_envios ENABLE ROW LEVEL SECURITY;', 'color: cyan;');
+            if (error.code === '42501') {
+                console.error('%c[WHATSAPP_LOG] ERRO RLS! Execute no SQL Editor:', 'color: red; font-weight: bold;');
                 console.error('%cCREATE POLICY "Allow all authenticated" ON public.whatsapp_envios FOR ALL TO authenticated USING (true) WITH CHECK (true);', 'color: cyan;');
             }
 
