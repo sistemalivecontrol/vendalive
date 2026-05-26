@@ -147,66 +147,85 @@
         .view-total-valor { font-size: 1.8rem; font-weight: 700; }
         .view-footer { padding: 20px 30px; border-top: 2px solid #f0f0f0; display: flex; justify-content: flex-end; background: #fafafa; border-radius: 0 0 24px 24px; }
         @media (max-width: 768px) { .form-grid, .view-grid { grid-template-columns: 1fr; } .item-grid { grid-template-columns: 1fr; gap: 12px; } .header { flex-direction: column; text-align: center; gap: 15px; } .header-left { flex-direction: column; gap: 15px; } .acoes { flex-direction: column; } .modal-content, .view-content { max-height: 95vh; border-radius: 20px; } .view-grid { grid-template-columns: 1fr; } }
+        .btn-gerar-relatorio { background: #0B193F; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; text-decoration: none; }
+        .btn-gerar-relatorio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); }
 
-        /* ===== BOTÕES ARREDONDADOS PADRÃO ===== */
+        /* ===== BOTÕES ARREDONDADOS PADRÃO DO SISTEMA ===== */
         .btn-buscar {
-            background: #0B193F;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 12px;
+            background: #0B193F !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 30px !important;
+            border-radius: 12px !important;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
             transition: all 0.3s;
             height: fit-content;
+            outline: none;
         }
         .btn-buscar:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(11, 25, 63, 0.4);
         }
         .btn-novo {
-            background: #0B193F;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 12px;
+            background: #0B193F !important;
+            color: white !important;
+            border: none !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            outline: none;
         }
         .btn-novo:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(11, 25, 63, 0.4);
         }
         .btn-icon {
             width: 40px;
             height: 40px;
-            border-radius: 10px;
-            border: none;
+            border-radius: 10px !important;
+            border: none !important;
             cursor: pointer;
             font-size: 1.2rem;
             transition: all 0.3s;
-            display: flex;
+            display: inline-flex !important;
             align-items: center;
             justify-content: center;
+            padding: 0 !important;
+            outline: none;
         }
         .btn-editar {
-            background: #0B193F;
-            color: white;
+            background: #0B193F !important;
+            color: white !important;
+        }
+        .btn-editar:hover {
+            background: #1a3a6e !important;
+            transform: scale(1.1);
         }
         .btn-excluir {
-            background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
-            color: white;
+            background: linear-gradient(135deg, #FF6B6B, #EE5A6F) !important;
+            color: white !important;
         }
-        .btn-icon:hover { transform: scale(1.1); }
-        .acoes { display: flex; gap: 8px; }
-        .btn-gerar-relatorio { background: #0B193F; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; text-decoration: none; }
-        .btn-gerar-relatorio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); }
+        .btn-excluir:hover {
+            transform: scale(1.1);
+        }
+        .acoes {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        /* Override any old bootstrap-like button styles */
+        .btn, .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-sm {
+            border-radius: 12px !important;
+        }
+
     </style>
 <base target="_blank">
 <base target="_blank">
@@ -327,7 +346,7 @@
         <div class="view-content">
             <div class="view-header"><h2>👁️ Detalhes da Venda</h2><button class="btn-fechar-header" onclick="fecharModalView()">×</button></div>
             <div class="view-body" id="viewBody"></div>
-            <div class="view-footer"><button class="btn-salvar" onclick="fecharModalView()">Fechar</button></div>
+            <div class="view-footer"><button class="btn-salvar" onclick="fecharModalView()">✓ Fechar</button></div>
         </div>
     </div>
 
