@@ -212,6 +212,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -1797,9 +1798,7 @@
         // ============================================
         // EVOLUTION API - ENVIO DE WHATSAPP PARA PIX
         // ============================================
-        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
-        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
-        const EVOLUTION_INSTANCE = 'pingodegente';
+        // Variáveis EVOLUTION já declaradas em whatsapp-envios-log.js
 
         async function enviarPixWhatsapp(numero, texto) {
             let numeroLimpo = numero.toString().replace(/\D/g, '');
