@@ -184,6 +184,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -466,15 +467,31 @@
         const EVOLUTION_INSTANCE = 'pingodegente';
 
         // Função para enviar mensagem WhatsApp
-        async function enviarWhatsApp(numero, texto) {
+        async function enviarWhatsApp(numero, texto, opcoes) {
+            opcoes = opcoes || {};
             let numeroLimpo = numero.replace(/\D/g, '');
             if (!numeroLimpo.startsWith('55')) {
                 numeroLimpo = '55' + numeroLimpo;
             }
-            
+
+            // Gravar log inicial (pendente)
+            const logId = await gravarLogWhatsApp({
+                numero: numeroLimpo,
+                destinatario: opcoes.destinatario || null,
+                mensagem: texto,
+                status: 'pendente',
+                origem: opcoes.origem || 'solicitacao-entrega',
+                tipo_envio: opcoes.tipo_envio || 'notificacao',
+                referencia_id: opcoes.referencia_id || null,
+                referencia_tipo: opcoes.referencia_tipo || null,
+                codigo_rastreio: opcoes.codigo_rastreio || null,
+                valor: opcoes.valor || null,
+                metadata: opcoes.metadata || {}
+            });
+
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
 
                 const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
                     method: 'POST',
@@ -489,21 +506,121 @@
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                
+
                 const data = await response.json();
                 console.log('✅ WhatsApp enviado:', data);
-                return { sucesso: true, dados: data };
+
+                // Atualizar log para enviado
+                if (logId) {
+                    await atualizarLogWhatsApp(logId, {
+                        status: 'enviado',
+                        status_envio: 'enviado',
+                        resposta_api: data,
+                        evolution_message_id: data?.key?.id || null
+                    });
+                }
+
+                return { sucesso: true, dados: data, log_id: logId };
             } catch (erro) {
                 if (erro.name === 'AbortError') {
                     console.log('⏱️ Timeout ao enviar WhatsApp (8s). Considerando como enviado...');
-                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' } };
+                    if (logId) {
+                        await atualizarLogWhatsApp(logId, {
+                            status: 'enviado',
+                            status_envio: 'timeout',
+                            resposta_api: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' }
+                        });
+                    }
+                    return { sucesso: true, dados: { status: 'TIMEOUT', message: 'Request timeout but message may have been sent' }, log_id: logId };
                 }
                 console.error('❌ Erro ao enviar WhatsApp:', erro);
-                return { sucesso: false, erro: erro.message };
+                if (logId) {
+                    await atualizarLogWhatsApp(logId, {
+                        status: 'erro',
+                        status_envio: 'erro',
+                        erro_envio: erro.message || 'Erro desconhecido'
+                    });
+                }
+                return { sucesso: false, erro: erro.message, log_id: logId };
             }
         }
 
-        // Mensagem 1: Solicitação Recebida
+        // Função para gravar log no Supabase
+        async function gravarLogWhatsApp(dados) {
+            if (!supabaseClient || !clienteIdSistema) {
+                console.warn('[LOG-WA] Supabase não disponível, log não gravado');
+                return null;
+            }
+            try {
+                const payload = {
+                    cliente_sistema_id: clienteIdSistema,
+                    numero: dados.numero || '',
+                    numero_destino: dados.numero || '',
+                    destinatario: dados.destinatario || null,
+                    nome_destino: dados.destinatario || null,
+                    mensagem: dados.mensagem || null,
+                    status: dados.status || 'pendente',
+                    status_envio: dados.status_envio || dados.status || 'pendente',
+                    origem: dados.origem || 'solicitacao-entrega',
+                    tipo_envio: dados.tipo_envio || 'notificacao',
+                    referencia_id: dados.referencia_id || null,
+                    referencia_tipo: dados.referencia_tipo || null,
+                    codigo_rastreio: dados.codigo_rastreio || null,
+                    valor: dados.valor || null,
+                    metadata: dados.metadata || {},
+                    enviado_em: new Date().toISOString(),
+                    criado_em: new Date().toISOString(),
+                    atualizado_em: new Date().toISOString()
+                };
+
+                const { data, error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .insert([payload])
+                    .select('id')
+                    .single();
+
+                if (error) {
+                    console.error('[LOG-WA] Erro ao gravar log:', error);
+                    return null;
+                }
+
+                console.log('[LOG-WA] Log gravado, ID:', data.id);
+                return data.id;
+            } catch (e) {
+                console.error('[LOG-WA] Exceção ao gravar log:', e);
+                return null;
+            }
+        }
+
+        // Função para atualizar log existente
+        async function atualizarLogWhatsApp(logId, dados) {
+            if (!supabaseClient || !logId) return;
+            try {
+                const updateData = {
+                    atualizado_em: new Date().toISOString()
+                };
+                if (dados.status) updateData.status = dados.status;
+                if (dados.status_envio) updateData.status_envio = dados.status_envio;
+                if (dados.resposta_api) updateData.resposta_api = dados.resposta_api;
+                if (dados.erro_envio) updateData.erro_envio = dados.erro_envio;
+                if (dados.evolution_message_id) updateData.evolution_message_id = dados.evolution_message_id;
+                if (dados.enviado_em) updateData.enviado_em = dados.enviado_em;
+
+                const { error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .update(updateData)
+                    .eq('id', logId);
+
+                if (error) {
+                    console.error('[LOG-WA] Erro ao atualizar log:', error);
+                } else {
+                    console.log('[LOG-WA] Log atualizado, ID:', logId);
+                }
+            } catch (e) {
+                console.error('[LOG-WA] Exceção ao atualizar log:', e);
+            }
+        }
+// Mensagem 1: Solicitação Recebida
         async function enviarConfirmacaoSolicitacao(dados) {
             const texto = `Olá *${dados.nome}*! 👋
 
@@ -516,12 +633,25 @@
 ⏳ Agora é só aguardar o recebimento do número do rastreamento!
 
 _Pingo de Gente - LiveControl_`;
-            
-            return await enviarWhatsApp(dados.whatsapp, texto);
+
+            return await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_solicitacao',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: dados.valorFrete || null,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    regiao: dados.regiao || null
+                }
+            });
         }
 
         // Mensagem 2: Pagamento Confirmado
-        async function enviarConfirmacaoPagamento(dados) {
+async function enviarConfirmacaoPagamento(dados) {
             const texto = `Olá *${dados.nome}*! 🎉
 
 ✅ *Pagamento Confirmado!*
@@ -535,11 +665,24 @@ _Pingo de Gente - LiveControl_`;
 Acompanhe o status pelo nosso sistema.
 
 _Pingo de Gente - LiveControl_`;
-            
-            return await enviarWhatsApp(dados.whatsapp, texto);
-        }
 
-        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+            return await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_pagamento',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: dados.valorFrete || null,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    regiao: dados.regiao || null,
+                    pagamento_confirmado: true
+                }
+            });
+        }
+const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
         emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
@@ -1880,7 +2023,9 @@ _Pingo de Gente - LiveControl_`;
                         bairro: bairro,
                         cidade: cidadeForm,
                         valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
                     }).then(() => {
                         console.log('✅ WhatsApp de confirmação enviado!');
                     }).catch((err) => {
@@ -1899,7 +2044,9 @@ _Pingo de Gente - LiveControl_`;
                         bairro: bairro,
                         cidade: cidadeForm,
                         valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
                     }).then(() => {
                         console.log('✅ WhatsApp de pagamento confirmado enviado!');
                     }).catch((err) => {
