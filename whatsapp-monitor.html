@@ -369,6 +369,7 @@
     })();
     </script>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -633,7 +634,7 @@
                 var btnReenviar = '';
                 if (status === 'timeout') {
                     var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
-                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar(' + envio.id + ', ' + numero + ', ' + safeMsg + ', ' + tipo + ')">🔄 Reenviar</button>';
+                    btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" onclick="clickReenviar(\'' + envio.id + '\', \'' + numero + '\', \'' + safeMsg + '\', \'' + tipo + '\')">🔄 Reenviar</button>';
                 }
 
                 html += '<tr>' +
