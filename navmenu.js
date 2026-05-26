@@ -1,37 +1,29 @@
 /**
  * ============================================================
  * NAVMENU - Sistema de Navegação para VendaLive
- * Injeta menu hamburger em todas as páginas internas
  * ============================================================
- * Uso: Incluir <link rel="stylesheet" href="navmenu.css"> no <head>
- *      e <script src="navmenu.js"></script> antes do </body>
  */
 
 (function () {
     'use strict';
 
-    // Prevenir inicialização dupla
     if (window.__NAVMENU_INITIALIZED) return;
     window.__NAVMENU_INITIALIZED = true;
 
-    // ========================================
-    // CONFIGURAÇÃO
-    // ========================================
     const MENU_ITEMS = [
-        { url: 'dashboard.html', icon: '📊', label: 'Dashboard', section: 'main' },
-        { url: 'live.html', icon: '🎥', label: 'Lives de Vendas', section: 'main' },
-        { url: 'clientes.html', icon: '👥', label: 'Clientes', section: 'main' },
-        { url: 'vendas.html', icon: '🛒', label: 'Vendas', section: 'main' },
-        { url: 'enderecos.html', icon: '📍', label: 'Endereços', section: 'main' },
-        { url: 'pix.automatizado.html', icon: '💳', label: 'Pix Automação', section: 'main' },
-        { url: 'pix.manual.html', icon: '✅', label: 'Pix Manual', section: 'main', badgeId: 'nav-pix-badge' },
-        { url: 'coblive.html', icon: '💰', label: 'Cobrança de Lives', section: 'main' },
-        { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento', section: 'main' },
-        { url: 'solicitacoes.html', icon: '📝', label: 'Formulário de Entregas', section: 'main' },
-        { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp', section: 'main' },
+        { url: 'dashboard.html', icon: '📊', label: 'Dashboard' },
+        { url: 'live.html', icon: '🎥', label: 'Lives de Vendas' },
+        { url: 'clientes.html', icon: '👥', label: 'Clientes' },
+        { url: 'vendas.html', icon: '🛒', label: 'Vendas' },
+        { url: 'enderecos.html', icon: '📍', label: 'Endereços' },
+        { url: 'pix.automatizado.html', icon: '💳', label: 'Pix Automação' },
+        { url: 'pix.manual.html', icon: '✅', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
+        { url: 'coblive.html', icon: '💰', label: 'Cobrança de Lives' },
+        { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento' },
+        { url: 'solicitacoes.html', icon: '📝', label: 'Formulário de Entregas' },
+        { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' },
     ];
 
-    // Mapeamento de nomes de arquivo para facilitar detecção
     const PAGE_ALIASES = {
         'dashboard.html': ['dashboard.html', 'index.html', 'index2.html'],
         'live.html': ['live.html'],
@@ -46,51 +38,42 @@
         'whatsapp-monitor.html': ['whatsapp-monitor.html'],
     };
 
-    // ========================================
-    // DETECTAR PÁGINA ATUAL
-    // ========================================
     function getCurrentPageFile() {
         const path = window.location.pathname;
-        const filename = path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
-        return filename;
+        return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
     }
 
     function isCurrentPage(itemUrl) {
         const current = getCurrentPageFile();
         const aliases = PAGE_ALIASES[itemUrl] || [itemUrl];
         return aliases.some(function (a) {
-            return current === a || current === a + '?v=' + getVersionFromUrl();
+            return current === a || current.indexOf(a + '?') === 0;
         });
     }
 
-    function getVersionFromUrl() {
-        const match = window.location.search.match(/[?&]v=([^&]+)/);
-        return match ? match[1] : null;
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // ========================================
     // CRIAR ELEMENTOS
     // ========================================
 
-    // 1. Overlay
     function createOverlay() {
         var div = document.createElement('div');
         div.className = 'nav-menu-overlay';
         div.id = 'navMenuOverlay';
-        div.setAttribute('aria-hidden', 'true');
         div.addEventListener('click', closeMenu);
         return div;
     }
 
-    // 2. Painel do Menu
     function createMenuPanel() {
         var panel = document.createElement('nav');
         panel.className = 'nav-menu-panel';
         panel.id = 'navMenuPanel';
-        panel.setAttribute('role', 'navigation');
-        panel.setAttribute('aria-label', 'Menu principal');
 
-        // Header
         var header = document.createElement('div');
         header.className = 'nav-menu-header';
         header.innerHTML =
@@ -104,20 +87,13 @@
             '</svg>' +
             '<span>Menu</span>' +
             '</div>' +
-            '<button class="nav-menu-close" onclick="window.navMenuClose()" aria-label="Fechar menu">&times;</button>';
+            '<button class="nav-menu-close" onclick="window.navMenuClose()">&times;</button>';
         panel.appendChild(header);
 
-        // Links container
         var linksContainer = document.createElement('div');
         linksContainer.className = 'nav-menu-links';
 
-        var currentSection = '';
-
         MENU_ITEMS.forEach(function (item) {
-            if (item.section && item.section !== currentSection) {
-                currentSection = item.section;
-            }
-
             var isActive = isCurrentPage(item.url);
             var activeClass = isActive ? ' active' : '';
             var badgeHtml = item.badgeId
@@ -149,7 +125,6 @@
 
         panel.appendChild(linksContainer);
 
-        // Footer
         var footer = document.createElement('div');
         footer.className = 'nav-menu-footer';
         footer.innerHTML =
@@ -167,14 +142,11 @@
         return panel;
     }
 
-    // 3. Botão Hamburger
     function createMenuButton() {
         var btn = document.createElement('button');
         btn.className = 'nav-menu-btn';
         btn.id = 'navMenuBtn';
-        btn.setAttribute('aria-label', 'Abrir menu de navegação');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.setAttribute('aria-controls', 'navMenuPanel');
+        btn.setAttribute('aria-label', 'Abrir menu');
         btn.innerHTML =
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
             '<line x1="3" y1="6" x2="21" y2="6"></line>' +
@@ -186,40 +158,25 @@
     }
 
     // ========================================
-    // ESCAPE HTML
-    // ========================================
-    function escapeHtml(text) {
-        var div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // ========================================
     // CONTROLE DO MENU
     // ========================================
     function openMenu() {
         var overlay = document.getElementById('navMenuOverlay');
         var panel = document.getElementById('navMenuPanel');
-        var btn = document.getElementById('navMenuBtn');
         if (overlay && panel) {
             overlay.classList.add('active');
             panel.classList.add('active');
             document.body.classList.add('nav-menu-open');
-            if (btn) btn.setAttribute('aria-expanded', 'true');
-            var closeBtn = panel.querySelector('.nav-menu-close');
-            if (closeBtn) closeBtn.focus();
         }
     }
 
     function closeMenu() {
         var overlay = document.getElementById('navMenuOverlay');
         var panel = document.getElementById('navMenuPanel');
-        var btn = document.getElementById('navMenuBtn');
         if (overlay && panel) {
             overlay.classList.remove('active');
             panel.classList.remove('active');
             document.body.classList.remove('nav-menu-open');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
         }
     }
 
@@ -230,35 +187,36 @@
         }, 280);
     }
 
-    // ========================================
-    // TECLADO
-    // ========================================
     function handleKeyDown(e) {
-        if (e.key === 'Escape') {
-            closeMenu();
-        }
+        if (e.key === 'Escape') closeMenu();
     }
 
     // ========================================
-    // INSERIR BOTÃO NO HEADER
+    // INSERIR BOTÃO NO HEADER (CORRIGIDO)
     // ========================================
     function insertMenuButton() {
         var btn = createMenuButton();
 
+        // Estratégia 1: Inserir no .header-left (no início)
         var headerLeft = document.querySelector('.header-left');
         if (headerLeft) {
             headerLeft.insertBefore(btn, headerLeft.firstChild);
+            console.log('[NAVMENU] Botão inserido em .header-left');
             return true;
         }
 
+        // Estratégia 2: Inserir no .header (no início)
         var header = document.querySelector('.header');
         if (header) {
             header.insertBefore(btn, header.firstChild);
+            console.log('[NAVMENU] Botão inserido em .header');
             return true;
         }
 
-        btn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:9997;background:#0B193F;color:white;border-radius:8px;padding:8px;box-shadow:0 2px 10px rgba(0,0,0,0.2);';
+        // Estratégia 3: Adicionar como fixed no body (fallback)
+        btn.style.cssText = 'position:fixed !important;top:15px !important;left:15px !important;z-index:9998 !important;width:44px !important;height:44px !important;background:#0B193F !important;color:white !important;border:none !important;border-radius:10px !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 2px 10px rgba(0,0,0,0.2) !important;';
         document.body.appendChild(btn);
+        console.log('[NAVMENU] Botão inserido como fixed no body');
         return true;
     }
 
@@ -267,8 +225,11 @@
     // ========================================
     function init() {
         if (document.getElementById('navMenuOverlay')) {
+            console.log('[NAVMENU] Já inicializado, pulando...');
             return;
         }
+
+        console.log('[NAVMENU] Inicializando menu...');
 
         insertMenuButton();
         document.body.appendChild(createOverlay());
@@ -295,11 +256,9 @@
         };
 
         syncPixBadge();
+        console.log('[NAVMENU] Menu inicializado com sucesso!');
     }
 
-    // ========================================
-    // SINCRONIZAR BADGE PIX
-    // ========================================
     function syncPixBadge() {
         var observer = new MutationObserver(function () {
             updateNavPixBadge();
