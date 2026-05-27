@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -362,10 +363,7 @@
       .metric-card .value { font-size: 16px; }
     }
   </style>
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
+    <link rel="stylesheet" href="navmenu.css">
 </head>
 <body>
   <!-- Mobile Menu Overlay -->
@@ -407,7 +405,10 @@
       <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
     </a>
     <a href="configuracao-pagamento.html" class="mobile-menu-item" onclick="return goToMobile('configuracao-pagamento.html')">
-      <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+      <span class="icon">&#128178;</span><span>Config. Pagamento</span>
+    </a>
+    <a href="configuracao.html" class="mobile-menu-item" onclick="return goToMobile('configuracao.html')">
+      <span class="icon">&#9881;</span><span>Configuracoes</span>
     </a>
     <a href="solicitacoes.html" id="mobile-link-solicitacoes" class="mobile-menu-item">
       <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
@@ -513,7 +514,10 @@
           <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
         </a>
         <a href="configuracao-pagamento.html" class="menu-item" onclick="return goTo('configuracao-pagamento.html')">
-          <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+          <span class="icon">&#128178;</span><span>Config. Pagamento</span>
+        </a>
+        <a href="configuracao.html" class="menu-item" onclick="return goTo('configuracao.html')">
+          <span class="icon">&#9881;</span><span>Configuracoes</span>
         </a>
         <a href="solicitacoes.html" id="link-solicitacoes" class="menu-item">
           <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
@@ -662,9 +666,13 @@
 
     async function logout() {
       try { await supabaseClient.auth.signOut(); } catch (err) {}
+      localStorage.removeItem('usuarioLogado');
+      localStorage.removeItem('clienteId');
+      localStorage.removeItem('nivelAcesso');
       localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('logoutTimestamp');
       sessionStorage.clear();
-      window.location.href = 'login.html';
+      window.location.replace('login.html');
     }
 
     function mostrarErro(msg) {
@@ -876,5 +884,6 @@
 
     document.addEventListener('DOMContentLoaded', iniciarApp);
   </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- ANTI-CACHE META TAGS -->
@@ -12,7 +13,7 @@
     <!-- VERSION.JS - SEMPRE PRIMEIRO! -->
     <script src="version.js?v=2026-05-04-v2"></script>
 
-    <title>⚙️ Configurações - VendaLive</title>
+    <title>Configuracoes do Sistema - VendaLive</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="auth.js"></script>
@@ -273,7 +274,7 @@
             .header-left { flex-direction: column; gap: 15px; }
         }
     </style>
-<base target="_blank">
+    <link rel="stylesheet" href="navmenu.css">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
@@ -400,6 +401,7 @@
         // ============================================
         // VARIÁVEIS GLOBAIS
         // ============================================
+        function v(url) { return url; }
         let supabaseClient = null;
         let usuarioAtual = null;
         let clienteSistemaId = null;
@@ -751,5 +753,6 @@
             e.target.value = value;
         });
     </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>

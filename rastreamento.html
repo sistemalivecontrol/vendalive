@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
     <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Solicitações de Entregas</title>
+    <title>Rastreamento - VendaLive</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="./js/auth.js"></script>
+    <script src="./js/config-system.js"></script>
+    <link rel="stylesheet" href="./navmenu.css">
     <script src="./navmenu.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -290,8 +295,6 @@
         .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 </style>
     
-<base target="_blank">
-<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -1918,9 +1921,13 @@ Qualquer dúvida, estou por aqui! 💕
 // EVOLUTION API - ENVIO DE WHATSAPP
 // ============================================
         // Usar window.* para evitar redeclaração com whatsapp-envios-log.js
-        window.EVOLUTION_API_URL = window.EVOLUTION_API_URL || 'https://evolution-api-o12a.onrender.com';
-        window.EVOLUTION_API_KEY = window.EVOLUTION_API_KEY || '8117861c85b102b1fafd496132bba462';
-        window.EVOLUTION_INSTANCE = window.EVOLUTION_INSTANCE || 'pingodegente';
+        // Carregar configuracoes do config-system.js
+        var cfgUrl = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_api_url')) || '';
+        var cfgKey = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_api_key')) || '';
+        var cfgInst = (window.VendaLiveConfig && window.VendaLiveConfig.get('evolution_instance')) || '';
+        window.EVOLUTION_API_URL = cfgUrl || window.EVOLUTION_API_URL || 'https://evolution-api-o12a.onrender.com';
+        window.EVOLUTION_API_KEY = cfgKey || window.EVOLUTION_API_KEY || '';
+        window.EVOLUTION_INSTANCE = cfgInst || window.EVOLUTION_INSTANCE || 'pingodegente';
 
         async function enviarWhatsApp(numero, texto) {
             let numeroLimpo = numero.replace(/\D/g, '');

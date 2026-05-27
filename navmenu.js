@@ -17,7 +17,8 @@
         { url: 'enderecos.html', icon: '\uD83D\uDCCD', label: 'Enderecos' },
         { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Solicitacoes de Entregas' },
         { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' },
-        { url: 'configuracao-pagamento.html', icon: '\u2699\uFE0F', label: 'Config. Pagamento' },
+        { url: 'configuracao-pagamento.html', icon: '\uD83D\uDCB3', label: 'Config. Pagamento' },
+        { url: 'configuracao.html', icon: '\u2699\uFE0F', label: 'Configuracoes' },
         { url: 'solicitacoes.html', icon: '\uD83D\uDCDD', label: 'Formulario de Entregas' }
     ];
 

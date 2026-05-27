@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
+<script>
+(function(){
+    'use strict';
+    const SESSAO_KEY='usuarioLogado';
+    const LOGIN_PAGE='login.html';
+    const path=window.location.pathname.toLowerCase();
+    const href=window.location.href.toLowerCase();
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
+    function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
+    const v=verificarSessaoSincrona();if(v&&!ehPaginaPublica()){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){})}}
+})();
+</script>
+<!-- ================================================ -->
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuracoes - VendaLive</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="navmenu.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;line-height:1.6}
+        .container{max-width:1400px;margin:0 auto;padding:24px}
+
+        /* Header */
+        .header{background:#0a1628;padding:20px 24px;border-radius:16px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+        .header-left{display:flex;align-items:center;gap:16px;flex:1}
+        .header-center h1{color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;margin:0}
+        .header-center h1 span{color:#5b9bd5}
+        .user-info{display:flex;align-items:center;gap:10px;color:#fff;font-size:14px;font-weight:500}
+        .btn-voltar{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+        .btn-voltar:hover{background:rgba(255,255,255,.2)}
+        .btn-voltar{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-voltar:hover{background:rgba(255,255,255,.2)}
+
+        /* Abas */
+        .tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;background:#fff;padding:6px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        .tab{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;color:#64748b;cursor:pointer;transition:all .2s;border:none;background:none}
+        .tab:hover{color:#0a1628;background:#f1f5f9}
+        .tab.active{background:#0a1628;color:#fff}
+
+        /* Cards */
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        .card{background:#fff;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid #e2e8f0}
+        .card-title{font-size:18px;font-weight:700;color:#0a1628;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+        .card-desc{font-size:13px;color:#64748b;margin-bottom:20px}
+
+        /* Form */
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:6px}
+        .form-group label .optional{font-weight:400;color:#94a3b8}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#0f172a;transition:all .2s;font-family:inherit}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#0a1628;box-shadow:0 0 0 3px rgba(10,22,40,.08)}
+        .form-group input::placeholder{color:#94a3b8}
+        .form-group small{display:block;margin-top:5px;font-size:12px;color:#94a3b8}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+        /* Botoes */
+        .btn-primary{background:#0a1628;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+        .btn-primary:hover{background:#1a2d4a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+        .btn-secondary{background:#f1f5f9;color:#334155;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;border:1.5px solid #e2e8f0;cursor:pointer;transition:all .2s}
+        .btn-secondary:hover{background:#e2e8f0}
+        .btn-danger{background:#fee2e2;color:#dc2626;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;border:1.5px solid #fecaca;cursor:pointer;transition:all .2s}
+        .btn-danger:hover{background:#fecaca}
+        .actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+
+        /* Status */
+        .status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;margin-top:12px}
+        .status-ok{background:#dcfce7;color:#166534}
+        .status-error{background:#fee2e2;color:#dc2626}
+        .status-info{background:#dbeafe;color:#1e40af}
+        .status-warn{background:#fef3c7;color:#92400e}
+
+        /* Info box */
+        .info-box{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:20px}
+        .info-box h4{font-size:14px;font-weight:600;color:#0a1628;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+        .info-box ul{margin:0;padding-left:18px;font-size:13px;color:#64748b}
+        .info-box li{margin-bottom:4px}
+        .info-box code{background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;color:#0a1628}
+
+        /* Divider */
+        .divider{height:1px;background:#e2e8f0;margin:24px 0}
+
+        /* Password toggle */
+        .password-wrapper{position:relative}
+        .password-wrapper input{padding-right:70px}
+        .toggle-pw{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:500}
+        .toggle-pw:hover{color:#0a1628;background:#f1f5f9}
+
+        /* Menu hamburger visivel no header escuro */
+        .nav-menu-btn{color:#fff!important}
+        .nav-menu-btn:hover{background:rgba(255,255,255,.15)!important}
+
+        @media(max-width:640px){
+            .form-row{grid-template-columns:1fr}
+            .container{padding:16px}
+            .card{padding:20px}
+            .header-left{flex-direction:column;gap:10px}
+            .header-center h1{font-size:18px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="location.href='dashboard.html'">&#8592; Voltar</button>
+                <div class="header-center">
+                    <h1>&#9881; <span>Configuracoes</span> do Sistema</h1>
+                </div>
+            </div>
+            <div class="user-info" id="userInfo">&#128100; <span id="userEmail">Carregando...</span></div>
+        </div>
+
+        <!-- ABAS -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('whatsapp')">&#128172; WhatsApp / Evolution</button>
+            <button class="tab" onclick="switchTab('loja')">&#127970; Dados da Loja</button>
+            <button class="tab" onclick="switchTab('taxas')">&#128178; Taxas Padrao</button>
+            <button class="tab" onclick="switchTab('webhook')">&#128279; Webhooks</button>
+            <button class="tab" onclick="switchTab('avancado')">&#128295; Avancado</button>
+        </div>
+
+        <!-- ABA: WHATSAPP / EVOLUTION -->
+        <div class="tab-content active" id="tab-whatsapp">
+            <div class="card">
+                <div class="card-title">&#128172; Evolution API - WhatsApp</div>
+                <div class="card-desc">Configure os dados da Evolution API para envio de mensagens via WhatsApp</div>
+
+                <div class="info-box">
+                    <h4>&#128161; Como obter os dados da Evolution API</h4>
+                    <ul>
+                        <li>Acesse o painel da sua Evolution API</li>
+                        <li>O <strong>URL da API</strong> e o endereco do servidor (ex: <code>https://evolution-api-o12a.onrender.com</code>)</li>
+                        <li>O <strong>Nome da Instancia</strong> e o nome que voce deu a instancia do WhatsApp</li>
+                        <li>A <strong>API Key</strong> esta nas configuracoes do manager da API</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label for="evoUrl">URL da Evolution API</label>
+                    <input type="url" id="evoUrl" placeholder="https://evolution-api-o12a.onrender.com">
+                    <small>Endereco do servidor Evolution API</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="evoInstance">Nome da Instancia</label>
+                        <input type="text" id="evoInstance" placeholder="pingodegente">
+                        <small>Nome da instancia do WhatsApp</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="evoApiKey">API Key <span class="optional">(opcional)</span></label>
+                        <div class="password-wrapper">
+                            <input type="password" id="evoApiKey" placeholder="Sua API Key da Evolution">
+                            <button type="button" class="toggle-pw" onclick="togglePw('evoApiKey')">Mostrar</button>
+                        </div>
+                        <small>Chave de autenticacao da API</small>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="testarWhatsApp()">&#9889; Testar Conexao</button>
+                    <button class="btn-secondary" onclick="salvarWhatsApp()">&#128190; Salvar Configuracoes</button>
+                </div>
+                <div id="statusWhatsapp"></div>
+            </div>
+        </div>
+
+        <!-- ABA: DADOS DA LOJA -->
+        <div class="tab-content" id="tab-loja">
+            <div class="card">
+                <div class="card-title">&#127970; Dados da Loja / Cliente</div>
+                <div class="card-desc">Informacoes que aparecem nos comprovantes, mensagens e cobrancas</div>
+
+                <div class="form-group">
+                    <label for="lojaNome">Nome da Loja / Marca</label>
+                    <input type="text" id="lojaNome" placeholder="VendaLive">
+                    <small>Nome que aparece nas mensagens e comprovantes</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lojaTelefone">Telefone / WhatsApp da Loja</label>
+                        <input type="text" id="lojaTelefone" placeholder="(00) 00000-0000">
+                        <small>Numero que aparece como remetente</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="lojaInstagram">Instagram da Loja <span class="optional">(opcional)</span></label>
+                        <input type="text" id="lojaInstagram" placeholder="@sualoja">
+                        <small>Instagram que aparece nas mensagens</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lojaEndereco">Endereco da Loja <span class="optional">(opcional)</span></label>
+                    <textarea id="lojaEndereco" rows="2" placeholder="Rua, Numero, Bairro, Cidade - Estado"></textarea>
+                    <small>Endereco que aparece nos comprovantes</small>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="salvarLoja()">&#128190; Salvar Dados da Loja</button>
+                </div>
+                <div id="statusLoja"></div>
+            </div>
+        </div>
+
+        <!-- ABA: TAXAS -->
+        <div class="tab-content" id="tab-taxas">
+            <div class="card">
+                <div class="card-title">&#128178; Taxas Padrao</div>
+                <div class="card-desc">Taxas aplicadas automaticamente nos calculos de cobranca</div>
+
+                <div class="info-box">
+                    <h4>&#9888; Importante</h4>
+                    <ul>
+                        <li>As taxas de <strong>Mercado Pago</strong>, <strong>Asaas</strong> e <strong>InfinitePay</strong> sao configuradas na pagina <a href="configuracao-pagamento.html" style="color:#0a1628;font-weight:600">Configuracao de Pagamento</a></li>
+                        <li>Aqui voce define as taxas padrao para calculos gerais do sistema</li>
+                    </ul>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taxaPercentual">Taxa Percentual Padrao (%)</label>
+                        <input type="text" id="taxaPercentual" placeholder="3.49">
+                        <small>Ex: 3.49 para 3.49%</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxaFixa">Taxa Fixa Padrao (R$)</label>
+                        <input type="text" id="taxaFixa" placeholder="0.49">
+                        <small>Ex: 0.49 para R$ 0,49</small>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="salvarTaxas()">&#128190; Salvar Taxas</button>
+                </div>
+                <div id="statusTaxas"></div>
+            </div>
+        </div>
+
+        <!-- ABA: WEBHOOKS -->
+        <div class="tab-content" id="tab-webhook">
+            <div class="card">
+                <div class="card-title">&#128279; Webhook de Status</div>
+                <div class="card-desc">URL para receber notificacoes de mudanca de status de pagamentos</div>
+
+                <div class="form-group">
+                    <label for="webhookUrl">URL do Webhook <span class="optional">(opcional)</span></label>
+                    <input type="url" id="webhookUrl" placeholder="https://seuservidor.com/webhook">
+                    <small>Endereco que recebera as notificacoes de status (InfinitePay, Mercado Pago, etc.)</small>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="salvarWebhook()">&#128190; Salvar Webhook</button>
+                </div>
+                <div id="statusWebhook"></div>
+            </div>
+        </div>
+
+        <!-- ABA: AVANCADO -->
+        <div class="tab-content" id="tab-avancado">
+            <div class="card">
+                <div class="card-title">&#128295; Configuracoes Avancadas</div>
+                <div class="card-desc">Somente para administradores. Cuidado ao alterar.</div>
+
+                <div class="info-box" style="border-color:#fecaca;background:#fef2f2">
+                    <h4 style="color:#dc2626">&#9888; Atenção</h4>
+                    <ul>
+                        <li>Alterar o <strong>Supabase URL/Key</strong> pode desconectar o sistema do banco de dados</li>
+                        <li>So altere se estiver migrando para outro projeto Supabase</li>
+                        <li>Em caso de duvida, nao altere estas configuracoes</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label for="supabaseUrl">Supabase URL</label>
+                    <input type="url" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
+                    <small>URL do projeto Supabase</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="supabaseAnonKey">Supabase Anon Key</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="supabaseAnonKey" placeholder="eyJhbGci...">
+                        <button type="button" class="toggle-pw" onclick="togglePw('supabaseAnonKey')">Mostrar</button>
+                    </div>
+                    <small>Chave anonima do projeto Supabase</small>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="salvarAvancado()">&#128190; Salvar Configuracoes Avancadas</button>
+                    <button class="btn-danger" onclick="resetarTudo()">&#128260; Resetar Tudo para Padroes</button>
+                </div>
+                <div id="statusAvancado"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config-system.js"></script>
+    <script>
+        // ========== CARREGAR CONFIGURACOES AO ABRIR ==========
+        function carregarConfiguracoes() {
+            var cfg = VendaLiveConfig.getAll();
+
+            // WhatsApp
+            document.getElementById('evoUrl').value = cfg.evolution_api_url || '';
+            document.getElementById('evoInstance').value = cfg.evolution_instance || '';
+            document.getElementById('evoApiKey').value = cfg.evolution_api_key || '';
+
+            // Loja
+            document.getElementById('lojaNome').value = cfg.loja_nome || '';
+            document.getElementById('lojaTelefone').value = cfg.loja_telefone || '';
+            document.getElementById('lojaInstagram').value = cfg.loja_instagram || '';
+            document.getElementById('lojaEndereco').value = cfg.loja_endereco || '';
+
+            // Taxas
+            document.getElementById('taxaPercentual').value = cfg.taxa_percentual_padrao || '';
+            document.getElementById('taxaFixa').value = cfg.taxa_fixa_padrao || '';
+
+            // Webhook
+            document.getElementById('webhookUrl').value = cfg.webhook_status || '';
+
+            // Avancado
+            document.getElementById('supabaseUrl').value = cfg.supabase_url || '';
+            document.getElementById('supabaseAnonKey').value = cfg.supabase_anon_key || '';
+        }
+
+        // ========== TROCAR ABAS ==========
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ========== TOGGLE PASSWORD ==========
+        function togglePw(id) {
+            var input = document.getElementById(id);
+            var btn = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Ocultar';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Mostrar';
+            }
+        }
+
+        // ========== STATUS ==========
+        function showStatus(id, msg, tipo) {
+            var el = document.getElementById(id);
+            var classe = tipo === 'ok' ? 'status-ok' : tipo === 'error' ? 'status-error' : tipo === 'warn' ? 'status-warn' : 'status-info';
+            var icon = tipo === 'ok' ? '&#10003;' : tipo === 'error' ? '&#10007;' : tipo === 'warn' ? '&#9888;' : '&#9432;';
+            el.innerHTML = '<span class="status-badge ' + classe + '">' + icon + ' ' + msg + '</span>';
+        }
+
+        // ========== SALVAR WHATSAPP ==========
+        function salvarWhatsApp() {
+            VendaLiveConfig.set('evolution_api_url', document.getElementById('evoUrl').value.trim());
+            VendaLiveConfig.set('evolution_instance', document.getElementById('evoInstance').value.trim());
+            VendaLiveConfig.set('evolution_api_key', document.getElementById('evoApiKey').value.trim());
+            VendaLiveConfig.applyGlobals();
+            showStatus('statusWhatsapp', 'Configuracoes do WhatsApp salvas com sucesso!', 'ok');
+        }
+
+        // ========== TESTAR WHATSAPP ==========
+        async function testarWhatsApp() {
+            var url = document.getElementById('evoUrl').value.trim();
+            var key = document.getElementById('evoApiKey').value.trim();
+            var instance = document.getElementById('evoInstance').value.trim();
+
+            if (!url) { showStatus('statusWhatsapp', 'Preencha a URL da Evolution API', 'error'); return; }
+            if (!instance) { showStatus('statusWhatsapp', 'Preencha o nome da instancia', 'error'); return; }
+
+            showStatus('statusWhatsapp', 'Testando conexao...', 'info');
+
+            try {
+                // Teste 1: Verificar estado da instancia
+                var resp = await fetch(url + '/instance/connectionState/' + instance, {
+                    headers: key ? { 'apikey': key } : {}
+                });
+                if (resp.ok) {
+                    var data = await resp.json();
+                    var state = (data.instance && data.instance.state) || data.state || 'desconhecido';
+                    if (state === 'open' || state === 'connected') {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" conectada! WhatsApp Online!', 'ok');
+                    } else if (state === 'connecting' || state === 'qrcode') {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" existe mas nao conectada. Status: ' + state + '. Leia o QR Code no painel da Evolution.', 'warn');
+                    } else {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" encontrada. Status: ' + state, 'warn');
+                    }
+                    return;
+                }
+
+                // Teste 2: Se connectionState falhou, tentar fetchInstances
+                showStatus('statusWhatsapp', 'Verificando instancias disponiveis...', 'info');
+                var resp2 = await fetch(url + '/instance/fetchInstances', {
+                    headers: key ? { 'apikey': key } : {}
+                });
+                if (resp2.ok) {
+                    var data2 = await resp2.json();
+                    var encontrou = false;
+                    var nomes = [];
+                    if (Array.isArray(data2)) {
+                        for (var i = 0; i < data2.length; i++) {
+                            var nome = (data2[i].instance && data2[i].instance.name) || data2[i].name || '?';
+                            nomes.push(nome);
+                            if (nome === instance) encontrou = true;
+                        }
+                    } else if (data2.instances && Array.isArray(data2.instances)) {
+                        for (var j = 0; j < data2.instances.length; j++) {
+                            var nome2 = data2.instances[j].name || '?';
+                            nomes.push(nome2);
+                            if (nome2 === instance) encontrou = true;
+                        }
+                    }
+                    if (encontrou) {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" existe na API, mas pode estar desconectada.', 'warn');
+                    } else {
+                        showStatus('statusWhatsapp', 'Instancia "' + instance + '" NAO encontrada. Instancias disponiveis: ' + nomes.join(', ') || '(nenhuma)', 'error');
+                    }
+                } else {
+                    showStatus('statusWhatsapp', 'API retornou erro: HTTP ' + resp.status + '. Verifique URL e API Key.', 'error');
+                }
+            } catch(e) {
+                showStatus('statusWhatsapp', 'Falha na conexao: ' + e.message, 'error');
+            }
+        }
+
+        // ========== SALVAR LOJA ==========
+        function salvarLoja() {
+            VendaLiveConfig.set('loja_nome', document.getElementById('lojaNome').value.trim());
+            VendaLiveConfig.set('loja_telefone', document.getElementById('lojaTelefone').value.trim());
+            VendaLiveConfig.set('loja_instagram', document.getElementById('lojaInstagram').value.trim());
+            VendaLiveConfig.set('loja_endereco', document.getElementById('lojaEndereco').value.trim());
+            showStatus('statusLoja', 'Dados da loja salvos com sucesso!', 'ok');
+        }
+
+        // ========== SALVAR TAXAS ==========
+        function salvarTaxas() {
+            VendaLiveConfig.set('taxa_percentual_padrao', document.getElementById('taxaPercentual').value.trim());
+            VendaLiveConfig.set('taxa_fixa_padrao', document.getElementById('taxaFixa').value.trim());
+            showStatus('statusTaxas', 'Taxas padrao salvas com sucesso!', 'ok');
+        }
+
+        // ========== SALVAR WEBHOOK ==========
+        function salvarWebhook() {
+            VendaLiveConfig.set('webhook_status', document.getElementById('webhookUrl').value.trim());
+            showStatus('statusWebhook', 'Webhook salvo com sucesso!', 'ok');
+        }
+
+        // ========== SALVAR AVANCADO ==========
+        function salvarAvancado() {
+            VendaLiveConfig.set('supabase_url', document.getElementById('supabaseUrl').value.trim());
+            VendaLiveConfig.set('supabase_anon_key', document.getElementById('supabaseAnonKey').value.trim());
+            showStatus('statusAvancado', 'Configuracoes avancadas salvas!', 'ok');
+        }
+
+        // ========== RESETAR TUDO ==========
+        function resetarTudo() {
+            if (!confirm('ATENCAO: Isso ira apagar TODAS as configuracoes personalizadas e voltar aos padroes.\n\nTem certeza?')) return;
+            if (!confirm('Tem MESMO certeza? Esta acao nao pode ser desfeita.')) return;
+
+            VendaLiveConfig.reset();
+            carregarConfiguracoes();
+            showStatus('statusAvancado', 'Todas as configuracoes foram resetadas para os padroes!', 'ok');
+        }
+
+        // Carregar ao iniciar
+        carregarConfiguracoes();
+    </script>
+    <script src="navmenu.js"></script>
+    <script>
+        // Carregar nome do usuario logado
+        (function(){
+            try {
+                var sessao = localStorage.getItem('usuarioLogado');
+                if (sessao) {
+                    var dados = JSON.parse(sessao);
+                    var nome = dados.nome || dados.email || 'Usuario';
+                    document.getElementById('userEmail').textContent = nome;
+                }
+            } catch(e) {}
+        })();
+    </script>
+</body>
+</html>

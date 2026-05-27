@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✅</text></svg>">
   <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Pix Manual - Pingo de Gente</title>
+  <title>Pix Manual - VendaLive</title>
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.8"></script>
   <link rel="stylesheet" href="navmenu.css">
   <style>
@@ -48,8 +51,11 @@
     .tab-content { display: none; }
     .tab-content.ativo { display: block; }
     .botoes-centro {
-        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
         margin: 20px 0;
+        gap: 10px;
     }
     .botoes-centro button {
         display: inline-block;
@@ -62,7 +68,6 @@
         font-size: 0.85rem;
         font-weight: 600;
         transition: all 0.3s;
-        margin: 5px;
     }
     .botoes-centro button:hover { background: #0B193F; color: white; }
     .botoes-centro button.ativo { background: #0B193F; color: white; }
@@ -200,10 +205,6 @@
     }
 </style>
 
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -243,7 +244,7 @@
                     <div class="stat-card cancelado-link"><h3 id="stat-cancelado-link">0</h3><p>Cancelados Link</p></div>
                     <div class="stat-card"><h3 id="stat-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                <div class="botoes-centro">
                     <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
                     <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
                     <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
@@ -268,7 +269,7 @@
                     <div class="stat-card asaas refunded"><h3 id="stat-asaas-refunded">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card asaas"><h3 id="stat-asaas-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                <div class="botoes-centro">
                     <button class="ativo" onclick="filtrarAsaas('todos')">📋 Todos</button>
                     <button onclick="filtrarAsaas('PENDING')">⏳ Pendentes</button>
                     <button onclick="filtrarAsaas('RECEIVED')">✅ Recebidos</button>
@@ -295,7 +296,7 @@
                     <div class="stat-card mp refunded"><h3 id="stat-mp-reembolsados">0</h3><p>Reembolsados</p></div>
                     <div class="stat-card mp"><h3 id="stat-mp-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                <div class="botoes-centro">
                     <button class="ativo" onclick="filtrarMp('todos')">📋 Todos</button>
                     <button onclick="filtrarMp('pendente')">⏳ Pendentes</button>
                     <button onclick="filtrarMp('aprovado')">✅ Aprovados</button>
@@ -323,7 +324,7 @@
                     <div class="stat-card infinite"><h3 id="stat-infinite-cancelados">0</h3><p>Cancelados</p></div>
                     <div class="stat-card infinite"><h3 id="stat-infinite-total">0</h3><p>Total</p></div>
                 </div>
-                <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                <div class="botoes-centro">
                     <button class="ativo" onclick="filtrarInfinite('todos')">📋 Todos</button>
                     <button onclick="filtrarInfinite('pending')">⏳ Pendentes</button>
                     <button onclick="filtrarInfinite('paid')">✅ Pagos</button>
@@ -1361,7 +1362,7 @@
     function forcarCentralizacao() {
         var divs = document.querySelectorAll('.botoes-centro');
         divs.forEach(function(div) {
-            div.style.cssText = 'text-align: center !important; margin: 20px 0 !important; display: block !important; width: 100% !important;';
+            div.style.cssText = 'display: flex !important; justify-content: center !important; flex-wrap: wrap !important; gap: 10px !important; margin: 20px 0 !important; width: 100% !important;';
             // Forçar cada botão também
             var botoes = div.querySelectorAll('button');
             botoes.forEach(function(btn) {
