@@ -9,16 +9,17 @@
     var MENU_ITEMS = [
         { url: 'dashboard.html', icon: '\uD83D\uDCCA', label: 'Dashboard' },
         { url: 'live.html', icon: '\uD83C\uDFA5', label: 'Lives de Vendas' },
-        { url: 'clientes.html', icon: '\uD83D\uDC65', label: 'Clientes' },
+        { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Solicitacoes de Entregas' },
         { url: 'vendas.html', icon: '\uD83D\uDED2', label: 'Vendas' },
-        { url: 'enderecos.html', icon: '\uD83D\uDCCD', label: 'Enderecos' },
         { url: 'pix.automatizado.html', icon: '\uD83D\uDCB3', label: 'Pix Automacao' },
         { url: 'pix.manual.html', icon: '\u2705', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
         { url: 'coblive.html', icon: '\uD83D\uDCB0', label: 'Cobranca de Lives' },
+        { url: 'clientes.html', icon: '\uD83D\uDC65', label: 'Clientes' },
+        { url: 'enderecos.html', icon: '\uD83D\uDCCD', label: 'Enderecos' },
+        { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' }
         { url: 'configuracao-pagamento.html', icon: '\u2699\uFE0F', label: 'Config. Pagamento' },
         { url: 'solicitacoes.html', icon: '\uD83D\uDCDD', label: 'Formulario de Entregas' },
-        { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Rastreamento' },
-        { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' }
+        
     ];
 
     function getCurrentPage() {
