@@ -567,7 +567,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+    var _cfgSupaDash = (window.VendaLiveConfig && window.VendaLiveConfig.getAll()) || {};
+    const SUPABASE_URL = _cfgSupaDash.supabase_url || 'https://aqrvozmxlcgrllclceke.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

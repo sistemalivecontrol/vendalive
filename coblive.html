@@ -1235,7 +1235,7 @@
 
                 console.log('[COBLIVE] Enviando para infinitepay-gerar:', JSON.stringify(bodyData));
 
-                const functionUrl = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1/infinitepay-gerar';
+                const functionUrl = ((window.VendaLiveConfig && window.VendaLiveConfig.get('supabase_url')) || 'https://aqrvozmxlcgrllclceke.supabase.co') + '/functions/v1/infinitepay-gerar';
 
                 const response = await fetch(functionUrl, {
                     method: 'POST',
@@ -2081,7 +2081,7 @@
                     data_live: dataLiveAtual || new Date().toISOString().split('T')[0]
                 };
 
-                const functionUrl = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1/mercadopago-pix';
+                const functionUrl = ((window.VendaLiveConfig && window.VendaLiveConfig.get('supabase_url')) || 'https://aqrvozmxlcgrllclceke.supabase.co') + '/functions/v1/mercadopago-pix';
 
                 const response = await fetch(functionUrl, {
                     method: 'POST',

@@ -3,8 +3,9 @@
 // Versão FINAL: colunas auth_id + cliente_id, ANON KEY CORRETA
 // ==========================================
 
-const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+var _cfgSupa = (typeof window !== 'undefined' && window.VendaLiveConfig) ? window.VendaLiveConfig.getAll() : {};
+const SUPABASE_URL = _cfgSupa.supabase_url || 'https://aqrvozmxlcgrllclceke.supabase.co';
+const SUPABASE_ANON_KEY = _cfgSupa.supabase_anon_key || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
 window.supabaseClient = null;
 window.authUsuario = null;

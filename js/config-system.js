@@ -112,7 +112,11 @@
         window.EVOLUTION_API_KEY = config.evolution_api_key;
         window.EVOLUTION_INSTANCE = config.evolution_instance;
 
-        console.log('[CONFIG] Configuracoes aplicadas. Instancia:', config.evolution_instance);
+        // Supabase
+        window.CONFIG_SUPABASE_URL = config.supabase_url;
+        window.CONFIG_SUPABASE_ANON_KEY = config.supabase_anon_key;
+
+        console.log('[CONFIG] Configuracoes aplicadas');
     }
 
     // ============ EXPORTAR ============
