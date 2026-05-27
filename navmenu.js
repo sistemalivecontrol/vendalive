@@ -9,17 +9,16 @@
     var MENU_ITEMS = [
         { url: 'dashboard.html', icon: '\uD83D\uDCCA', label: 'Dashboard' },
         { url: 'live.html', icon: '\uD83C\uDFA5', label: 'Lives de Vendas' },
-        { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Solicitacoes de Entregas' },
+        { url: 'clientes.html', icon: '\uD83D\uDC65', label: 'Clientes' },
         { url: 'vendas.html', icon: '\uD83D\uDED2', label: 'Vendas' },
+        { url: 'enderecos.html', icon: '\uD83D\uDCCD', label: 'Enderecos' },
         { url: 'pix.automatizado.html', icon: '\uD83D\uDCB3', label: 'Pix Automacao' },
         { url: 'pix.manual.html', icon: '\u2705', label: 'Pix Manual', badgeId: 'nav-pix-badge' },
         { url: 'coblive.html', icon: '\uD83D\uDCB0', label: 'Cobranca de Lives' },
-        { url: 'clientes.html', icon: '\uD83D\uDC65', label: 'Clientes' },
-        { url: 'enderecos.html', icon: '\uD83D\uDCCD', label: 'Enderecos' },
-        { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' }
         { url: 'configuracao-pagamento.html', icon: '\u2699\uFE0F', label: 'Config. Pagamento' },
         { url: 'solicitacoes.html', icon: '\uD83D\uDCDD', label: 'Formulario de Entregas' },
-        
+        { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Solicitacoes de Entregas' },
+        { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' }
     ];
 
     function getCurrentPage() {
@@ -150,7 +149,6 @@
         document.body.appendChild(btn);
     }
 
-
     // Injetar CSS do menu
     function injectCSS() {
         if (document.getElementById('nav-menu-styles')) return;
@@ -158,11 +156,11 @@
         style.id = 'nav-menu-styles';
         style.textContent = `
 /* ============================================
-   NAVEGAÇÃO - Menu Mobile/Responsive
-   Injeta menu hamburger em todas as páginas
+   NAVEGACAO - Menu Mobile/Responsive
+   Injeta menu hamburger em todas as paginas
    ============================================ */
 
-/* ----- Botão Hamburger ----- */
+/* ----- Botao Hamburger ----- */
 .nav-menu-btn {
     display: inline-flex !important;
     align-items: center;
@@ -384,7 +382,7 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* ----- Versão ----- */
+/* ----- Versao ----- */
 .nav-menu-version {
     text-align: center;
     padding: 8px;
@@ -392,7 +390,7 @@
     color: rgba(255, 255, 255, 0.2);
 }
 
-/* ----- Animação de entrada dos itens ----- */
+/* ----- Animacao de entrada dos itens ----- */
 .nav-menu-panel.active .nav-menu-item {
     animation: navItemSlide 0.35s ease backwards;
 }
@@ -419,8 +417,8 @@
     }
 }
 
-/* ----- Responsivo: mostrar botão hamburger em todas as telas ----- */
-/* O botão é sempre visível para facilitar navegação */
+/* ----- Responsivo: mostrar botao hamburger em todas as telas ----- */
+/* O botao e sempre visivel para facilitar navegacao */
 .nav-menu-btn {
     display: inline-flex !important;
 }
