@@ -664,7 +664,7 @@
                 showStatus('Buscando solicitação...', 'info');
                 const { data: solicitacao, error } = await supabaseClient
                     .from('solicitacoes_pg')
-                    .select('id, numero_solicitacao, status, regiao, created_at, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
+                    .select('id, numero_solicitacao, status, regiao, data_solicitacao, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
                     .eq('cobranca_id', cobrancaId)
                     .maybeSingle();
 
@@ -704,7 +704,7 @@
                     '<strong>Endereço:</strong> ' + escapeHtml(enderecoCompleto || '-') + '<br>' +
                     '<strong>Cidade:</strong> ' + escapeHtml(end.cidade || '-') + ' / ' + (end.estado || '-') + '<br>' +
                     '<strong>Região:</strong> ' + (solicitacao.regiao || end.regiao || '-') + '<br>' +
-                    '<strong>Data:</strong> ' + formatarDataBr(solicitacao.created_at) + '<br>' +
+                    '<strong>Data:</strong> ' + formatarDataBr(solicitacao.data_solicitacao) + '<br>' +
                     '</div>';
 
                 document.getElementById('detalhesConteudo').innerHTML = html;
