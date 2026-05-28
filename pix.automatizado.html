@@ -675,14 +675,14 @@
                 }
 
                 if (!solicitacao) {
-                    document.getElementById('detalhesConteudo').innerHTML = 
+                    document.getElementById('detalhesContent').innerHTML = 
                         '<div style="text-align:center;padding:30px;">' +
                         '<div style="font-size:48px;margin-bottom:15px;">📭</div>' +
                         '<h3 style="color:#0a1628;margin-bottom:10px;">Nenhuma solicitação encontrada</h3>' +
                         '<p style="color:#64748b;">Esta cobrança ainda não possui uma solicitação de entrega associada.</p>' +
                         '<p style="color:#94a3b8;font-size:13px;margin-top:10px;">O cliente pode ter pago sem preencher o formulário de entrega.</p>' +
                         '</div>';
-                    document.getElementById('detalhesModal').classList.add('ativo');
+                    document.getElementById('modalDetalhes').classList.add('ativo');
                     showStatus('', '');
                     return;
                 }
@@ -707,8 +707,8 @@
                     '<strong>Data:</strong> ' + formatarDataBr(solicitacao.data_solicitacao) + '<br>' +
                     '</div>';
 
-                document.getElementById('detalhesConteudo').innerHTML = html;
-                document.getElementById('detalhesModal').classList.add('ativo');
+                document.getElementById('detalhesContent').innerHTML = html;
+                document.getElementById('modalDetalhes').classList.add('ativo');
                 showStatus('', '');
             } catch (e) {
                 console.error('Erro:', e);
