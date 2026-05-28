@@ -664,7 +664,7 @@
                 showStatus('Buscando solicitação...', 'info');
                 const { data: solicitacao, error } = await supabaseClient
                     .from('solicitacoes_pg')
-                    .select('id, numero_solicitacao, nome, cpf, whatsapp, endereco_completo, status, cidade, estado, regiao, created_at')
+                    .select('id, numero_solicitacao, status, regiao, created_at, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
                     .eq('cobranca_id', cobrancaId)
                     .maybeSingle();
 
@@ -687,6 +687,10 @@
                     return;
                 }
 
+                var cli = solicitacao.clientes_pg || {};
+                var end = solicitacao.enderecos_pg || {};
+                var enderecoCompleto = (end.rua || '') + (end.numero ? ', ' + end.numero : '') + (end.complemento ? ' - ' + end.complemento : '') + (end.bairro ? ' - ' + end.bairro : '');
+
                 const html = 
                     '<div style="margin-bottom:15px;">' +
                     '<h3 style="color:#0a1628;margin-bottom:15px;">📋 Solicitação de Entrega</h3>' +
@@ -694,12 +698,12 @@
                     '<strong style="color:#0369a1;font-size:16px;">' + escapeHtml(solicitacao.numero_solicitacao || '-') + '</strong>' +
                     '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (solicitacao.status === 'entregue' ? '#dcfce7;color:#166534' : solicitacao.status === 'cancelado' ? '#fee2e2;color:#dc2626' : '#fef3c7;color:#92400e') + ';">' + (solicitacao.status || 'PENDENTE') + '</span>' +
                     '</div>' +
-                    '<strong>Cliente:</strong> ' + escapeHtml(solicitacao.nome || '-') + '<br>' +
-                    '<strong>CPF:</strong> ' + (solicitacao.cpf || '-') + '<br>' +
-                    '<strong>WhatsApp:</strong> ' + (solicitacao.whatsapp || '-') + '<br>' +
-                    '<strong>Endereço:</strong> ' + escapeHtml(solicitacao.endereco_completo || '-') + '<br>' +
-                    '<strong>Cidade:</strong> ' + escapeHtml(solicitacao.cidade || '-') + ' / ' + (solicitacao.estado || '-') + '<br>' +
-                    '<strong>Região:</strong> ' + (solicitacao.regiao || '-') + '<br>' +
+                    '<strong>Cliente:</strong> ' + escapeHtml(cli.nome || '-') + '<br>' +
+                    '<strong>CPF:</strong> ' + (cli.cpf || '-') + '<br>' +
+                    '<strong>WhatsApp:</strong> ' + (cli.whatsapp || '-') + '<br>' +
+                    '<strong>Endereço:</strong> ' + escapeHtml(enderecoCompleto || '-') + '<br>' +
+                    '<strong>Cidade:</strong> ' + escapeHtml(end.cidade || '-') + ' / ' + (end.estado || '-') + '<br>' +
+                    '<strong>Região:</strong> ' + (solicitacao.regiao || end.regiao || '-') + '<br>' +
                     '<strong>Data:</strong> ' + formatarDataBr(solicitacao.created_at) + '<br>' +
                     '</div>';
 
