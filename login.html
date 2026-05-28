@@ -2,12 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - VendaLive</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config-system.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -376,19 +374,10 @@
             particlesContainer.appendChild(p);
         }
 
-        var SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
-        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
-        try {
-            if (window.VendaLiveConfig) {
-                var _cfgSupa = window.VendaLiveConfig.getAll();
-                if (_cfgSupa.supabase_url) SUPABASE_URL = _cfgSupa.supabase_url;
-                if (_cfgSupa.supabase_anon_key) SUPABASE_ANON_KEY = _cfgSupa.supabase_anon_key;
-            }
-        } catch(e) {}
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: { detectSessionInUrl: false }
-        });
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function fazerLogin(event) {
             event.preventDefault();
@@ -470,6 +459,20 @@
         }
 
         document.getElementById('loginForm').addEventListener('submit', fazerLogin);
+
+        async function verificarSessaoExistente() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error) return;
+                if (session) {
+                    const usuarioLogado = localStorage.getItem('usuarioLogado');
+                    if (usuarioLogado) {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (error) {}
+        }
+        verificarSessaoExistente();
     </script>
 </body>
 </html>
