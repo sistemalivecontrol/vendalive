@@ -1,39 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- ===== VERIFICACAO RAPIDA - JA LOGADO? ===== -->
-    <script>
-    (function() {
-        try {
-            // Verificar se veio de logout (flag com timestamp dos ultimos 30 segundos)
-            var logoutTs = localStorage.getItem('logoutTimestamp');
-            var fromLogout = logoutTs && (Date.now() - parseInt(logoutTs)) < 30000;
-            if (fromLogout) {
-                // Limpar dados de sessao - ficar na pagina de login
-                localStorage.removeItem('usuarioLogado');
-                localStorage.removeItem('clienteId');
-                localStorage.removeItem('nivelAcesso');
-                localStorage.removeItem('supabase.auth.token');
-                sessionStorage.clear();
-                return; // NAO redirecionar
-            }
-            // Se nao veio de logout, verificar se ja esta logado
-            var sessao = localStorage.getItem('usuarioLogado');
-            if (sessao) {
-                var dados = JSON.parse(sessao);
-                if (dados && dados.auth_id && dados.usuario_id) {
-                    if (dados.login_time) {
-                        var loginTime = new Date(dados.login_time).getTime();
-                        if ((Date.now() - loginTime) < 24 * 60 * 60 * 1000) {
-                            window.location.replace('dashboard.html');
-                        }
-                    }
-                }
-            }
-        } catch(e) {}
-    })();
-    </script>
-    <!-- =========================================== -->
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
