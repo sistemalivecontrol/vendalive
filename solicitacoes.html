@@ -1053,6 +1053,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 cobrancaId = cobrancaIdDaURL;
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
                 console.log('🔗 Cobrança ID da URL:', cobrancaId);
+            } else {
+                // Tentar recuperar do sessionStorage
+                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+                if (savedCobrancaId) {
+                    cobrancaId = savedCobrancaId;
+                    console.log('🔗 Cobrança ID do sessionStorage:', cobrancaId);
+                }
             }
 
             if (clienteIdDaURL) {
@@ -1991,8 +1998,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     status: 'pendente'
                 };
 
-                if (cobrancaId) {
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '') {
                     dadosSolicitacao.cobranca_id = cobrancaId;
+                    console.log('🔗 Cobrança ID vinculado:', cobrancaId);
+                } else {
+                    console.log('⚠️ Nenhum cobranca_id para vincular. cobrancaId=', cobrancaId);
                 }
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
