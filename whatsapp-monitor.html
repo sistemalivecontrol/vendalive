@@ -651,9 +651,17 @@
                     var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
 
                     var btnReenviar = '';
-                    if (status === 'timeout') {
-                        var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+                    var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+                    
+                    // Mostrar acoes baseadas no status
+                    if (status === 'falha' || status === 'timeout') {
                         btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
+                    } else if (status === 'pendente') {
+                        btnReenviar = '<button class="btn-reenviar" style="background:#f59e0b;color:white;border-color:#f59e0b;" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">⏳ Tentar</button>';
+                    } else if (status === 'enviado') {
+                        btnReenviar = '<span style="color:#22c55e;font-size:12px;">✅ Enviado</span>';
+                    } else if (status === 'reenviado') {
+                        btnReenviar = '<span style="color:#3b82f6;font-size:12px;">🔄 Reenviado</span>';
                     }
 
                     html += '<tr>' +
