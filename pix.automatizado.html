@@ -516,6 +516,7 @@
                     if (c.checkout_url) {
                         acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
                     }
+                    acoesHtml += '<button class="btn-acao btn-verificar" style="background:#5b9bd5;color:white;border-color:#5b9bd5;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 } else if (c.gateway === 'infinitepay') {
                     acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('infinitepay') + ')">Detalhes</button>';
                     if (c.checkout_url) {
@@ -525,6 +526,7 @@
                     if (c.status === 'pendente') {
                         acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusInfinite(' + q(c.id) + ')">Verificar</button>';
                     }
+                    acoesHtml += '<button class="btn-acao btn-verificar" style="background:#5b9bd5;color:white;border-color:#5b9bd5;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 }
 
                 let valorHtml = '<span class="valor-total">' + formatarMoeda(c.valor) + '</span>';
@@ -654,6 +656,60 @@
             navigator.clipboard.writeText(code).then(function() {
                 showStatus('Código copiado!', 'success');
             });
+        }
+
+        async function verSolicitacao(cobrancaId) {
+            if (!supabaseClient) { showStatus('Sistema não conectado.', 'error'); return; }
+            try {
+                showStatus('Buscando solicitação...', 'info');
+                const { data: solicitacao, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, numero_solicitacao, nome, cpf, whatsapp, endereco_completo, status, cidade, estado, regiao, created_at')
+                    .eq('cobranca_id', cobrancaId)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Erro ao buscar solicitação:', error);
+                    showStatus('Erro ao buscar solicitação.', 'error');
+                    return;
+                }
+
+                if (!solicitacao) {
+                    document.getElementById('detalhesConteudo').innerHTML = 
+                        '<div style="text-align:center;padding:30px;">' +
+                        '<div style="font-size:48px;margin-bottom:15px;">📭</div>' +
+                        '<h3 style="color:#0a1628;margin-bottom:10px;">Nenhuma solicitação encontrada</h3>' +
+                        '<p style="color:#64748b;">Esta cobrança ainda não possui uma solicitação de entrega associada.</p>' +
+                        '<p style="color:#94a3b8;font-size:13px;margin-top:10px;">O cliente pode ter pago sem preencher o formulário de entrega.</p>' +
+                        '</div>';
+                    document.getElementById('detalhesModal').classList.add('ativo');
+                    showStatus('', '');
+                    return;
+                }
+
+                const html = 
+                    '<div style="margin-bottom:15px;">' +
+                    '<h3 style="color:#0a1628;margin-bottom:15px;">📋 Solicitação de Entrega</h3>' +
+                    '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:15px;margin-bottom:15px;">' +
+                    '<strong style="color:#0369a1;font-size:16px;">' + escapeHtml(solicitacao.numero_solicitacao || '-') + '</strong>' +
+                    '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (solicitacao.status === 'entregue' ? '#dcfce7;color:#166534' : solicitacao.status === 'cancelado' ? '#fee2e2;color:#dc2626' : '#fef3c7;color:#92400e') + ';">' + (solicitacao.status || 'PENDENTE') + '</span>' +
+                    '</div>' +
+                    '<strong>Cliente:</strong> ' + escapeHtml(solicitacao.nome || '-') + '<br>' +
+                    '<strong>CPF:</strong> ' + (solicitacao.cpf || '-') + '<br>' +
+                    '<strong>WhatsApp:</strong> ' + (solicitacao.whatsapp || '-') + '<br>' +
+                    '<strong>Endereço:</strong> ' + escapeHtml(solicitacao.endereco_completo || '-') + '<br>' +
+                    '<strong>Cidade:</strong> ' + escapeHtml(solicitacao.cidade || '-') + ' / ' + (solicitacao.estado || '-') + '<br>' +
+                    '<strong>Região:</strong> ' + (solicitacao.regiao || '-') + '<br>' +
+                    '<strong>Data:</strong> ' + formatarDataBr(solicitacao.created_at) + '<br>' +
+                    '</div>';
+
+                document.getElementById('detalhesConteudo').innerHTML = html;
+                document.getElementById('detalhesModal').classList.add('ativo');
+                showStatus('', '');
+            } catch (e) {
+                console.error('Erro:', e);
+                showStatus('Erro ao buscar solicitação.', 'error');
+            }
         }
 
         function toggleAutoRefresh() {
