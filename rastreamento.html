@@ -882,7 +882,7 @@ async function aplicarFiltros() {
                         <div style="display: flex; flex-direction: column; gap: 2px; align-items: stretch;">
                             ${s.codigo_rastreio ? `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Ver Rastreio</button>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
                             <button class="btn-small btn-whatsapp" onclick="enviarRastreamentoWhatsAppClick('${s.id}')" ${!cliente.whatsapp ? 'disabled title="Cliente sem WhatsApp"' : ''}>📱 WhatsApp</button>
-                            ${s.cobranca_id ? `<button class="btn-small btn-verificar" onclick="verCobrancaPix('${s.cobranca_id}')" title="Ver cobrança PIX" style="background:#f59e0b;color:white;border-color:#f59e0b;">💳 PIX</button>` : ''}
+                            <button class="btn-small" onclick="verCobrancaPix('${s.cobranca_id || ''}')" title="Ver cobrança PIX" style="background:#f59e0b;color:white;border:1px solid #f59e0b;padding:3px 8px;font-size:11px;border-radius:5px;cursor:pointer;">💳 PIX</button>
                             <button class="btn-small btn-instagram" onclick="abrirModalInstagram('${s.id}')" ${!cliente.instagram ? 'disabled title="Cliente sem Instagram"' : ''}>📸 Instagram</button>
                             <button class="btn-small btn-edit" onclick="editarSolicitacao('${s.id}')">✏️ Editar</button>
                             <button class="btn-small btn-delete" onclick="excluirSolicitacao('${s.id}')">🗑️ Del</button>
@@ -1173,6 +1173,10 @@ async function aplicarFiltros() {
 
         async function verCobrancaPix(cobrancaId) {
             if (!supabaseClient) { showAlert('Sistema não conectado.', 'error'); return; }
+            if (!cobrancaId || cobrancaId === 'null' || cobrancaId === 'undefined') {
+                showAlert('Esta solicitação ainda não está vinculada a uma cobrança PIX. O cliente pode ter preenchido o formulário sem passar pelo link de pagamento.', 'warning');
+                return;
+            }
             try {
                 const { data: cobranca, error } = await supabaseClient
                     .from('cobrancas_pix')

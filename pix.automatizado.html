@@ -516,7 +516,7 @@
                     if (c.checkout_url) {
                         acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
                     }
-                    acoesHtml += '<button class="btn-acao btn-verificar" style="background:#5b9bd5;color:white;border-color:#5b9bd5;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 } else if (c.gateway === 'infinitepay') {
                     acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('infinitepay') + ')">Detalhes</button>';
                     if (c.checkout_url) {
@@ -526,7 +526,7 @@
                     if (c.status === 'pendente') {
                         acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusInfinite(' + q(c.id) + ')">Verificar</button>';
                     }
-                    acoesHtml += '<button class="btn-acao btn-verificar" style="background:#5b9bd5;color:white;border-color:#5b9bd5;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 }
 
                 let valorHtml = '<span class="valor-total">' + formatarMoeda(c.valor) + '</span>';
