@@ -131,19 +131,19 @@
     text-align: center !important;
   }
 
-  /* Metricas */
+  /* Metricas - 2 colunas em mobile */
   .metrics,
   .metricas {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
   .metric-card,
   .metrica-card {
-    padding: 14px !important;
+    padding: 14px;
   }
   .metric-card .value,
   .metrica-card .valor {
-    font-size: 20px !important;
+    font-size: 20px;
   }
 
   /* Acoes/botoes de filtro */
@@ -181,7 +181,7 @@
   }
   .metrics,
   .metricas {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
   }
   .container {
     max-width: 100% !important;
@@ -196,7 +196,7 @@
   }
   .metrics,
   .metricas {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr);
   }
   .card {
     padding: 12px !important;
