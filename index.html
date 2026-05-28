@@ -164,15 +164,21 @@
     </style>
     <script type="module" crossorigin src="./assets/index-DW7JCCa_.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
-  <base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
 
     <!-- Script de correção dinâmica após React renderizar -->
     <script>
+      // FORÇAR links a abrir na MESMA aba (remove target="_blank")
+      (function() {
+        var observer = new MutationObserver(function() {
+          document.querySelectorAll('a[target="_blank"]').forEach(function(a) {
+            a.removeAttribute('target');
+          });
+        });
+        observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      })();
       (function() {
         function fixLogo() {
           // Procura por todos os possíveis logos
