@@ -1150,13 +1150,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         function gerarLinkCompartilhavel() {
             if (!clienteIdSistema) return null;
             const urlBase = window.location.origin + window.location.pathname;
-            var link = urlBase + '?cliente=' + clienteIdSistema;
-            // Incluir cobranca_id no link se disponível (ex: após gerar PIX)
-            var cid = cobrancaId || sessionStorage.getItem('solicitacao_cobranca_id');
-            if (cid && cid !== 'null' && cid !== 'undefined' && cid !== '') {
-                link += '&cobranca_id=' + encodeURIComponent(cid);
-            }
-            return link;
+            return urlBase + '?cliente=' + clienteIdSistema;
         }
 
         function renderizarLinkCompartilhavel() {
@@ -2004,13 +1998,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     status: 'pendente'
                 };
 
-                // Tentar obter cobranca_id da variavel global ou do sessionStorage
-                var cidParaVincular = cobrancaId || sessionStorage.getItem('solicitacao_cobranca_id');
-                if (cidParaVincular && cidParaVincular !== 'null' && cidParaVincular !== 'undefined' && cidParaVincular !== '') {
-                    dadosSolicitacao.cobranca_id = cidParaVincular;
-                    console.log('🔗 Cobrança ID vinculado:', cidParaVincular);
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '') {
+                    dadosSolicitacao.cobranca_id = cobrancaId;
+                    console.log('🔗 Cobrança ID vinculado:', cobrancaId);
                 } else {
-                    console.log('⚠️ Nenhum cobranca_id para vincular. cobrancaId=', cobrancaId, 'sessionStorage=', sessionStorage.getItem('solicitacao_cobranca_id'));
+                    console.log('⚠️ Nenhum cobranca_id para vincular. cobrancaId=', cobrancaId);
                 }
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
