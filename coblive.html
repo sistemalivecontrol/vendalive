@@ -1435,6 +1435,17 @@
                     const pixValor = document.getElementById('pixValor');
                     if (pixValor) pixValor.classList.add('pago');
                     showStatus('✅ PIX PAGO! Pagamento confirmado.', 'success');
+                    // Mostrar link de solicitação de entrega com cobranca_id
+                    const linkEntrega = window.location.origin + '/solicitacoes.html?cliente=' + encodeURIComponent(clienteSistemaId || '') + '&cobranca_id=' + encodeURIComponent(data.id || '');
+                    setTimeout(function() {
+                        if (confirm('Pagamento confirmado! Deseja copiar o link de solicitação de entrega para enviar ao cliente?')) {
+                            navigator.clipboard.writeText(linkEntrega).then(function() {
+                                alert('Link copiado! Envie ao cliente via WhatsApp.\n\n' + linkEntrega);
+                            }).catch(function() {
+                                prompt('Copie o link:', linkEntrega);
+                            });
+                        }
+                    }, 500);
                     return true;
                 } else if (data.status === 'expirado' || data.status_mp === 'cancelled' || data.status_mp === 'rejected') {
                     if (badge) {

@@ -1042,10 +1042,18 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         async function verificarOrigemAcesso() {
             const urlParams = new URLSearchParams(window.location.search);
             const clienteIdDaURL = urlParams.get('cliente');
+            const cobrancaIdDaURL = urlParams.get('cobranca_id');
             const referrer = document.referrer || '';
             const referrerEhDashboard = referrer.includes('dashboard') || referrer.includes('gerenciamento') || referrer.includes('live.html');
             const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
             acessoInterno = referrerEhDashboard || sessionFlag;
+
+            // Se veio com cobranca_id na URL, salvar para uso no envio
+            if (cobrancaIdDaURL) {
+                cobrancaId = cobrancaIdDaURL;
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+                console.log('🔗 Cobrança ID da URL:', cobrancaId);
+            }
 
             if (clienteIdDaURL) {
                 modoAcesso = 'publico';
