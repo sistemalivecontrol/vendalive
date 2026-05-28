@@ -3,9 +3,19 @@
 // Versão FINAL: colunas auth_id + cliente_id, ANON KEY CORRETA
 // ==========================================
 
-var _cfgSupa = (typeof window !== 'undefined' && window.VendaLiveConfig) ? window.VendaLiveConfig.getAll() : {};
-const SUPABASE_URL = _cfgSupa.supabase_url || 'https://aqrvozmxlcgrllclceke.supabase.co';
-const SUPABASE_ANON_KEY = _cfgSupa.supabase_anon_key || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+// Chaves Supabase - tenta ler do config-system.js, senao usa padrao
+var SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+try {
+    if (typeof window !== 'undefined' && window.VendaLiveConfig) {
+        var _cfg = window.VendaLiveConfig.getAll();
+        if (_cfg && _cfg.supabase_url) SUPABASE_URL = _cfg.supabase_url;
+        if (_cfg && _cfg.supabase_anon_key) SUPABASE_ANON_KEY = _cfg.supabase_anon_key;
+    }
+} catch(e) {
+    // Usa valores padrao
+}
 
 window.supabaseClient = null;
 window.authUsuario = null;
