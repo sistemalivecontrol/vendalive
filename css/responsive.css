@@ -55,8 +55,7 @@
     font-size: 12px !important;
   }
 
-  /* Grid layouts */
-  .grid,
+  /* Grid layouts - so afeta grids genericos, nao .metrics */
   .grid-2,
   .grid-3,
   .grid-4 {
