@@ -19,7 +19,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuracoes do Sistema - VendaLive</title>
+    <title>Configurações do Sistema - VendaLive</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,7 +116,7 @@
             <div class="header-left">
                 <button class="btn-voltar" onclick="location.href='dashboard.html'">&#8592; Voltar</button>
                 <div class="header-center">
-                    <h1>&#9881; Configuracoes do Sistema</h1>
+                    <h1>&#9881; Configurações do Sistema</h1>
                 </div>
             </div>
             <div class="user-info" id="userInfo">&#128100; <span id="userEmail">Carregando...</span></div>
@@ -171,7 +171,7 @@
 
                 <div class="actions">
                     <button class="btn-primary" onclick="testarWhatsApp()">&#9889; Testar Conexao</button>
-                    <button class="btn-secondary" onclick="salvarWhatsApp()">&#128190; Salvar Configuracoes</button>
+                    <button class="btn-secondary" onclick="salvarWhatsApp()">&#128190; Salvar Configurações</button>
                 </div>
                 <div id="statusWhatsapp"></div>
             </div>
@@ -271,7 +271,7 @@
         <!-- ABA: AVANCADO -->
         <div class="tab-content" id="tab-avancado">
             <div class="card">
-                <div class="card-title">&#128295; Configuracoes Avancadas</div>
+                <div class="card-title">&#128295; Configurações Avancadas</div>
                 <div class="card-desc">Somente para administradores. Cuidado ao alterar.</div>
 
                 <div class="info-box" style="border-color:#fecaca;background:#fef2f2">
@@ -301,7 +301,7 @@
                 <div class="divider"></div>
 
                 <div class="actions">
-                    <button class="btn-primary" onclick="salvarAvancado()">&#128190; Salvar Configuracoes Avancadas</button>
+                    <button class="btn-primary" onclick="salvarAvancado()">&#128190; Salvar Configurações Avancadas</button>
                     <button class="btn-danger" onclick="resetarTudo()">&#128260; Resetar Tudo para Padroes</button>
                 </div>
                 <div id="statusAvancado"></div>
@@ -312,7 +312,7 @@
     <script src="js/config-system.js"></script>
     <script>
         // ========== CARREGAR CONFIGURACOES AO ABRIR ==========
-        function carregarConfiguracoes() {
+        function carregarConfigurações() {
             var cfg = VendaLiveConfig.getAll();
 
             // WhatsApp
@@ -373,7 +373,7 @@
             VendaLiveConfig.set('evolution_instance', document.getElementById('evoInstance').value.trim());
             VendaLiveConfig.set('evolution_api_key', document.getElementById('evoApiKey').value.trim());
             VendaLiveConfig.applyGlobals();
-            showStatus('statusWhatsapp', 'Configuracoes do WhatsApp salvas com sucesso!', 'ok');
+            showStatus('statusWhatsapp', 'Configurações do WhatsApp salvas com sucesso!', 'ok');
         }
 
         // ========== TESTAR WHATSAPP ==========
@@ -466,7 +466,7 @@
         function salvarAvancado() {
             VendaLiveConfig.set('supabase_url', document.getElementById('supabaseUrl').value.trim());
             VendaLiveConfig.set('supabase_anon_key', document.getElementById('supabaseAnonKey').value.trim());
-            showStatus('statusAvancado', 'Configuracoes avancadas salvas!', 'ok');
+            showStatus('statusAvancado', 'Configurações avancadas salvas!', 'ok');
         }
 
         // ========== RESETAR TUDO ==========
@@ -475,12 +475,12 @@
             if (!confirm('Tem MESMO certeza? Esta acao nao pode ser desfeita.')) return;
 
             VendaLiveConfig.reset();
-            carregarConfiguracoes();
+            carregarConfigurações();
             showStatus('statusAvancado', 'Todas as configuracoes foram resetadas para os padroes!', 'ok');
         }
 
         // Carregar ao iniciar
-        carregarConfiguracoes();
+        carregarConfigurações();
     </script>
     <script src="navmenu.js"></script>
     <script>
