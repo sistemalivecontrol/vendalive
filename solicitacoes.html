@@ -1150,7 +1150,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         function gerarLinkCompartilhavel() {
             if (!clienteIdSistema) return null;
             const urlBase = window.location.origin + window.location.pathname;
-            return urlBase + '?cliente=' + clienteIdSistema;
+            var link = urlBase + '?cliente=' + clienteIdSistema;
+            // Incluir cobranca_id no link se disponível (ex: após gerar PIX)
+            var cid = cobrancaId || sessionStorage.getItem('solicitacao_cobranca_id');
+            if (cid && cid !== 'null' && cid !== 'undefined' && cid !== '') {
+                link += '&cobranca_id=' + encodeURIComponent(cid);
+            }
+            return link;
         }
 
         function renderizarLinkCompartilhavel() {
@@ -1438,6 +1444,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
                 sessionStorage.setItem('solicitacao_payment_id', mpPaymentId);
+                console.log('[PIX-SAVE] cobranca_id SALVO no sessionStorage:', cobrancaId);
 
                 iniciarVerificacaoPagamento();
 
@@ -1796,15 +1803,46 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
         async function enviarEmailConfirmacao(dadosSolicitacao) {
             try {
-                const templateParams = { to_email: dadosSolicitacao.email, numero_solicitacao: dadosSolicitacao.numeroSolicitacao, nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao, regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero, complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro, cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep, observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação' };
-                const response = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams);
-                console.log('✅ E-mail enviado:', response.status); return true;
+                const templateParamsBase = {
+                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                    nome: dadosSolicitacao.nome,
+                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                    regiao: dadosSolicitacao.regiao,
+                    rua: dadosSolicitacao.rua,
+                    numero: dadosSolicitacao.numero,
+                    complemento: dadosSolicitacao.complemento || 'N/A',
+                    bairro: dadosSolicitacao.bairro,
+                    cidade: dadosSolicitacao.cidade,
+                    cep: dadosSolicitacao.cep,
+                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                    cliente_email: dadosSolicitacao.email || 'Não informado'
+                };
+
+                // 1) Sempre enviar e-mail para o admin (marcobet@gmail.com)
+                const adminParams = { ...templateParamsBase, to_email: 'marcobet@gmail.com' };
+                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, adminParams);
+                console.log('✅ E-mail admin enviado:', responseAdmin.status);
+
+                // 2) Se o cliente tiver e-mail, enviar cópia para ele também
+                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    const clienteParams = { ...templateParamsBase, to_email: dadosSolicitacao.email };
+                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, clienteParams);
+                    console.log('✅ E-mail cliente enviado:', responseCliente.status);
+                }
+
+                return true;
             } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
         }
 
         async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
             modoAutomatico = modoAutomatico || false;
+
+            console.log('[ENVIAR] ========== INICIO enviarFormulario ==========');
+            console.log('[ENVIAR] modoAutomatico:', modoAutomatico);
+            console.log('[ENVIAR] cobrancaId (global):', cobrancaId);
+            console.log('[ENVIAR] sessionStorage cobranca_id:', sessionStorage.getItem('solicitacao_cobranca_id'));
+            console.log('[ENVIAR] sessionStorage payment_id:', sessionStorage.getItem('solicitacao_payment_id'));
 
             if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
@@ -1998,12 +2036,23 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     status: 'pendente'
                 };
 
-                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '') {
-                    dadosSolicitacao.cobranca_id = cobrancaId;
-                    console.log('🔗 Cobrança ID vinculado:', cobrancaId);
+                // === DIAGNOSTICO COBRANCA_ID ===
+                var cidGlobal = (typeof cobrancaId !== 'undefined') ? cobrancaId : 'VARIAVEL_NAO_DEFINIDA';
+                var cidSession = sessionStorage.getItem('solicitacao_cobranca_id');
+                console.log('[DIAG] cobrancaId (global):', cidGlobal);
+                console.log('[DIAG] solicitacao_cobranca_id (session):', cidSession);
+
+                // Tentar obter cobranca_id - PRIORIDADE: sessionStorage > variavel global
+                var cidParaVincular = cidSession || cidGlobal;
+                console.log('[DIAG] cidParaVincular (escolhido):', cidParaVincular);
+
+                if (cidParaVincular && cidParaVincular !== 'null' && cidParaVincular !== 'undefined' && cidParaVincular !== '' && cidParaVincular !== 'VARIAVEL_NAO_DEFINIDA') {
+                    dadosSolicitacao.cobranca_id = cidParaVincular;
+                    console.log('✅ [DIAG] cobranca_id ADICIONADO ao INSERT:', cidParaVincular);
                 } else {
-                    console.log('⚠️ Nenhum cobranca_id para vincular. cobrancaId=', cobrancaId);
+                    console.log('⚠️ [DIAG] NENHUM cobranca_id para vincular!');
                 }
+                console.log('[DIAG] dadosSolicitacao completo:', JSON.stringify(dadosSolicitacao));
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
                     .from('solicitacoes_pg')
@@ -2013,23 +2062,21 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
-                if (email && email.trim()) {
-                    enviarEmailConfirmacao({
-                        email: email,
-                        numeroSolicitacao: numeroSolicitacao,
-                        nome: nome,
-                        dataSolicitacao: dataSolicitacao,
-                        regiao: regiao,
-                        rua: rua,
-                        numero: numero,
-                        complemento: complemento,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        cep: cep,
-                        observacoes: observacoes
-                    });
-                }
+                // Enviar e-mail de confirmação (sempre para admin, e para cliente se tiver e-mail)
+                enviarEmailConfirmacao({
+                    email: email,
+                    numeroSolicitacao: numeroSolicitacao,
+                    nome: nome,
+                    dataSolicitacao: dataSolicitacao,
+                    regiao: regiao,
+                    rua: rua,
+                    numero: numero,
+                    complemento: complemento,
+                    bairro: bairro,
+                    cidade: cidadeForm,
+                    cep: cep,
+                    observacoes: observacoes
+                });
 
                 // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO (não bloqueante)

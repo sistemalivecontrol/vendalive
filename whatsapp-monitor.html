@@ -672,11 +672,8 @@
                     var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitação' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
                     var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
 
-                    var btnReenviar = '';
-                    if (status === 'timeout') {
-                        var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
-                        btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
-                    }
+                    var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+                    var btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
 
                     html += '<tr>' +
                         '<td>' + data + '</td>' +
