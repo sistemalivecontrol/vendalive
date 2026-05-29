@@ -1180,7 +1180,7 @@ async function aplicarFiltros() {
             try {
                 const { data: cobranca, error } = await supabaseClient
                     .from('cobrancas_pix')
-                    .select('*')
+                    .select('id, comprador_nome, valor, status, gateway, order_nsu, checkout_url, pago_em, created_at')
                     .eq('id', cobrancaId)
                     .maybeSingle();
 
@@ -1195,12 +1195,6 @@ async function aplicarFiltros() {
                     return;
                 }
 
-                // Normalizar colunas (a tabela pode ter nomes diferentes)
-                var gatewayNome = 'Mercado Pago';
-                var transactionId = cobranca.mp_payment_id || cobranca.order_nsu || '-';
-                var ticketUrl = cobranca.mp_ticket_url || cobranca.checkout_url || null;
-                var criadoEm = cobranca.criado_em || cobranca.created_at || null;
-
                 const statusText = cobranca.status === 'pago' ? '✅ Pago' : cobranca.status === 'pendente' ? '⏳ Pendente' : '❌ ' + cobranca.status;
                 const html = 
                     '<div style="padding:10px;">' +
@@ -1210,11 +1204,10 @@ async function aplicarFiltros() {
                     '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (cobranca.status === 'pago' ? '#dcfce7;color:#166534' : '#fef3c7;color:#92400e') + ';">' + statusText + '</span>' +
                     '</div>' +
                     '<strong>Valor:</strong> R$ ' + (cobranca.valor || 0).toFixed(2).replace('.', ',') + '<br>' +
-                    '<strong>Gateway:</strong> ' + gatewayNome + '<br>' +
-                    '<strong>ID Transação:</strong> ' + transactionId + '<br>' +
-                    '<strong>Criado em:</strong> ' + (criadoEm ? new Date(criadoEm).toLocaleString('pt-BR') : '-') + '<br>' +
+                    '<strong>Gateway:</strong> ' + (cobranca.gateway || '-') + '<br>' +
+                    '<strong>ID Transação:</strong> ' + (cobranca.order_nsu || '-') + '<br>' +
                     '<strong>Pago em:</strong> ' + (cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleString('pt-BR') : '-') + '<br>' +
-                    (ticketUrl ? '<br><a href="' + ticketUrl + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Mercado Pago</a>' : '') +
+                    (cobranca.checkout_url ? '<br><a href="' + cobranca.checkout_url + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Gateway</a>' : '') +
                     '</div>';
 
                 // Reutilizar o modal de detalhes
