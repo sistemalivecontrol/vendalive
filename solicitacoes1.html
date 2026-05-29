@@ -1808,9 +1808,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         }
 
         async function enviarEmailConfirmacao(dadosSolicitacao) {
+            console.log('[EMAIL] Iniciando envio de e-mails...');
+            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
+
             try {
                 // ✅ CORREÇÃO: Enviar e-mail para o CLIENTE (se preenchido)
                 if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
                     const templateParamsCliente = {
                         to_email: dadosSolicitacao.email,
                         numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
@@ -1823,13 +1827,18 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                         bairro: dadosSolicitacao.bairro,
                         cidade: dadosSolicitacao.cidade,
                         cep: dadosSolicitacao.cep,
-                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação'
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
                     };
+                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
                     const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
-                    console.log('✅ E-mail para CLIENTE enviado:', responseCliente.status);
+                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
+                } else {
+                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
                 }
 
                 // ✅ CORREÇÃO: E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
+                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
                 const templateParamsAdmin = {
                     to_email: 'marcobet@gmail.com',
                     numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
@@ -1845,14 +1854,17 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
                     email_cliente: dadosSolicitacao.email || 'Não informado',
                     whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
-                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado'
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
                 };
+                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
                 const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
-                console.log('✅ E-mail para ADMIN (marcobet@gmail.com) enviado:', responseAdmin.status);
+                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
 
                 return true;
             } catch (error) {
-                console.error('❌ Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
                 return false;
             }
         }
@@ -2083,8 +2095,9 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // ✅ CORREÇÃO: Enviar e-mail (não bloqueante) - SEMPRE envia cópia para admin
-                enviarEmailConfirmacao({
+                // ✅ CORREÇÃO: Enviar e-mail - SEMPRE envia cópia para admin
+                // Usar await quando modoAutomatico para garantir envio antes do redirect
+                const emailPromise = enviarEmailConfirmacao({
                     email: email,
                     numeroSolicitacao: numeroSolicitacao,
                     nome: nome,
@@ -2100,6 +2113,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     whatsapp: whatsapp,
                     instagram: instagram
                 });
+
+                // Se modo automático, aguardar e-mail ser enviado antes de redirecionar
+                if (modoAutomatico) {
+                    console.log('[EMAIL] Modo automático - aguardando envio de e-mail...');
+                    await emailPromise;
+                    console.log('[EMAIL] E-mail processado, prosseguindo com redirecionamento...');
+                }
 
                 // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO (não bloqueante)
