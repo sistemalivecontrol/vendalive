@@ -1185,7 +1185,7 @@ async function aplicarFiltros() {
             try {
                 const { data: cobranca, error } = await supabaseClient
                     .from('cobrancas_pix')
-                    .select('id, comprador_nome, valor, status, status_mp, mp_payment_id, mp_ticket_url, pago_em, created_at, comprador_email, comprador_whatsapp, pagador_cpf_cnpj, comprador_cpf')
+                    .select('id, comprador_nome, valor, status, status_mp, mp_payment_id, mp_ticket_url, pago_em, criado_em, atualizado_em, comprador_email, comprador_whatsapp, pagador_cpf_cnpj, comprador_cpf')
                     .eq('id', cobrancaId)
                     .maybeSingle();
 
@@ -1213,7 +1213,7 @@ async function aplicarFiltros() {
                     '<strong>Status MP:</strong> ' + (cobranca.status_mp || '-') + '<br>' +
                     '<strong>Payment ID MP:</strong> ' + (cobranca.mp_payment_id || '-') + '<br>' +
                     '<strong>Pago em:</strong> ' + (cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleString('pt-BR') : '-') + '<br>' +
-                    '<strong>Criado em:</strong> ' + (cobranca.created_at ? new Date(cobranca.created_at).toLocaleString('pt-BR') : '-') + '<br>' +
+                    '<strong>Criado em:</strong> ' + (cobranca.criado_em ? new Date(cobranca.criado_em).toLocaleString('pt-BR') : '-') + '<br>' +
                     (cobranca.mp_ticket_url ? '<br><a href="' + cobranca.mp_ticket_url + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Mercado Pago</a>' : '') +
                     '</div>';
 
