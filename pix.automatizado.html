@@ -134,6 +134,8 @@
             th, td { padding: 10px; font-size: 0.85rem; } 
         }
     </style>
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -264,21 +266,10 @@
     <div class="modal-overlay" id="modalDetalhes">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
-                <h3>📋 Solicitação de Entrega</h3>
+                <h3>📋 Detalhes da Cobrança</h3>
                 <button class="btn-fechar" onclick="fecharModal('modalDetalhes')">×</button>
             </div>
             <div id="detalhesContent"></div>
-        </div>
-    </div>
-
-    <!-- Modal Vinculação -->
-    <div class="modal-overlay" id="modalVinculacao">
-        <div class="modal" style="max-width: 700px;">
-            <div class="modal-header">
-                <h3>🔗 Vincular Solicitação</h3>
-                <button class="btn-fechar" onclick="fecharModal('modalVinculacao')">×</button>
-            </div>
-            <div id="vinculacaoContent"></div>
         </div>
     </div>
 
@@ -322,7 +313,6 @@
 
             document.getElementById('modalQrCode').addEventListener('click', function(e) { if (e.target === e.currentTarget) fecharModal('modalQrCode'); });
             document.getElementById('modalDetalhes').addEventListener('click', function(e) { if (e.target === e.currentTarget) fecharModal('modalDetalhes'); });
-            document.getElementById('modalVinculacao').addEventListener('click', function(e) { if (e.target === e.currentTarget) fecharModal('modalVinculacao'); });
         });
 
         function formatarDataBr(data) { 
@@ -526,7 +516,7 @@
                     if (c.checkout_url) {
                         acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
                     }
-                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação">📋 Solicitação</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 } else if (c.gateway === 'infinitepay') {
                     acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('infinitepay') + ')">Detalhes</button>';
                     if (c.checkout_url) {
@@ -536,7 +526,7 @@
                     if (c.status === 'pendente') {
                         acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusInfinite(' + q(c.id) + ')">Verificar</button>';
                     }
-                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação">📋 Solicitação</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
                 }
 
                 let valorHtml = '<span class="valor-total">' + formatarMoeda(c.valor) + '</span>';
@@ -668,77 +658,20 @@
             });
         }
 
-        function abrirQrCode(cobrancaId) {
-            const c = cobrancasData.find(x => x.id === cobrancaId);
-            if (!c) return;
-            document.getElementById('qrComprador').textContent = c.comprador_nome || '-';
-            document.getElementById('qrValor').textContent = formatarMoeda(c.valor);
-            // qrCodeImg e qrCodeText devem ser preenchidos pelo chamador
-            document.getElementById('modalQrCode').classList.add('ativo');
-        }
-
         async function verSolicitacao(cobrancaId) {
             if (!supabaseClient) { showStatus('Sistema não conectado.', 'error'); return; }
             try {
                 showStatus('Buscando solicitação...', 'info');
-                var solicitacao = null;
+                const { data: solicitacao, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, numero_solicitacao, status, regiao, data_solicitacao, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
+                    .eq('cobranca_id', cobrancaId)
+                    .maybeSingle();
 
-                // 1) Tentar buscar por cobranca_id diretamente
-                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
-                    const { data: sol, error } = await supabaseClient
-                        .from('solicitacoes_pg')
-                        .select('id, numero_solicitacao, status, regiao, data_solicitacao, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
-                        .eq('cobranca_id', cobrancaId)
-                        .maybeSingle();
-                    if (!error && sol) {
-                        solicitacao = sol;
-                        console.log('✅ Solicitação encontrada por cobranca_id');
-                    }
-                }
-
-                // 2) Se não encontrou, buscar pela cobrança e depois por nome/cpf/whatsapp do comprador
-                if (!solicitacao && cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
-                    console.log('🔍 Buscando cobrança para fallback por nome/cpf...');
-                    const { data: cob, error: cobErr } = await supabaseClient
-                        .from('cobrancas_pix')
-                        .select('comprador_nome, comprador_cpf, comprador_telefone')
-                        .eq('id', cobrancaId)
-                        .maybeSingle();
-
-                    if (!cobErr && cob && cob.comprador_nome) {
-                        // Buscar clientes_pg por nome/cpf/whatsapp
-                        var clienteQuery = supabaseClient
-                            .from('clientes_pg')
-                            .select('id, nome, cpf, whatsapp')
-                            .ilike('nome', '%' + cob.comprador_nome + '%');
-
-                        const { data: clientes, error: cliErr } = await clienteQuery.limit(5);
-
-                        if (!cliErr && clientes && clientes.length > 0) {
-                            // Para cada cliente encontrado, buscar solicitação
-                            for (var i = 0; i < clientes.length; i++) {
-                                var cli = clientes[i];
-                                // Verificar se CPF ou telefone bate (se disponível)
-                                var cpfMatch = !cob.comprador_cpf || !cli.cpf || cli.cpf.replace(/\D/g, '') === cob.comprador_cpf.replace(/\D/g, '');
-                                var telMatch = !cob.comprador_telefone || !cli.whatsapp || cli.whatsapp.replace(/\D/g, '') === cob.comprador_telefone.replace(/\D/g, '');
-
-                                // Se bate CPF ou telefone, ou só nome se não tiver outros dados
-                                if (cpfMatch || telMatch || (!cob.comprador_cpf && !cob.comprador_telefone)) {
-                                    const { data: sol, error: solErr } = await supabaseClient
-                                        .from('solicitacoes_pg')
-                                        .select('id, numero_solicitacao, status, regiao, data_solicitacao, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
-                                        .eq('cliente_pg_id', cli.id)
-                                        .order('data_solicitacao', { ascending: false })
-                                        .maybeSingle();
-                                    if (!solErr && sol) {
-                                        solicitacao = sol;
-                                        console.log('✅ Solicitação encontrada por cliente (nome/cpf/tel):', cli.nome);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (error) {
+                    console.error('Erro ao buscar solicitação:', error);
+                    showStatus('Erro ao buscar solicitação.', 'error');
+                    return;
                 }
 
                 if (!solicitacao) {
@@ -747,7 +680,7 @@
                         '<div style="font-size:48px;margin-bottom:15px;">📭</div>' +
                         '<h3 style="color:#0a1628;margin-bottom:10px;">Nenhuma solicitação encontrada</h3>' +
                         '<p style="color:#64748b;">Esta cobrança ainda não possui uma solicitação de entrega associada.</p>' +
-                        '<p style="color:#94a3b8;font-size:13px;margin-top:10px;">O cliente pode ter preenchido o formulário sem cobrança vinculada ou usado dados diferentes.</p>' +
+                        '<p style="color:#94a3b8;font-size:13px;margin-top:10px;">O cliente pode ter pago sem preencher o formulário de entrega.</p>' +
                         '</div>';
                     document.getElementById('modalDetalhes').classList.add('ativo');
                     showStatus('', '');
@@ -832,26 +765,12 @@
             div.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 3000;';
             if (tipo === 'success') div.style.background = '#28a745';
             else if (tipo === 'error') div.style.background = '#dc3545';
-            else if (tipo === 'warning') { div.style.background = '#ffc107'; div.style.color = '#000'; }
+            else div.style.background = '#17a2b8';
             div.textContent = mensagem;
             document.body.appendChild(div);
             setTimeout(function() { div.remove(); }, 3000);
         }
-
-        // Expor funcoes globalmente para onclick no HTML
-        window.carregarCobrancas = carregarCobrancas;
-        window.aplicarFiltros = aplicarFiltros;
-        window.limparFiltros = limparFiltros;
-        window.verificarPendentes = verificarPendentes;
-        window.verDetalhes = verDetalhes;
-        window.verificarStatusMP = verificarStatusMP;
-        window.verificarStatusInfinite = verificarStatusInfinite;
-        window.copiarLink = copiarLink;
-        window.verSolicitacao = verSolicitacao;
-        window.abrirQrCode = abrirQrCode;
-        window.copiarCodigoPix = copiarCodigoPix;
-        window.toggleAutoRefresh = toggleAutoRefresh;
-        window.fecharModal = fecharModal;
     </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>
