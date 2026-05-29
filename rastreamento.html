@@ -1185,7 +1185,7 @@ async function aplicarFiltros() {
             try {
                 const { data: cobranca, error } = await supabaseClient
                     .from('cobrancas_pix')
-                    .select('id, comprador_nome, valor, status, gateway, order_nsu, checkout_url, pago_em, created_at')
+                    .select('id, comprador_nome, valor, status, status_mp, mp_payment_id, mp_ticket_url, pago_em, created_at, comprador_email, comprador_whatsapp, pagador_cpf_cnpj, comprador_cpf')
                     .eq('id', cobrancaId)
                     .maybeSingle();
 
@@ -1209,7 +1209,8 @@ async function aplicarFiltros() {
                     '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (cobranca.status === 'pago' ? '#dcfce7;color:#166534' : '#fef3c7;color:#92400e') + ';">' + statusText + '</span>' +
                     '</div>' +
                     '<strong>Valor:</strong> R$ ' + (cobranca.valor || 0).toFixed(2).replace('.', ',') + '<br>' +
-                    '<strong>Gateway:</strong> ' + (cobranca.gateway || '-') + '<br>' +
+                    '<strong>Gateway:</strong> Mercado Pago<br>' +
+                    '<strong>Status MP:</strong> ' + (cobranca.status_mp || '-') + '<br>' +
                     '<strong>Payment ID MP:</strong> ' + (cobranca.mp_payment_id || '-') + '<br>' +
                     '<strong>Pago em:</strong> ' + (cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleString('pt-BR') : '-') + '<br>' +
                     '<strong>Criado em:</strong> ' + (cobranca.created_at ? new Date(cobranca.created_at).toLocaleString('pt-BR') : '-') + '<br>' +
