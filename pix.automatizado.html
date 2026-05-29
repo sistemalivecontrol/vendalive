@@ -136,6 +136,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -266,7 +267,7 @@
     <div class="modal-overlay" id="modalDetalhes">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
-                <h3>📋 Detalhes da Cobrança</h3>
+                <h3></h3>
                 <button class="btn-fechar" onclick="fecharModal('modalDetalhes')">×</button>
             </div>
             <div id="detalhesContent"></div>
@@ -516,7 +517,7 @@
                     if (c.checkout_url) {
                         acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
                     }
-                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Solicitação</button>';
                 } else if (c.gateway === 'infinitepay') {
                     acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('infinitepay') + ')">Detalhes</button>';
                     if (c.checkout_url) {
@@ -526,7 +527,7 @@
                     if (c.status === 'pendente') {
                         acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusInfinite(' + q(c.id) + ')">Verificar</button>';
                     }
-                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Entrega</button>';
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Solicitação</button>';
                 }
 
                 let valorHtml = '<span class="valor-total">' + formatarMoeda(c.valor) + '</span>';
@@ -693,7 +694,7 @@
 
                 const html = 
                     '<div style="margin-bottom:15px;">' +
-                    '<h3 style="color:#0a1628;margin-bottom:15px;">📋 Solicitação de Entrega</h3>' +
+                    '' +
                     '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:15px;margin-bottom:15px;">' +
                     '<strong style="color:#0369a1;font-size:16px;">' + escapeHtml(solicitacao.numero_solicitacao || '-') + '</strong>' +
                     '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (solicitacao.status === 'entregue' ? '#dcfce7;color:#166534' : solicitacao.status === 'cancelado' ? '#fee2e2;color:#dc2626' : '#fef3c7;color:#92400e') + ';">' + (solicitacao.status || 'PENDENTE') + '</span>' +
