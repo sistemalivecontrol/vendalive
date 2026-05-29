@@ -186,6 +186,8 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -688,6 +690,33 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
         emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
 
+        // ✅ CORREÇÃO: Função alternativa de envio de e-mail via Supabase Edge Function
+        // Caso o EmailJS não entregue (vai para spam), usamos o Supabase
+        async function enviarEmailViaSupabase(dadosEmail) {
+            console.log('[EMAIL-SUPABASE] Tentando enviar via Supabase...');
+            try {
+                const response = await fetch(SUPABASE_URL + '/functions/v1/enviar-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        para: dadosEmail.para,
+                        assunto: dadosEmail.assunto,
+                        corpo: dadosEmail.corpo,
+                        html: dadosEmail.html || false
+                    })
+                });
+                const result = await response.json();
+                console.log('[EMAIL-SUPABASE] Resultado:', result);
+                return result;
+            } catch (error) {
+                console.error('[EMAIL-SUPABASE] Erro:', error);
+                return null;
+            }
+        }
+
         const CIDADES_GRANDE_FLORIPA = [
             'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
             'PALHOCA', 'SANTO AMARO DA IMPERATRIZ', 'SAO JOSE'
@@ -840,7 +869,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             freteBox.classList.remove('mostrar');
             outrosEstadosBox.classList.remove('mostrar');
             pagamentoArea.classList.remove('mostrar');
-            resetarPagamento();
+            // ✅ CORREÇÃO: Só resetar pagamento se não estiver confirmado
+            // Se pagamento já foi confirmado, manter cobrancaId para vinculação no INSERT
+            if (!pagamentoConfirmado) {
+                resetarPagamento();
+            } else {
+                console.log('[FRETE] Pagamento já confirmado, mantendo cobrancaId:', cobrancaId);
+            }
 
             if (!estado || !cidade) {
                 freteDescricao.textContent = 'Aguardando preenchimento do estado e cidade...';
@@ -957,13 +992,17 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 rua: rua, numero: numero, complemento: complemento, bairro: bairro,
                 cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
                 regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
-                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual
+                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual,
+                cobrancaId: cobrancaId  // ✅ CORREÇÃO: Incluir cobrancaId nos dados salvos
             };
 
             sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
             sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
-            if (cobrancaId) sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
-            console.log('[FORM] Dados do formulário salvos no sessionStorage');
+            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage
+            if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+            }
+            console.log('[FORM] Dados salvos. cobrancaId:', cobrancaId);
         }
 
         function verificarDadosSalvos() {
@@ -972,7 +1011,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
                 sessionStorage.removeItem('solicitacao_dados');
                 sessionStorage.removeItem('solicitacao_cliente_id');
-                sessionStorage.removeItem('solicitacao_cobranca_id');
+                // ✅ CORREÇÃO: NÃO limpar cobranca_id aqui! Manter para próxima solicitação
+                // sessionStorage.removeItem('solicitacao_cobranca_id'); ← REMOVIDO!
                 sessionStorage.removeItem('solicitacao_numero');
                 sessionStorage.removeItem('solicitacao_nome');
                 sessionStorage.removeItem('solicitacao_regiao');
@@ -1042,10 +1082,25 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         async function verificarOrigemAcesso() {
             const urlParams = new URLSearchParams(window.location.search);
             const clienteIdDaURL = urlParams.get('cliente');
+            const cobrancaIdDaURL = urlParams.get('cobranca_id');
             const referrer = document.referrer || '';
             const referrerEhDashboard = referrer.includes('dashboard') || referrer.includes('gerenciamento') || referrer.includes('live.html');
             const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
             acessoInterno = referrerEhDashboard || sessionFlag;
+
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage SEMPRE (independentemente da URL)
+            const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+            if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                cobrancaId = savedCobrancaId;
+                console.log('[ORIGEM] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+            }
+
+            // Se veio com cobranca_id na URL, sobrescreve o do sessionStorage
+            if (cobrancaIdDaURL) {
+                cobrancaId = cobrancaIdDaURL;
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+                console.log('[ORIGEM] ✅ cobrancaId da URL:', cobrancaId);
+            }
 
             if (clienteIdDaURL) {
                 modoAcesso = 'publico';
@@ -1329,7 +1384,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
         function resetarPagamento() {
             pagamentoConfirmado = false;
-            cobrancaId = null;
+            // ✅ CORREÇÃO: NÃO limpar cobrancaId aqui! Ele é necessário para vincular no INSERT
+            // cobrancaId = null; ← REMOVIDO!
             mpPaymentId = null;
             pixQrCode = null;
             pixCopiaCola = null;
@@ -1350,6 +1406,25 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             const telefone = document.getElementById('whatsapp').value.trim();
             const email = document.getElementById('email').value.trim();
 
+            // ✅ CORREÇÃO: Verificar se já existe cobrança paga vinculada
+            if (cobrancaId && pagamentoConfirmado) {
+                console.log('[PIX] ⚠️ Já existe cobrança paga:', cobrancaId);
+                alert('✅ Pagamento já foi confirmado! Não é necessário gerar novo PIX.\n\nClique em "ENVIAR SOLICITAÇÃO" para finalizar.');
+                return;
+            }
+
+            // ✅ CORREÇÃO: Verificar se já existe cobrança em andamento (não paga)
+            if (cobrancaId && !pagamentoConfirmado && mpPaymentId) {
+                console.log('[PIX] ⚠️ Já existe cobrança em andamento:', cobrancaId);
+                const continuar = confirm('⚠️ Já existe um PIX gerado para esta solicitação.\n\nDeseja gerar um novo PIX (o anterior será cancelado)?');
+                if (!continuar) return;
+                // Limpar cobrança anterior
+                cobrancaId = null;
+                mpPaymentId = null;
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+                sessionStorage.removeItem('solicitacao_payment_id');
+            }
+
             if (!verificarCamposObrigatoriosPIX()) {
                 alert('⚠️ Preencha todos os campos obrigatórios antes de gerar o PIX.');
                 return;
@@ -1360,6 +1435,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;"></span> Gerando PIX...';
             document.getElementById('spinnerOverlay').classList.add('ativo');
+
+            // ✅ CORREÇÃO: Resetar flag de pagamento confirmado ao gerar novo PIX
+            // (apenas se for uma nova cobrança, não se estiver reutilizando)
+            if (!cobrancaId) {
+                pagamentoConfirmado = false;
+                console.log('[PIX] Nova cobrança - pagamentoConfirmado resetado para false');
+            }
 
             try {
                 const descricaoRegiao = regiaoSelecionadaAtual === 'floripa' ? 'Frete - Grande Florianopolis' : 'Frete - Santa Catarina';
@@ -1548,9 +1630,17 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval);
 
+                    // ✅ CORREÇÃO: Esconder botão Gerar PIX e mostrar status de sucesso
+                    const btnGerar = document.getElementById('btnGerarPix');
+                    if (btnGerar) {
+                        btnGerar.style.display = 'none';
+                        console.log('[POLLING] Botão Gerar PIX escondido');
+                    }
+
                     const statusEl = document.getElementById('statusPagamento');
                     statusEl.className = 'status-pagamento pago';
                     statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Enviando solicitação...';
+                    statusEl.style.display = 'inline-flex';
 
                     const dados = sessionStorage.getItem('solicitacao_dados');
                     if (dados) {
@@ -1780,16 +1870,80 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         }
 
         async function enviarEmailConfirmacao(dadosSolicitacao) {
+            console.log('[EMAIL] Iniciando envio de e-mails...');
+            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
+
             try {
-                const templateParams = { to_email: dadosSolicitacao.email, numero_solicitacao: dadosSolicitacao.numeroSolicitacao, nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao, regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero, complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro, cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep, observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação' };
-                const response = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams);
-                console.log('✅ E-mail enviado:', response.status); return true;
-            } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
+                // ✅ CORREÇÃO: Enviar e-mail para o CLIENTE (se preenchido)
+                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
+                    const templateParamsCliente = {
+                        to_email: dadosSolicitacao.email,
+                        numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                        nome: dadosSolicitacao.nome,
+                        data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                        regiao: dadosSolicitacao.regiao,
+                        rua: dadosSolicitacao.rua,
+                        numero: dadosSolicitacao.numero,
+                        complemento: dadosSolicitacao.complemento || 'N/A',
+                        bairro: dadosSolicitacao.bairro,
+                        cidade: dadosSolicitacao.cidade,
+                        cep: dadosSolicitacao.cep,
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
+                    };
+                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
+                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
+                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
+                } else {
+                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
+                }
+
+                // ✅ CORREÇÃO: E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
+                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
+                const templateParamsAdmin = {
+                    to_email: 'marcobet@gmail.com',
+                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                    nome: dadosSolicitacao.nome,
+                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                    regiao: dadosSolicitacao.regiao,
+                    rua: dadosSolicitacao.rua,
+                    numero: dadosSolicitacao.numero,
+                    complemento: dadosSolicitacao.complemento || 'N/A',
+                    bairro: dadosSolicitacao.bairro,
+                    cidade: dadosSolicitacao.cidade,
+                    cep: dadosSolicitacao.cep,
+                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                    email_cliente: dadosSolicitacao.email || 'Não informado',
+                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
+                };
+                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
+                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
+                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
+
+                return true;
+            } catch (error) {
+                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
+                return false;
+            }
         }
 
         async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
             modoAutomatico = modoAutomatico || false;
+
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage caso tenha sido perdido
+            if (!cobrancaId) {
+                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+                if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                    cobrancaId = savedCobrancaId;
+                    console.log('[ENVIAR] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                }
+            }
+            console.log('[ENVIAR] cobrancaId atual:', cobrancaId, '| modoAutomatico:', modoAutomatico);
 
             if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
@@ -1983,8 +2137,16 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     status: 'pendente'
                 };
 
-                if (cobrancaId) {
+                // ✅ CORREÇÃO: Logs detalhados do cobrancaId antes do INSERT
+                console.log('[INSERT] 🔍 cobrancaId valor:', cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId tipo:', typeof cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId é válido?', !!(cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined'));
+
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined') {
                     dadosSolicitacao.cobranca_id = cobrancaId;
+                    console.log('✅ [INSERT] cobranca_id VINCULADO com sucesso:', cobrancaId);
+                } else {
+                    console.warn('⚠️ [INSERT] cobranca_id NÃO vinculado. Valor atual:', cobrancaId, '| Tipo:', typeof cobrancaId);
                 }
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
@@ -1995,22 +2157,30 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
-                if (email && email.trim()) {
-                    enviarEmailConfirmacao({
-                        email: email,
-                        numeroSolicitacao: numeroSolicitacao,
-                        nome: nome,
-                        dataSolicitacao: dataSolicitacao,
-                        regiao: regiao,
-                        rua: rua,
-                        numero: numero,
-                        complemento: complemento,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        cep: cep,
-                        observacoes: observacoes
-                    });
+                // ✅ CORREÇÃO: Enviar e-mail - SEMPRE envia cópia para admin
+                // Usar await quando modoAutomatico para garantir envio antes do redirect
+                const emailPromise = enviarEmailConfirmacao({
+                    email: email,
+                    numeroSolicitacao: numeroSolicitacao,
+                    nome: nome,
+                    dataSolicitacao: dataSolicitacao,
+                    regiao: regiao,
+                    rua: rua,
+                    numero: numero,
+                    complemento: complemento,
+                    bairro: bairro,
+                    cidade: cidadeForm,
+                    cep: cep,
+                    observacoes: observacoes,
+                    whatsapp: whatsapp,
+                    instagram: instagram
+                });
+
+                // Se modo automático, aguardar e-mail ser enviado antes de redirecionar
+                if (modoAutomatico) {
+                    console.log('[EMAIL] Modo automático - aguardando envio de e-mail...');
+                    await emailPromise;
+                    console.log('[EMAIL] E-mail processado, prosseguindo com redirecionamento...');
                 }
 
                 // ============================================
