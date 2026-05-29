@@ -841,7 +841,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             freteBox.classList.remove('mostrar');
             outrosEstadosBox.classList.remove('mostrar');
             pagamentoArea.classList.remove('mostrar');
-            resetarPagamento();
+            // ✅ CORREÇÃO: Só resetar pagamento se não estiver confirmado
+            // Se pagamento já foi confirmado, manter cobrancaId para vinculação no INSERT
+            if (!pagamentoConfirmado) {
+                resetarPagamento();
+            } else {
+                console.log('[FRETE] Pagamento já confirmado, mantendo cobrancaId:', cobrancaId);
+            }
 
             if (!estado || !cidade) {
                 freteDescricao.textContent = 'Aguardando preenchimento do estado e cidade...';
@@ -958,12 +964,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 rua: rua, numero: numero, complemento: complemento, bairro: bairro,
                 cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
                 regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
-                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual
+                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual,
+                cobrancaId: cobrancaId  // ✅ CORREÇÃO: Incluir cobrancaId nos dados salvos
             };
 
             sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
             sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
-            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage (mesmo que null, para limpar)
+            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage
             if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
             }
@@ -1349,7 +1356,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
         function resetarPagamento() {
             pagamentoConfirmado = false;
-            cobrancaId = null;
+            // ✅ CORREÇÃO: NÃO limpar cobrancaId aqui! Ele é necessário para vincular no INSERT
+            // cobrancaId = null; ← REMOVIDO!
             mpPaymentId = null;
             pixQrCode = null;
             pixCopiaCola = null;
