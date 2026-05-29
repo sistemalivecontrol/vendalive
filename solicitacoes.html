@@ -186,6 +186,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -840,7 +841,13 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             freteBox.classList.remove('mostrar');
             outrosEstadosBox.classList.remove('mostrar');
             pagamentoArea.classList.remove('mostrar');
-            resetarPagamento();
+            // ✅ CORREÇÃO: Só resetar pagamento se não estiver confirmado
+            // Se pagamento já foi confirmado, manter cobrancaId para vinculação no INSERT
+            if (!pagamentoConfirmado) {
+                resetarPagamento();
+            } else {
+                console.log('[FRETE] Pagamento já confirmado, mantendo cobrancaId:', cobrancaId);
+            }
 
             if (!estado || !cidade) {
                 freteDescricao.textContent = 'Aguardando preenchimento do estado e cidade...';
@@ -957,13 +964,17 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 rua: rua, numero: numero, complemento: complemento, bairro: bairro,
                 cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
                 regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
-                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual
+                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual,
+                cobrancaId: cobrancaId  // ✅ CORREÇÃO: Incluir cobrancaId nos dados salvos
             };
 
             sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
             sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
-            if (cobrancaId) sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
-            console.log('[FORM] Dados do formulário salvos no sessionStorage');
+            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage
+            if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+            }
+            console.log('[FORM] Dados salvos. cobrancaId:', cobrancaId);
         }
 
         function verificarDadosSalvos() {
@@ -972,7 +983,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
                 sessionStorage.removeItem('solicitacao_dados');
                 sessionStorage.removeItem('solicitacao_cliente_id');
-                sessionStorage.removeItem('solicitacao_cobranca_id');
+                // ✅ CORREÇÃO: NÃO limpar cobranca_id aqui! Manter para próxima solicitação
+                // sessionStorage.removeItem('solicitacao_cobranca_id'); ← REMOVIDO!
                 sessionStorage.removeItem('solicitacao_numero');
                 sessionStorage.removeItem('solicitacao_nome');
                 sessionStorage.removeItem('solicitacao_regiao');
@@ -1048,18 +1060,18 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
             acessoInterno = referrerEhDashboard || sessionFlag;
 
-            // Se veio com cobranca_id na URL, salvar para uso no envio
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage SEMPRE (independentemente da URL)
+            const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+            if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                cobrancaId = savedCobrancaId;
+                console.log('[ORIGEM] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+            }
+
+            // Se veio com cobranca_id na URL, sobrescreve o do sessionStorage
             if (cobrancaIdDaURL) {
                 cobrancaId = cobrancaIdDaURL;
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
-                console.log('🔗 Cobrança ID da URL:', cobrancaId);
-            } else {
-                // Tentar recuperar do sessionStorage
-                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
-                if (savedCobrancaId) {
-                    cobrancaId = savedCobrancaId;
-                    console.log('🔗 Cobrança ID do sessionStorage:', cobrancaId);
-                }
+                console.log('[ORIGEM] ✅ cobrancaId da URL:', cobrancaId);
             }
 
             if (clienteIdDaURL) {
@@ -1344,7 +1356,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
         function resetarPagamento() {
             pagamentoConfirmado = false;
-            cobrancaId = null;
+            // ✅ CORREÇÃO: NÃO limpar cobrancaId aqui! Ele é necessário para vincular no INSERT
+            // cobrancaId = null; ← REMOVIDO!
             mpPaymentId = null;
             pixQrCode = null;
             pixCopiaCola = null;
@@ -1795,16 +1808,80 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         }
 
         async function enviarEmailConfirmacao(dadosSolicitacao) {
+            console.log('[EMAIL] Iniciando envio de e-mails...');
+            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
+
             try {
-                const templateParams = { to_email: dadosSolicitacao.email, numero_solicitacao: dadosSolicitacao.numeroSolicitacao, nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao, regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero, complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro, cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep, observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação' };
-                const response = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams);
-                console.log('✅ E-mail enviado:', response.status); return true;
-            } catch (error) { console.error('❌ Erro ao enviar e-mail:', error); return false; }
+                // ✅ CORREÇÃO: Enviar e-mail para o CLIENTE (se preenchido)
+                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
+                    const templateParamsCliente = {
+                        to_email: dadosSolicitacao.email,
+                        numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                        nome: dadosSolicitacao.nome,
+                        data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                        regiao: dadosSolicitacao.regiao,
+                        rua: dadosSolicitacao.rua,
+                        numero: dadosSolicitacao.numero,
+                        complemento: dadosSolicitacao.complemento || 'N/A',
+                        bairro: dadosSolicitacao.bairro,
+                        cidade: dadosSolicitacao.cidade,
+                        cep: dadosSolicitacao.cep,
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
+                    };
+                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
+                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
+                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
+                } else {
+                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
+                }
+
+                // ✅ CORREÇÃO: E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
+                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
+                const templateParamsAdmin = {
+                    to_email: 'marcobet@gmail.com',
+                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                    nome: dadosSolicitacao.nome,
+                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                    regiao: dadosSolicitacao.regiao,
+                    rua: dadosSolicitacao.rua,
+                    numero: dadosSolicitacao.numero,
+                    complemento: dadosSolicitacao.complemento || 'N/A',
+                    bairro: dadosSolicitacao.bairro,
+                    cidade: dadosSolicitacao.cidade,
+                    cep: dadosSolicitacao.cep,
+                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                    email_cliente: dadosSolicitacao.email || 'Não informado',
+                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
+                };
+                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
+                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
+                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
+
+                return true;
+            } catch (error) {
+                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
+                return false;
+            }
         }
 
         async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
             modoAutomatico = modoAutomatico || false;
+
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage caso tenha sido perdido
+            if (!cobrancaId) {
+                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+                if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                    cobrancaId = savedCobrancaId;
+                    console.log('[ENVIAR] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                }
+            }
+            console.log('[ENVIAR] cobrancaId atual:', cobrancaId, '| modoAutomatico:', modoAutomatico);
 
             if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
@@ -1998,11 +2075,16 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     status: 'pendente'
                 };
 
-                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '') {
+                // ✅ CORREÇÃO: Logs detalhados do cobrancaId antes do INSERT
+                console.log('[INSERT] 🔍 cobrancaId valor:', cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId tipo:', typeof cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId é válido?', !!(cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined'));
+
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined') {
                     dadosSolicitacao.cobranca_id = cobrancaId;
-                    console.log('🔗 Cobrança ID vinculado:', cobrancaId);
+                    console.log('✅ [INSERT] cobranca_id VINCULADO com sucesso:', cobrancaId);
                 } else {
-                    console.log('⚠️ Nenhum cobranca_id para vincular. cobrancaId=', cobrancaId);
+                    console.warn('⚠️ [INSERT] cobranca_id NÃO vinculado. Valor atual:', cobrancaId, '| Tipo:', typeof cobrancaId);
                 }
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
@@ -2013,22 +2095,30 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail somente se o campo foi preenchido (não bloqueante)
-                if (email && email.trim()) {
-                    enviarEmailConfirmacao({
-                        email: email,
-                        numeroSolicitacao: numeroSolicitacao,
-                        nome: nome,
-                        dataSolicitacao: dataSolicitacao,
-                        regiao: regiao,
-                        rua: rua,
-                        numero: numero,
-                        complemento: complemento,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        cep: cep,
-                        observacoes: observacoes
-                    });
+                // ✅ CORREÇÃO: Enviar e-mail - SEMPRE envia cópia para admin
+                // Usar await quando modoAutomatico para garantir envio antes do redirect
+                const emailPromise = enviarEmailConfirmacao({
+                    email: email,
+                    numeroSolicitacao: numeroSolicitacao,
+                    nome: nome,
+                    dataSolicitacao: dataSolicitacao,
+                    regiao: regiao,
+                    rua: rua,
+                    numero: numero,
+                    complemento: complemento,
+                    bairro: bairro,
+                    cidade: cidadeForm,
+                    cep: cep,
+                    observacoes: observacoes,
+                    whatsapp: whatsapp,
+                    instagram: instagram
+                });
+
+                // Se modo automático, aguardar e-mail ser enviado antes de redirecionar
+                if (modoAutomatico) {
+                    console.log('[EMAIL] Modo automático - aguardando envio de e-mail...');
+                    await emailPromise;
+                    console.log('[EMAIL] E-mail processado, prosseguindo com redirecionamento...');
                 }
 
                 // ============================================
