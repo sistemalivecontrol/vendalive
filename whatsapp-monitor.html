@@ -393,6 +393,7 @@
     })();
     </script>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -481,6 +482,9 @@
                 <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar</button>
                 <button class="btn btn-success" onclick="carregarEnvios()">🔄 Atualizar</button>
                 <button class="btn" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;" onclick="carregarTodosSemFiltroData()">📋 Mostrar Todos (Sem Data)</button>
+                <button class="btn" id="btnReenvioAuto" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white;" onclick="toggleReenvioAutomatico()">
+                    🤖 Reenvio Auto: OFF
+                </button>
             </div>
         </div>
 
@@ -567,6 +571,143 @@
         let clienteSistemaId = null;
         let canalRealtime = null;
         let enviosData = [];
+
+        // ✅ REENVIO AUTOMÁTICO
+        let reenvioAutomaticoAtivo = false;
+        let intervaloReenvioAuto = null;
+        const INTERVALO_VERIFICACAO_MS = 60000; // Verifica a cada 60s
+        const TEMPO_MINIMO_FALHA_MS = 60000; // Só reenvia se falhou há pelo menos 60s
+
+        function toggleReenvioAutomatico() {
+            const btn = document.getElementById('btnReenvioAuto');
+            reenvioAutomaticoAtivo = !reenvioAutomaticoAtivo;
+
+            if (reenvioAutomaticoAtivo) {
+                btn.innerHTML = '🤖 Reenvio Auto: ON';
+                btn.style.background = 'linear-gradient(135deg, #27ae60, #219a52)';
+                console.log('[AUTO-REENVIO] ✅ Reenvio automático ATIVADO');
+                showToast('🤖 Reenvio automático ATIVADO - Verificando a cada 60s', 'sucesso');
+                // Executa imediatamente e agenda próximo
+                verificarEFalhasReenviar();
+                intervaloReenvioAuto = setInterval(verificarEFalhasReenviar, INTERVALO_VERIFICACAO_MS);
+            } else {
+                btn.innerHTML = '🤖 Reenvio Auto: OFF';
+                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                console.log('[AUTO-REENVIO] ❌ Reenvio automático DESATIVADO');
+                showToast('🤖 Reenvio automático DESATIVADO', 'info');
+                if (intervaloReenvioAuto) {
+                    clearInterval(intervaloReenvioAuto);
+                    intervaloReenvioAuto = null;
+                }
+            }
+        }
+
+        // ✅ FUNÇÃO PRINCIPAL: Verifica falhas e reenvia automaticamente
+        async function verificarEFalhasReenviar() {
+            if (!reenvioAutomaticoAtivo || !supabaseClient || !clienteSistemaId) {
+                console.log('[AUTO-REENVIO] ⏸️ Pulando verificação (inativo ou sem conexão)');
+                return;
+            }
+
+            console.log('[AUTO-REENVIO] 🔍 Verificando envios com falha...');
+
+            try {
+                // Buscar envios com status de falha/timeout dos últimos 24h
+                const vinteQuatroHorasAtras = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                const agora = new Date().toISOString();
+
+                const { data: falhas, error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .in('status_envio', ['erro', 'timeout', 'falha'])
+                    .gte('criado_em', vinteQuatroHorasAtras)
+                    .lte('criado_em', agora)
+                    .order('criado_em', { ascending: true })
+                    .limit(50);
+
+                if (error) {
+                    console.error('[AUTO-REENVIO] ❌ Erro ao buscar falhas:', error);
+                    return;
+                }
+
+                if (!falhas || falhas.length === 0) {
+                    console.log('[AUTO-REENVIO] ✅ Nenhuma falha encontrada para reenviar');
+                    return;
+                }
+
+                console.log(`[AUTO-REENVIO] 📊 ${falhas.length} envio(s) com falha encontrado(s)`);
+
+                // Reenviar cada um (sequencial para não sobrecarregar)
+                for (const envio of falhas) {
+                    // Verificar se já passou tempo suficiente desde a falha
+                    const tempoDesdeFalha = Date.now() - new Date(envio.criado_em).getTime();
+                    if (tempoDesdeFalha < TEMPO_MINIMO_FALHA_MS) {
+                        console.log(`[AUTO-REENVIO] ⏳ Envio ${envio.id.substring(0,8)} muito recente (${Math.round(tempoDesdeFalha/1000)}s), aguardando...`);
+                        continue;
+                    }
+
+                    await reenviarAutomatico(envio);
+                    // Pequeno delay entre reenvios para não sobrecarregar a API
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+
+                console.log('[AUTO-REENVIO] ✅ Ciclo de reenvio automático concluído');
+
+            } catch (e) {
+                console.error('[AUTO-REENVIO] ❌ Erro no ciclo de reenvio:', e);
+            }
+        }
+
+        // ✅ FUNÇÃO: Reenvia uma mensagem específica automaticamente
+        async function reenviarAutomatico(envio) {
+            const logId = envio.id;
+            const numero = envio.numero_destino || envio.numero || '';
+            const mensagem = envio.mensagem || '';
+
+            if (!numero || !mensagem) {
+                console.warn(`[AUTO-REENVIO] ⚠️ Dados incompletos para envio ${logId.substring(0,8)}, pulando`);
+                return;
+            }
+
+            console.log(`[AUTO-REENVIO] 📤 Reenviando envio ${logId.substring(0,8)} para ${numero}...`);
+
+            try {
+                const resultado = await reenviarWhatsApp(numero, mensagem);
+
+                if (resultado.sucesso) {
+                    console.log(`[AUTO-REENVIO] ✅ Envio ${logId.substring(0,8)} reenviado com sucesso!`);
+
+                    // Atualizar no banco
+                    await supabaseClient
+                        .from('whatsapp_envios')
+                        .update({ 
+                            status_envio: 'reenviado', 
+                            status: 'reenviado',
+                            atualizado_em: new Date().toISOString(),
+                            resposta_api: resultado.dados || { reenvio_automatico: true }
+                        })
+                        .eq('id', logId);
+
+                    showToast(`✅ Reenvio automático: ${envio.destinatario || 'Cliente'}`, 'sucesso');
+                } else {
+                    console.warn(`[AUTO-REENVIO] ⚠️ Reenvio ${logId.substring(0,8)} falhou: ${resultado.erro}`);
+
+                    // Atualizar tentativa de reenvio falho
+                    await supabaseClient
+                        .from('whatsapp_envios')
+                        .update({ 
+                            status_envio: 'falha',
+                            status: 'falha',
+                            atualizado_em: new Date().toISOString(),
+                            erro_envio: 'Reenvio automático falhou: ' + (resultado.erro || 'Erro desconhecido')
+                        })
+                        .eq('id', logId);
+                }
+            } catch (e) {
+                console.error(`[AUTO-REENVIO] ❌ Erro ao reenviar ${logId.substring(0,8)}:`, e.message);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', async function() {
             await new Promise(resolve => {
@@ -805,16 +946,26 @@
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                const data = await response.json();
-                if (!response.ok) {
-                    return { sucesso: false, erro: data.error || 'HTTP ' + response.status, mensagem: 'Erro ao reenviar' };
+
+                // ✅ CORREÇÃO: Ler resposta como texto primeiro, depois tentar JSON
+                const responseText = await response.text();
+                let data = null;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseErr) {
+                    console.warn('[REENVIAR] ⚠️ Resposta não é JSON:', responseText.substring(0, 200));
+                    data = { raw: responseText };
                 }
-                return { sucesso: true, mensagem: 'Mensagem reenviada!' };
+
+                if (!response.ok) {
+                    return { sucesso: false, erro: (data && data.message) ? data.message : ('HTTP ' + response.status), mensagem: 'Erro ao reenviar', dados: data };
+                }
+                return { sucesso: true, mensagem: 'Mensagem reenviada!', dados: data };
             } catch (erro) {
                 if (erro.name === 'AbortError') {
-                    return { sucesso: false, erro: 'Timeout', mensagem: 'Timeout novamente. Tente mais tarde.' };
+                    return { sucesso: false, erro: 'Timeout', mensagem: 'Timeout novamente. Tente mais tarde.', dados: null };
                 }
-                return { sucesso: false, erro: erro.message, mensagem: 'Erro: ' + erro.message };
+                return { sucesso: false, erro: erro.message, mensagem: 'Erro: ' + erro.message, dados: null };
             }
         }
 
