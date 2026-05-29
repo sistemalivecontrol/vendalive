@@ -187,6 +187,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -1415,9 +1416,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             // ✅ CORREÇÃO: Verificar se já existe cobrança em andamento (não paga)
             if (cobrancaId && !pagamentoConfirmado && mpPaymentId) {
                 console.log('[PIX] ⚠️ Já existe cobrança em andamento:', cobrancaId);
-                const continuar = confirm('⚠️ Já existe um PIX gerado para esta solicitação.
-
-Deseja gerar um novo PIX (o anterior será cancelado)?');
+                const continuar = confirm('⚠️ Já existe um PIX gerado para esta solicitação.\n\nDeseja gerar um novo PIX (o anterior será cancelado)?');
                 if (!continuar) return;
                 // Limpar cobrança anterior
                 cobrancaId = null;
