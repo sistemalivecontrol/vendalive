@@ -347,9 +347,15 @@
                 // Buscar cobranças Mercado Pago
                 let queryMP = supabaseClient
                     .from('cobrancas_pix')
+<<<<<<< HEAD
+                    .select('id, comprador_nome, valor, status, gateway, order_nsu, checkout_url, pago_em, created_at')
+                    .eq('id', cobrancaId)
+                    .maybeSingle();
+=======
                     .select('*')
                     .eq('cliente_sistema_id', clienteSistemaId)
                     .order('criado_em', { ascending: false });
+>>>>>>> 18a78a3ffb20c07708a43606af10e001438b7c41
 
                 const { data: dataMP, error: errorMP } = await queryMP;
                 if (errorMP) throw errorMP;
@@ -452,6 +458,28 @@
                 aplicarFiltros();
                 atualizarStats();
 
+<<<<<<< HEAD
+                const statusText = cobranca.status === 'pago' ? '✅ Pago' : cobranca.status === 'pendente' ? '⏳ Pendente' : '❌ ' + cobranca.status;
+                const html = 
+                    '<div style="padding:10px;">' +
+                    '<h3 style="color:#0a1628;margin-bottom:15px;">💳 Cobrança PIX</h3>' +
+                    '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:15px;margin-bottom:15px;">' +
+                    '<strong style="font-size:16px;">' + (cobranca.comprador_nome || '-') + '</strong>' +
+                    '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (cobranca.status === 'pago' ? '#dcfce7;color:#166534' : '#fef3c7;color:#92400e') + ';">' + statusText + '</span>' +
+                    '</div>' +
+                    '<strong>Valor:</strong> R$ ' + (cobranca.valor || 0).toFixed(2).replace('.', ',') + '<br>' +
+                    '<strong>Gateway:</strong> ' + (cobranca.gateway || '-') + '<br>' +
+                    '<strong>ID Transação:</strong> ' + (cobranca.order_nsu || '-') + '<br>' +
+                    '<strong>Pago em:</strong> ' + (cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleString('pt-BR') : '-') + '<br>' +
+                    (cobranca.checkout_url ? '<br><a href="' + cobranca.checkout_url + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Gateway</a>' : '') +
+                    '</div>';
+
+                // Reutilizar o modal de detalhes
+                document.getElementById('modalRastreioBody').innerHTML = html;
+                document.getElementById('modalRastreioTitulo').textContent = 'Detalhes da Cobrança';
+                document.getElementById('modalRastreio').style.display = 'flex';
+=======
+>>>>>>> 18a78a3ffb20c07708a43606af10e001438b7c41
             } catch (e) {
                 console.error('Erro:', e);
                 mostrarErro('Erro ao carregar cobranças: ' + e.message);
