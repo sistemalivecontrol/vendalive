@@ -1217,10 +1217,10 @@ async function aplicarFiltros() {
                     (cobranca.mp_ticket_url ? '<br><a href="' + cobranca.mp_ticket_url + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Mercado Pago</a>' : '') +
                     '</div>';
 
-                // Reutilizar o modal de detalhes
-                document.getElementById('modalRastreioBody').innerHTML = html;
-                document.getElementById('modalRastreioTitulo').textContent = 'Detalhes da Cobrança';
-                document.getElementById('modalRastreio').style.display = 'flex';
+                // Abrir modal de detalhes da cobrança PIX
+                document.getElementById('modalDetalhesPixBody').innerHTML = html;
+                document.getElementById('modalDetalhesPixTitulo').textContent = '💳 Detalhes da Cobrança';
+                document.getElementById('modalDetalhesPix').classList.add('active');
             } catch (e) {
                 console.error('Erro:', e);
                 showAlert('Erro ao buscar cobrança.', 'error');
@@ -2184,5 +2184,15 @@ Qualquer dúvida, estou por aqui! 💕
         // Logout usa auth.js - window.fazerLogout()
     </script>
     <script src="whatsapp-envios-log.js?v=20260529"></script>
+
+    <!-- Modal Detalhes Cobrança PIX -->
+    <div class="modal" id="modalDetalhesPix">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalDetalhesPixTitulo">💳 Detalhes da Cobrança</h2><button class="modal-close" onclick="fecharModalDetalhesPix()">&times;</button></div>
+            <div class="modal-body" id="modalDetalhesPixBody"></div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModalDetalhesPix()">Fechar</button></div>
+        </div>
+    </div>
+
 </body>
 </html>
