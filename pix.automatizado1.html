@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
+<script>
+// ==========================================
+// SESSION.JS - Verificacao sincrona de login
+// Apenas verifica localStorage - NAO inicializa Supabase
+// O auth.js ja cuida da inicializacao do Supabase
+// v2.0 - Sem inicializacao de Supabase (evita duplicacao)
+// ==========================================
+(function(){
+    'use strict';
+    const SESSAO_KEY='usuarioLogado';
+    const LOGIN_PAGE='login.html';
+    const path=window.location.pathname.toLowerCase();
+    const href=window.location.href.toLowerCase();
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
+    function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
+    verificarSessaoSincrona();
+})();
+</script>
+<!-- ================================================ -->
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>">
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Pix Automação - VendaLive</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="navmenu.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .header h1 { color: #0B193F; font-size: 1.8rem; margin-bottom: 5px; }
+        .header p { color: #636E72; font-size: 0.9rem; }
+        .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; }
+        .user-info { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 10px 20px; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #1565C0; }
+
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; }
+        .stat-card h3 { color: rgba(255,255,255,0.85); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-card .valor { color: white; font-size: 2rem; font-weight: bold; }
+        .stat-card.pago { border-left-color: #28a745; }
+        .stat-card.pago .valor { color: #90EE90; }
+        .stat-card.pendente { border-left-color: #ffc107; }
+        .stat-card.pendente .valor { color: #FFD54F; }
+        .stat-card.expirado { border-left-color: #dc3545; }
+        .stat-card.expirado .valor { color: #FF6B6B; }
+
+        .filtros-container { background: white; padding: 25px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .filtros-titulo { color: #0B193F; font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .filtros-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .campo-filtro { display: flex; flex-direction: column; gap: 8px; }
+        .campo-filtro label { font-weight: 600; color: #2D3436; font-size: 0.9rem; }
+        .campo-filtro input, .campo-filtro select { padding: 12px 15px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; transition: all 0.3s; }
+        .campo-filtro input:focus, .campo-filtro select:focus { outline: none; border-color: #0B193F; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+        .botoes-filtro { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn { padding: 14px 28px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #0B193F; color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: linear-gradient(135deg, #A8E6CF, #7FCDCD); color: #2D3436; }
+        .btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+
+        .tabela-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        .tabela-header { padding: 20px 25px; background: #0B193F; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        thead { background: #F8F9FA; }
+        th { padding: 15px; text-align: left; font-weight: 600; color: #2D3436; border-bottom: 2px solid #E0E0E0; white-space: nowrap; position: sticky; top: 0; background: #F8F9FA; z-index: 10; }
+        td { padding: 15px; border-bottom: 1px solid #E0E0E0; color: #636E72; }
+        tr:hover { background: #F3E5F5; }
+
+        .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-pago { background: #C8E6C9; color: #2E7D32; }
+        .status-pendente { background: #FFF3E0; color: #E65100; }
+        .status-expirado { background: #FFEBEE; color: #C62828; }
+        .status-cancelado { background: #F5F5F5; color: #616161; }
+
+        .valor-total { font-weight: bold; color: #0B193F; }
+        .valor-pago { font-weight: bold; color: #28a745; }
+        .acoes-container { display: flex; gap: 5px; flex-wrap: nowrap; }
+        .btn-acao { padding: 6px 10px; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-ver { background: #0B193F; color: white; }
+        .btn-verificar { background: linear-gradient(135deg, #17a2b8, #138496); color: white; }
+        .btn-copiar { background: linear-gradient(135deg, #ffc107, #ff9800); color: #2D3436; }
+
+        .loading { text-align: center; padding: 40px; color: #0B193F; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0B193F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #636E72; }
+        .empty-state-icon { font-size: 4rem; margin-bottom: 20px; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto; }
+        .modal-overlay.ativo { display: flex; }
+        .modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: slideIn 0.3s ease; margin: 20px auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .modal-header h3 { color: #0B193F; font-size: 1.3rem; }
+        .btn-fechar { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #636E72; }
+
+        .pix-qr-container { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 15px 0; text-align: center; }
+        .pix-qr-container img { max-width: 250px; width: 100%; }
+        .pix-code-box { background: #f0f0f0; border-radius: 8px; padding: 12px; margin: 15px 0; font-family: monospace; font-size: 0.8rem; word-break: break-all; color: #333; }
+        .pix-valor { font-size: 2em; font-weight: bold; color: #0B193F; margin: 10px 0; text-align: center; }
+        .pix-comprador { color: #0B193F; font-weight: 600; margin-bottom: 5px; font-size: 1.1em; text-align: center; }
+
+        .alerta-erro { background: #FFEBEE; border: 2px solid #EF5350; color: #C62828; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .alerta-erro.ativo { display: block; }
+
+        .auto-refresh { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+        .auto-refresh label { font-size: 0.85rem; color: #636E72; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #0B193F; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        @media (max-width: 768px) { 
+            .header { flex-direction: column; text-align: center; } 
+            .header-left { flex-direction: column; } 
+            .filtros-grid { grid-template-columns: 1fr; } 
+            th, td { padding: 10px; font-size: 0.85rem; } 
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="location.href='dashboard.html'">← Voltar ao Dashboard</button>
+                <div>
+                    <h1>💳 Pagamentos PIX & Links</h1>
+                    <p>Visualize e acompanhe todos os pagamentos PIX e Links gerados</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="auto-refresh">
+                    <label class="switch">
+                        <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                        <span class="slider"></span>
+                    </label>
+                    <label for="autoRefresh">Auto-atualizar</label>
+                </div>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span>👤</span>
+                    <span id="userEmail"></span>
+                </div>
+                <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="alerta-erro" id="alertaErro"></div>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="stat-card"><h3>Total de Cobranças</h3><div class="valor" id="statTotal">-</div></div>
+            <div class="stat-card pago"><h3>Pagos</h3><div class="valor" id="statPagos">-</div></div>
+            <div class="stat-card pendente"><h3>Pendentes</h3><div class="valor" id="statPendentes">-</div></div>
+            <div class="stat-card expirado"><h3>Expirados</h3><div class="valor" id="statExpirados">-</div></div>
+            <div class="stat-card pago"><h3>Valor Recebido</h3><div class="valor" id="statValorRecebido">-</div></div>
+            <div class="stat-card pendente"><h3>Valor Pendente</h3><div class="valor" id="statValorPendente">-</div></div>
+        </div>
+
+        <div class="filtros-container">
+            <h2 class="filtros-titulo">🔍 Filtros</h2>
+            <div class="filtros-grid">
+                <div class="campo-filtro">
+                    <label>Status</label>
+                    <select id="filtroStatus" onchange="aplicarFiltros()">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                        <option value="expirado">Expirado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="campo-filtro">
+                    <label>Código da Live</label>
+                    <input type="text" id="filtroLive" placeholder="Ex: LIVE001" oninput="aplicarFiltros()">
+                </div>
+                <div class="campo-filtro">
+                    <label>Comprador</label>
+                    <input type="text" id="filtroComprador" placeholder="Nome do comprador" oninput="aplicarFiltros()">
+                </div>
+                <div class="campo-filtro">
+                    <label>Data Inicial</label>
+                    <input type="date" id="filtroDataInicio" onchange="aplicarFiltros()">
+                </div>
+                <div class="campo-filtro">
+                    <label>Data Final</label>
+                    <input type="date" id="filtroDataFim" onchange="aplicarFiltros()">
+                </div>
+            </div>
+            <div class="botoes-filtro">
+                <button class="btn btn-primary" onclick="carregarCobrancas()">🔄 Atualizar</button>
+                <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar Filtros</button>
+                <button class="btn btn-success" onclick="verificarPendentes()">🔍 Verificar Pendentes</button>
+            </div>
+        </div>
+
+        <div class="tabela-container">
+            <div class="tabela-header">
+                <h2>📋 Lista de Cobranças PIX</h2>
+                <span id="infoResultado"></span>
+            </div>
+            <div class="table-responsive">
+                <table id="tabelaCobrancas">
+                    <thead>
+                        <tr>
+                            <th>Comprador</th>
+                            <th>Gateway</th>
+                            <th>Contato</th>
+                            <th>Live</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Pago Em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBody"></tbody>
+                </table>
+            </div>
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Carregando...</p>
+            </div>
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">💳</div>
+                <h3>Nenhuma cobrança encontrada</h3>
+                <p>As cobranças PIX aparecerão aqui quando forem geradas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver QR Code -->
+    <div class="modal-overlay" id="modalQrCode">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📱 QR Code PIX</h3>
+                <button class="btn-fechar" onclick="fecharModal('modalQrCode')">×</button>
+            </div>
+            <div class="pix-comprador" id="qrComprador">-</div>
+            <div class="pix-valor" id="qrValor">R$ 0,00</div>
+            <div class="pix-qr-container">
+                <img id="qrCodeImg" src="" alt="QR Code PIX">
+            </div>
+            <div class="pix-code-box" id="qrCodeText">-</div>
+            <button class="btn btn-primary" onclick="copiarCodigoPix()" style="width: 100%; margin-top: 10px;">📋 Copiar Código PIX</button>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes -->
+    <div class="modal-overlay" id="modalDetalhes">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>📋 Detalhes da Solicitação</h3>
+                <button class="btn-fechar" onclick="fecharModal('modalDetalhes')">×</button>
+            </div>
+            <div id="detalhesContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // VERSION: 2026-06-01-v2 - Pendentes inclui cancelados
+        let supabaseClient = null;
+        let usuarioAtual = null;
+        let clienteSistemaId = null;
+        let cobrancasData = [];
+        let cobrancasFiltradas = [];
+        let autoRefreshInterval = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await new Promise(resolve => {
+                const check = () => {
+                    if (window.supabaseClient) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+
+            supabaseClient = window.supabaseClient;
+            const session = await verificarSessao();
+            if (!session) return;
+
+            await carregarUsuarioLogado();
+            usuarioAtual = window.authUsuario;
+            clienteSistemaId = window.authClienteId;
+
+            if (!clienteSistemaId) {
+                mostrarErro('Erro: Cliente não identificado.');
+                setTimeout(() => { location.href='login.html'; }, 3000);
+                return;
+            }
+
+            const hoje = new Date();
+            const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            document.getElementById('filtroDataInicio').value = inicioMes.toISOString().split('T')[0];
+            document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+
+            carregarCobrancas();
+
+            document.getElementById('modalQrCode').addEventListener('click', function(e) { if (e.target === e.currentTarget) fecharModal('modalQrCode'); });
+            document.getElementById('modalDetalhes').addEventListener('click', function(e) { if (e.target === e.currentTarget) fecharModal('modalDetalhes'); });
+        });
+
+        function formatarDataBr(data) { 
+            if (!data) return '-'; 
+            const d = new Date(data); 
+            return isNaN(d.getTime()) ? data : d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); 
+        }
+
+        function formatarMoeda(valor) {
+            const num = parseFloat(valor || 0);
+            return 'R$ ' + num.toFixed(2).replace('.', ',');
+        }
+
+        async function carregarCobrancas() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('tabelaBody').innerHTML = '';
+
+            try {
+                // Buscar cobranças Mercado Pago
+                let queryMP = supabaseClient
+                    .from('cobrancas_pix')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+
+                const { data: dataMP, error: errorMP } = await queryMP;
+                if (errorMP) throw errorMP;
+
+                // Buscar cobranças InfinitePay
+                let queryInfinite = supabaseClient
+                    .from('cobrancas_infinitepay')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+
+                const { data: dataInfinite, error: errorInfinite } = await queryInfinite;
+                if (errorInfinite) console.warn('Erro InfinitePay:', errorInfinite);
+
+                console.log('[DEBUG] MP:', dataMP ? dataMP.length : 0, 'Infinite:', dataInfinite ? dataInfinite.length : 0);
+
+                // Normalizar dados do InfinitePay
+                const infiniteNormalizado = (dataInfinite || []).map(function(c) {
+                    const valorOriginal = parseFloat(c.valor_original || c.valor || 0);
+                    const valorComTaxa = parseFloat(c.valor_com_taxa || 0);
+                    const valorPago = parseFloat(c.valor_pago || c.paid_amount || 0);
+
+                    const statusRaw = c.status || 'pending';
+                    const status = statusRaw === 'paid' || statusRaw === 'approved' ? 'pago' : 
+                                   statusRaw === 'cancelled' || statusRaw === 'canceled' ? 'cancelado' :
+                                   statusRaw === 'expired' ? 'expirado' : 'pendente';
+
+                    return {
+                        id: c.id,
+                        gateway: 'infinitepay',
+                        comprador_nome: c.comprador_nome || '-',
+                        comprador_email: c.comprador_email || null,
+                        comprador_telefone: c.comprador_telefone || null,
+                        comprador_cpf: c.comprador_cpf || null,
+                        codigo_live: c.codigo_live || '-',
+                        data_live: null,
+                        valor: valorOriginal,
+                        valor_com_taxa: valorComTaxa,
+                        valor_pago: status === 'pago' ? (valorPago || valorOriginal) : null,
+                        status: status,
+                        status_infinite: statusRaw,
+                        pago_em: c.pago_em || null,
+                        criado_em: c.criado_em || new Date().toISOString(),
+                        expira_em: null,
+                        order_nsu: c.order_nsu || '-',
+                        checkout_url: c.checkout_url || c.invoice_url || null,
+                        infinitepay_id: c.infinitepay_id || null,
+                        taxa_percentual: c.taxa_percentual || null,
+                        taxa_fixa: c.taxa_fixa || null,
+                        venda_id: c.venda_id || null
+                    };
+                });
+
+                // Normalizar dados do Mercado Pago
+                const mpNormalizado = (dataMP || []).map(function(c) {
+                    const valor = parseFloat(c.valor || c.amount || 0);
+                    const valorPago = parseFloat(c.valor_pago || c.paid_amount || 0);
+                    // ✅ CORREÇÃO: Verificar ambos status (interno e do MP)
+                    const isPago = c.status === 'pago' || c.status_mp === 'approved';
+                    const isCancelado = c.status === 'cancelado' || c.status_mp === 'cancelled';
+                    const isExpirado = c.status === 'expirado' || c.status_mp === 'rejected';
+                    const status = isPago ? 'pago' : isCancelado ? 'cancelado' : isExpirado ? 'expirado' : 'pendente';
+
+                    return {
+                        id: c.id,
+                        gateway: 'mercado_pago',
+                        comprador_nome: c.comprador_nome || '-',
+                        comprador_email: c.comprador_email || null,
+                        comprador_telefone: c.comprador_whatsapp || c.comprador_telefone || null,
+                        comprador_cpf: c.pagador_cpf_cnpj || null,
+                        codigo_live: c.codigo_live || '-',
+                        data_live: c.data_live || null,
+                        valor: valor,
+                        valor_com_taxa: null,
+                        valor_pago: status === 'pago' ? (valorPago || valor) : null,
+                        status: status,
+                        status_mp: c.status_mp || statusRaw,
+                        pago_em: c.pago_em || null,
+                        criado_em: c.criado_em || new Date().toISOString(),
+                        expira_em: c.expira_em || null,
+                        order_nsu: c.mp_payment_id || '-',
+                        checkout_url: c.mp_ticket_url || null,
+                        infinitepay_id: null,
+                        taxa_percentual: null,
+                        taxa_fixa: null,
+                        venda_id: null
+                    };
+                });
+
+                // Combinar e ordenar
+                cobrancasData = [...mpNormalizado, ...infiniteNormalizado].sort(function(a, b) {
+                    return new Date(b.criado_em) - new Date(a.criado_em);
+                });
+
+                console.log('[DEBUG] Total combinado:', cobrancasData.length);
+                if (cobrancasData.length > 0) {
+                    console.log('[DEBUG] Primeiro registro:', JSON.stringify(cobrancasData[0], null, 2));
+                }
+
+                aplicarFiltros();
+                atualizarStats();
+
+            } catch (e) {
+                console.error('Erro:', e);
+                mostrarErro('Erro ao carregar cobranças: ' + e.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function aplicarFiltros() {
+            const status = document.getElementById('filtroStatus').value;
+            const live = document.getElementById('filtroLive').value.toLowerCase();
+            const comprador = document.getElementById('filtroComprador').value.toLowerCase();
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
+
+            cobrancasFiltradas = cobrancasData.filter(function(c) {
+                if (status && c.status !== status) return false;
+                if (live && (!c.codigo_live || !c.codigo_live.toLowerCase().includes(live))) return false;
+                if (comprador && (!c.comprador_nome || !c.comprador_nome.toLowerCase().includes(comprador))) return false;
+                if (dataInicio) {
+                    const d = new Date(c.criado_em);
+                    if (d < new Date(dataInicio + 'T00:00:00')) return false;
+                }
+                if (dataFim) {
+                    const d = new Date(c.criado_em);
+                    if (d > new Date(dataFim + 'T23:59:59')) return false;
+                }
+                return true;
+            });
+
+            renderizarTabela();
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabelaBody');
+            tbody.innerHTML = '';
+
+            if (cobrancasFiltradas.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('infoResultado').textContent = '';
+                return;
+            }
+
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('infoResultado').textContent = cobrancasFiltradas.length + ' cobranca(s) encontrada(s)';
+
+            cobrancasFiltradas.forEach(function(c) {
+                const tr = document.createElement('tr');
+
+                let statusClass = 'status-pendente';
+                let statusText = 'Pendente';
+                if (c.status === 'pago') { statusClass = 'status-pago'; statusText = 'Pago'; }
+                else if (c.status === 'expirado') { statusClass = 'status-expirado'; statusText = 'Expirado'; }
+                else if (c.status === 'cancelado') { statusClass = 'status-cancelado'; statusText = 'Cancelado'; }
+
+                let gatewayBadge = '';
+                if (c.gateway === 'infinitepay') {
+                    gatewayBadge = '<span style="background:#7B1FA2;color:white;padding:2px 8px;border-radius:4px;font-size:0.7rem;">InfinitePay</span>';
+                } else {
+                    gatewayBadge = '<span style="background:#009EE3;color:white;padding:2px 8px;border-radius:4px;font-size:0.7rem;">Mercado Pago</span>';
+                }
+
+                let contato = '-';
+                if (c.comprador_email) contato = c.comprador_email;
+                else if (c.comprador_telefone) contato = c.comprador_telefone;
+
+                let acoesHtml = '';
+
+                if (c.gateway === 'mercado_pago') {
+                    acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('mercado_pago') + ')">Detalhes</button>';
+                    if (c.status === 'pendente') {
+                        acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusMP(' + q(c.id) + ')">Verificar</button>';
+                    }
+                    if (c.checkout_url) {
+                        acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
+                    }
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Solicitação</button>';
+                } else if (c.gateway === 'infinitepay') {
+                    acoesHtml += '<button class="btn-acao btn-verificar" onclick="verDetalhes(' + q(c.id) + ', ' + q('infinitepay') + ')">Detalhes</button>';
+                    if (c.checkout_url) {
+                        acoesHtml += '<a href="' + c.checkout_url + '" target="_blank" class="btn-acao btn-ver" style="text-decoration:none;">Pagar</a>';
+                        acoesHtml += '<button class="btn-acao btn-copiar" onclick="copiarLink(' + q(c.id) + ')">Copiar</button>';
+                    }
+                    if (c.status === 'pendente') {
+                        acoesHtml += '<button class="btn-acao btn-verificar" onclick="verificarStatusInfinite(' + q(c.id) + ')">Verificar</button>';
+                    }
+                    acoesHtml += '<button class="btn-acao" style="background:linear-gradient(135deg,#5b9bd5,#4a8ac4);color:white;" onclick="verSolicitacao(' + q(c.id) + ')" title="Ver solicitação de entrega">📋 Solicitação</button>';
+                }
+
+                let valorHtml = '<span class="valor-total">' + formatarMoeda(c.valor) + '</span>';
+                if (c.valor_com_taxa && c.valor_com_taxa > c.valor) {
+                    valorHtml += '<br><small style="color:#999">Com taxa: ' + formatarMoeda(c.valor_com_taxa) + '</small>';
+                }
+                if (c.valor_pago) {
+                    valorHtml += '<br><span class="valor-pago">Pago: ' + formatarMoeda(c.valor_pago) + '</span>';
+                }
+
+                tr.innerHTML = 
+                    '<td><strong>' + escapeHtml(c.comprador_nome || '-') + '</strong></td>' +
+                    '<td>' + gatewayBadge + '</td>' +
+                    '<td>' + escapeHtml(contato) + '</td>' +
+                    '<td>' + (c.codigo_live || '-') + '</td>' +
+                    '<td>' + valorHtml + '</td>' +
+                    '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+                    '<td>' + formatarDataBr(c.pago_em) + '</td>' +
+                    '<td><div class="acoes-container">' + acoesHtml + '</div></td>';
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Helper para quotes em strings
+        function q(str) {
+            return "'" + str + "'";
+        }
+
+        function atualizarStats() {
+            console.log('[STATS DEBUG] Total:', cobrancasData.length, 'Status breakdown:', cobrancasData.reduce((acc,c)=>{acc[c.status]=(acc[c.status]||0)+1;return acc},{}));
+            const total = cobrancasData.length;
+            const pagos = cobrancasData.filter(c => c.status === 'pago').length;
+            const pendentes = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').length;
+            const expirados = cobrancasData.filter(c => c.status === 'expirado').length;
+            const valorRecebido = cobrancasData.reduce((s, c) => s + (c.valor_pago || 0), 0);
+            const valorPendente = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').reduce((s, c) => s + c.valor, 0);
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statPagos').textContent = pagos;
+            document.getElementById('statPendentes').textContent = pendentes;
+            document.getElementById('statExpirados').textContent = expirados;
+            document.getElementById('statValorRecebido').textContent = formatarMoeda(valorRecebido);
+            document.getElementById('statValorPendente').textContent = formatarMoeda(valorPendente);
+        }
+
+        function verDetalhes(id, gateway) {
+            const c = cobrancasData.find(x => x.id === id && x.gateway === (gateway || x.gateway));
+            if (!c) return;
+
+            let gatewayInfo = '';
+            if (c.gateway === 'infinitepay') {
+                gatewayInfo = 
+                    '<strong>Gateway:</strong> InfinitePay<br>' +
+                    '<strong>NSU:</strong> ' + (c.order_nsu || '-') + '<br>' +
+                    '<strong>ID InfinitePay:</strong> ' + (c.infinitepay_id || '-') + '<br>' +
+                    '<strong>Link:</strong> <a href="' + (c.checkout_url || '#') + '" target="_blank">' + (c.checkout_url || '-') + '</a><br>' +
+                    (c.taxa_percentual ? '<strong>Taxa %:</strong> ' + c.taxa_percentual + '%<br>' : '') +
+                    (c.taxa_fixa ? '<strong>Taxa Fixa:</strong> R$ ' + c.taxa_fixa + '<br>' : '') +
+                    (c.valor_com_taxa ? '<strong>Valor com Taxa:</strong> ' + formatarMoeda(c.valor_com_taxa) + '<br>' : '');
+            } else {
+                gatewayInfo = 
+                    '<strong>Gateway:</strong> Mercado Pago<br>' +
+                    '<strong>Payment ID:</strong> ' + (c.order_nsu || '-') + '<br>' +
+                    '<strong>Ticket URL:</strong> <a href="' + (c.checkout_url || '#') + '" target="_blank">' + (c.checkout_url || '-') + '</a><br>';
+            }
+
+            const html = 
+                '<div style="margin-bottom: 15px;">' +
+                '<strong>Comprador:</strong> ' + escapeHtml(c.comprador_nome || '-') + '<br>' +
+                '<strong>Email:</strong> ' + (c.comprador_email || '-') + '<br>' +
+                '<strong>Telefone:</strong> ' + (c.comprador_telefone || '-') + '<br>' +
+                '<strong>CPF:</strong> ' + (c.comprador_cpf || '-') + '<br>' +
+                '<strong>Live:</strong> ' + (c.codigo_live || '-') + '<br>' +
+                '</div>' +
+                '<div style="margin-bottom: 15px;">' +
+                '<strong>Valor Original:</strong> ' + formatarMoeda(c.valor) + '<br>' +
+                '<strong>Valor Pago:</strong> ' + (c.valor_pago ? formatarMoeda(c.valor_pago) : '-') + '<br>' +
+                '<strong>Status:</strong> ' + (c.status || '-') + '<br>' +
+                (c.status_mp ? '<strong>Status MP:</strong> ' + c.status_mp + '<br>' : '') +
+                (c.status_infinite ? '<strong>Status Infinite:</strong> ' + c.status_infinite + '<br>' : '') +
+                '</div>' +
+                '<div style="margin-bottom: 15px;">' + gatewayInfo + '</div>' +
+                '<div style="margin-bottom: 15px;">' +
+                '<strong>Criado em:</strong> ' + formatarDataBr(c.criado_em) + '<br>' +
+                '<strong>Pago em:</strong> ' + formatarDataBr(c.pago_em) + '<br>' +
+                '</div>';
+
+            document.getElementById('detalhesContent').innerHTML = html;
+            document.getElementById('modalDetalhes').classList.add('ativo');
+        }
+
+        async function verificarStatusMP(id) {
+            showStatus('Verificando status MP...', 'info');
+        }
+
+        async function verificarStatusInfinite(id) {
+            showStatus('Verificando status InfinitePay...', 'info');
+        }
+
+        async function verificarPendentes() {
+            const pendentes = cobrancasData.filter(c => c.status === 'pendente');
+            if (pendentes.length === 0) {
+                showStatus('Nenhuma cobrança pendente', 'info');
+                return;
+            }
+            showStatus('Verificando ' + pendentes.length + ' cobrança(s)...', 'info');
+        }
+
+        function copiarLink(id) {
+            const c = cobrancasData.find(x => x.id === id);
+            if (!c || !c.checkout_url) return;
+            navigator.clipboard.writeText(c.checkout_url).then(function() {
+                showStatus('Link copiado!', 'success');
+            }).catch(function() {
+                const textarea = document.createElement('textarea');
+                textarea.value = c.checkout_url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showStatus('Link copiado!', 'success');
+            });
+        }
+
+        function copiarCodigoPix() {
+            const code = document.getElementById('qrCodeText').textContent;
+            navigator.clipboard.writeText(code).then(function() {
+                showStatus('Código copiado!', 'success');
+            });
+        }
+
+        async function verSolicitacao(cobrancaId) {
+            if (!supabaseClient) { showStatus('Sistema não conectado.', 'error'); return; }
+            try {
+                showStatus('Buscando solicitação...', 'info');
+                const { data: solicitacao, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, numero_solicitacao, status, regiao, data_solicitacao, clientes_pg:cliente_pg_id(nome, cpf, whatsapp), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, regiao)')
+                    .eq('cobranca_id', cobrancaId)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error('Erro ao buscar solicitação:', error);
+                    showStatus('Erro ao buscar solicitação.', 'error');
+                    return;
+                }
+
+                if (!solicitacao) {
+                    document.getElementById('detalhesContent').innerHTML = 
+                        '<div style="text-align:center;padding:30px;">' +
+                        '<div style="font-size:48px;margin-bottom:15px;">📭</div>' +
+                        '<h3 style="color:#0a1628;margin-bottom:10px;">Nenhuma solicitação encontrada</h3>' +
+                        '<p style="color:#64748b;">Esta cobrança ainda não possui uma solicitação de entrega associada.</p>' +
+                        '<p style="color:#94a3b8;font-size:13px;margin-top:10px;">O cliente pode ter pago sem preencher o formulário de entrega.</p>' +
+                        '</div>';
+                    document.getElementById('modalDetalhes').classList.add('ativo');
+                    showStatus('', '');
+                    return;
+                }
+
+                var cli = solicitacao.clientes_pg || {};
+                var end = solicitacao.enderecos_pg || {};
+                var enderecoCompleto = (end.rua || '') + (end.numero ? ', ' + end.numero : '') + (end.complemento ? ' - ' + end.complemento : '') + (end.bairro ? ' - ' + end.bairro : '');
+
+                const html = 
+                    '<div style="margin-bottom:15px;">' +
+                    '' +
+                    '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:15px;margin-bottom:15px;">' +
+                    '<strong style="color:#0369a1;font-size:16px;">' + escapeHtml(solicitacao.numero_solicitacao || '-') + '</strong>' +
+                    '<span style="margin-left:10px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:' + (solicitacao.status === 'entregue' ? '#dcfce7;color:#166534' : solicitacao.status === 'cancelado' ? '#fee2e2;color:#dc2626' : '#fef3c7;color:#92400e') + ';">' + (solicitacao.status || 'PENDENTE') + '</span>' +
+                    '</div>' +
+                    '<strong>Cliente:</strong> ' + escapeHtml(cli.nome || '-') + '<br>' +
+                    '<strong>CPF:</strong> ' + (cli.cpf || '-') + '<br>' +
+                    '<strong>WhatsApp:</strong> ' + (cli.whatsapp || '-') + '<br>' +
+                    '<strong>Endereço:</strong> ' + escapeHtml(enderecoCompleto || '-') + '<br>' +
+                    '<strong>Cidade:</strong> ' + escapeHtml(end.cidade || '-') + ' / ' + (end.estado || '-') + '<br>' +
+                    '<strong>Região:</strong> ' + (solicitacao.regiao || end.regiao || '-') + '<br>' +
+                    '<strong>Data:</strong> ' + formatarDataBr(solicitacao.data_solicitacao) + '<br>' +
+                    '</div>';
+
+                document.getElementById('detalhesContent').innerHTML = html;
+                document.getElementById('modalDetalhes').classList.add('ativo');
+                showStatus('', '');
+            } catch (e) {
+                console.error('Erro:', e);
+                showStatus('Erro ao buscar solicitação.', 'error');
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const checked = document.getElementById('autoRefresh').checked;
+            if (checked) {
+                autoRefreshInterval = setInterval(function() {
+                    carregarCobrancas();
+                }, 30000);
+                showStatus('Auto-atualização ativada (30s)', 'success');
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                showStatus('Auto-atualização desativada', 'info');
+            }
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroLive').value = '';
+            document.getElementById('filtroComprador').value = '';
+            const hoje = new Date();
+            const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            document.getElementById('filtroDataInicio').value = inicioMes.toISOString().split('T')[0];
+            document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+            aplicarFiltros();
+        }
+
+        function fecharModal(modalId) { 
+            document.getElementById(modalId).classList.remove('ativo'); 
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function mostrarErro(mensagem) {
+            const alerta = document.getElementById('alertaErro');
+            alerta.textContent = mensagem;
+            alerta.classList.add('ativo');
+        }
+
+        function showStatus(mensagem, tipo) {
+            const div = document.createElement('div');
+            div.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 3000;';
+            if (tipo === 'success') div.style.background = '#28a745';
+            else if (tipo === 'error') div.style.background = '#dc3545';
+            else div.style.background = '#17a2b8';
+            div.textContent = mensagem;
+            document.body.appendChild(div);
+            setTimeout(function() { div.remove(); }, 3000);
+        }
+    </script>
+    <script src="navmenu.js"></script>
+</body>
+</html>
