@@ -440,7 +440,6 @@
                 }
 
                 aplicarFiltros();
-                atualizarStats();
 
             } catch (e) {
                 console.error('Erro:', e);
@@ -473,6 +472,7 @@
             });
 
             renderizarTabela();
+            atualizarStats();
         }
 
         function renderizarTabela() {
@@ -559,13 +559,14 @@
         }
 
         function atualizarStats() {
-            console.log('[STATS DEBUG] Status breakdown:', cobrancasData.reduce((acc,c)=>{acc[c.status]=(acc[c.status]||0)+1;return acc},{}));
-            const total = cobrancasData.length;
-            const pagos = cobrancasData.filter(c => c.status === 'pago').length;
-            const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
-            const expirados = cobrancasData.filter(c => c.status === 'expirado' || c.status === 'cancelado').length;
-            const valorRecebido = cobrancasData.reduce((s, c) => s + (c.valor_pago || 0), 0);
-            const valorPendente = cobrancasData.filter(c => c.status === 'pendente').reduce((s, c) => s + c.valor, 0);
+            // Usar cobrancasFiltradas para respeitar os filtros aplicados (datas, status, etc.)
+            const dados = cobrancasFiltradas && cobrancasFiltradas.length >= 0 ? cobrancasFiltradas : cobrancasData;
+            const total = dados.length;
+            const pagos = dados.filter(c => c.status === 'pago').length;
+            const pendentes = dados.filter(c => c.status === 'pendente').length;
+            const expirados = dados.filter(c => c.status === 'expirado' || c.status === 'cancelado').length;
+            const valorRecebido = dados.reduce((s, c) => s + (c.valor_pago || 0), 0);
+            const valorPendente = dados.filter(c => c.status === 'pendente').reduce((s, c) => s + c.valor, 0);
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statPagos').textContent = pagos;
