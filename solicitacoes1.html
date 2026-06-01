@@ -529,7 +529,10 @@
                     console.log(`[WA] Tentativa ${tentativa}/2...`);
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                    const timeoutId = setTimeout(() => {
+                        console.log('[WA] ⏱️ Timeout atingido (30s), abortando requisição...');
+                        controller.abort(new Error('Timeout após 30 segundos'));
+                    }, 30000); // 30s timeout
 
                     // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
                     // Endpoint: /message/sendText/{instance}
@@ -601,6 +604,12 @@
 
                     if (erro.name === 'AbortError') {
                         console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
+                        // Se for timeout, tenta novamente imediatamente
+                        if (tentativa < 2) {
+                            console.log('[WA] 🔄 Tentando novamente imediatamente após timeout...');
+                            await new Promise(r => setTimeout(r, 1000));
+                            continue;
+                        }
                     }
 
                     if (tentativa < 2) {
