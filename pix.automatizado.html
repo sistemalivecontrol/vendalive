@@ -276,6 +276,7 @@
     </div>
 
     <script>
+        // VERSION: 2026-06-01-v2 - Pendentes inclui cancelados
         let supabaseClient = null;
         let usuarioAtual = null;
         let clienteSistemaId = null;
@@ -559,6 +560,7 @@
         }
 
         function atualizarStats() {
+            console.log('[STATS DEBUG] Total:', cobrancasData.length, 'Status breakdown:', cobrancasData.reduce((acc,c)=>{acc[c.status]=(acc[c.status]||0)+1;return acc},{}));
             const total = cobrancasData.length;
             const pagos = cobrancasData.filter(c => c.status === 'pago').length;
             const pendentes = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').length;
