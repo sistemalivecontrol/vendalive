@@ -276,7 +276,6 @@
     </div>
 
     <script>
-        // VERSION: 2026-06-01-v2 - Pendentes inclui cancelados
         let supabaseClient = null;
         let usuarioAtual = null;
         let clienteSistemaId = null;
@@ -560,13 +559,13 @@
         }
 
         function atualizarStats() {
-            console.log('[STATS DEBUG] Total:', cobrancasData.length, 'Status breakdown:', cobrancasData.reduce((acc,c)=>{acc[c.status]=(acc[c.status]||0)+1;return acc},{}));
+            console.log('[STATS DEBUG] Status breakdown:', cobrancasData.reduce((acc,c)=>{acc[c.status]=(acc[c.status]||0)+1;return acc},{}));
             const total = cobrancasData.length;
             const pagos = cobrancasData.filter(c => c.status === 'pago').length;
-            const pendentes = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').length;
-            const expirados = cobrancasData.filter(c => c.status === 'expirado').length;
+            const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
+            const expirados = cobrancasData.filter(c => c.status === 'expirado' || c.status === 'cancelado').length;
             const valorRecebido = cobrancasData.reduce((s, c) => s + (c.valor_pago || 0), 0);
-            const valorPendente = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').reduce((s, c) => s + c.valor, 0);
+            const valorPendente = cobrancasData.filter(c => c.status === 'pendente').reduce((s, c) => s + c.valor, 0);
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statPagos').textContent = pagos;
