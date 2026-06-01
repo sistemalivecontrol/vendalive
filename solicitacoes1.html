@@ -185,6 +185,7 @@
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -754,6 +755,48 @@ _Pingo de Gente - VendaLive_`;
             verificarDadosSalvos();
             verificarCamposObrigatoriosPIX();
         });
+        async function enviarFormulario(e) {
+            e.preventDefault();
+
+            const btnSubmit = document.getElementById('btnEnviar');
+            const textoOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '⏳ Enviando...';
+            btnSubmit.disabled = true;
+
+            try {
+                const form = document.getElementById('deliveryForm');
+                const formData = new FormData(form);
+
+                const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+                const nome = document.getElementById('nome').value.trim();
+                const whatsapp = document.getElementById('whatsapp').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const instagram = document.getElementById('instagram').value.trim();
+                const rua = document.getElementById('rua').value.trim();
+                const numero = document.getElementById('numero').value.trim();
+                const complemento = document.getElementById('complemento').value.trim();
+                const bairro = document.getElementById('bairro').value.trim();
+                const cep = document.getElementById('cepEndereco').value.trim();
+                const estadoForm = document.getElementById('estado').value;
+                const cidadeForm = document.getElementById('cidade').value.trim();
+                const observacoes = document.getElementById('observacoes').value.trim();
+
+                let clientePgId = clienteIdAtual;
+
+                if (!clientePgId) {
+                    console.log('🆕 Criando novo cliente...');
+                    const { data: novoCliente, error: erroCliente } = await supabaseClient
+                        .from('clientes_pg')
+                        .insert([{
+                            cliente_id: clienteIdSistema,
+                            cpf: cpf,
+                            nome: nome,
+                            whatsapp: whatsapp,
+                            email: email || null,
+                            instagram: instagram || null
+                        }])
+                        .select()
+                        .single();
 
                         if (erroCliente) {
                             if (erroCliente.code === '23505') {
