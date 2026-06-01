@@ -798,29 +798,28 @@ _Pingo de Gente - VendaLive_`;
                         .select()
                         .single();
 
-                        if (erroCliente) {
-                            if (erroCliente.code === '23505') {
-                                console.log('⚠️ CPF ja existe, buscando ID...');
-                                const { data: clienteDuplicado } = await supabaseClient
-                                    .from('clientes_pg')
-                                    .select('id')
-                                    .eq('cpf', cpf)
-                                    .eq('cliente_id', clienteIdSistema)
-                                    .limit(1)
-                                    .maybeSingle();
-                                if (clienteDuplicado) {
-                                    clientePgId = clienteDuplicado.id;
-                                    clienteIdAtual = clientePgId;
-                                } else {
-                                    throw new Error('Nao foi possivel encontrar o cliente apos erro de duplicidade');
-                                }
+                    if (erroCliente) {
+                        if (erroCliente.code === '23505') {
+                            console.log('⚠️ CPF ja existe, buscando ID...');
+                            const { data: clienteDuplicado } = await supabaseClient
+                                .from('clientes_pg')
+                                .select('id')
+                                .eq('cpf', cpf)
+                                .eq('cliente_id', clienteIdSistema)
+                                .limit(1)
+                                .maybeSingle();
+                            if (clienteDuplicado) {
+                                clientePgId = clienteDuplicado.id;
+                                clienteIdAtual = clientePgId;
                             } else {
-                                throw erroCliente;
+                                throw new Error('Nao foi possivel encontrar o cliente apos erro de duplicidade');
                             }
                         } else {
-                            clientePgId = novoCliente.id;
-                            clienteIdAtual = clientePgId;
+                            throw erroCliente;
                         }
+                    } else {
+                        clientePgId = novoCliente.id;
+                        clienteIdAtual = clientePgId;
                     }
                 }
 
@@ -928,11 +927,8 @@ _Pingo de Gente - VendaLive_`;
                     });
                 }
 
-                // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMACAO DE SOLICITACAO (nao bloqueante)
-                // ============================================
                 if (whatsapp && whatsapp.trim()) {
-                    // Fire-and-forget: envia WhatsApp sem esperar resposta
                     enviarConfirmacaoSolicitacao({
                         nome: nome,
                         numeroSolicitacao: numeroSolicitacao,
@@ -949,11 +945,8 @@ _Pingo de Gente - VendaLive_`;
                     });
                 }
 
-                // ============================================
                 // ENVIO DE WHATSAPP - CONFIRMACAO DE PAGAMENTO (nao bloqueante)
-                // ============================================
                 if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
-                    // Fire-and-forget: envia WhatsApp sem esperar resposta
                     enviarConfirmacaoPagamento({
                         nome: nome,
                         numeroSolicitacao: numeroSolicitacao,
@@ -995,6 +988,7 @@ _Pingo de Gente - VendaLive_`;
                 btnSubmit.disabled = false;
             }
         }
+
     </script>
 </body>
 </html>
