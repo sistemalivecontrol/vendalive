@@ -137,6 +137,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -560,10 +561,10 @@
         function atualizarStats() {
             const total = cobrancasData.length;
             const pagos = cobrancasData.filter(c => c.status === 'pago').length;
-            const pendentes = cobrancasData.filter(c => c.status === 'pendente').length;
+            const pendentes = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').length;
             const expirados = cobrancasData.filter(c => c.status === 'expirado').length;
             const valorRecebido = cobrancasData.reduce((s, c) => s + (c.valor_pago || 0), 0);
-            const valorPendente = cobrancasData.filter(c => c.status === 'pendente').reduce((s, c) => s + c.valor, 0);
+            const valorPendente = cobrancasData.filter(c => c.status === 'pendente' || c.status === 'cancelado').reduce((s, c) => s + c.valor, 0);
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statPagos').textContent = pagos;
