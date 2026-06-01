@@ -755,8 +755,38 @@ _Pingo de Gente - VendaLive_`;
             verificarDadosSalvos();
             verificarCamposObrigatoriosPIX();
         });
-        async function enviarFormulario(e) {
+        async function enviarFormulario(e, modoAutomatico) {
             e.preventDefault();
+            modoAutomatico = modoAutomatico || false;
+
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage caso tenha sido perdido
+            if (!cobrancaId) {
+                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+                if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                    cobrancaId = savedCobrancaId;
+                    console.log('[ENVIAR] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                }
+            }
+            console.log('[ENVIAR] cobrancaId atual:', cobrancaId, '| modoAutomatico:', modoAutomatico);
+
+            if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
+            if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
+
+            const estado = document.getElementById('estado').value;
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+
+            if (!estado || !cidade) {
+                alert('⚠️ Selecione o estado e informe a cidade.');
+                return;
+            }
+
+            calcularFrete();
+
+            if (estado === 'SC' && !pagamentoConfirmado && !modoAutomatico) {
+                alert('⚠️ Realize o pagamento do frete via PIX antes de enviar a solicitação.');
+                document.getElementById('pagamentoArea').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
 
             const btnSubmit = document.getElementById('btnEnviar');
             const textoOriginal = btnSubmit.innerHTML;
@@ -764,62 +794,96 @@ _Pingo de Gente - VendaLive_`;
             btnSubmit.disabled = true;
 
             try {
-                const form = document.getElementById('deliveryForm');
-                const formData = new FormData(form);
+                const formData = new FormData(e.target);
+                const cpf = formData.get('cpf').replace(/\D/g, '');
+                const nome = formData.get('nome');
+                const whatsapp = formData.get('whatsapp');
+                const email = formData.get('email');
+                const instagram = formData.get('instagram');
+                const rua = formData.get('rua');
+                const numero = formData.get('numero');
+                const complemento = formData.get('complemento');
+                const bairro = formData.get('bairro');
+                const cidadeForm = formData.get('cidade');
+                const estadoForm = formData.get('estado');
+                const cep = formData.get('cep');
+                const observacoes = formData.get('observacoes');
 
-                const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
-                const nome = document.getElementById('nome').value.trim();
-                const whatsapp = document.getElementById('whatsapp').value.trim();
-                const email = document.getElementById('email').value.trim();
-                const instagram = document.getElementById('instagram').value.trim();
-                const rua = document.getElementById('rua').value.trim();
-                const numero = document.getElementById('numero').value.trim();
-                const complemento = document.getElementById('complemento').value.trim();
-                const bairro = document.getElementById('bairro').value.trim();
-                const cep = document.getElementById('cepEndereco').value.trim();
-                const estadoForm = document.getElementById('estado').value;
-                const cidadeForm = document.getElementById('cidade').value.trim();
-                const observacoes = document.getElementById('observacoes').value.trim();
+                let regiao = 'Outros Estados';
+                if (estadoForm === 'SC') {
+                    const cidadeNorm = cidadeForm.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+                    if (CIDADES_GRANDE_FLORIPA.includes(cidadeNorm)) {
+                        regiao = 'Grande Florianópolis';
+                    } else {
+                        regiao = 'Santa Catarina';
+                    }
+                }
 
                 let clientePgId = clienteIdAtual;
 
                 if (!clientePgId) {
-                    console.log('🆕 Criando novo cliente...');
-                    const { data: novoCliente, error: erroCliente } = await supabaseClient
+                    console.log('🔍 Buscando cliente existente com CPF:', cpf);
+                    const { data: clienteExistente, error: erroBusca } = await supabaseClient
                         .from('clientes_pg')
-                        .insert([{
-                            cliente_id: clienteIdSistema,
-                            cpf: cpf,
-                            nome: nome,
-                            whatsapp: whatsapp,
-                            email: email || null,
-                            instagram: instagram || null
-                        }])
-                        .select()
-                        .single();
+                        .select('id, nome, whatsapp, email, instagram')
+                        .eq('cpf', cpf)
+                        .eq('cliente_id', clienteIdSistema)
+                        .limit(1)
+                        .maybeSingle();
 
-                    if (erroCliente) {
-                        if (erroCliente.code === '23505') {
-                            console.log('⚠️ CPF ja existe, buscando ID...');
-                            const { data: clienteDuplicado } = await supabaseClient
-                                .from('clientes_pg')
-                                .select('id')
-                                .eq('cpf', cpf)
-                                .eq('cliente_id', clienteIdSistema)
-                                .limit(1)
-                                .maybeSingle();
-                            if (clienteDuplicado) {
-                                clientePgId = clienteDuplicado.id;
-                                clienteIdAtual = clientePgId;
-                            } else {
-                                throw new Error('Nao foi possivel encontrar o cliente apos erro de duplicidade');
-                            }
-                        } else {
-                            throw erroCliente;
+                    if (erroBusca) console.error('Erro ao buscar cliente:', erroBusca);
+
+                    if (clienteExistente) {
+                        console.log('✅ Cliente existente encontrado:', clienteExistente.id);
+                        clientePgId = clienteExistente.id;
+                        clienteIdAtual = clientePgId;
+                        const dadosAtualizacao = {};
+                        if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                        if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                        if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
+                        if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                        if (Object.keys(dadosAtualizacao).length > 0) {
+                            const { error: erroUpdate } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                            if (erroUpdate) console.error('Erro ao atualizar cliente:', erroUpdate);
                         }
                     } else {
-                        clientePgId = novoCliente.id;
-                        clienteIdAtual = clientePgId;
+                        console.log('🆕 Criando novo cliente...');
+                        const { data: novoCliente, error: erroCliente } = await supabaseClient
+                            .from('clientes_pg')
+                            .insert([{
+                                cliente_id: clienteIdSistema,
+                                cpf: cpf,
+                                nome: nome,
+                                whatsapp: whatsapp,
+                                email: email,
+                                instagram: instagram
+                            }])
+                            .select()
+                            .single();
+
+                        if (erroCliente) {
+                            if (erroCliente.code === '23505') {
+                                console.log('⚠️ CPF já existe, buscando ID...');
+                                const { data: clienteDuplicado } = await supabaseClient
+                                    .from('clientes_pg')
+                                    .select('id')
+                                    .eq('cpf', cpf)
+                                    .eq('cliente_id', clienteIdSistema)
+                                    .limit(1)
+                                    .maybeSingle();
+                                if (clienteDuplicado) {
+                                    clientePgId = clienteDuplicado.id;
+                                    clienteIdAtual = clientePgId;
+                                } else {
+                                    throw new Error('Não foi possível encontrar o cliente após erro de duplicidade');
+                                }
+                            } else {
+                                throw erroCliente;
+                            }
+                        } else {
+                            clientePgId = novoCliente.id;
+                            clienteIdAtual = clientePgId;
+                        }
                     }
                 }
 
@@ -827,7 +891,7 @@ _Pingo de Gente - VendaLive_`;
 
                 if (!enderecoPgId || enderecoFoiAlterado) {
                     if (!enderecoFoiAlterado && clientePgId) {
-                        console.log('🔍 Buscando endereco existente do cliente:', clientePgId);
+                        console.log('🔍 Buscando endereço existente do cliente:', clientePgId);
                         const { data: enderecoExistente, error: erroBuscaEnd } = await supabaseClient
                             .from('enderecos_pg')
                             .select('id, rua, numero, complemento, bairro, cidade, estado, cep')
@@ -849,17 +913,17 @@ _Pingo de Gente - VendaLive_`;
                                 enderecoExistente.cep === cep;
 
                             if (enderecoIgual) {
-                                console.log('✅ Endereco existente encontrado e igual:', enderecoExistente.id);
+                                console.log('✅ Endereço existente encontrado e igual:', enderecoExistente.id);
                                 enderecoPgId = enderecoExistente.id;
                                 enderecoIdAtual = enderecoPgId;
                             } else {
-                                console.log('📝 Endereco diferente, criando novo...');
+                                console.log('📝 Endereço diferente, criando novo...');
                             }
                         }
                     }
 
                     if (!enderecoPgId) {
-                        console.log('🆕 Criando novo endereco...');
+                        console.log('🆕 Criando novo endereço...');
                         const { data: novoEndereco, error: erroEndereco } = await supabaseClient
                             .from('enderecos_pg')
                             .insert([{
@@ -897,8 +961,16 @@ _Pingo de Gente - VendaLive_`;
                     status: 'pendente'
                 };
 
-                if (cobrancaId) {
+                // ✅ CORREÇÃO: Logs detalhados do cobrancaId antes do INSERT
+                console.log('[INSERT] 🔍 cobrancaId valor:', cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId tipo:', typeof cobrancaId);
+                console.log('[INSERT] 🔍 cobrancaId é válido?', !!(cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined'));
+
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== '' && cobrancaId !== 'undefined') {
                     dadosSolicitacao.cobranca_id = cobrancaId;
+                    console.log('✅ [INSERT] cobranca_id VINCULADO com sucesso:', cobrancaId);
+                } else {
+                    console.warn('⚠️ [INSERT] cobranca_id NÃO vinculado. Valor atual:', cobrancaId, '| Tipo:', typeof cobrancaId);
                 }
 
                 const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
@@ -909,62 +981,119 @@ _Pingo de Gente - VendaLive_`;
 
                 if (erroSolicitacao) throw erroSolicitacao;
 
-                // Enviar e-mail somente se o campo foi preenchido (nao bloqueante)
-                if (email && email.trim()) {
-                    enviarEmailConfirmacao({
-                        email: email,
-                        numeroSolicitacao: numeroSolicitacao,
-                        nome: nome,
-                        dataSolicitacao: dataSolicitacao,
-                        regiao: regiao,
-                        rua: rua,
-                        numero: numero,
-                        complemento: complemento,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        cep: cep,
-                        observacoes: observacoes
-                    });
-                }
+                // ✅ CORREÇÃO: Enviar e-mail - SEMPRE envia cópia para admin
+                // Usar await quando modoAutomatico para garantir envio antes do redirect
+                const emailPromise = enviarEmailConfirmacao({
+                    email: email,
+                    numeroSolicitacao: numeroSolicitacao,
+                    nome: nome,
+                    dataSolicitacao: dataSolicitacao,
+                    regiao: regiao,
+                    rua: rua,
+                    numero: numero,
+                    complemento: complemento,
+                    bairro: bairro,
+                    cidade: cidadeForm,
+                    cep: cep,
+                    observacoes: observacoes,
+                    whatsapp: whatsapp,
+                    instagram: instagram
+                });
 
-                // ENVIO DE WHATSAPP - CONFIRMACAO DE SOLICITACAO (nao bloqueante)
-                if (whatsapp && whatsapp.trim()) {
-                    enviarConfirmacaoSolicitacao({
-                        nome: nome,
-                        numeroSolicitacao: numeroSolicitacao,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp,
-                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
-                        regiao: regiao
-                    }).then(() => {
-                        console.log('✅ WhatsApp de confirmacao enviado!');
-                    }).catch((err) => {
-                        console.log('⚠️ WhatsApp de confirmacao nao enviado (nao critico):', err.message || err);
-                    });
-                }
-
-                // ENVIO DE WHATSAPP - CONFIRMACAO DE PAGAMENTO (nao bloqueante)
-                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
-                    enviarConfirmacaoPagamento({
-                        nome: nome,
-                        numeroSolicitacao: numeroSolicitacao,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp,
-                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
-                        regiao: regiao
-                    }).then(() => {
-                        console.log('✅ WhatsApp de pagamento confirmado enviado!');
-                    }).catch((err) => {
-                        console.log('⚠️ WhatsApp de pagamento nao enviado (nao critico):', err.message || err);
-                    });
-                }
-
+                // Se modo automático, aguardar e-mail ser enviado antes de redirecionar
                 if (modoAutomatico) {
-                    console.log('[AUTO] Solicitacao enviada automaticamente! Numero:', numeroSolicitacao);
+                    console.log('[EMAIL] Modo automático - aguardando envio de e-mail...');
+                    await emailPromise;
+                    console.log('[EMAIL] E-mail processado, prosseguindo com redirecionamento...');
+                }
+
+                // ============================================
+                // ✅ CORREÇÃO: ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
+                // ============================================
+                let waPromises = [];
+
+                if (whatsapp && whatsapp.trim()) {
+                    console.log('[ENVIAR] 📱 Preparando envio de WhatsApp de confirmação...');
+                    const waPromise = enviarConfirmacaoSolicitacao({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
+                    }).then((resultado) => {
+                        if (resultado.sucesso) {
+                            console.log('✅ [ENVIAR] WhatsApp de confirmação enviado!');
+                        } else if (resultado.ignorado) {
+                            console.log('ℹ️ [ENVIAR] WhatsApp de confirmação ignorado (sem número)');
+                        } else {
+                            console.warn('⚠️ [ENVIAR] WhatsApp de confirmação falhou:', resultado.erro);
+                        }
+                    }).catch((err) => {
+                        console.warn('⚠️ [ENVIAR] Erro no WhatsApp de confirmação (não crítico):', err.message || err);
+                    });
+                    waPromises.push(waPromise);
+                } else {
+                    console.log('[ENVIAR] 📱 Sem WhatsApp do cliente, pulando envio de confirmação');
+                }
+
+                // ============================================
+                // ✅ CORREÇÃO: ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO
+                // ============================================
+                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
+                    console.log('[ENVIAR] 📱 Preparando envio de WhatsApp de pagamento confirmado...');
+                    const waPromise = enviarConfirmacaoPagamento({
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
+                    }).then((resultado) => {
+                        if (resultado.sucesso) {
+                            console.log('✅ [ENVIAR] WhatsApp de pagamento confirmado enviado!');
+                        } else if (resultado.ignorado) {
+                            console.log('ℹ️ [ENVIAR] WhatsApp de pagamento ignorado (sem número)');
+                        } else {
+                            console.warn('⚠️ [ENVIAR] WhatsApp de pagamento falhou:', resultado.erro);
+                        }
+                    }).catch((err) => {
+                        console.warn('⚠️ [ENVIAR] Erro no WhatsApp de pagamento (não crítico):', err.message || err);
+                    });
+                    waPromises.push(waPromise);
+                }
+
+                // ✅ CORREÇÃO: Aguardar e-mail e WhatsApp antes de redirecionar (modo automático)
+                if (modoAutomatico) {
+                    console.log('[AUTO] Modo automático - aguardando envio de e-mail e WhatsApp...');
+
+                    // Aguardar e-mail
+                    try {
+                        await emailPromise;
+                        console.log('[AUTO] ✅ E-mail processado');
+                    } catch (e) {
+                        console.warn('[AUTO] ⚠️ E-mail falhou (não crítico):', e.message || e);
+                    }
+
+                    // Aguardar WhatsApps (com timeout de 20s para não travar)
+                    if (waPromises.length > 0) {
+                        console.log('[AUTO] ⏳ Aguardando WhatsApp(s)...');
+                        try {
+                            await Promise.race([
+                                Promise.all(waPromises),
+                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout WhatsApp')), 20000))
+                            ]);
+                            console.log('[AUTO] ✅ WhatsApp(s) processado(s)');
+                        } catch (waTimeout) {
+                            console.warn('[AUTO] ⚠️ WhatsApp timeout (20s), prosseguindo com redirecionamento...');
+                        }
+                    }
+
+                    console.log('[AUTO] 🚀 Redirecionando para página de sucesso...');
                     redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFreteAtual);
                     return;
                 }
@@ -979,16 +1108,15 @@ _Pingo de Gente - VendaLive_`;
 
             } catch (error) {
                 console.error('❌ Erro ao enviar:', error);
-                let mensagemErro = '❌ Erro ao enviar solicitacao. Tente novamente.';
+                let mensagemErro = '❌ Erro ao enviar solicitação. Tente novamente.';
                 if (error.message && error.message.includes('duplicate')) {
-                    mensagemErro = '⚠️ Este CPF ja esta cadastrado. Tente novamente ou limpe os dados.';
+                    mensagemErro = '⚠️ Este CPF já está cadastrado. Tente novamente ou limpe os dados.';
                 }
                 alert(mensagemErro);
                 btnSubmit.innerHTML = textoOriginal;
                 btnSubmit.disabled = false;
             }
         }
-
     </script>
 </body>
 </html>
