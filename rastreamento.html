@@ -1275,9 +1275,7 @@ async function aplicarFiltros() {
                 // ✅ MELHORIA: Se tiver observações, mostrar abaixo do nome com destaque
                 let nomeComObs = cliente.nome || '-';
                 if (s.observacoes && s.observacoes.trim()) {
-                    nomeComObs = cliente.nome + '
-
-*****' + s.observacoes + '***';
+                    nomeComObs = cliente.nome + '\n\n*****' + s.observacoes + '***';
                 }
 
                 return [
