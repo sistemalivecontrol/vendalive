@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- CACHE BUST -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="version" content="2.0">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Vendas - Live</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a3e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #333;
+        }
+        .header-title h1 {
+            font-size: 24px;
+            color: #1a1a3e;
+            margin-bottom: 3px;
+        }
+        .header-title p {
+            font-size: 13px;
+            color: #666;
+        }
+        .btn-voltar {
+            background: #1a1a3e;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-voltar:hover { background: #2a2a5e; }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-cobrancas {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-gravar {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-gravar.recording {
+            background: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f5f5f5;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .btn-sair {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Layout principal */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        @media (max-width: 900px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        /* Card esquerdo - Selecionar data */
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #1a1a3e;
+        }
+        .card h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .date-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+        .lives-disponiveis {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .lives-disponiveis h4 {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .lives-disponiveis p {
+            font-size: 13px;
+            color: #856404;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .btn-criar-live {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-criar-live:hover { background: #218838; }
+        .hint-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Card direito - Últimas lives */
+        .lives-table-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #1a1a3e;
+        }
+        .lives-table-container h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .lives-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .lives-table thead {
+            background: #1a1a3e;
+            color: white;
+        }
+        .lives-table th {
+            padding: 12px 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        .lives-table th:last-child { text-align: center; }
+        .lives-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+        .lives-table tr:hover { background: #f0f0f0; }
+        .live-codigo {
+            font-weight: bold;
+            color: #1a1a3e;
+        }
+        .live-valor {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .live-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-fim {
+            background: #ffe0e0;
+            color: #c0392b;
+        }
+        .status-andamento {
+            background: #e0f7e0;
+            color: #27ae60;
+        }
+        .btn-abrir {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #333;
+        }
+        .btn-abrir:hover { background: #e0e0e0; }
+        .total-lives {
+            background: #1a1a3e;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .total-lives p {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        .total-lives h2 {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Tela de Live Aberta */
+        .live-aberta {
+            display: none;
+        }
+        .live-header {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .live-header-info h3 {
+            font-size: 16px;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        .live-header-info h2 {
+            font-size: 20px;
+            color: #1a1a3e;
+            margin-bottom: 5px;
+        }
+        .live-header-info p {
+            font-size: 14px;
+            color: #666;
+        }
+        .live-status-finalizada {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .live-header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .total-vendido-box {
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .total-vendido-box p {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .total-vendido-box h2 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .btn-trocar-data {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Ações da live */
+        .live-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-ver-relatorio {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-registrar {
+            background: #6f42c1;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-alterar {
+            background: #343a40;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Gravação contínua info */
+        .gravacao-info {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #004085;
+        }
+
+        /* Tabela de itens */
+        .itens-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .itens-table thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .itens-table th {
+            padding: 12px 10px;
+            font-size: 13px;
+            color: #495057;
+            font-weight: 600;
+            text-align: left;
+        }
+        .itens-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        .itens-table tr:hover { background: #f8f9fa; }
+        .item-numero {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+        }
+        .item-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .item-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        .item-input-valor { width: 80px; }
+        .item-input-codigo { width: 70px; }
+        .item-input-comprador { width: 180px; text-align: left; }
+        .item-input-fila { width: 150px; text-align: left; }
+
+        /* Botões de ação na linha - REMOVIDOS botões de microfone */
+        .acoes-linha {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        .btn-acao {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-salvar {
+            background: #28a745;
+            color: white;
+        }
+        .btn-salvar:hover { background: #218838; }
+        .btn-limpar {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-limpar:hover { background: #e0a800; }
+        .btn-adicionar {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-adicionar:hover { background: #138496; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a3e;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast.show { display: block; }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #1a1a3e;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-modal-cancelar {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-modal-confirmar {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .header-right { justify-content: center; }
+            .live-header { flex-direction: column; text-align: center; }
+            .live-header-actions { width: 100%; justify-content: center; }
+            .itens-table { font-size: 12px; }
+            .item-input-comprador { width: 120px; }
+            .item-input-fila { width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-btn" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="btn-voltar" onclick="voltarDashboard()">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <div class="header-title">
+                    <h1>Registro de Vendas - Live</h1>
+                    <p>Gerencie suas vendas em tempo real por data</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-cobrancas" onclick="irCobrancas()">
+                    <i class="fas fa-credit-card"></i> Cobranças Live
+                </button>
+                <button class="btn-gravar" id="btnGravar" onclick="toggleGravacao()">
+                    <i class="fas fa-microphone"></i> <span id="txtGravar">Gravar</span>
+                </button>
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span id="nomeUsuario">Carregando...</span>
+                </div>
+                <button class="btn-sair" onclick="sair()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Tela Inicial - Seleção de Data e Listagem -->
+        <div id="telaInicial" class="main-content">
+            <div class="card">
+                <h3><i class="fas fa-calendar-alt"></i> Selecione a Data da Live</h3>
+                <input type="date" id="dataLive" class="date-input" onchange="carregarLivesPorData()">
+                <div class="lives-disponiveis">
+                    <h4>Lives disponíveis:</h4>
+                    <p id="msgLives">Nenhuma live nesta data. Crie uma nova!</p>
+                    <button class="btn-criar-live" onclick="criarNovaLive()">
+                        <i class="fas fa-plus"></i> Criar Nova Live
+                    </button>
+                </div>
+                <p class="hint-text">Selecione uma data para ver as lives disponíveis.</p>
+            </div>
+
+            <div class="lives-table-container">
+                <h3><i class="fas fa-list"></i> Últimas Lives Cadastradas</h3>
+                <table class="lives-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaLives">
+                        <!-- Preenchido via JS -->
+                    </tbody>
+                </table>
+                <div class="total-lives">
+                    <p>Total em Lives:</p>
+                    <h2 id="totalLives">R$ 0,00</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Live Aberta -->
+        <div id="telaLiveAberta" class="live-aberta">
+            <div class="live-header">
+                <div class="live-header-info">
+                    <h3>Live do dia: <span id="liveDataAberta"></span></h3>
+                    <h2>Código: <span id="liveCodigoAberta"></span></h2>
+                    <p>Total de itens cadastrados: <span id="liveTotalItens"></span></p>
+                    <p class="live-status-finalizada" id="liveStatusText"></p>
+                </div>
+                <div class="live-header-actions">
+                    <div class="total-vendido-box">
+                        <p>Total Vendido</p>
+                        <h2 id="totalVendidoAberta">R$ 0,00</h2>
+                    </div>
+                    <button class="btn-trocar-data" onclick="voltarTelaInicial()">
+                        Trocar Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="live-actions">
+                <button class="btn-ver-relatorio" onclick="verRelatorio()">
+                    <i class="fas fa-chart-bar"></i> Ver Relatório
+                </button>
+                <button class="btn-registrar" onclick="registrarVendasIndividuais()">
+                    <i class="fas fa-plus-circle"></i> Registrar Vendas Individuais
+                </button>
+                <button class="btn-alterar" onclick="alterarLive()">
+                    <i class="fas fa-edit"></i> Alterar Live
+                </button>
+            </div>
+
+            <div class="gravacao-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Gravação Contínua:</strong> Fale valor → código → comprador. Só avança quando os 3 estiverem preenchidos!
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="itens-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Valor *</th>
+                            <th>Código *</th>
+                            <th>Comprador</th>
+                            <th>Fila</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaItens">
+                        <!-- Preenchido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Modal Criar Live -->
+    <div id="modalCriarLive" class="modal-overlay">
+        <div class="modal">
+            <h3><i class="fas fa-video"></i> Criar Nova Live</h3>
+            <p style="margin-bottom: 15px; color: #666;">
+                Data: <strong id="modalDataLive"></strong>
+            </p>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Código da Live:</label>
+                <input type="text" id="novoCodigoLive" class="item-input" style="text-align: left;" placeholder="Ex: LIVE-004">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-modal-confirmar" onclick="confirmarCriarLive()">Criar Live</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    console.log('[LIVE] === VERSAO 2.0 - CACHE BUST ===');
+        // ============================================
+        // CONFIGURAÇÃO SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+        let usuarioAtual = null;
+        let clienteId = null;
+        let liveAtual = null;
+        let gravacaoAtiva = false;
+        let recognition = null;
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', async function() {
+            await inicializarSupabase();
+            await verificarAutenticacao();
+            document.getElementById('dataLive').value = new Date().toISOString().split('T')[0];
+            await carregarLivesPorData();
+        });
+
+        async function inicializarSupabase() {
+            try {
+                // Verificar se Supabase CDN já carregou
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('[LIVE] Supabase inicializado via global');
+                } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('[LIVE] Supabase inicializado via window.supabase');
+                } else {
+                    // Tentar carregar CDN
+                    await carregarSupabaseCDN();
+                }
+            } catch (e) {
+                console.error('[LIVE] Erro ao inicializar Supabase:', e);
+                mostrarToast('Erro ao conectar com o servidor', 'error');
+            }
+        }
+
+        async function carregarSupabaseCDN() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js';
+                script.onload = () => {
+                    if (typeof supabase !== 'undefined') {
+                        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        console.log('[LIVE] Supabase CDN carregado - VERSAO 2.0');
+                        resolve();
+                    } else {
+                        reject(new Error('Supabase não disponível após carregar CDN'));
+                    }
+                };
+                script.onerror = () => reject(new Error('Falha ao carregar Supabase CDN'));
+                document.head.appendChild(script);
+            });
+        }
+
+        async function verificarAutenticacao() {
+            try {
+                if (!supabaseClient) {
+                    console.error('[LIVE] Supabase não inicializado');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+                if (error || !session) {
+                    console.log('[LIVE] Sem sessão, redirecionando...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                usuarioAtual = session.user;
+
+                // Buscar cliente do usuário
+                const { data: perfil, error: perfilError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('cliente_id, nome')
+                    .eq('id', usuarioAtual.id)
+                    .single();
+
+                if (perfilError || !perfil) {
+                    console.error('[LIVE] Erro ao buscar perfil:', perfilError);
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                clienteId = perfil.cliente_id;
+                document.getElementById('nomeUsuario').textContent = perfil.nome || 'Usuário';
+
+                console.log('[LIVE] Autenticado:', perfil.nome, 'Cliente:', clienteId);
+            } catch (e) {
+                console.error('[LIVE] Erro autenticação:', e);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // CARREGAR LIVES POR DATA
+        // ============================================
+        async function carregarLivesPorData() {
+            try {
+                if (!supabaseClient || !clienteId) return;
+
+                const dataSelecionada = document.getElementById('dataLive').value;
+                if (!dataSelecionada) return;
+
+                console.log('[LIVE] Carregando lives para data:', dataSelecionada);
+
+                // Buscar lives do cliente na data selecionada
+                const { data: lives, error } = await supabaseClient
+                    .from('lives_pg')
+                    .select('*')
+                    .eq('cliente_id', clienteId)
+                    .eq('data', dataSelecionada)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('[LIVE] Erro ao buscar lives:', error);
+                    return;
+                }
+
+                const msgLives = document.getElementById('msgLives');
+                if (lives && lives.length > 0) {
+                    msgLives.textContent = `${lives.length} live(s) encontrada(s) nesta data.`;
+                } else {
+                    msgLives.textContent = 'Nenhuma live nesta data. Crie uma nova!';
+                }
+
+                // Carregar últimas lives (todas as datas)
+                await carregarUltimasLives();
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao carregar lives por data:', e);
+            }
+        }
+
+        // ============================================
+        // CARREGAR ÚLTIMAS LIVES - CORREÇÃO DO VALOR
+        // ============================================
+        async function carregarUltimasLives() {
+            try {
+                if (!supabaseClient || !clienteId) return;
+
+                console.log('[LIVE] Carregando últimas lives...');
+
+                // Buscar últimas 10 lives do cliente
+                const { data: lives, error } = await supabaseClient
+                    .from('lives_pg')
+                    .select('*')
+                    .eq('cliente_id', clienteId)
+                    .order('data', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    console.error('[LIVE] Erro ao buscar últimas lives:', error);
+                    return;
+                }
+
+                const tbody = document.getElementById('listaLives');
+                tbody.innerHTML = '';
+
+                let totalGeral = 0;
+
+                if (lives && lives.length > 0) {
+                    for (const live of lives) {
+                        // CORREÇÃO: Calcular valor usando a MESMA lógica da tela aberta
+                        // Buscar todos os itens da live e somar apenas os válidos
+                        const valorLive = await calcularValorLive(live.id);
+
+                        totalGeral += valorLive;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="live-codigo">${live.codigo || 'N/A'}</td>
+                            <td>${formatarData(live.data)}</td>
+                            <td class="live-valor">${formatarMoeda(valorLive)}</td>
+                            <td>
+                                <span class="live-status ${live.status === 'finalizada' ? 'status-fim' : 'status-andamento'}">
+                                    ${live.status === 'finalizada' ? 'FIM' : 'EM ANDAMENTO'}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-abrir" onclick="abrirLive('${live.id}')">
+                                    Abrir
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px; color: #666;">
+                                <i class="fas fa-inbox" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>
+                                Nenhuma live cadastrada
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                document.getElementById('totalLives').textContent = formatarMoeda(totalGeral);
+                console.log('[LIVE] Total em lives:', totalGeral);
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao carregar últimas lives:', e);
+            }
+        }
+
+        // ============================================
+        // CALCULAR VALOR DA LIVE - MESMA LÓGICA PARA AMBAS AS TELAS
+        // ============================================
+        async function calcularValorLive(liveId) {
+            try {
+                if (!supabaseClient) return 0;
+
+                // Buscar todos os itens da live
+                const { data: itens, error } = await supabaseClient
+                    .from('live_itens_pg')
+                    .select('valor, status')
+                    .eq('live_id', liveId);
+
+                if (error) {
+                    console.error('[LIVE] Erro ao buscar itens:', error);
+                    return 0;
+                }
+
+                if (!itens || itens.length === 0) return 0;
+
+                // Somar apenas itens com valor válido e não cancelados
+                let total = 0;
+                for (const item of itens) {
+                    // Ignorar itens cancelados ou sem valor
+                    if (item.status === 'cancelado') continue;
+
+                    const valor = parseFloat(item.valor) || 0;
+                    total += valor;
+                }
+
+                console.log(`[LIVE] Valor calculado para live ${liveId}:`, total, `(${itens.length} itens)`);
+                return total;
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao calcular valor:', e);
+                return 0;
+            }
+        }
+
+        // ============================================
+        // ABRIR LIVE
+        // ============================================
+        async function abrirLive(liveId) {
+            try {
+                if (!supabaseClient) return;
+
+                console.log('[LIVE] Abrindo live:', liveId);
+
+                const { data: live, error } = await supabaseClient
+                    .from('lives_pg')
+                    .select('*')
+                    .eq('id', liveId)
+                    .single();
+
+                if (error || !live) {
+                    console.error('[LIVE] Live não encontrada:', error);
+                    mostrarToast('Live não encontrada', 'error');
+                    return;
+                }
+
+                liveAtual = live;
+
+                // Preencher header
+                document.getElementById('liveDataAberta').textContent = formatarData(live.data);
+                document.getElementById('liveCodigoAberta').textContent = live.codigo || 'N/A';
+                document.getElementById('liveStatusText').textContent = 
+                    live.status === 'finalizada' ? 'LIVE FINALIZADA' : 'LIVE EM ANDAMENTO';
+
+                // Carregar itens da live
+                await carregarItensLive(liveId);
+
+                // Calcular valor total usando a MESMA função
+                const valorTotal = await calcularValorLive(liveId);
+                document.getElementById('totalVendidoAberta').textContent = formatarMoeda(valorTotal);
+
+                // Alternar telas
+                document.getElementById('telaInicial').style.display = 'none';
+                document.getElementById('telaLiveAberta').style.display = 'block';
+
+                mostrarToast(`Live ${live.codigo} aberta!`, 'success');
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao abrir live:', e);
+                mostrarToast('Erro ao abrir live', 'error');
+            }
+        }
+
+        // ============================================
+        // CARREGAR ITENS DA LIVE
+        // ============================================
+        async function carregarItensLive(liveId) {
+            try {
+                if (!supabaseClient) return;
+
+                const { data: itens, error } = await supabaseClient
+                    .from('live_itens_pg')
+                    .select('*')
+                    .eq('live_id', liveId)
+                    .order('numero_item', { ascending: true });
+
+                if (error) {
+                    console.error('[LIVE] Erro ao buscar itens:', error);
+                    return;
+                }
+
+                const tbody = document.getElementById('tabelaItens');
+                tbody.innerHTML = '';
+
+                const totalItens = itens ? itens.length : 0;
+                document.getElementById('liveTotalItens').textContent = totalItens;
+
+                // Criar 150 linhas (ou mais se necessário)
+                const maxItens = Math.max(150, totalItens + 10);
+
+                for (let i = 1; i <= maxItens; i++) {
+                    const item = itens ? itens.find(it => it.numero_item === i) : null;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="item-numero">${i}</td>
+                        <td>
+                            <input type="number" 
+                                   class="item-input item-input-valor" 
+                                   id="valor_${i}" 
+                                   value="${item ? (item.valor || '') : ''}" 
+                                   step="0.01"
+                                   onchange="salvarItem(${i})">
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="item-input item-input-codigo" 
+                                   id="codigo_${i}" 
+                                   value="${item ? (item.codigo || '') : ''}"
+                                   onchange="salvarItem(${i})">
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="item-input item-input-comprador" 
+                                   id="comprador_${i}" 
+                                   value="${item ? (item.comprador || '') : ''}"
+                                   onchange="salvarItem(${i})">
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="item-input item-input-fila" 
+                                   id="fila_${i}" 
+                                   value="${item ? (item.fila || '') : ''}"
+                                   placeholder="Nome ou Instagram"
+                                   onchange="salvarItem(${i})">
+                        </td>
+                        <td>
+                            <div class="acoes-linha">
+                                <button class="btn-acao btn-salvar" onclick="salvarItem(${i})" title="Salvar">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="btn-acao btn-limpar" onclick="limparItem(${i})" title="Limpar">
+                                    <i class="fas fa-eraser"></i>
+                                </button>
+                                <button class="btn-acao btn-adicionar" onclick="adicionarItemApos(${i})" title="Adicionar">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao carregar itens:', e);
+            }
+        }
+
+        // ============================================
+        // SALVAR ITEM
+        // ============================================
+        async function salvarItem(numero) {
+            try {
+                if (!supabaseClient || !liveAtual) return;
+
+                const valor = document.getElementById(`valor_${numero}`).value;
+                const codigo = document.getElementById(`codigo_${numero}`).value;
+                const comprador = document.getElementById(`comprador_${numero}`).value;
+                const fila = document.getElementById(`fila_${numero}`).value;
+
+                // Verificar se já existe
+                const { data: existente } = await supabaseClient
+                    .from('live_itens_pg')
+                    .select('id')
+                    .eq('live_id', liveAtual.id)
+                    .eq('numero_item', numero)
+                    .single();
+
+                const dados = {
+                    live_id: liveAtual.id,
+                    numero_item: numero,
+                    valor: valor ? parseFloat(valor) : null,
+                    codigo: codigo || null,
+                    comprador: comprador || null,
+                    fila: fila || null,
+                    cliente_id: clienteId,
+                    status: 'ativo'
+                };
+
+                let error;
+                if (existente) {
+                    const { error: updateError } = await supabaseClient
+                        .from('live_itens_pg')
+                        .update(dados)
+                        .eq('id', existente.id);
+                    error = updateError;
+                } else {
+                    const { error: insertError } = await supabaseClient
+                        .from('live_itens_pg')
+                        .insert(dados);
+                    error = insertError;
+                }
+
+                if (error) {
+                    console.error('[LIVE] Erro ao salvar item:', error);
+                    mostrarToast('Erro ao salvar item', 'error');
+                    return;
+                }
+
+                // Recalcular total
+                const novoTotal = await calcularValorLive(liveAtual.id);
+                document.getElementById('totalVendidoAberta').textContent = formatarMoeda(novoTotal);
+
+                console.log('[LIVE] Item salvo:', numero, 'Novo total:', novoTotal);
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao salvar item:', e);
+            }
+        }
+
+        // ============================================
+        // LIMPAR ITEM
+        // ============================================
+        async function limparItem(numero) {
+            try {
+                if (!supabaseClient || !liveAtual) return;
+
+                document.getElementById(`valor_${numero}`).value = '';
+                document.getElementById(`codigo_${numero}`).value = '';
+                document.getElementById(`comprador_${numero}`).value = '';
+                document.getElementById(`fila_${numero}`).value = '';
+
+                // Remover do banco
+                const { error } = await supabaseClient
+                    .from('live_itens_pg')
+                    .delete()
+                    .eq('live_id', liveAtual.id)
+                    .eq('numero_item', numero);
+
+                if (error) {
+                    console.error('[LIVE] Erro ao remover item:', error);
+                }
+
+                // Recalcular total
+                const novoTotal = await calcularValorLive(liveAtual.id);
+                document.getElementById('totalVendidoAberta').textContent = formatarMoeda(novoTotal);
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao limpar item:', e);
+            }
+        }
+
+        // ============================================
+        // ADICIONAR ITEM APÓS
+        // ============================================
+        async function adicionarItemApos(numero) {
+            // Implementar se necessário
+            mostrarToast('Funcionalidade em desenvolvimento', 'success');
+        }
+
+        // ============================================
+        // CRIAR NOVA LIVE
+        // ============================================
+        function criarNovaLive() {
+            const data = document.getElementById('dataLive').value;
+            if (!data) {
+                mostrarToast('Selecione uma data primeiro', 'error');
+                return;
+            }
+            document.getElementById('modalDataLive').textContent = formatarData(data);
+            document.getElementById('novoCodigoLive').value = '';
+            document.getElementById('modalCriarLive').classList.add('active');
+        }
+
+        async function confirmarCriarLive() {
+            try {
+                if (!supabaseClient || !clienteId) return;
+
+                const codigo = document.getElementById('novoCodigoLive').value.trim();
+                const data = document.getElementById('dataLive').value;
+
+                if (!codigo) {
+                    mostrarToast('Digite o código da live', 'error');
+                    return;
+                }
+
+                const { data: novaLive, error } = await supabaseClient
+                    .from('lives_pg')
+                    .insert({
+                        cliente_id: clienteId,
+                        codigo: codigo,
+                        data: data,
+                        status: 'andamento',
+                        created_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error('[LIVE] Erro ao criar live:', error);
+                    mostrarToast('Erro ao criar live', 'error');
+                    return;
+                }
+
+                fecharModal();
+                mostrarToast('Live criada com sucesso!', 'success');
+                await carregarLivesPorData();
+                await abrirLive(novaLive.id);
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao criar live:', e);
+                mostrarToast('Erro ao criar live', 'error');
+            }
+        }
+
+        function fecharModal() {
+            document.getElementById('modalCriarLive').classList.remove('active');
+        }
+
+        // ============================================
+        // GRAVAÇÃO CONTÍNUA (VOZ)
+        // ============================================
+        function toggleGravacao() {
+            if (gravacaoAtiva) {
+                pararGravacao();
+            } else {
+                iniciarGravacao();
+            }
+        }
+
+        function iniciarGravacao() {
+            try {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    mostrarToast('Seu navegador não suporta reconhecimento de voz', 'error');
+                    return;
+                }
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = true;
+                recognition.interimResults = false;
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                    console.log('[LIVE] Reconhecido:', transcript);
+                    processarComandoVoz(transcript);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('[LIVE] Erro reconhecimento:', event.error);
+                    if (event.error !== 'no-speech') {
+                        mostrarToast('Erro no reconhecimento: ' + event.error, 'error');
+                    }
+                };
+
+                recognition.onend = function() {
+                    if (gravacaoAtiva) {
+                        recognition.start(); // Reiniciar se ainda ativo
+                    }
+                };
+
+                recognition.start();
+                gravacaoAtiva = true;
+
+                const btn = document.getElementById('btnGravar');
+                btn.classList.add('recording');
+                document.getElementById('txtGravar').textContent = 'Parar';
+
+                mostrarToast('Gravação iniciada! Fale valor → código → comprador', 'success');
+
+            } catch (e) {
+                console.error('[LIVE] Erro ao iniciar gravação:', e);
+                mostrarToast('Erro ao iniciar gravação', 'error');
+            }
+        }
+
+        function pararGravacao() {
+            if (recognition) {
+                recognition.stop();
+                recognition = null;
+            }
+            gravacaoAtiva = false;
+
+            const btn = document.getElementById('btnGravar');
+            btn.classList.remove('recording');
+            document.getElementById('txtGravar').textContent = 'Gravar';
+
+            mostrarToast('Gravação parada', 'success');
+        }
+
+        function processarComandoVoz(transcript) {
+            // Implementar lógica de preenchimento por voz
+            // Procurar próxima linha vazia e preencher
+            console.log('[LIVE] Processando comando:', transcript);
+
+            // Lógica simplificada: procurar primeira linha vazia
+            for (let i = 1; i <= 150; i++) {
+                const valor = document.getElementById(`valor_${i}`).value;
+                const codigo = document.getElementById(`codigo_${i}`).value;
+                const comprador = document.getElementById(`comprador_${i}`).value;
+
+                if (!valor || !codigo || !comprador) {
+                    // Preencher com base no que falta
+                    // Esta é uma lógica simplificada - pode ser melhorada
+                    if (!valor && transcript.includes('reais')) {
+                        const match = transcript.match(/(\d+[,.]?\d*)/);
+                        if (match) {
+                            document.getElementById(`valor_${i}`).value = match[1].replace(',', '.');
+                        }
+                    }
+                    if (!codigo && transcript.includes('código')) {
+                        const match = transcript.match(/código\s+(\d+)/);
+                        if (match) {
+                            document.getElementById(`codigo_${i}`).value = match[1];
+                        }
+                    }
+                    if (!comprador && transcript.includes('comprador')) {
+                        const match = transcript.match(/comprador\s+(.+)/);
+                        if (match) {
+                            document.getElementById(`comprador_${i}`).value = match[1].trim();
+                        }
+                    }
+
+                    // Se todos preenchidos, salvar
+                    if (document.getElementById(`valor_${i}`).value && 
+                        document.getElementById(`codigo_${i}`).value && 
+                        document.getElementById(`comprador_${i}`).value) {
+                        salvarItem(i);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // ============================================
+        // NAVEGAÇÃO
+        // ============================================
+        function voltarTelaInicial() {
+            document.getElementById('telaLiveAberta').style.display = 'none';
+            document.getElementById('telaInicial').style.display = 'grid';
+            liveAtual = null;
+            carregarUltimasLives();
+        }
+
+        function voltarDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function irCobrancas() {
+            if (liveAtual) {
+                window.location.href = `coblive.html?live_id=${liveAtual.id}`;
+            } else {
+                mostrarToast('Abra uma live primeiro', 'error');
+            }
+        }
+
+        function verRelatorio() {
+            if (liveAtual) {
+                window.location.href = `relatorio-live.html?live_id=${liveAtual.id}`;
+            }
+        }
+
+        function registrarVendasIndividuais() {
+            mostrarToast('Funcionalidade em desenvolvimento', 'success');
+        }
+
+        function alterarLive() {
+            mostrarToast('Funcionalidade em desenvolvimento', 'success');
+        }
+
+        function toggleMenu() {
+            mostrarToast('Menu em desenvolvimento', 'success');
+        }
+
+        async function sair() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+            }
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+        function formatarData(dataString) {
+            if (!dataString) return '';
+            const data = new Date(dataString + 'T00:00:00');
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function formatarMoeda(valor) {
+            if (valor === null || valor === undefined) return 'R$ 0,00';
+            return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',');
+        }
+
+        function mostrarToast(mensagem, tipo) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.className = 'toast show ' + (tipo || '');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modalCriarLive').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+    </script>
+</body>
+</html>

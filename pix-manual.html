@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
+<script>
+// ==========================================
+// SESSION.JS - Verificacao sincrona de login
+// Apenas verifica localStorage - NAO inicializa Supabase
+// O auth.js ja cuida da inicializacao do Supabase
+// v2.0 - Sem inicializacao de Supabase (evita duplicacao)
+// ==========================================
+(function(){
+    'use strict';
+    const SESSAO_KEY='usuarioLogado';
+    const LOGIN_PAGE='login.html';
+    const path=window.location.pathname.toLowerCase();
+    const href=window.location.href.toLowerCase();
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
+    function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
+    verificarSessaoSincrona();
+})();
+</script>
+<!-- ================================================ -->
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✅</text></svg>">
+  <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Pix Manual - VendaLive</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.8"></script>
+  <link rel="stylesheet" href="navmenu.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+    .header { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(255, 139, 167, 0.15); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+    .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+    .header h1 { color: #0B193F; font-size: 1.8rem; margin-bottom: 5px; }
+    .header p { color: #636E72; font-size: 0.9rem; }
+    .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; }
+    .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+    .user-info { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); padding: 10px 20px; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #1565C0; }
+    .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-bottom: 25px; }
+    .card h2 { color: #0B193F; font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 18px 12px; border-radius: 12px; text-align: center; }
+    .stat-card.cancelados { background: linear-gradient(135deg, #dc3545, #c0392b); }
+    .stat-card.cancelado-link { background: linear-gradient(135deg, #6c757d, #495057); }
+    .stat-card.refunded { background: linear-gradient(135deg, #6f42c1, #5a32a3); }
+    .stat-card.asaas { background: linear-gradient(135deg, #003B5C, #005A8C); }
+    .stat-card.mp { background: linear-gradient(135deg, #009EE3, #007EB5); }
+    .stat-card.infinite { background: linear-gradient(135deg, #7B1FA2, #9C27B0); }
+    .stat-card h3 { font-size: 1.8rem; margin-bottom: 5px; color: white; }
+    .stat-card p { font-size: 0.85rem; opacity: 0.9; color: rgba(255,255,255,0.9); }
+    .tabs { display: flex; gap: 5px; margin-bottom: 25px; background: #f8f9fa; padding: 8px; border-radius: 15px; }
+    .tab { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; background: transparent; color: #636E72; }
+    .tab:hover { background: #E0E0E0; }
+    .tab.ativo { background: #0B193F; color: white; }
+    .tab.asaas-tab { color: #003B5C; }
+    .tab.asaas-tab.ativo { background: linear-gradient(135deg, #003B5C, #005A8C); color: white; }
+    .tab.mp-tab { color: #009EE3; }
+    .tab.mp-tab.ativo { background: linear-gradient(135deg, #009EE3, #007EB5); color: white; }
+    .tab.infinite-tab { color: #7B1FA2; }
+    .tab.infinite-tab.ativo { background: linear-gradient(135deg, #7B1FA2, #9C27B0); color: white; }
+    .tab-content { display: none; }
+    .tab-content.ativo { display: block; }
+    .botoes-centro {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .botoes-centro button {
+        display: inline-block;
+        padding: 10px 18px;
+        border: 2px solid #0B193F;
+        background: white;
+        color: #0B193F;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin: 5px;
+    }
+    .botoes-centro button:hover { background: #0B193F; color: white; }
+    .botoes-centro button.ativo { background: #0B193F; color: white; }
+    .botoes-centro button.cancelados-btn { border-color: #dc3545; color: #dc3545; }
+    .botoes-centro button.cancelados-btn:hover { background: #dc3545; color: white; }
+    .botoes-centro button.cancelados-btn.ativo { background: #dc3545; color: white; border-color: #dc3545; }
+    .botoes-centro button.cancelado-link-btn { border-color: #6c757d; color: #6c757d; }
+    .botoes-centro button.cancelado-link-btn:hover { background: #6c757d; color: white; }
+    .botoes-centro button.cancelado-link-btn.ativo { background: #6c757d; color: white; border-color: #6c757d; }
+    .botoes-centro button.refunded-btn { border-color: #6f42c1; color: #6f42c1; }
+    .botoes-centro button.refunded-btn:hover { background: #6f42c1; color: white; }
+    .botoes-centro button.refunded-btn.ativo { background: #6f42c1; color: white; border-color: #6f42c1; }
+    .pix-lista { margin-top: 20px; }
+    .pix-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #ffc107; transition: all 0.3s; }
+    .pix-card.pago { border-left-color: #28a745; background: #d4edda; }
+    .pix-card.cancelado { border-left-color: #dc3545; background: #f8d7da; opacity: 0.85; }
+    .pix-card.cancelado-link { border-left-color: #6c757d; background: #e2e3e5; opacity: 0.75; }
+    .pix-card:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .pix-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+    .pix-info h3 { color: #333; margin-bottom: 5px; }
+    .pix-info p { color: #666; font-size: 0.9rem; margin: 3px 0; }
+    .pix-valor { font-size: 1.5rem; color: #0B193F; font-weight: bold; }
+    .pix-status { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    .status-gerado { background: #e3f2fd; color: #1565c0; }
+    .status-aguardando { background: #fff3cd; color: #856404; }
+    .status-pago { background: #d4edda; color: #155724; }
+    .status-confirmado { background: #cce5ff; color: #004085; }
+    .status-cancelado { background: #f8d7da; color: #721c24; }
+    .status-cancelado-link { background: #e2e3e5; color: #383d41; }
+    .pix-acoes { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .btn-confirmar { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+    .btn-confirmar:hover { background: #218838; }
+    .btn-cancelar { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+    .btn-cancelar:hover { background: #c82333; }
+    .btn-copiar-link { background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+    .btn-copiar-link:hover { background: #138496; }
+    .btn-ver-link { background: #003B5C; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: inline-block; font-weight: 600; }
+    .btn-ver-link:hover { background: #002a42; }
+    .sem-pix { text-align: center; padding: 60px; color: #888; }
+    .loading { text-align: center; padding: 40px; }
+    .loading::after { content: ''; display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0B193F; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .notificacao { position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; z-index: 1000; }
+    .notificacao.ativo { display: block; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .asaas-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #003B5C; transition: all 0.3s; }
+    .asaas-card:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .asaas-card.pago { border-left-color: #28a745; background: #d4edda; }
+    .asaas-card.pendente { border-left-color: #ffc107; background: #fff3cd; }
+    .asaas-card.atrasado { border-left-color: #dc3545; background: #f8d7da; }
+    .asaas-card.cancelado { border-left-color: #6c757d; background: #e2e3e5; opacity: 0.7; }
+    .asaas-card.refunded { border-left-color: #6f42c1; background: #e9d8f4; opacity: 0.85; }
+    .asaas-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+    .asaas-info h3 { color: #003B5C; margin-bottom: 5px; }
+    .asaas-info p { color: #666; font-size: 0.9rem; margin: 3px 0; }
+    .asaas-valor { font-size: 1.5rem; color: #003B5C; font-weight: bold; }
+    .asaas-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    .badge-pendente { background: #fff3cd; color: #856404; }
+    .badge-recebido { background: #d4edda; color: #155724; }
+    .badge-atrasado { background: #f8d7da; color: #721c24; }
+    .badge-cancelado { background: #e2e3e5; color: #383d41; }
+    .badge-refunded { background: #e9d8f4; color: #6f42c1; }
+    .asaas-detalhes { background: white; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 0.85rem; color: #666; }
+    .asaas-detalhes .linha { display: flex; justify-content: space-between; margin: 5px 0; }
+    .mp-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #009EE3; transition: all 0.3s; }
+    .mp-card:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .mp-card.aprovado { border-left-color: #28a745; background: #d4edda; }
+    .mp-card.pendente { border-left-color: #ffc107; background: #fff3cd; }
+    .mp-card.rejeitado { border-left-color: #dc3545; background: #f8d7da; }
+    .mp-card.cancelado { border-left-color: #6c757d; background: #e2e3e5; opacity: 0.7; }
+    .mp-card.reembolsado { border-left-color: #6f42c1; background: #e9d8f4; opacity: 0.85; }
+    .mp-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+    .mp-info h3 { color: #009EE3; margin-bottom: 5px; }
+    .mp-info p { color: #666; font-size: 0.9rem; margin: 3px 0; }
+    .mp-valor { font-size: 1.5rem; color: #009EE3; font-weight: bold; }
+    .mp-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    .badge-mp-pendente { background: #fff3cd; color: #856404; }
+    .badge-mp-aprovado { background: #d4edda; color: #155724; }
+    .badge-mp-rejeitado { background: #f8d7da; color: #721c24; }
+    .badge-mp-cancelado { background: #e2e3e5; color: #383d41; }
+    .badge-mp-reembolsado { background: #e9d8f4; color: #6f42c1; }
+    .badge-mp-processando { background: #cce5ff; color: #004085; }
+    .mp-detalhes { background: white; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 0.85rem; color: #666; }
+    .mp-detalhes .linha { display: flex; justify-content: space-between; margin: 5px 0; }
+    .mp-detalhes .taxa-info { background: #E3F2FD; border-radius: 6px; padding: 10px; margin-top: 10px; }
+    
+    /* ===== INFINITE PAY - ESTILOS ===== */
+    .infinite-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #7B1FA2; transition: all 0.3s; }
+    .infinite-card:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .infinite-card.pago { border-left-color: #28a745; background: #d4edda; }
+    .infinite-card.pendente { border-left-color: #ffc107; background: #fff3cd; }
+    .infinite-card.cancelado { border-left-color: #6c757d; background: #e2e3e5; opacity: 0.7; }
+    .infinite-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+    .infinite-info h3 { color: #7B1FA2; margin-bottom: 5px; }
+    .infinite-info p { color: #666; font-size: 0.9rem; margin: 3px 0; }
+    .infinite-valor { font-size: 1.5rem; color: #7B1FA2; font-weight: bold; }
+    .infinite-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    .badge-infinite-pendente { background: #fff3cd; color: #856404; }
+    .badge-infinite-pago { background: #d4edda; color: #155724; }
+    .badge-infinite-cancelado { background: #e2e3e5; color: #383d41; }
+    .infinite-detalhes { background: white; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 0.85rem; color: #666; }
+    .infinite-detalhes .linha { display: flex; justify-content: space-between; margin: 5px 0; }
+    
+    /* ===== WEBHOOK STATUS - NOVO ===== */
+    .webhook-status-box { margin-bottom: 20px; padding: 12px 18px; border-radius: 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+    .webhook-status-box.ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .webhook-status-box.aviso { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .webhook-status-box code { background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; word-break: break-all; }
+    .webhook-status-box a { color: inherit; text-decoration: underline; font-weight: 600; }
+
+
+    /* ===== FILTROS DE DATA E NOME ===== */
+    .filtros-avancados {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        align-items: end;
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+    }
+    .filtro-grupo {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .filtro-grupo label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #636E72;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .filtro-grupo input[type="date"],
+    .filtro-grupo input[type="text"] {
+        padding: 10px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: inherit;
+        min-width: 160px;
+        transition: border-color 0.3s;
+    }
+    .filtro-grupo input[type="date"]:focus,
+    .filtro-grupo input[type="text"]:focus {
+        outline: none;
+        border-color: #0B193F;
+    }
+    .filtro-grupo input[type="text"] {
+        min-width: 220px;
+    }
+    .btn-limpar-filtros {
+        background: #e0e0e0;
+        color: #636E72;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        height: fit-content;
+    }
+    .btn-limpar-filtros:hover {
+        background: #d0d0d0;
+    }
+    .info-filtros {
+        font-size: 0.8rem;
+        color: #636E72;
+        margin-bottom: 15px;
+        padding: 8px 15px;
+        background: #E3F2FD;
+        border-radius: 8px;
+        display: none;
+    }
+    .info-filtros.ativo {
+        display: block;
+    }
+    @media (max-width: 768px) {
+        .filtros-avancados { flex-direction: column; align-items: stretch; }
+        .filtro-grupo input[type="text"] { min-width: 100%; }
+    }
+
+    @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; } .header h1 { font-size: 1.5rem; } .stats { grid-template-columns: repeat(2, 1fr); } }
+  
+    /* ===== FORÇAR CENTRALIZAÇÃO MÁXIMA ===== */
+    .card .botoes-centro,
+    #aba-pix .botoes-centro,
+    #aba-asaas .botoes-centro,
+    #aba-mp .botoes-centro,
+    #aba-infinite .botoes-centro {
+        text-align: center !important;
+        margin: 20px 0 !important;
+        display: block !important;
+        width: 100% !important;
+        float: none !important;
+        clear: both !important;
+    }
+    .card .botoes-centro button,
+    #aba-pix .botoes-centro button,
+    #aba-asaas .botoes-centro button,
+    #aba-mp .botoes-centro button,
+    #aba-infinite .botoes-centro button {
+        display: inline-block !important;
+        float: none !important;
+        margin: 5px !important;
+        vertical-align: middle !important;
+    }
+</style>
+
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="btn-voltar" onclick="voltarDashboard()">← Voltar ao Dashboard</button>
+                <div>
+                    <h1>✅ Pix Manual</h1>
+                    <p>Gerencie PIX, cobranças Asaas, Mercado Pago e InfinitePay</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span>👤</span>
+                    <span id="userEmail"></span>
+                </div>
+                <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab ativo" onclick="mostrarAba(this, 'pix')">💳 PIX</button>
+            <button class="tab asaas-tab" onclick="mostrarAba(this, 'asaas')">🏦 Asaas</button>
+            <button class="tab mp-tab" onclick="mostrarAba(this, 'mp')">💳 Mercado Pago</button>
+            <button class="tab infinite-tab" onclick="mostrarAba(this, 'infinite')">💜 InfinitePay</button>
+        </div>
+
+        <!-- ABA PIX -->
+        <div id="aba-pix" class="tab-content ativo">
+            <div class="card">
+                <div class="stats">
+                    <div class="stat-card"><h3 id="stat-pendentes">0</h3><p>Pendentes</p></div>
+                    <div class="stat-card"><h3 id="stat-aguardando">0</h3><p>Aguardando Cliente</p></div>
+                    <div class="stat-card"><h3 id="stat-confirmados">0</h3><p>Confirmados</p></div>
+                    <div class="stat-card cancelados"><h3 id="stat-cancelados">0</h3><p>Cancelados Manual</p></div>
+                    <div class="stat-card cancelado-link"><h3 id="stat-cancelado-link">0</h3><p>Cancelados Link</p></div>
+                    <div class="stat-card"><h3 id="stat-total">0</h3><p>Total</p></div>
+                </div>
+                
+                <div class="info-filtros" id="info-filtros-pix">
+                    🔍 Filtros ativos: <span id="texto-filtros-pix"></span>
+                </div>
+                <div class="filtros-avancados">
+                    <div class="filtro-grupo">
+                        <label>📅 Data Inicial</label>
+                        <input type="date" id="data-inicial-pix" onchange="aplicarFiltroDataNome('pix')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>📅 Data Final</label>
+                        <input type="date" id="data-final-pix" onchange="aplicarFiltroDataNome('pix')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>👤 Nome do Comprador</label>
+                        <input type="text" id="nome-comprador-pix" placeholder="Digite o nome..." oninput="aplicarFiltroDataNome('pix')">
+                    </div>
+                    <button class="btn-limpar-filtros" onclick="limparFiltros('pix')">🧹 Limpar</button>
+                </div>
+<div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                    <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
+                    <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
+                    <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
+                    <button class="cancelados-btn" onclick="filtrarPix('cancelados')">❌ Cancelados Manual</button>
+                    <button class="cancelado-link-btn" onclick="filtrarPix('cancelado-link')">🔗 Cancelados Link</button>
+                    <button onclick="filtrarPix('todos')">📋 Todos</button>
+                    <button onclick="carregarPix()">🔄 Atualizar</button>
+                </div>
+                <div id="loading-pix" class="loading" style="display:none;"><p>Carregando...</p></div>
+                <div id="pix-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
+            </div>
+        </div>
+
+        <!-- ABA ASAAS -->
+        <div id="aba-asaas" class="tab-content">
+            <div class="card">
+                <div class="stats">
+                    <div class="stat-card asaas"><h3 id="stat-asaas-pendentes">0</h3><p>Pendentes</p></div>
+                    <div class="stat-card asaas"><h3 id="stat-asaas-recebidos">0</h3><p>Recebidos</p></div>
+                    <div class="stat-card asaas"><h3 id="stat-asaas-atrasados">0</h3><p>Atrasados</p></div>
+                    <div class="stat-card asaas"><h3 id="stat-asaas-cancelados">0</h3><p>Cancelados</p></div>
+                    <div class="stat-card asaas refunded"><h3 id="stat-asaas-refunded">0</h3><p>Reembolsados</p></div>
+                    <div class="stat-card asaas"><h3 id="stat-asaas-total">0</h3><p>Total</p></div>
+                </div>
+                
+                <div class="info-filtros" id="info-filtros-asaas">
+                    🔍 Filtros ativos: <span id="texto-filtros-asaas"></span>
+                </div>
+                <div class="filtros-avancados">
+                    <div class="filtro-grupo">
+                        <label>📅 Data Inicial</label>
+                        <input type="date" id="data-inicial-asaas" onchange="aplicarFiltroDataNome('asaas')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>📅 Data Final</label>
+                        <input type="date" id="data-final-asaas" onchange="aplicarFiltroDataNome('asaas')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>👤 Nome do Comprador</label>
+                        <input type="text" id="nome-comprador-asaas" placeholder="Digite o nome..." oninput="aplicarFiltroDataNome('asaas')">
+                    </div>
+                    <button class="btn-limpar-filtros" onclick="limparFiltros('asaas')">🧹 Limpar</button>
+                </div>
+<div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                    <button class="ativo" onclick="filtrarAsaas('todos')">📋 Todos</button>
+                    <button onclick="filtrarAsaas('PENDING')">⏳ Pendentes</button>
+                    <button onclick="filtrarAsaas('RECEIVED')">✅ Recebidos</button>
+                    <button onclick="filtrarAsaas('CONFIRMED')">✔️ Confirmados</button>
+                    <button onclick="filtrarAsaas('OVERDUE')">⚠️ Atrasados</button>
+                    <button onclick="filtrarAsaas('CANCELLED')">❌ Cancelados</button>
+                    <button class="refunded-btn" onclick="filtrarAsaas('REFUNDED')">↩️ Reembolsados</button>
+                    <button onclick="carregarAsaas()">🔄 Atualizar</button>
+                    <button onclick="carregarAsaasTodas()" style="background:#28a745;color:white;border-color:#28a745;">🌍 Ver Todas</button>
+                </div>
+                <div id="loading-asaas" class="loading" style="display:none;"><p>Carregando cobranças Asaas...</p></div>
+                <div id="asaas-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
+            </div>
+        </div>
+
+        <!-- ABA MERCADO PAGO -->
+        <div id="aba-mp" class="tab-content">
+            <div class="card">
+                <div class="stats">
+                    <div class="stat-card mp"><h3 id="stat-mp-pendentes">0</h3><p>Pendentes</p></div>
+                    <div class="stat-card mp"><h3 id="stat-mp-aprovados">0</h3><p>Aprovados</p></div>
+                    <div class="stat-card mp"><h3 id="stat-mp-rejeitados">0</h3><p>Rejeitados</p></div>
+                    <div class="stat-card mp"><h3 id="stat-mp-cancelados">0</h3><p>Cancelados</p></div>
+                    <div class="stat-card mp refunded"><h3 id="stat-mp-reembolsados">0</h3><p>Reembolsados</p></div>
+                    <div class="stat-card mp"><h3 id="stat-mp-total">0</h3><p>Total</p></div>
+                </div>
+                
+                <div class="info-filtros" id="info-filtros-mp">
+                    🔍 Filtros ativos: <span id="texto-filtros-mp"></span>
+                </div>
+                <div class="filtros-avancados">
+                    <div class="filtro-grupo">
+                        <label>📅 Data Inicial</label>
+                        <input type="date" id="data-inicial-mp" onchange="aplicarFiltroDataNome('mp')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>📅 Data Final</label>
+                        <input type="date" id="data-final-mp" onchange="aplicarFiltroDataNome('mp')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>👤 Nome do Comprador</label>
+                        <input type="text" id="nome-comprador-mp" placeholder="Digite o nome..." oninput="aplicarFiltroDataNome('mp')">
+                    </div>
+                    <button class="btn-limpar-filtros" onclick="limparFiltros('mp')">🧹 Limpar</button>
+                </div>
+<div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                    <button class="ativo" onclick="filtrarMp('todos')">📋 Todos</button>
+                    <button onclick="filtrarMp('pendente')">⏳ Pendentes</button>
+                    <button onclick="filtrarMp('aprovado')">✅ Aprovados</button>
+                    <button onclick="filtrarMp('processando')">🔄 Processando</button>
+                    <button onclick="filtrarMp('rejeitado')">❌ Rejeitados</button>
+                    <button onclick="filtrarMp('cancelado')">🚫 Cancelados</button>
+                    <button class="refunded-btn" onclick="filtrarMp('reembolsado')">↩️ Reembolsados</button>
+                    <button onclick="carregarMp()">🔄 Atualizar</button>
+                    <button onclick="carregarMpTodas()" style="background:#009EE3;color:white;border-color:#009EE3;">🌍 Ver Todas</button>
+                </div>
+                <div id="loading-mp" class="loading" style="display:none;"><p>Carregando cobranças Mercado Pago...</p></div>
+                <div id="mp-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
+            </div>
+        </div>
+
+        <!-- ABA INFINITE PAY -->
+        <div id="aba-infinite" class="tab-content">
+            <div class="card">
+                <!-- NOVO: Status do Webhook -->
+                <div id="infinite-webhook-status" class="webhook-status-box aviso" style="display:none;"></div>
+
+                <div class="stats">
+                    <div class="stat-card infinite"><h3 id="stat-infinite-pendentes">0</h3><p>Pendentes</p></div>
+                    <div class="stat-card infinite"><h3 id="stat-infinite-pagos">0</h3><p>Pagos</p></div>
+                    <div class="stat-card infinite"><h3 id="stat-infinite-cancelados">0</h3><p>Cancelados</p></div>
+                    <div class="stat-card infinite"><h3 id="stat-infinite-total">0</h3><p>Total</p></div>
+                </div>
+                
+                <div class="info-filtros" id="info-filtros-infinite">
+                    🔍 Filtros ativos: <span id="texto-filtros-infinite"></span>
+                </div>
+                <div class="filtros-avancados">
+                    <div class="filtro-grupo">
+                        <label>📅 Data Inicial</label>
+                        <input type="date" id="data-inicial-infinite" onchange="aplicarFiltroDataNome('infinite')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>📅 Data Final</label>
+                        <input type="date" id="data-final-infinite" onchange="aplicarFiltroDataNome('infinite')">
+                    </div>
+                    <div class="filtro-grupo">
+                        <label>👤 Nome do Comprador</label>
+                        <input type="text" id="nome-comprador-infinite" placeholder="Digite o nome..." oninput="aplicarFiltroDataNome('infinite')">
+                    </div>
+                    <button class="btn-limpar-filtros" onclick="limparFiltros('infinite')">🧹 Limpar</button>
+                </div>
+<div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
+                    <button class="ativo" onclick="filtrarInfinite('todos')">📋 Todos</button>
+                    <button onclick="filtrarInfinite('pending')">⏳ Pendentes</button>
+                    <button onclick="filtrarInfinite('paid')">✅ Pagos</button>
+                    <button onclick="filtrarInfinite('cancelled')">❌ Cancelados</button>
+                    <button onclick="carregarInfinite()">🔄 Atualizar</button>
+                    <button onclick="carregarInfiniteTodas()" style="background:#7B1FA2;color:white;border-color:#7B1FA2;">🌍 Ver Todas</button>
+                </div>
+                <div id="loading-infinite" class="loading" style="display:none;"><p>Carregando cobranças InfinitePay...</p></div>
+                <div id="infinite-lista" class="pix-lista"><div class="sem-pix">Clique em "Atualizar" para carregar</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notificacao" id="notificacao">✅ Pagamento confirmado com sucesso!</div>
+
+    <script>
+        // ===== VARIAVEIS GLOBAIS =====
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+        let usuarioLogado = null;
+        let clienteSistemaId = null;
+        let filtroPixAtual = 'aguardando';
+        let filtroAsaasAtual = 'todos';
+        let filtroMpAtual = 'todos';
+        let filtroInfiniteAtual = 'todos';
+        let todosPixs = [];
+        let todasAsaas = [];
+        let todasMp = [];
+        let todasInfinite = [];
+        let autoRefreshInterval = null;  // controla o setInterval único
+        let isLoadingPix = false;
+        let isLoadingAsaas = false;
+        let isLoadingMp = false;
+        let isLoadingInfinite = false;
+        // ===== VARIAVEIS DE FILTRO =====
+        let filtroDataInicial = null;
+        let filtroDataFinal = null;
+        let filtroNomeComprador = '';
+
+        // ===== FUNCOES DE FILTRO DATA E NOME =====
+        function aplicarFiltroDataNome(aba) {
+            const dataInicial = document.getElementById('data-inicial-' + aba)?.value;
+            const dataFinal = document.getElementById('data-final-' + aba)?.value;
+            const nomeComprador = document.getElementById('nome-comprador-' + aba)?.value?.trim().toLowerCase() || '';
+
+            filtroDataInicial = dataInicial || null;
+            filtroDataFinal = dataFinal || null;
+            filtroNomeComprador = nomeComprador;
+
+            if (aba === 'pix') renderizarPixFiltrados();
+            else if (aba === 'asaas') renderizarAsaasFiltrados();
+            else if (aba === 'mp') renderizarMpFiltrados();
+            else if (aba === 'infinite') renderizarInfiniteFiltrados();
+
+            atualizarInfoFiltros(aba);
+        }
+
+        function limparFiltros(aba) {
+            document.getElementById('data-inicial-' + aba).value = '';
+            document.getElementById('data-final-' + aba).value = '';
+            document.getElementById('nome-comprador-' + aba).value = '';
+            filtroDataInicial = null;
+            filtroDataFinal = null;
+            filtroNomeComprador = '';
+
+            if (aba === 'pix') renderizarPixFiltrados();
+            else if (aba === 'asaas') renderizarAsaasFiltrados();
+            else if (aba === 'mp') renderizarMpFiltrados();
+            else if (aba === 'infinite') renderizarInfiniteFiltrados();
+
+            atualizarInfoFiltros(aba);
+        }
+
+        function atualizarInfoFiltros(aba) {
+            const infoEl = document.getElementById('info-filtros-' + aba);
+            const textoEl = document.getElementById('texto-filtros-' + aba);
+            const partes = [];
+
+            if (filtroDataInicial) partes.push('Data inicial: ' + formatarDataBR(filtroDataInicial));
+            if (filtroDataFinal) partes.push('Data final: ' + formatarDataBR(filtroDataFinal));
+            if (filtroNomeComprador) partes.push('Nome: "' + filtroNomeComprador + '"');
+
+            if (partes.length > 0) {
+                textoEl.textContent = partes.join(' | ');
+                infoEl.classList.add('ativo');
+            } else {
+                infoEl.classList.remove('ativo');
+            }
+        }
+
+        function formatarDataBR(dataStr) {
+            if (!dataStr) return '-';
+            const [ano, mes, dia] = dataStr.split('-');
+            return dia + '/' + mes + '/' + ano;
+        }
+
+        function filtrarPorDataENome(itens) {
+            return itens.filter(item => {
+                // Filtro de data
+                if (filtroDataInicial || filtroDataFinal) {
+                    const itemData = item.criado_em || item.created_at || item.data;
+                    if (!itemData) return false;
+                    const dataItem = new Date(itemData);
+                    dataItem.setHours(0,0,0,0);
+                    const itemTime = dataItem.getTime();
+
+                    if (filtroDataInicial) {
+                        const dataIni = new Date(filtroDataInicial + 'T00:00:00');
+                        const iniTime = dataIni.getTime();
+                        if (itemTime < iniTime) return false;
+                    }
+                    if (filtroDataFinal) {
+                        const dataFim = new Date(filtroDataFinal + 'T23:59:59');
+                        const fimTime = dataFim.getTime();
+                        if (itemTime > fimTime) return false;
+                    }
+                }
+
+                // Filtro de nome
+                if (filtroNomeComprador) {
+                    const nome = (item.comprador_nome || item.comprador || item.cliente_nome || '').toLowerCase();
+                    if (!nome.includes(filtroNomeComprador)) return false;
+                }
+
+                return true;
+            });
+        }
+
+
+        // ===== FUNCOES GLOBAIS =====
+        function mostrarAba(botao, aba) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
+            botao.classList.add('ativo');
+            document.getElementById('aba-' + aba).classList.add('ativo');
+            if (aba === 'pix') carregarPix();
+            else if (aba === 'asaas') carregarAsaas();
+            else if (aba === 'mp') carregarMp();
+            else if (aba === 'infinite') { carregarInfinite(); verificarWebhookInfinite(); }
+        }
+
+        function voltarDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function formatarDataHora(data) {
+            if (!data) return '-';
+            return new Date(data).toLocaleString('pt-BR');
+        }
+
+        function mostrarNotificacao(msg) {
+            const notif = document.getElementById('notificacao');
+            notif.textContent = msg;
+            notif.classList.add('ativo');
+            setTimeout(() => notif.classList.remove('ativo'), 3000);
+        }
+
+        async function logout() {
+            try {
+                await supabaseClient.auth.signOut();
+            } catch (err) {
+                console.error('[PIX-MANUAL] Erro no logout:', err);
+            }
+            // Limpar intervalo antes de sair
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // ===== CONTROLE DE VISIBILIDADE DA PÁGINA =====
+        // Pausa o auto-refresh quando a aba não está visível (economiza dados e evita comportamento estranho)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('[PIX-MANUAL] Aba em background - auto-refresh pausado');
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            } else {
+                console.log('[PIX-MANUAL] Aba visível - auto-refresh retomado');
+                // Recarregar dados imediatamente ao voltar e reiniciar intervalo
+                if (document.getElementById('aba-pix').classList.contains('ativo')) carregarPix();
+                else if (document.getElementById('aba-asaas').classList.contains('ativo')) carregarAsaas();
+                else if (document.getElementById('aba-mp').classList.contains('ativo')) carregarMp();
+                else if (document.getElementById('aba-infinite').classList.contains('ativo')) carregarInfinite();
+
+                if (!autoRefreshInterval) {
+                    autoRefreshInterval = setInterval(() => {
+                        if (document.getElementById('aba-pix').classList.contains('ativo')) carregarPix();
+                        else if (document.getElementById('aba-asaas').classList.contains('ativo')) carregarAsaas();
+                        else if (document.getElementById('aba-mp').classList.contains('ativo')) carregarMp();
+                        else if (document.getElementById('aba-infinite').classList.contains('ativo')) carregarInfinite();
+                    }, 300000);
+                }
+            }
+        });
+
+        // ===== INICIALIZACAO =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const { data: usuario, error: userError } = await supabaseClient
+                    .from('usuarios_pg')
+                    .select('cliente_id')
+                    .eq('auth_id', session.user.id)
+                    .single();
+                if (userError || !usuario) {
+                    console.error('[PIX-CONF] Erro ao buscar usuario:', userError);
+                    window.location.href = 'login.html';
+                    return;
+                }
+                clienteSistemaId = usuario.cliente_id;
+                usuarioLogado = session.user;
+                document.getElementById('userInfo').style.display = 'flex';
+                document.getElementById('userEmail').textContent = session.user.email;
+                carregarPix();
+                // Iniciar auto-refresh apenas se não estiver rodando
+                if (!autoRefreshInterval) {
+                    autoRefreshInterval = setInterval(() => {
+                        if (document.getElementById('aba-pix').classList.contains('ativo')) carregarPix();
+                        else if (document.getElementById('aba-asaas').classList.contains('ativo')) carregarAsaas();
+                        else if (document.getElementById('aba-mp').classList.contains('ativo')) carregarMp();
+                        else if (document.getElementById('aba-infinite').classList.contains('ativo')) carregarInfinite();
+                    }, 300000);
+                }
+            } catch (error) {
+                console.error('[PIX-CONF] Erro inicializacao:', error);
+            }
+        });
+
+        // ===== NOVO: VERIFICAR WEBHOOK INFINITE =====
+        async function verificarWebhookInfinite() {
+            try {
+                const { data: config, error } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('infinitepay_webhook_url')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .single();
+
+                const statusEl = document.getElementById('infinite-webhook-status');
+                statusEl.style.display = 'flex';
+
+                if (error) {
+                    statusEl.className = 'webhook-status-box aviso';
+                    statusEl.innerHTML = '⚠️ Não foi possível verificar a configuração do webhook.';
+                    return;
+                }
+
+                if (config && config.infinitepay_webhook_url) {
+                    statusEl.className = 'webhook-status-box ok';
+                    statusEl.innerHTML = '🔔 <strong>Webhook configurado!</strong> Notificações automáticas ativas.<br><code>' + config.infinitepay_webhook_url + '</code>';
+                } else {
+                    statusEl.className = 'webhook-status-box aviso';
+                    statusEl.innerHTML = '⚠️ <strong>Webhook não configurado.</strong> Configure em <a href="configuracao-pagamento.html">Config. Pagamento</a> para receber notificações automáticas de pagamento.';
+                }
+            } catch (e) {
+                console.log('[INFINITE] Erro ao verificar webhook:', e);
+            }
+        }
+
+        // ===== ABA PIX =====
+        async function carregarPix() {
+            if (isLoadingPix) return; // evita chamadas simultâneas
+            isLoadingPix = true;
+            const lista = document.getElementById('pix-lista');
+            const loading = document.getElementById('loading-pix');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: pixs, error } = await supabaseClient
+                    .from('pix_estaticos')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                todosPixs = pixs || [];
+                atualizarStatsPix(todosPixs);
+                renderizarPixFiltrados();
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            } finally {
+                isLoadingPix = false;
+            }
+        }
+
+        function aplicarFiltroPix(pixs, filtro) {
+            if (filtro === 'todos') return pixs;
+            if (filtro === 'aguardando') {
+                return pixs.filter(p => {
+                    const statusOk = p.status === 'pendente' || p.status === 'aguardando_confirmacao';
+                    return statusOk && p.vendedor_confirmou !== true && p.status !== 'cancelado' && p.status !== 'cancelado_link';
+                });
+            }
+            if (filtro === 'cliente-clicou') {
+                return pixs.filter(p => p.cliente_disse_pago === true && p.vendedor_confirmou !== true && p.status !== 'cancelado' && p.status !== 'cancelado_link');
+            }
+            if (filtro === 'confirmados') return pixs.filter(p => p.vendedor_confirmou === true || p.status === 'confirmado');
+            if (filtro === 'cancelados') return pixs.filter(p => p.status === 'cancelado');
+            if (filtro === 'cancelado-link') return pixs.filter(p => p.status === 'cancelado_link');
+            return pixs;
+        }
+
+        
+        async function renderizarPixFiltrados() {
+            const lista = document.getElementById('pix-lista');
+            let pixsFiltrados = aplicarFiltroPix(todosPixs, filtroPixAtual);
+            pixsFiltrados = filtrarPorDataENome(pixsFiltrados);
+
+            if (pixsFiltrados.length === 0) {
+                lista.innerHTML = '<div class="sem-pix">Nenhum PIX ' + (filtroPixAtual === 'aguardando' ? 'pendente' : 'encontrado') + '</div>';
+                return;
+            }
+
+            // Buscar vendas e clientes para os filtrados
+            const vendaIds = [...new Set(pixsFiltrados.map(p => p.venda_id).filter(Boolean))];
+            let vendasMap = {};
+            let clientesMap = {};
+
+            if (vendaIds.length > 0) {
+                const { data: vendas } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('id, codigo_live, total, comprador, cliente_nome')
+                    .in('id', vendaIds);
+                if (vendas) vendas.forEach(v => vendasMap[v.id] = v);
+            }
+
+            const clienteIds = [...new Set(pixsFiltrados.map(p => p.cliente_id).filter(Boolean))];
+            if (clienteIds.length > 0) {
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, instagram, whatsapp')
+                    .in('id', clienteIds);
+                if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
+            }
+
+            // Renderizar
+            let html = '';
+            for (const p of pixsFiltrados) {
+                const venda = vendasMap[p.venda_id] || {};
+                const cliente = clientesMap[p.cliente_id] || {};
+                const nomeCliente = cliente.nome || venda.comprador || venda.cliente_nome || p.comprador_nome || 'Cliente';
+                const valor = p.valor || 0;
+                const isPago = p.vendedor_confirmou === true;
+                const isConfirmado = p.status === 'confirmado';
+                const isCancelado = p.status === 'cancelado';
+                const isCanceladoLink = p.status === 'cancelado_link';
+                const clienteClicou = p.cliente_disse_pago === true;
+
+                let statusClass = 'status-gerado';
+                let statusText = '📱 Gerado (aguardando cliente)';
+                if (isCancelado) { statusClass = 'status-cancelado'; statusText = '❌ Cancelado Manual'; }
+                else if (isCanceladoLink) { statusClass = 'status-cancelado-link'; statusText = '🔗 Cancelado por Link'; }
+                else if (isConfirmado || isPago) { statusClass = 'status-confirmado'; statusText = '✅ Confirmado'; }
+                else if (clienteClicou) { statusClass = 'status-aguardando'; statusText = '👆 Cliente disse que pagou'; }
+
+                html += `<div class="pix-card ${isConfirmado ? 'pago' : ''} ${isCancelado ? 'cancelado' : ''}">`;
+                html += `<div class="pix-header">`;
+                html += `<div class="pix-info">`;
+                html += `<h3>👤 ${nomeCliente}</h3>`;
+                html += `<p>💰 R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}</p>`;
+                html += `<p>🕐 Criado: ${formatarDataHora(p.criado_em)}</p>`;
+                if (p.cliente_disse_pago_em) html += `<p>⏰ Cliente clicou "paguei": ${formatarDataHora(p.cliente_disse_pago_em)}</p>`;
+                if (p.comprovante_url) html += `<p>📎 Comprovante anexado</p>`;
+                if (isCanceladoLink) html += `<p>🔗 Cancelado ao gerar link de cartão</p>`;
+                html += `</div>`;
+                html += `<div style="text-align:right;">`;
+                html += `<div class="pix-valor">R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}</div>`;
+                html += `<span class="pix-status ${statusClass}">${statusText}</span>`;
+                html += `</div></div>`;
+
+                if (!isConfirmado && !isCancelado) {
+                    html += `<div class="pix-acoes">`;
+                    if (!clienteClicou) {
+                        html += `<button class="btn-copiar-link" onclick="copiarLinkPix('${p.id}')">📋 Copiar Link</button>`;
+                    }
+                    html += `<button class="btn-confirmar" onclick="confirmarPagamento('${p.id}', '${p.venda_id}')">✅ Confirmar (vi no app)</button>`;
+                    if (p.comprovante_url) html += `<a href="${p.comprovante_url}" target="_blank" class="btn-comprovante">📎 Ver Comprovante</a>`;
+                    html += `<button class="btn-cancelar" onclick="cancelarPix('${p.id}')">❌ Não recebi</button>`;
+                    html += `</div>`;
+                } else {
+                    html += `<div class="pix-acoes">`;
+                    html += `<span style="color:${isConfirmado ? '#28a745' : '#dc3545'};font-weight:bold;">`;
+                    if (isConfirmado) html += `✅ Pagamento confirmado em ${formatarDataHora(p.vendedor_confirmou_em)}`;
+                    if (isCancelado) html += `❌ PIX cancelado`;
+                    html += `</span></div>`;
+                }
+                html += `</div>`;
+            }
+            lista.innerHTML = html;
+        }
+
+function filtrarPix(tipo) {
+            filtroPixAtual = tipo;
+            document.querySelectorAll('#aba-pix .filtros button').forEach(b => b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            carregarPix();
+        }
+
+        function atualizarStatsPix(pixs) {
+            const pendentes = pixs.filter(p => (p.status === 'pendente' || p.status === 'aguardando_confirmacao') && p.vendedor_confirmou !== true && p.status !== 'cancelado' && p.status !== 'cancelado_link').length;
+            const aguardando = pixs.filter(p => p.cliente_disse_pago === true && p.vendedor_confirmou !== true && p.status !== 'cancelado' && p.status !== 'cancelado_link').length;
+            const confirmados = pixs.filter(p => p.vendedor_confirmou === true).length;
+            const cancelados = pixs.filter(p => p.status === 'cancelado').length;
+            const canceladoLink = pixs.filter(p => p.status === 'cancelado_link').length;
+            document.getElementById('stat-pendentes').textContent = pendentes;
+            document.getElementById('stat-aguardando').textContent = aguardando;
+            document.getElementById('stat-confirmados').textContent = confirmados;
+            document.getElementById('stat-cancelados').textContent = cancelados;
+            document.getElementById('stat-cancelado-link').textContent = canceladoLink;
+            document.getElementById('stat-total').textContent = pixs.length;
+        }
+
+        async function copiarLinkPix(pixId) {
+            const baseUrl = 'https://vendalive.com.br';
+            const link = baseUrl + '/pix-pagamento.html?pix=' + pixId;
+            try {
+                await navigator.clipboard.writeText(link);
+                mostrarNotificacao('✅ Link copiado!');
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = link;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarNotificacao('✅ Link copiado!');
+            }
+        }
+
+        async function confirmarPagamento(pixId, vendaId) {
+            if (!confirm('Confirma que recebeu este pagamento no app do banco?')) return;
+            try {
+                const { error: pixError } = await supabaseClient
+                    .from('pix_estaticos')
+                    .update({ status: 'confirmado', vendedor_confirmou: true, vendedor_confirmou_em: new Date().toISOString(), atualizado_em: new Date().toISOString() })
+                    .eq('id', pixId);
+                if (pixError) throw pixError;
+                const { error: vendaError } = await supabaseClient
+                    .from('vendas_pg')
+                    .update({ status_pagamento: 'pago', atualizado_em: new Date().toISOString() })
+                    .eq('id', vendaId);
+                if (vendaError) throw vendaError;
+                mostrarNotificacao('✅ Pagamento confirmado!');
+                carregarPix();
+            } catch (error) {
+                alert('Erro ao confirmar: ' + error.message);
+            }
+        }
+
+        async function cancelarPix(pixId) {
+            if (!confirm('Cancelar este PIX? O cliente sera notificado.')) return;
+            try {
+                await supabaseClient
+                    .from('pix_estaticos')
+                    .update({ status: 'cancelado', atualizado_em: new Date().toISOString() })
+                    .eq('id', pixId);
+                mostrarNotificacao('❌ PIX cancelado');
+                carregarPix();
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        // ===== ABA ASAAS =====
+        async function carregarAsaas() {
+            if (isLoadingAsaas) return;
+            isLoadingAsaas = true;
+            const lista = document.getElementById('asaas-lista');
+            const loading = document.getElementById('loading-asaas');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_asaas')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                todasAsaas = cobrancas || [];
+                atualizarStatsAsaas(todasAsaas);
+                renderizarAsaasFiltrados();
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            } finally {
+                isLoadingAsaas = false;
+            }
+        }
+
+        async function carregarAsaasTodas() {
+            const lista = document.getElementById('asaas-lista');
+            const loading = document.getElementById('loading-asaas');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_asaas')
+                    .select('*')
+                    .order('criado_em', { ascending: false })
+                    .limit(50);
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                if (!cobrancas || cobrancas.length === 0) {
+                    lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Asaas encontrada</div>';
+                    return;
+                }
+                todasAsaas = cobrancas;
+                atualizarStatsAsaas(todasAsaas);
+
+                let html = '';
+                for (const c of cobrancas) {
+                    const status = (c.status || 'PENDING').toUpperCase();
+                    const isPago = status === 'RECEIVED' || status === 'CONFIRMED';
+                    const isAtrasado = status === 'OVERDUE';
+                    const isCancelado = status === 'CANCELLED' || status === 'CANCELED';
+                    const isRefunded = status === 'REFUNDED' || status === 'REFUND_REQUESTED';
+
+                    let cardClass = 'pendente';
+                    let badgeClass = 'badge-pendente';
+                    let badgeText = '⏳ Pendente';
+                    if (isPago) { cardClass = 'pago'; badgeClass = 'badge-recebido'; badgeText = '✅ Recebido'; }
+                    else if (isAtrasado) { cardClass = 'atrasado'; badgeClass = 'badge-atrasado'; badgeText = '⚠️ Atrasado'; }
+                    else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-cancelado'; badgeText = '❌ Cancelado'; }
+                    else if (isRefunded) { cardClass = 'refunded'; badgeClass = 'badge-refunded'; badgeText = '↩️ Reembolsado'; }
+
+                    const valorOriginal = parseFloat(c.valor || 0);
+                    const valorComTaxa = parseFloat(c.valor_com_taxa || valorOriginal);
+
+                    html += `<div class="asaas-card ${cardClass}">`;
+                    html += `<div class="asaas-header">`;
+                    html += `<div class="asaas-info">`;
+                    html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                    html += `<p>📺 ${c.codigo_live || '-'} | 💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                    html += `<p>🏢 Cliente ID: ${c.cliente_sistema_id || 'N/A'}</p>`;
+                    html += `<p>🆔 Payment ID: ${c.asaas_payment_id || '-'}</p>`;
+                    html += `</div>`;
+                    html += `<div style="text-align:right;">`;
+                    html += `<div class="asaas-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                    html += `<span class="asaas-badge ${badgeClass}">${badgeText}</span>`;
+                    html += `</div></div>`;
+                    if (c.invoice_url) {
+                        html += `<div class="pix-acoes">`;
+                        html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link">🔗 Ver Link</a>`;
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                }
+                lista.innerHTML = html;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function aplicarFiltroAsaas(cobrancas, filtro) {
+            if (filtro === 'todos') return cobrancas;
+            return cobrancas.filter(c => {
+                const status = (c.status || 'PENDING').toUpperCase();
+                if (filtro === 'RECEIVED') return status === 'RECEIVED' || status === 'CONFIRMED';
+                if (filtro === 'CONFIRMED') return status === 'CONFIRMED' || status === 'RECEIVED';
+                if (filtro === 'CANCELLED') return status === 'CANCELLED' || status === 'CANCELED' || status === 'DELETED';
+                if (filtro === 'REFUNDED') return status === 'REFUNDED' || status === 'REFUND_REQUESTED';
+                return status === filtro;
+            });
+        }
+
+        
+        function renderizarAsaasFiltrados() {
+            const lista = document.getElementById('asaas-lista');
+            let cobrancasFiltradas = aplicarFiltroAsaas(todasAsaas, filtroAsaasAtual);
+            cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            if (cobrancasFiltradas.length === 0) {
+                lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Asaas encontrada' + (filtroAsaasAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
+                return;
+            }
+
+            let html = '';
+            for (const c of cobrancasFiltradas) {
+                const status = (c.status || 'PENDING').toUpperCase();
+                const isPago = status === 'RECEIVED' || status === 'CONFIRMED';
+                const isAtrasado = status === 'OVERDUE';
+                const isCancelado = status === 'CANCELLED' || status === 'CANCELED' || status === 'DELETED';
+                const isRefunded = status === 'REFUNDED' || status === 'REFUND_REQUESTED';
+
+                let cardClass = 'pendente';
+                let badgeClass = 'badge-pendente';
+                let badgeText = '⏳ Pendente';
+                if (isPago) { cardClass = 'pago'; badgeClass = 'badge-recebido'; badgeText = '✅ Recebido'; }
+                else if (isAtrasado) { cardClass = 'atrasado'; badgeClass = 'badge-atrasado'; badgeText = '⚠️ Atrasado'; }
+                else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-cancelado'; badgeText = '❌ Cancelado'; }
+                else if (isRefunded) { cardClass = 'refunded'; badgeClass = 'badge-refunded'; badgeText = '↩️ Reembolsado'; }
+
+                const valorOriginal = parseFloat(c.valor || 0);
+                let valorComTaxa = parseFloat(c.valor_com_taxa || 0);
+                if (!valorComTaxa || valorComTaxa <= 0) {
+                    const taxaPerc = parseFloat(c.taxa_percentual || 3.49);
+                    const taxaFix = parseFloat(c.taxa_fixa || 0.49);
+                    const taxaDecimal = taxaPerc / 100;
+                    valorComTaxa = (valorOriginal + taxaFix) / (1 - taxaDecimal);
+                    valorComTaxa = Math.ceil(valorComTaxa * 100) / 100;
+                }
+                const taxa = valorComTaxa - valorOriginal;
+
+                html += `<div class="asaas-card ${cardClass}">`;
+                html += `<div class="asaas-header">`;
+                html += `<div class="asaas-info">`;
+                html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                html += `<p>💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                html += `<p>🆔 Payment ID: ${c.asaas_payment_id || '-'}</p>`;
+                html += `<p>🕐 Criado: ${formatarDataHora(c.criado_em)}</p>`;
+                if (c.pago_em) html += `<p>✅ Pago em: ${formatarDataHora(c.pago_em)}</p>`;
+                html += `</div>`;
+                html += `<div style="text-align:right;">`;
+                html += `<div class="asaas-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                html += `<span class="asaas-badge ${badgeClass}">${badgeText}</span>`;
+                html += `</div></div>`;
+                html += `<div class="asaas-detalhes">`;
+                html += `<div class="linha"><span>Valor original:</span><strong>R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                if (taxa > 0) html += `<div class="linha"><span>Taxa embutida:</span><strong>R$ ${taxa.toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `<div class="linha"><span>Voce recebe:</span><strong style="color:#28a745;">R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `</div>`;
+                html += `<div class="pix-acoes">`;
+                if (c.invoice_url) {
+                    html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link">🔗 Ver Link</a>`;
+                    html += `<button class="btn-copiar-link" onclick="copiarLinkAsaas('${c.invoice_url}')">📋 Copiar Link</button>`;
+                }
+                html += `</div></div>`;
+            }
+            lista.innerHTML = html;
+        }
+
+function filtrarAsaas(tipo) {
+            filtroAsaasAtual = tipo;
+            document.querySelectorAll('#aba-asaas .filtros button').forEach(b => b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            carregarAsaas();
+        }
+
+        function atualizarStatsAsaas(cobrancas) {
+            const pendentes = cobrancas.filter(c => {
+                const s = (c.status || 'PENDING').toUpperCase();
+                return s === 'PENDING' || s === 'AWAITING_RISK_ANALYSIS' || s === 'AUTHORIZED';
+            }).length;
+            const recebidos = cobrancas.filter(c => {
+                const s = (c.status || '').toUpperCase();
+                return s === 'RECEIVED' || s === 'CONFIRMED';
+            }).length;
+            const atrasados = cobrancas.filter(c => (c.status || '').toUpperCase() === 'OVERDUE').length;
+            const cancelados = cobrancas.filter(c => {
+                const s = (c.status || '').toUpperCase();
+                return s === 'CANCELLED' || s === 'CANCELED' || s === 'DELETED';
+            }).length;
+            const refunded = cobrancas.filter(c => {
+                const s = (c.status || '').toUpperCase();
+                return s === 'REFUNDED' || s === 'REFUND_REQUESTED';
+            }).length;
+            document.getElementById('stat-asaas-pendentes').textContent = pendentes;
+            document.getElementById('stat-asaas-recebidos').textContent = recebidos;
+            document.getElementById('stat-asaas-atrasados').textContent = atrasados;
+            document.getElementById('stat-asaas-cancelados').textContent = cancelados;
+            document.getElementById('stat-asaas-refunded').textContent = refunded;
+            document.getElementById('stat-asaas-total').textContent = cobrancas.length;
+        }
+
+        function copiarLinkAsaas(url) {
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => {
+                mostrarNotificacao('✅ Link copiado!');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarNotificacao('✅ Link copiado!');
+            });
+        }
+
+        // ===== ABA MERCADO PAGO =====
+        async function carregarMp() {
+            if (isLoadingMp) return;
+            isLoadingMp = true;
+            const lista = document.getElementById('mp-lista');
+            const loading = document.getElementById('loading-mp');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_mp')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                if (!cobrancas || cobrancas.length === 0) {
+                    lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Mercado Pago encontrada</div>';
+                    return;
+                }
+                todasMp = cobrancas;
+                atualizarStatsMp(todasMp);
+                renderizarMpFiltrados();
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            } finally {
+                isLoadingMp = false;
+            }
+        }
+
+        async function carregarMpTodas() {
+            const lista = document.getElementById('mp-lista');
+            const loading = document.getElementById('loading-mp');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_mp')
+                    .select('*')
+                    .order('criado_em', { ascending: false })
+                    .limit(100);
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                if (!cobrancas || cobrancas.length === 0) {
+                    lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca MP encontrada</div>';
+                    return;
+                }
+                todasMp = cobrancas;
+                atualizarStatsMp(todasMp);
+
+                let html = '';
+                for (const c of cobrancas) {
+                    const status = (c.status || 'pending').toLowerCase();
+                    const isAprovado = status === 'aprovado' || status === 'approved';
+                    const isPendente = status === 'pendente' || status === 'pending';
+                    const isRejeitado = status === 'rejeitado' || status === 'rejected';
+                    const isCancelado = status === 'cancelado' || status === 'cancelled';
+                    const isReembolsado = status === 'reembolsado' || status === 'refunded';
+
+                    let cardClass = 'pendente';
+                    let badgeClass = 'badge-mp-pendente';
+                    let badgeText = '⏳ Pendente';
+                    if (isAprovado) { cardClass = 'aprovado'; badgeClass = 'badge-mp-aprovado'; badgeText = '✅ Aprovado'; }
+                    else if (isRejeitado) { cardClass = 'rejeitado'; badgeClass = 'badge-mp-rejeitado'; badgeText = '❌ Rejeitado'; }
+                    else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-mp-cancelado'; badgeText = '🚫 Cancelado'; }
+                    else if (isReembolsado) { cardClass = 'reembolsado'; badgeClass = 'badge-mp-reembolsado'; badgeText = '↩️ Reembolsado'; }
+
+                    const valorOriginal = parseFloat(c.valor_original || 0);
+                    const valorComTaxa = parseFloat(c.valor_com_taxa || valorOriginal);
+
+                    html += `<div class="mp-card ${cardClass}">`;
+                    html += `<div class="mp-header">`;
+                    html += `<div class="mp-info">`;
+                    html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                    html += `<p>📺 ${c.codigo_live || '-'} | 💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                    html += `<p>🏢 Cliente ID: ${c.cliente_sistema_id || 'N/A'}</p>`;
+                    html += `<p>🆔 Preference ID: ${c.preference_id || '-'}</p>`;
+                    html += `</div>`;
+                    html += `<div style="text-align:right;">`;
+                    html += `<div class="mp-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                    html += `<span class="mp-badge ${badgeClass}">${badgeText}</span>`;
+                    html += `</div></div>`;
+                    if (c.invoice_url) {
+                        html += `<div class="pix-acoes">`;
+                        html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #009EE3, #007EB5);">🔗 Ver Link</a>`;
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                }
+                lista.innerHTML = html;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function aplicarFiltroMp(cobrancas, filtro) {
+            if (filtro === 'todos') return cobrancas;
+            return cobrancas.filter(c => {
+                const status = (c.status || 'pending').toLowerCase();
+                if (filtro === 'aprovado') return status === 'aprovado' || status === 'approved';
+                if (filtro === 'pendente') return status === 'pendente' || status === 'pending';
+                if (filtro === 'rejeitado') return status === 'rejeitado' || status === 'rejected';
+                if (filtro === 'cancelado') return status === 'cancelado' || status === 'cancelled';
+                if (filtro === 'reembolsado') return status === 'reembolsado' || status === 'refunded';
+                if (filtro === 'processando') return status === 'processando' || status === 'in_process';
+                return status === filtro;
+            });
+        }
+
+        
+        function renderizarMpFiltrados() {
+            const lista = document.getElementById('mp-lista');
+            let cobrancasFiltradas = aplicarFiltroMp(todasMp, filtroMpAtual);
+            cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            if (cobrancasFiltradas.length === 0) {
+                lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Mercado Pago encontrada' + (filtroMpAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
+                return;
+            }
+
+            let html = '';
+            for (const c of cobrancasFiltradas) {
+                const status = (c.status || 'pending').toLowerCase();
+                const isAprovado = status === 'aprovado' || status === 'approved';
+                const isPendente = status === 'pendente' || status === 'pending';
+                const isRejeitado = status === 'rejeitado' || status === 'rejected';
+                const isCancelado = status === 'cancelado' || status === 'cancelled';
+                const isReembolsado = status === 'reembolsado' || status === 'refunded';
+                const isProcessando = status === 'processando' || status === 'in_process';
+
+                let cardClass = 'pendente';
+                let badgeClass = 'badge-mp-pendente';
+                let badgeText = '⏳ Pendente';
+                if (isAprovado) { cardClass = 'aprovado'; badgeClass = 'badge-mp-aprovado'; badgeText = '✅ Aprovado'; }
+                else if (isProcessando) { cardClass = 'pendente'; badgeClass = 'badge-mp-processando'; badgeText = '🔄 Processando'; }
+                else if (isRejeitado) { cardClass = 'rejeitado'; badgeClass = 'badge-mp-rejeitado'; badgeText = '❌ Rejeitado'; }
+                else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-mp-cancelado'; badgeText = '🚫 Cancelado'; }
+                else if (isReembolsado) { cardClass = 'reembolsado'; badgeClass = 'badge-mp-reembolsado'; badgeText = '↩️ Reembolsado'; }
+
+                const valorOriginal = parseFloat(c.valor_original || 0);
+                const valorComTaxa = parseFloat(c.valor_com_taxa || valorOriginal);
+                const taxa = valorComTaxa - valorOriginal;
+
+                html += `<div class="mp-card ${cardClass}">`;
+                html += `<div class="mp-header">`;
+                html += `<div class="mp-info">`;
+                html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                html += `<p>💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                html += `<p>🆔 Preference ID: ${c.preference_id || '-'}</p>`;
+                html += `<p>💳 Payment ID: ${c.payment_id || '-'}</p>`;
+                html += `<p>🕐 Criado: ${formatarDataHora(c.criado_em)}</p>`;
+                if (c.processed_at) html += `<p>✅ Processado em: ${formatarDataHora(c.processed_at)}</p>`;
+                html += `</div>`;
+                html += `<div style="text-align:right;">`;
+                html += `<div class="mp-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                html += `<span class="mp-badge ${badgeClass}">${badgeText}</span>`;
+                html += `<div style="margin-top:10px;font-size:0.8rem;color:#888;">${c.payment_method || 'CREDIT_CARD'}</div>`;
+                if (c.installments) html += `<div style="font-size:0.8rem;color:#0B193F;">${c.installments}x</div>`;
+                html += `</div></div>`;
+                html += `<div class="mp-detalhes">`;
+                html += `<div class="linha"><span>Valor original:</span><strong>R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                if (taxa > 0) html += `<div class="linha"><span>Taxa repassada:</span><strong>R$ ${taxa.toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `<div class="linha"><span>Voce recebe:</span><strong style="color:#28a745;">R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `<div class="taxa-info">`;
+                html += `<div class="linha"><span>Taxa % MP:</span><strong>${c.taxa_percentual || '4.49'}%</strong></div>`;
+                html += `<div class="linha"><span>Taxa fixa MP:</span><strong>R$ ${parseFloat(c.taxa_fixa || 0).toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `<div class="linha"><span>Gateway:</span><strong style="color:#009EE3;">Mercado Pago</strong></div>`;
+                html += `</div>`;
+                if (c.payer_email) html += `<div class="linha" style="margin-top:8px;"><span>Email:</span><strong>${c.payer_email}</strong></div>`;
+                html += `</div>`;
+                html += `<div class="pix-acoes">`;
+                if (c.invoice_url) {
+                    html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #009EE3, #007EB5);">🔗 Ver Link MP</a>`;
+                    html += `<button class="btn-copiar-link" onclick="copiarLinkMp('${c.invoice_url}')">📋 Copiar Link</button>`;
+                }
+                html += `</div></div>`;
+            }
+            lista.innerHTML = html;
+        }
+
+function filtrarMp(tipo) {
+            filtroMpAtual = tipo;
+            document.querySelectorAll('#aba-mp .filtros button').forEach(b => b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            carregarMp();
+        }
+
+        function atualizarStatsMp(cobrancas) {
+            const pendentes = cobrancas.filter(c => {
+                const s = (c.status || 'pending').toLowerCase();
+                return s === 'pendente' || s === 'pending';
+            }).length;
+            const aprovados = cobrancas.filter(c => {
+                const s = (c.status || '').toLowerCase();
+                return s === 'aprovado' || s === 'approved';
+            }).length;
+            const rejeitados = cobrancas.filter(c => {
+                const s = (c.status || '').toLowerCase();
+                return s === 'rejeitado' || s === 'rejected';
+            }).length;
+            const cancelados = cobrancas.filter(c => {
+                const s = (c.status || '').toLowerCase();
+                return s === 'cancelado' || s === 'cancelled';
+            }).length;
+            const reembolsados = cobrancas.filter(c => {
+                const s = (c.status || '').toLowerCase();
+                return s === 'reembolsado' || s === 'refunded';
+            }).length;
+            document.getElementById('stat-mp-pendentes').textContent = pendentes;
+            document.getElementById('stat-mp-aprovados').textContent = aprovados;
+            document.getElementById('stat-mp-rejeitados').textContent = rejeitados;
+            document.getElementById('stat-mp-cancelados').textContent = cancelados;
+            document.getElementById('stat-mp-reembolsados').textContent = reembolsados;
+            document.getElementById('stat-mp-total').textContent = cobrancas.length;
+        }
+
+        function copiarLinkMp(url) {
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => {
+                mostrarNotificacao('✅ Link MP copiado!');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarNotificacao('✅ Link MP copiado!');
+            });
+        }
+
+        // ===== ABA INFINITE PAY =====
+        async function carregarInfinite() {
+            if (isLoadingInfinite) return;
+            isLoadingInfinite = true;
+            const lista = document.getElementById('infinite-lista');
+            const loading = document.getElementById('loading-infinite');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_infinitepay')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteSistemaId)
+                    .order('criado_em', { ascending: false });
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                todasInfinite = cobrancas || [];
+                atualizarStatsInfinite(todasInfinite);
+                renderizarInfiniteFiltrados();
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            } finally {
+                isLoadingInfinite = false;
+            }
+        }
+
+        async function carregarInfiniteTodas() {
+            const lista = document.getElementById('infinite-lista');
+            const loading = document.getElementById('loading-infinite');
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            try {
+                const { data: cobrancas, error } = await supabaseClient
+                    .from('cobrancas_infinitepay')
+                    .select('*')
+                    .order('criado_em', { ascending: false })
+                    .limit(50);
+                loading.style.display = 'none';
+                if (error) {
+                    lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+                    return;
+                }
+                if (!cobrancas || cobrancas.length === 0) {
+                    lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca InfinitePay encontrada</div>';
+                    return;
+                }
+                todasInfinite = cobrancas;
+                atualizarStatsInfinite(todasInfinite);
+
+                let html = '';
+                for (const c of cobrancas) {
+                    const status = (c.status || 'pending').toLowerCase();
+                    const isPago = status === 'paid';
+                    const isCancelado = status === 'cancelled';
+
+                    let cardClass = 'pendente';
+                    let badgeClass = 'badge-infinite-pendente';
+                    let badgeText = '⏳ Pendente';
+                    if (isPago) { cardClass = 'pago'; badgeClass = 'badge-infinite-pago'; badgeText = '✅ Pago'; }
+                    else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-infinite-cancelado'; badgeText = '❌ Cancelado'; }
+
+                    const valorOriginal = parseFloat(c.valor_original || 0);
+                    const valorComTaxa = parseFloat(c.valor_com_taxa || valorOriginal);
+
+                    html += `<div class="infinite-card ${cardClass}">`;
+                    html += `<div class="infinite-header">`;
+                    html += `<div class="infinite-info">`;
+                    html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                    html += `<p>📺 ${c.codigo_live || '-'} | 💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                    html += `<p>🏢 Cliente ID: ${c.cliente_sistema_id || 'N/A'}</p>`;
+                    html += `<p>🆔 Order NSU: ${c.order_nsu || '-'}</p>`;
+                    html += `</div>`;
+                    html += `<div style="text-align:right;">`;
+                    html += `<div class="infinite-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                    html += `<span class="infinite-badge ${badgeClass}">${badgeText}</span>`;
+                    html += `</div></div>`;
+                    if (c.invoice_url) {
+                        html += `<div class="pix-acoes">`;
+                        html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #7B1FA2, #9C27B0);">🔗 Ver Link</a>`;
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                }
+                lista.innerHTML = html;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function aplicarFiltroInfinite(cobrancas, filtro) {
+            if (filtro === 'todos') return cobrancas;
+            return cobrancas.filter(c => {
+                const status = (c.status || 'pending').toLowerCase();
+                if (filtro === 'paid') return status === 'paid';
+                if (filtro === 'pending') return status === 'pending';
+                if (filtro === 'cancelled') return status === 'cancelled' || status === 'cancelado';
+                return status === filtro;
+            });
+        }
+
+        
+        function renderizarInfiniteFiltrados() {
+            const lista = document.getElementById('infinite-lista');
+            let cobrancasFiltradas = aplicarFiltroInfinite(todasInfinite, filtroInfiniteAtual);
+            cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            if (cobrancasFiltradas.length === 0) {
+                lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca InfinitePay encontrada' + (filtroInfiniteAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
+                return;
+            }
+
+            let html = '';
+            for (const c of cobrancasFiltradas) {
+                const status = (c.status || 'pending').toLowerCase();
+                const isPago = status === 'paid';
+                const isPendente = status === 'pending';
+                const isCancelado = status === 'cancelled' || status === 'cancelado';
+
+                let cardClass = 'pendente';
+                let badgeClass = 'badge-infinite-pendente';
+                let badgeText = '⏳ Pendente';
+                if (isPago) { cardClass = 'pago'; badgeClass = 'badge-infinite-pago'; badgeText = '✅ Pago'; }
+                else if (isCancelado) { cardClass = 'cancelado'; badgeClass = 'badge-infinite-cancelado'; badgeText = '❌ Cancelado'; }
+
+                const valorOriginal = parseFloat(c.valor_original || 0);
+                const valorComTaxa = parseFloat(c.valor_com_taxa || valorOriginal);
+                const taxa = valorComTaxa - valorOriginal;
+
+                html += `<div class="infinite-card ${cardClass}">`;
+                html += `<div class="infinite-header">`;
+                html += `<div class="infinite-info">`;
+                html += `<h3>👤 ${c.comprador_nome || 'Cliente'}</h3>`;
+                html += `<p>💰 R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</p>`;
+                html += `<p>🆔 Order NSU: ${c.order_nsu || '-'}</p>`;
+                html += `<p>🕐 Criado: ${formatarDataHora(c.criado_em)}</p>`;
+                if (c.atualizado_em && c.status === 'paid') html += `<p>✅ Pago em: ${formatarDataHora(c.atualizado_em)}</p>`;
+                html += `</div>`;
+                html += `<div style="text-align:right;">`;
+                html += `<div class="infinite-valor">R$ ${valorComTaxa.toFixed(2).replace('.', ',')}</div>`;
+                html += `<span class="infinite-badge ${badgeClass}">${badgeText}</span>`;
+                html += `</div></div>`;
+                html += `<div class="infinite-detalhes">`;
+                html += `<div class="linha"><span>Valor original:</span><strong>R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                if (taxa > 0) html += `<div class="linha"><span>Taxa embutida:</span><strong>R$ ${taxa.toFixed(2).replace('.', ',')}</strong></div>`;
+                html += `<div class="linha"><span>Voce recebe:</span><strong style="color:#28a745;">R$ ${valorOriginal.toFixed(2).replace('.', ',')}</strong></div>`;
+                if (c.taxa_percentual) html += `<div class="linha"><span>Taxa %:</span><strong>${c.taxa_percentual}%</strong></div>`;
+                html += `</div>`;
+                html += `<div class="pix-acoes">`;
+                if (c.invoice_url) {
+                    html += `<a href="${c.invoice_url}" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #7B1FA2, #9C27B0);">🔗 Ver Link</a>`;
+                    html += `<button class="btn-copiar-link" onclick="copiarLinkInfinite('${c.invoice_url}')">📋 Copiar Link</button>`;
+                }
+                if (isPendente) {
+                    html += `<button class="btn-confirmar" onclick="confirmarInfinite('${c.id}')">✅ Marcar como Pago</button>`;
+                }
+                html += `</div></div>`;
+            }
+            lista.innerHTML = html;
+        }
+
+function filtrarInfinite(tipo) {
+            filtroInfiniteAtual = tipo;
+            document.querySelectorAll('#aba-infinite .filtros button').forEach(b => b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            carregarInfinite();
+        }
+
+        function atualizarStatsInfinite(cobrancas) {
+            const pendentes = cobrancas.filter(c => (c.status || '').toLowerCase() === 'pending').length;
+            const pagos = cobrancas.filter(c => (c.status || '').toLowerCase() === 'paid').length;
+            const cancelados = cobrancas.filter(c => {
+                const s = (c.status || '').toLowerCase();
+                return s === 'cancelled' || s === 'cancelado';
+            }).length;
+            document.getElementById('stat-infinite-pendentes').textContent = pendentes;
+            document.getElementById('stat-infinite-pagos').textContent = pagos;
+            document.getElementById('stat-infinite-cancelados').textContent = cancelados;
+            document.getElementById('stat-infinite-total').textContent = cobrancas.length;
+        }
+
+        function copiarLinkInfinite(url) {
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => {
+                mostrarNotificacao('✅ Link InfinitePay copiado!');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarNotificacao('✅ Link InfinitePay copiado!');
+            });
+        }
+
+        async function confirmarInfinite(id) {
+            if (!confirm('Marcar como pago manualmente?')) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('cobrancas_infinitepay')
+                    .update({ status: 'paid', atualizado_em: new Date().toISOString() })
+                    .eq('id', id);
+                if (error) throw error;
+                mostrarNotificacao('✅ InfinitePay marcado como pago!');
+                carregarInfinite();
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+    </script>
+    <script src="navmenu.js"></script>
+
+<script>
+// FORÇAR CENTRALIZAÇÃO DOS BOTÕES - EXECUTA APÓS DOM CARREGADO
+(function() {
+    function forcarCentralizacao() {
+        var divs = document.querySelectorAll('.botoes-centro');
+        divs.forEach(function(div) {
+            div.style.cssText = 'text-align: center !important; margin: 20px 0 !important; display: block !important; width: 100% !important;';
+            // Forçar cada botão também
+            var botoes = div.querySelectorAll('button');
+            botoes.forEach(function(btn) {
+                btn.style.cssText += 'display: inline-block !important; float: none !important; margin: 5px !important;';
+            });
+        });
+        console.log('[PIX-MANUAL] Centralização forçada em ' + divs.length + ' divs');
+    }
+
+    // Executar imediatamente se DOM já carregou
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        forcarCentralizacao();
+    } else {
+        document.addEventListener('DOMContentLoaded', forcarCentralizacao);
+    }
+
+    // Re-forçar após 500ms, 1s e 2s (caso algo mude depois)
+    setTimeout(forcarCentralizacao, 500);
+    setTimeout(forcarCentralizacao, 1000);
+    setTimeout(forcarCentralizacao, 2000);
+})();
+</script>
+
+</body>
+</html>
