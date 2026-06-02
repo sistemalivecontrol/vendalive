@@ -605,16 +605,17 @@
                     if (!itemData) return false;
                     const dataItem = new Date(itemData);
                     dataItem.setHours(0,0,0,0);
+                    const itemTime = dataItem.getTime();
 
                     if (filtroDataInicial) {
-                        const dataIni = new Date(filtroDataInicial);
-                        dataIni.setHours(0,0,0,0);
-                        if (dataItem < dataIni) return false;
+                        const dataIni = new Date(filtroDataInicial + 'T00:00:00');
+                        const iniTime = dataIni.getTime();
+                        if (itemTime < iniTime) return false;
                     }
                     if (filtroDataFinal) {
-                        const dataFim = new Date(filtroDataFinal);
-                        dataFim.setHours(23,59,59,999);
-                        if (dataItem > dataFim) return false;
+                        const dataFim = new Date(filtroDataFinal + 'T23:59:59');
+                        const fimTime = dataFim.getTime();
+                        if (itemTime > fimTime) return false;
                     }
                 }
 
@@ -818,7 +819,7 @@
         }
 
         
-        function renderizarPixFiltrados() {
+        async function renderizarPixFiltrados() {
             const lista = document.getElementById('pix-lista');
             let pixsFiltrados = aplicarFiltroPix(todosPixs, filtroPixAtual);
             pixsFiltrados = filtrarPorDataENome(pixsFiltrados);
@@ -833,10 +834,29 @@
             let vendasMap = {};
             let clientesMap = {};
 
+            if (vendaIds.length > 0) {
+                const { data: vendas } = await supabaseClient
+                    .from('vendas_pg')
+                    .select('id, codigo_live, total, comprador, cliente_nome')
+                    .in('id', vendaIds);
+                if (vendas) vendas.forEach(v => vendasMap[v.id] = v);
+            }
+
+            const clienteIds = [...new Set(pixsFiltrados.map(p => p.cliente_id).filter(Boolean))];
+            if (clienteIds.length > 0) {
+                const { data: clientes } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, instagram, whatsapp')
+                    .in('id', clienteIds);
+                if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
+            }
+
             // Renderizar
             let html = '';
             for (const p of pixsFiltrados) {
-                const nomeCliente = p.comprador_nome || 'Cliente';
+                const venda = vendasMap[p.venda_id] || {};
+                const cliente = clientesMap[p.cliente_id] || {};
+                const nomeCliente = cliente.nome || venda.comprador || venda.cliente_nome || p.comprador_nome || 'Cliente';
                 const valor = p.valor || 0;
                 const isPago = p.vendedor_confirmou === true;
                 const isConfirmado = p.status === 'confirmado';
