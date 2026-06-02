@@ -124,12 +124,9 @@
         .btn-save:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-save.saving { background: #ffc107; color: #212529; }
         .btn-save.saved { background: #28a745; animation: pulseSave 0.5s ease; }
-        .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 10px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
+        .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
         .btn-limpar:hover { background: #5a6268; transform: scale(1.05); }
         .btn-limpar:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
-        .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 10px; font-weight: 600; transition: all 0.2s ease; }
-        .btn-excluir:hover { background: #c82333; transform: scale(1.05); }
-        .btn-excluir:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
         @keyframes pulseSave { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .info-text { color: #6c757d; font-size: 12px; margin-top: 5px; }
         .live-info { background: #d4edda; border: 1px solid #28a745; border-radius: 6px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -1892,9 +1889,8 @@ function criarLinhaComDados(venda) {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">SAVE</button>' +
-        '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">LIMP</button>' +
-        '<button class="btn-excluir" onclick="excluirLinha(' + venda.linha_id + ')" ' + disabled + ' title="Excluir">X</button>' +
+        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
+        '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
     if (!jaSalvo) verificarCamposObrigatorios(venda.linha_id);
@@ -1924,9 +1920,8 @@ function adicionarLinha() {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">SAVE</button>' +
-        '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">LIMP</button>' +
-        '<button class="btn-excluir" onclick="excluirLinha(' + linhaCount + ')" title="Excluir">X</button>' +
+        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
+        '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
     linhasNaoSalvas.add(linhaCount);
