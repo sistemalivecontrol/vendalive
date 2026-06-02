@@ -794,7 +794,7 @@
 
                 // Buscar cliente do usuário
                 const { data: perfil, error: perfilError } = await supabaseClient
-                    .from('usuarios')
+                    .from('usuarios_pg')
                     .select('cliente_id, nome')
                     .eq('id', usuarioAtual.id)
                     .single();
@@ -829,7 +829,7 @@
 
                 // Buscar lives do cliente na data selecionada
                 const { data: lives, error } = await supabaseClient
-                    .from('lives')
+                    .from('lives_pg')
                     .select('*')
                     .eq('cliente_id', clienteId)
                     .eq('data', dataSelecionada)
@@ -866,7 +866,7 @@
 
                 // Buscar últimas 10 lives do cliente
                 const { data: lives, error } = await supabaseClient
-                    .from('lives')
+                    .from('lives_pg')
                     .select('*')
                     .eq('cliente_id', clienteId)
                     .order('data', { ascending: false })
@@ -936,7 +936,7 @@
 
                 // Buscar todos os itens da live
                 const { data: itens, error } = await supabaseClient
-                    .from('live_itens')
+                    .from('live_itens_pg')
                     .select('valor, status')
                     .eq('live_id', liveId);
 
@@ -976,7 +976,7 @@
                 console.log('[LIVE] Abrindo live:', liveId);
 
                 const { data: live, error } = await supabaseClient
-                    .from('lives')
+                    .from('lives_pg')
                     .select('*')
                     .eq('id', liveId)
                     .single();
@@ -1022,7 +1022,7 @@
                 if (!supabaseClient) return;
 
                 const { data: itens, error } = await supabaseClient
-                    .from('live_itens')
+                    .from('live_itens_pg')
                     .select('*')
                     .eq('live_id', liveId)
                     .order('numero_item', { ascending: true });
@@ -1113,7 +1113,7 @@
 
                 // Verificar se já existe
                 const { data: existente } = await supabaseClient
-                    .from('live_itens')
+                    .from('live_itens_pg')
                     .select('id')
                     .eq('live_id', liveAtual.id)
                     .eq('numero_item', numero)
@@ -1133,13 +1133,13 @@
                 let error;
                 if (existente) {
                     const { error: updateError } = await supabaseClient
-                        .from('live_itens')
+                        .from('live_itens_pg')
                         .update(dados)
                         .eq('id', existente.id);
                     error = updateError;
                 } else {
                     const { error: insertError } = await supabaseClient
-                        .from('live_itens')
+                        .from('live_itens_pg')
                         .insert(dados);
                     error = insertError;
                 }
@@ -1175,7 +1175,7 @@
 
                 // Remover do banco
                 const { error } = await supabaseClient
-                    .from('live_itens')
+                    .from('live_itens_pg')
                     .delete()
                     .eq('live_id', liveAtual.id)
                     .eq('numero_item', numero);
@@ -1228,7 +1228,7 @@
                 }
 
                 const { data: novaLive, error } = await supabaseClient
-                    .from('lives')
+                    .from('lives_pg')
                     .insert({
                         cliente_id: clienteId,
                         codigo: codigo,
