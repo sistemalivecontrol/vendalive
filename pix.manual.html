@@ -663,10 +663,10 @@
                 html += '</div></div>';
                 if (!isConfirmado && !isCancelado) {
                     html += '<div class="pix-acoes">';
-                    if (!clienteClicou) html += '<button class="btn-copiar-link" onclick="copiarLinkPix('' + p.id + '')">📋 Copiar Link</button>';
-                    html += '<button class="btn-confirmar" onclick="confirmarPagamento('' + p.id + '', '' + p.venda_id + '')">✅ Confirmar (vi no app)</button>';
+                    if (!clienteClicou) html += '<button class="btn-copiar-link" onclick="copiarLinkPix(\'" + p.id + "\')">📋 Copiar Link</button>';
+                    html += '<button class="btn-confirmar" onclick="confirmarPagamento(\'" + p.id + "\', \'" + p.venda_id + "\')">✅ Confirmar (vi no app)</button>';
                     if (p.comprovante_url) html += '<a href="' + p.comprovante_url + '" target="_blank" class="btn-comprovante">📎 Ver Comprovante</a>';
-                    html += '<button class="btn-cancelar" onclick="cancelarPix('' + p.id + '')">❌ Não recebi</button>';
+                    html += '<button class="btn-cancelar" onclick="cancelarPix(\'" + p.id + "\')">❌ Não recebi</button>';
                     html += '</div>';
                 } else {
                     html += '<div class="pix-acoes">';
@@ -850,7 +850,7 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link">🔗 Ver Link</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkAsaas('' + c.invoice_url + '')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkAsaas(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
                 }
                 html += '</div></div>';
             }
@@ -1016,7 +1016,7 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #009EE3, #007EB5);">🔗 Ver Link MP</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkMp('' + c.invoice_url + '')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkMp(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
                 }
                 html += '</div></div>';
             }
@@ -1169,9 +1169,9 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #7B1FA2, #9C27B0);">🔗 Ver Link</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkInfinite('' + c.invoice_url + '')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkInfinite(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
                 }
-                if (isPendente) html += '<button class="btn-confirmar" onclick="confirmarInfinite('' + c.id + '')">✅ Marcar como Pago</button>';
+                if (isPendente) html += '<button class="btn-confirmar" onclick="confirmarInfinite(\'" + c.id + "\')">✅ Marcar como Pago</button>';
                 html += '</div></div>';
             }
             lista.innerHTML = html;
