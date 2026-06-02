@@ -532,7 +532,7 @@
                     console.log(`[WA] Tentativa ${tentativa}/2...`);
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout // 15s timeout
 
                     // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
                     // Endpoint: /message/sendText/{instance}
@@ -550,7 +550,8 @@
                                 presence: 'composing'
                             }
                         }),
-                        signal: controller.signal
+                        signal: controller.signal,
+                        keepalive: true // ✅ MANTÉM REQUISIÇÃO ATIVA MESMO SE PÁGINA NAVEGAR
                     });
 
                     clearTimeout(timeoutId);
@@ -594,9 +595,7 @@
                         }
 
                         // Aguarda antes de retry
-                        if (tentativa < 2) {
-                            await new Promise(r => setTimeout(r, 2000));
-                        }
+                        if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
                     }
                 } catch (erro) {
                     ultimoErro = erro;
@@ -606,9 +605,7 @@
                         console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
                     }
 
-                    if (tentativa < 2) {
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
+                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
                 }
             }
 
@@ -2318,7 +2315,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                             console.warn('⚠️ [WA-BG] Erro no WhatsApp ' + tipo + ':', err.message || err);
                             console.log('[WA-BG] 💡 Reenvio disponível em whatsapp-monitor.html');
                         }
-                    }, 100); // Pequeno delay para não bloquear
+                    }, 500); // ✅ Delay para garantir que a requisição inicie antes de possível navegação
                 }
 
                 // Disparar confirmação de solicitação (não aguarda)
@@ -2349,11 +2346,15 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     }, 'confirmação de pagamento');
                 }
 
-                // ✅ REDIRECIONAMENTO IMEDIATO - NÃO AGUARDA WHATSAPP
+                // ✅ REDIRECIONAMENTO COM DELAY - PERMITE WHATSAPP INICIAR O ENVIO
                 if (modoAutomatico) {
-                    console.log('[AUTO] 🚀 Redirecionando imediatamente para página de sucesso...');
+                    console.log('[AUTO] 🚀 Aguardando 3 segundos para WhatsApp iniciar...');
                     console.log('[AUTO] 💡 WhatsApp(s) sendo enviado(s) em background. Se falhar, reenvie via whatsapp-monitor.html');
-                    redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFreteAtual);
+                    // Delay de 3s para as requisições de WhatsApp iniciarem antes do redirecionamento
+                    setTimeout(() => {
+                        console.log('[AUTO] 🚀 Redirecionando para página de sucesso...');
+                        redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFreteAtual);
+                    }, 3000);
                     return;
                 }
 
