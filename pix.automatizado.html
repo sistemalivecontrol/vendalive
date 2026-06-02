@@ -57,6 +57,8 @@
         .stat-card.pendente .valor { color: #FFD54F; }
         .stat-card.expirado { border-left-color: #dc3545; }
         .stat-card.expirado .valor { color: #FF6B6B; }
+        .stat-card.orphan { border-left: 4px solid #ff6b6b; background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%); }
+        .stat-card.orphan .valor { color: #FFD700; }
 
         .filtros-container { background: white; padding: 25px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
         .filtros-titulo { color: #0B193F; font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
@@ -71,6 +73,7 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
         .btn-secondary { background: linear-gradient(135deg, #A8E6CF, #7FCDCD); color: #2D3436; }
         .btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
 
         .tabela-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
         .tabela-header { padding: 20px 25px; background: #0B193F; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
@@ -80,6 +83,8 @@
         th { padding: 15px; text-align: left; font-weight: 600; color: #2D3436; border-bottom: 2px solid #E0E0E0; white-space: nowrap; position: sticky; top: 0; background: #F8F9FA; z-index: 10; }
         td { padding: 15px; border-bottom: 1px solid #E0E0E0; color: #636E72; }
         tr:hover { background: #F3E5F5; }
+        tr.orphan-row { background: #FFF5F5 !important; }
+        tr.orphan-row:hover { background: #FFE0E0 !important; }
 
         .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
         .status-pago { background: #C8E6C9; color: #2E7D32; }
@@ -127,6 +132,49 @@
         input:checked + .slider { background-color: #0B193F; }
         input:checked + .slider:before { transform: translateX(20px); }
 
+        /* Badge de alerta para cobrança sem solicitação */
+        .orphan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #DC143C;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Alerta no modal de detalhes */
+        .orphan-alert {
+            background: linear-gradient(135deg, #FFF5F5, #FFE0E0);
+            border: 2px solid #DC143C;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .orphan-alert .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .orphan-alert h4 {
+            color: #8B0000;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .orphan-alert p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) { 
             .header { flex-direction: column; text-align: center; } 
             .header-left { flex-direction: column; } 
@@ -170,6 +218,7 @@
         <div class="stats-container" id="statsContainer">
             <div class="stat-card"><h3>Total de Cobranças</h3><div class="valor" id="statTotal">-</div></div>
             <div class="stat-card pago"><h3>Pagos</h3><div class="valor" id="statPagos">-</div></div>
+            <div class="stat-card pago orphan"><h3>⚠️ Pagos sem Solicitação</h3><div class="valor" id="statOrphan">-</div></div>
             <div class="stat-card pendente"><h3>Pendentes</h3><div class="valor" id="statPendentes">-</div></div>
             <div class="stat-card expirado"><h3>Expirados</h3><div class="valor" id="statExpirados">-</div></div>
             <div class="stat-card pago"><h3>Valor Recebido</h3><div class="valor" id="statValorRecebido">-</div></div>
@@ -210,6 +259,7 @@
                 <button class="btn btn-primary" onclick="carregarCobrancas()">🔄 Atualizar</button>
                 <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar Filtros</button>
                 <button class="btn btn-success" onclick="verificarPendentes()">🔍 Verificar Pendentes</button>
+                <button class="btn btn-warning" onclick="mostrarOrphanApenas()" id="btnOrphan" style="display:none;">⚠️ Mostrar sem Solicitação</button>
             </div>
         </div>
 
@@ -282,6 +332,8 @@
         let cobrancasData = [];
         let cobrancasFiltradas = [];
         let autoRefreshInterval = null;
+        let solicitacoesMap = new Map(); // Map cobranca_id -> solicitacao
+        let mostrarOrphanOnly = false;
 
         document.addEventListener('DOMContentLoaded', async function() {
             await new Promise(resolve => {
@@ -356,6 +408,9 @@
 
                 console.log('[DEBUG] MP:', dataMP ? dataMP.length : 0, 'Infinite:', dataInfinite ? dataInfinite.length : 0);
 
+                // Buscar todas as solicitações para verificar vínculos
+                await carregarSolicitacoesVinculos();
+
                 // Normalizar dados do InfinitePay
                 const infiniteNormalizado = (dataInfinite || []).map(function(c) {
                     const valorOriginal = parseFloat(c.valor_original || c.valor || 0);
@@ -366,6 +421,8 @@
                     const status = statusRaw === 'paid' || statusRaw === 'approved' ? 'pago' : 
                                    statusRaw === 'cancelled' || statusRaw === 'canceled' ? 'cancelado' :
                                    statusRaw === 'expired' ? 'expirado' : 'pendente';
+
+                    const temSolicitacao = solicitacoesMap.has(c.id);
 
                     return {
                         id: c.id,
@@ -389,7 +446,9 @@
                         infinitepay_id: c.infinitepay_id || null,
                         taxa_percentual: c.taxa_percentual || null,
                         taxa_fixa: c.taxa_fixa || null,
-                        venda_id: c.venda_id || null
+                        venda_id: c.venda_id || null,
+                        temSolicitacao: temSolicitacao,
+                        orphan: (status === 'pago' && !temSolicitacao)
                     };
                 });
 
@@ -402,6 +461,8 @@
                     const isCancelado = c.status === 'cancelado' || c.status_mp === 'cancelled';
                     const isExpirado = c.status === 'expirado' || c.status_mp === 'rejected';
                     const status = isPago ? 'pago' : isCancelado ? 'cancelado' : isExpirado ? 'expirado' : 'pendente';
+
+                    const temSolicitacao = solicitacoesMap.has(c.id);
 
                     return {
                         id: c.id,
@@ -425,7 +486,9 @@
                         infinitepay_id: null,
                         taxa_percentual: null,
                         taxa_fixa: null,
-                        venda_id: null
+                        venda_id: null,
+                        temSolicitacao: temSolicitacao,
+                        orphan: (status === 'pago' && !temSolicitacao)
                     };
                 });
 
@@ -449,6 +512,34 @@
             }
         }
 
+        async function carregarSolicitacoesVinculos() {
+            try {
+                // Buscar todas as solicitações com cobranca_id preenchido
+                const { data, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, cobranca_id, numero_solicitacao')
+                    .not('cobranca_id', 'is', null)
+                    .eq('cliente_id', clienteSistemaId);
+
+                if (error) {
+                    console.warn('[ORPHAN] Erro ao buscar solicitações:', error);
+                    return;
+                }
+
+                solicitacoesMap.clear();
+                (data || []).forEach(function(s) {
+                    if (s.cobranca_id) {
+                        solicitacoesMap.set(s.cobranca_id, s);
+                    }
+                });
+
+                console.log('[ORPHAN] Solicitações vinculadas carregadas:', solicitacoesMap.size);
+
+            } catch (e) {
+                console.warn('[ORPHAN] Erro ao carregar vínculos:', e);
+            }
+        }
+
         function aplicarFiltros() {
             const status = document.getElementById('filtroStatus').value;
             const live = document.getElementById('filtroLive').value.toLowerCase();
@@ -468,6 +559,8 @@
                     const d = new Date(c.criado_em);
                     if (d > new Date(dataFim + 'T23:59:59')) return false;
                 }
+                // Filtro de órfãos
+                if (mostrarOrphanOnly && !c.orphan) return false;
                 return true;
             });
 
@@ -490,6 +583,9 @@
 
             cobrancasFiltradas.forEach(function(c) {
                 const tr = document.createElement('tr');
+                if (c.orphan) {
+                    tr.classList.add('orphan-row');
+                }
 
                 let statusClass = 'status-pendente';
                 let statusText = 'Pendente';
@@ -539,8 +635,14 @@
                     valorHtml += '<br><span class="valor-pago">Pago: ' + formatarMoeda(c.valor_pago) + '</span>';
                 }
 
+                // Badge de órfão na coluna do comprador
+                let compradorHtml = '<strong>' + escapeHtml(c.comprador_nome || '-') + '</strong>';
+                if (c.orphan) {
+                    compradorHtml += '<span class="orphan-badge" title="Pagamento confirmado mas sem solicitação de entrega vinculada">⚠️ SEM SOLICITAÇÃO</span>';
+                }
+
                 tr.innerHTML = 
-                    '<td><strong>' + escapeHtml(c.comprador_nome || '-') + '</strong></td>' +
+                    '<td>' + compradorHtml + '</td>' +
                     '<td>' + gatewayBadge + '</td>' +
                     '<td>' + escapeHtml(contato) + '</td>' +
                     '<td>' + (c.codigo_live || '-') + '</td>' +
@@ -568,12 +670,30 @@
             const valorRecebido = dados.reduce((s, c) => s + (c.valor_pago || 0), 0);
             const valorPendente = dados.filter(c => c.status === 'pendente').reduce((s, c) => s + c.valor, 0);
 
+            // Contar órfãos (pagos sem solicitação)
+            const orphanCount = cobrancasData.filter(c => c.orphan).length;
+
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statPagos').textContent = pagos;
+            document.getElementById('statOrphan').textContent = orphanCount;
             document.getElementById('statPendentes').textContent = pendentes;
             document.getElementById('statExpirados').textContent = expirados;
             document.getElementById('statValorRecebido').textContent = formatarMoeda(valorRecebido);
             document.getElementById('statValorPendente').textContent = formatarMoeda(valorPendente);
+
+            // Mostrar/esconder botão de filtro de órfãos
+            const btnOrphan = document.getElementById('btnOrphan');
+            if (orphanCount > 0) {
+                btnOrphan.style.display = 'inline-flex';
+                btnOrphan.textContent = mostrarOrphanOnly ? '👁️ Mostrar Todos' : '⚠️ Mostrar sem Solicitação (' + orphanCount + ')';
+            } else {
+                btnOrphan.style.display = 'none';
+            }
+        }
+
+        function mostrarOrphanApenas() {
+            mostrarOrphanOnly = !mostrarOrphanOnly;
+            aplicarFiltros();
         }
 
         function verDetalhes(id, gateway) {
@@ -587,7 +707,7 @@
                     '<strong>NSU:</strong> ' + (c.order_nsu || '-') + '<br>' +
                     '<strong>ID InfinitePay:</strong> ' + (c.infinitepay_id || '-') + '<br>' +
                     '<strong>Link:</strong> <a href="' + (c.checkout_url || '#') + '" target="_blank">' + (c.checkout_url || '-') + '</a><br>' +
-                    (c.taxa_percentual ? '<strong>Taxa %:</strong> ' + c.taxa_percentual + '%<br>' : '') +
+                    (c.taxa_percentual ? '<strong>Taxa %:</strong> ' + c.taxa_percentual + '%<<br>' : '') +
                     (c.taxa_fixa ? '<strong>Taxa Fixa:</strong> R$ ' + c.taxa_fixa + '<br>' : '') +
                     (c.valor_com_taxa ? '<strong>Valor com Taxa:</strong> ' + formatarMoeda(c.valor_com_taxa) + '<br>' : '');
             } else {
@@ -597,7 +717,19 @@
                     '<strong>Ticket URL:</strong> <a href="' + (c.checkout_url || '#') + '" target="_blank">' + (c.checkout_url || '-') + '</a><br>';
             }
 
+            // Alerta de órfão no topo do modal
+            let orphanAlert = '';
+            if (c.orphan) {
+                orphanAlert = 
+                    '<div class="orphan-alert">' +
+                    '<div class="icon">⚠️</div>' +
+                    '<h4>COBRANÇA SEM SOLICITAÇÃO VINCULADA</h4>' +
+                    '<p>Esta cobrança foi paga, mas não possui uma solicitação de entrega associada.<br>O cliente pode ter pagado sem preencher o formulário.</p>' +
+                    '</div>';
+            }
+
             const html = 
+                orphanAlert +
                 '<div style="margin-bottom: 15px;">' +
                 '<strong>Comprador:</strong> ' + escapeHtml(c.comprador_nome || '-') + '<br>' +
                 '<strong>Email:</strong> ' + (c.comprador_email || '-') + '<br>' +
@@ -744,6 +876,7 @@
             const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
             document.getElementById('filtroDataInicio').value = inicioMes.toISOString().split('T')[0];
             document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+            mostrarOrphanOnly = false;
             aplicarFiltros();
         }
 
