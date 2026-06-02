@@ -54,7 +54,7 @@
         .btn-coblive { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; white-space: nowrap; }
         .btn-coblive:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4); }
         @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; gap: 15px; } .user-info { width: 100%; justify-content: center; } }
-        .content { padding: 30px; }
+        .content { padding: 15px 30px 30px 30px; }
         .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; margin-bottom: 30px; border: 1px solid #dee2e6; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: #f8f9fa; color: #495057; font-weight: 600; padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; z-index: 10; }
@@ -111,7 +111,7 @@
         .btn-dark:hover { background: #23272b; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn:disabled { background: #adb5bd; cursor: not-allowed; opacity: 0.7; }
-        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .actions { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
         .status-message { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; animation: slideUp 0.3s ease; z-index: 3000; }
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .status-message.success { background: #28a745; display: block; }
@@ -128,9 +128,9 @@
         .btn-limpar:hover { background: #5a6268; transform: scale(1.05); }
         .btn-limpar:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
         @keyframes pulseSave { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .info-text { color: #6c757d; font-size: 12px; margin-top: 5px; }
-        .live-info { background: #d4edda; border: 1px solid #28a745; border-radius: 6px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .live-info.bloqueada { background: #fff3cd; border-color: #ffc107; }
+        .info-text { color: #6c757d; font-size: 12px; margin-top: 5px; margin-bottom: 8px; }
+        .live-info { background: #d4edda; border: 1px solid #28a745; border-radius: 6px; padding: 12px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .live-info.bloqueada { background: #fff3cd; border-color: #ffc107; margin-bottom: 10px; }
         .live-info.bloqueada h4, .live-info.bloqueada p { color: #856404; }
         .live-info h4 { color: #155724; margin: 0; }
         .live-info p { color: #155724; margin: 5px 0 0 0; font-size: 14px; }
@@ -387,7 +387,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <div class="total-vendido-header"><span>Total Vendido</span><strong id="totalVendidoHeader">R$ 0,00</strong></div>
-                        <button class="change-date-btn" onclick="trocarData()">Trocar Data</button>
+                        
                     </div>
                 </div>
             <button class="backup-float-btn" id="backupFloatBtn" onclick="abrirModalBackup()" title="Backup Local">SAVE<span class="badge-count" id="backupBadge" style="display:none;">!</span></button>
