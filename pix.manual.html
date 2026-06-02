@@ -303,6 +303,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -362,12 +363,12 @@
                     <button class="btn-limpar-filtros" onclick="limparFiltros('pix')">🧹 Limpar</button>
                 </div>
 <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
-                    <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
-                    <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
-                    <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
-                    <button class="cancelados-btn" onclick="filtrarPix('cancelados')">❌ Cancelados Manual</button>
-                    <button class="cancelado-link-btn" onclick="filtrarPix('cancelado-link')">🔗 Cancelados Link</button>
-                    <button onclick="filtrarPix('todos')">📋 Todos</button>
+                    <button class="ativo" onclick="filtrarPix('aguardando', this)">⏳ Todos Pendentes</button>
+                    <button onclick="filtrarPix('cliente-clicou', this)">👆 Cliente Clicou "Paguei"</button>
+                    <button onclick="filtrarPix('confirmados', this)">✅ Confirmados</button>
+                    <button class="cancelados-btn" onclick="filtrarPix('cancelados', this)">❌ Cancelados Manual</button>
+                    <button class="cancelado-link-btn" onclick="filtrarPix('cancelado-link', this)">🔗 Cancelados Link</button>
+                    <button onclick="filtrarPix('todos', this)">📋 Todos</button>
                     <button onclick="carregarPix()">🔄 Atualizar</button>
                 </div>
                 <div id="loading-pix" class="loading" style="display:none;"><p>Carregando...</p></div>
@@ -406,13 +407,13 @@
                     <button class="btn-limpar-filtros" onclick="limparFiltros('asaas')">🧹 Limpar</button>
                 </div>
 <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
-                    <button class="ativo" onclick="filtrarAsaas('todos')">📋 Todos</button>
-                    <button onclick="filtrarAsaas('PENDING')">⏳ Pendentes</button>
-                    <button onclick="filtrarAsaas('RECEIVED')">✅ Recebidos</button>
-                    <button onclick="filtrarAsaas('CONFIRMED')">✔️ Confirmados</button>
-                    <button onclick="filtrarAsaas('OVERDUE')">⚠️ Atrasados</button>
-                    <button onclick="filtrarAsaas('CANCELLED')">❌ Cancelados</button>
-                    <button class="refunded-btn" onclick="filtrarAsaas('REFUNDED')">↩️ Reembolsados</button>
+                    <button class="ativo" onclick="filtrarAsaas('todos', this)">📋 Todos</button>
+                    <button onclick="filtrarAsaas('PENDING', this)">⏳ Pendentes</button>
+                    <button onclick="filtrarAsaas('RECEIVED', this)">✅ Recebidos</button>
+                    <button onclick="filtrarAsaas('CONFIRMED', this)">✔️ Confirmados</button>
+                    <button onclick="filtrarAsaas('OVERDUE', this)">⚠️ Atrasados</button>
+                    <button onclick="filtrarAsaas('CANCELLED', this)">❌ Cancelados</button>
+                    <button class="refunded-btn" onclick="filtrarAsaas('REFUNDED', this)">↩️ Reembolsados</button>
                     <button onclick="carregarAsaas()">🔄 Atualizar</button>
                     <button onclick="carregarAsaasTodas()" style="background:#28a745;color:white;border-color:#28a745;">🌍 Ver Todas</button>
                 </div>
@@ -452,13 +453,13 @@
                     <button class="btn-limpar-filtros" onclick="limparFiltros('mp')">🧹 Limpar</button>
                 </div>
 <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
-                    <button class="ativo" onclick="filtrarMp('todos')">📋 Todos</button>
-                    <button onclick="filtrarMp('pendente')">⏳ Pendentes</button>
-                    <button onclick="filtrarMp('aprovado')">✅ Aprovados</button>
-                    <button onclick="filtrarMp('processando')">🔄 Processando</button>
-                    <button onclick="filtrarMp('rejeitado')">❌ Rejeitados</button>
-                    <button onclick="filtrarMp('cancelado')">🚫 Cancelados</button>
-                    <button class="refunded-btn" onclick="filtrarMp('reembolsado')">↩️ Reembolsados</button>
+                    <button class="ativo" onclick="filtrarMp('todos', this)">📋 Todos</button>
+                    <button onclick="filtrarMp('pendente', this)">⏳ Pendentes</button>
+                    <button onclick="filtrarMp('aprovado', this)">✅ Aprovados</button>
+                    <button onclick="filtrarMp('processando', this)">🔄 Processando</button>
+                    <button onclick="filtrarMp('rejeitado', this)">❌ Rejeitados</button>
+                    <button onclick="filtrarMp('cancelado', this)">🚫 Cancelados</button>
+                    <button class="refunded-btn" onclick="filtrarMp('reembolsado', this)">↩️ Reembolsados</button>
                     <button onclick="carregarMp()">🔄 Atualizar</button>
                     <button onclick="carregarMpTodas()" style="background:#009EE3;color:white;border-color:#009EE3;">🌍 Ver Todas</button>
                 </div>
@@ -499,10 +500,10 @@
                     <button class="btn-limpar-filtros" onclick="limparFiltros('infinite')">🧹 Limpar</button>
                 </div>
 <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
-                    <button class="ativo" onclick="filtrarInfinite('todos')">📋 Todos</button>
-                    <button onclick="filtrarInfinite('pending')">⏳ Pendentes</button>
-                    <button onclick="filtrarInfinite('paid')">✅ Pagos</button>
-                    <button onclick="filtrarInfinite('cancelled')">❌ Cancelados</button>
+                    <button class="ativo" onclick="filtrarInfinite('todos', this)">📋 Todos</button>
+                    <button onclick="filtrarInfinite('pending', this)">⏳ Pendentes</button>
+                    <button onclick="filtrarInfinite('paid', this)">✅ Pagos</button>
+                    <button onclick="filtrarInfinite('cancelled', this)">❌ Cancelados</button>
                     <button onclick="carregarInfinite()">🔄 Atualizar</button>
                     <button onclick="carregarInfiniteTodas()" style="background:#7B1FA2;color:white;border-color:#7B1FA2;">🌍 Ver Todas</button>
                 </div>
@@ -597,11 +598,17 @@
             return dia + '/' + mes + '/' + ano;
         }
 
+        function normalizarTexto(texto) {
+            if (!texto) return '';
+            return texto.toString().toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '');
+        }
+
         function filtrarPorDataENome(itens) {
             return itens.filter(item => {
                 // Filtro de data
                 if (filtroDataInicial || filtroDataFinal) {
-                    const itemData = item.criado_em || item.created_at || item.data;
+                    const itemData = item.criado_em || item.created_at || item.data || item.criado_em;
                     if (!itemData) return false;
                     const dataItem = new Date(itemData);
                     dataItem.setHours(0,0,0,0);
@@ -619,10 +626,19 @@
                     }
                 }
 
-                // Filtro de nome
+                // Filtro de nome - busca em TODOS os campos possíveis (incluindo dados mesclados)
                 if (filtroNomeComprador) {
-                    const nome = (item.comprador_nome || item.comprador || item.cliente_nome || '').toLowerCase();
-                    if (!nome.includes(filtroNomeComprador)) return false;
+                    const termoBusca = normalizarTexto(filtroNomeComprador);
+                    const nome = normalizarTexto(
+                        item._nome_comprador || 
+                        item.comprador_nome || 
+                        item.comprador || 
+                        item.cliente_nome || 
+                        item.nome_cliente ||
+                        item.nome ||
+                        ''
+                    );
+                    if (!nome.includes(termoBusca)) return false;
                 }
 
                 return true;
@@ -772,7 +788,7 @@
 
         // ===== ABA PIX =====
         async function carregarPix() {
-            if (isLoadingPix) return; // evita chamadas simultâneas
+            if (isLoadingPix) return;
             isLoadingPix = true;
             const lista = document.getElementById('pix-lista');
             const loading = document.getElementById('loading-pix');
@@ -784,12 +800,54 @@
                     .select('*')
                     .eq('cliente_sistema_id', clienteSistemaId)
                     .order('criado_em', { ascending: false });
-                loading.style.display = 'none';
+
                 if (error) {
+                    loading.style.display = 'none';
                     lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>';
                     return;
                 }
-                todosPixs = pixs || [];
+
+                // Pré-carregar dados de vendas e clientes para enriquecer os PIX
+                let pixsEnriquecidos = pixs || [];
+                if (pixsEnriquecidos.length > 0) {
+                    const vendaIds = [...new Set(pixsEnriquecidos.map(p => p.venda_id).filter(Boolean))];
+                    const clienteIds = [...new Set(pixsEnriquecidos.map(p => p.cliente_id).filter(Boolean))];
+
+                    let vendasMap = {};
+                    let clientesMap = {};
+
+                    if (vendaIds.length > 0) {
+                        const { data: vendas } = await supabaseClient
+                            .from('vendas_pg')
+                            .select('id, codigo_live, total, comprador, cliente_nome')
+                            .in('id', vendaIds);
+                        if (vendas) vendas.forEach(v => vendasMap[v.id] = v);
+                    }
+
+                    if (clienteIds.length > 0) {
+                        const { data: clientes } = await supabaseClient
+                            .from('clientes_pg')
+                            .select('id, nome, instagram, whatsapp')
+                            .in('id', clienteIds);
+                        if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
+                    }
+
+                    // Mesclar dados nos objetos PIX para o filtro funcionar
+                    pixsEnriquecidos = pixsEnriquecidos.map(p => {
+                        const venda = vendasMap[p.venda_id] || {};
+                        const cliente = clientesMap[p.cliente_id] || {};
+                        const nomeComprador = cliente.nome || venda.comprador || venda.cliente_nome || p.comprador_nome || 'Cliente';
+                        return {
+                            ...p,
+                            _nome_comprador: nomeComprador,
+                            _venda: venda,
+                            _cliente: cliente
+                        };
+                    });
+                }
+
+                loading.style.display = 'none';
+                todosPixs = pixsEnriquecidos;
                 atualizarStatsPix(todosPixs);
                 renderizarPixFiltrados();
 
@@ -829,34 +887,12 @@
                 return;
             }
 
-            // Buscar vendas e clientes para os filtrados
-            const vendaIds = [...new Set(pixsFiltrados.map(p => p.venda_id).filter(Boolean))];
-            let vendasMap = {};
-            let clientesMap = {};
-
-            if (vendaIds.length > 0) {
-                const { data: vendas } = await supabaseClient
-                    .from('vendas_pg')
-                    .select('id, codigo_live, total, comprador, cliente_nome')
-                    .in('id', vendaIds);
-                if (vendas) vendas.forEach(v => vendasMap[v.id] = v);
-            }
-
-            const clienteIds = [...new Set(pixsFiltrados.map(p => p.cliente_id).filter(Boolean))];
-            if (clienteIds.length > 0) {
-                const { data: clientes } = await supabaseClient
-                    .from('clientes_pg')
-                    .select('id, nome, instagram, whatsapp')
-                    .in('id', clienteIds);
-                if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
-            }
-
-            // Renderizar
+            // Usar dados já mesclados no carregarPix
             let html = '';
             for (const p of pixsFiltrados) {
-                const venda = vendasMap[p.venda_id] || {};
-                const cliente = clientesMap[p.cliente_id] || {};
-                const nomeCliente = cliente.nome || venda.comprador || venda.cliente_nome || p.comprador_nome || 'Cliente';
+                const venda = p._venda || {};
+                const cliente = p._cliente || {};
+                const nomeCliente = p._nome_comprador || 'Cliente';
                 const valor = p.valor || 0;
                 const isPago = p.vendedor_confirmou === true;
                 const isConfirmado = p.status === 'confirmado';
@@ -907,10 +943,10 @@
             lista.innerHTML = html;
         }
 
-function filtrarPix(tipo) {
+function filtrarPix(tipo, btnElement) {
             filtroPixAtual = tipo;
-            document.querySelectorAll('#aba-pix .filtros button').forEach(b => b.classList.remove('ativo'));
-            event.target.classList.add('ativo');
+            document.querySelectorAll('#aba-pix .botoes-centro button').forEach(b => b.classList.remove('ativo'));
+            if (btnElement) btnElement.classList.add('ativo');
             carregarPix();
         }
 
@@ -1157,10 +1193,10 @@ function filtrarPix(tipo) {
             lista.innerHTML = html;
         }
 
-function filtrarAsaas(tipo) {
+function filtrarAsaas(tipo, btnElement) {
             filtroAsaasAtual = tipo;
-            document.querySelectorAll('#aba-asaas .filtros button').forEach(b => b.classList.remove('ativo'));
-            event.target.classList.add('ativo');
+            document.querySelectorAll('#aba-asaas .botoes-centro button').forEach(b => b.classList.remove('ativo'));
+            if (btnElement) btnElement.classList.add('ativo');
             carregarAsaas();
         }
 
@@ -1395,10 +1431,10 @@ function filtrarAsaas(tipo) {
             lista.innerHTML = html;
         }
 
-function filtrarMp(tipo) {
+function filtrarMp(tipo, btnElement) {
             filtroMpAtual = tipo;
-            document.querySelectorAll('#aba-mp .filtros button').forEach(b => b.classList.remove('ativo'));
-            event.target.classList.add('ativo');
+            document.querySelectorAll('#aba-mp .botoes-centro button').forEach(b => b.classList.remove('ativo'));
+            if (btnElement) btnElement.classList.add('ativo');
             carregarMp();
         }
 
@@ -1613,10 +1649,10 @@ function filtrarMp(tipo) {
             lista.innerHTML = html;
         }
 
-function filtrarInfinite(tipo) {
+function filtrarInfinite(tipo, btnElement) {
             filtroInfiniteAtual = tipo;
-            document.querySelectorAll('#aba-infinite .filtros button').forEach(b => b.classList.remove('ativo'));
-            event.target.classList.add('ativo');
+            document.querySelectorAll('#aba-infinite .botoes-centro button').forEach(b => b.classList.remove('ativo'));
+            if (btnElement) btnElement.classList.add('ativo');
             carregarInfinite();
         }
 
