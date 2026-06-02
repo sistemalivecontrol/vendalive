@@ -5,10 +5,9 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Formulario de Entregas - VendaLive</title>
+    <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="js/config-system.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); min-height: 100vh; padding: 20px; }
@@ -184,6 +183,9 @@
         .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -529,10 +531,7 @@
                     console.log(`[WA] Tentativa ${tentativa}/2...`);
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => {
-                        console.log('[WA] ⏱️ Timeout atingido (30s), abortando requisição...');
-                        controller.abort(new Error('Timeout após 30 segundos'));
-                    }, 30000); // 30s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
                     // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
                     // Endpoint: /message/sendText/{instance}
@@ -604,12 +603,6 @@
 
                     if (erro.name === 'AbortError') {
                         console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
-                        // Se for timeout, tenta novamente imediatamente
-                        if (tentativa < 2) {
-                            console.log('[WA] 🔄 Tentando novamente imediatamente após timeout...');
-                            await new Promise(r => setTimeout(r, 1000));
-                            continue;
-                        }
                     }
 
                     if (tentativa < 2) {
@@ -2398,7 +2391,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 btnSubmit.disabled = false;
             }
         }
-    </script>
     </script>
 </body>
 </html>
