@@ -5,10 +5,9 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Formulario de Entregas - VendaLive</title>
+    <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="js/config-system.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); min-height: 100vh; padding: 20px; }
@@ -184,6 +183,10 @@
         .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -529,10 +532,7 @@
                     console.log(`[WA] Tentativa ${tentativa}/2...`);
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => {
-                        console.log('[WA] ⏱️ Timeout atingido (30s), abortando requisição...');
-                        controller.abort(new Error('Timeout após 30 segundos'));
-                    }, 30000); // 30s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
                     // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
                     // Endpoint: /message/sendText/{instance}
@@ -604,12 +604,6 @@
 
                     if (erro.name === 'AbortError') {
                         console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
-                        // Se for timeout, tenta novamente imediatamente
-                        if (tentativa < 2) {
-                            console.log('[WA] 🔄 Tentando novamente imediatamente após timeout...');
-                            await new Promise(r => setTimeout(r, 1000));
-                            continue;
-                        }
                     }
 
                     if (tentativa < 2) {
@@ -2289,92 +2283,76 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 }
 
                 // ============================================
-                // ✅ CORREÇÃO: ENVIO DE WHATSAPP - CONFIRMAÇÃO DE SOLICITAÇÃO
+                // ✅ CORREÇÃO: ENVIO DE E-MAIL (AGUARDAR - CRÍTICO)
                 // ============================================
-                let waPromises = [];
-
-                if (whatsapp && whatsapp.trim()) {
-                    console.log('[ENVIAR] 📱 Preparando envio de WhatsApp de confirmação...');
-                    const waPromise = enviarConfirmacaoSolicitacao({
-                        nome: nome,
-                        numeroSolicitacao: numeroSolicitacao,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp,
-                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
-                        regiao: regiao
-                    }).then((resultado) => {
-                        if (resultado.sucesso) {
-                            console.log('✅ [ENVIAR] WhatsApp de confirmação enviado!');
-                        } else if (resultado.ignorado) {
-                            console.log('ℹ️ [ENVIAR] WhatsApp de confirmação ignorado (sem número)');
-                        } else {
-                            console.warn('⚠️ [ENVIAR] WhatsApp de confirmação falhou:', resultado.erro);
-                        }
-                    }).catch((err) => {
-                        console.warn('⚠️ [ENVIAR] Erro no WhatsApp de confirmação (não crítico):', err.message || err);
-                    });
-                    waPromises.push(waPromise);
-                } else {
-                    console.log('[ENVIAR] 📱 Sem WhatsApp do cliente, pulando envio de confirmação');
-                }
-
-                // ============================================
-                // ✅ CORREÇÃO: ENVIO DE WHATSAPP - CONFIRMAÇÃO DE PAGAMENTO
-                // ============================================
-                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
-                    console.log('[ENVIAR] 📱 Preparando envio de WhatsApp de pagamento confirmado...');
-                    const waPromise = enviarConfirmacaoPagamento({
-                        nome: nome,
-                        numeroSolicitacao: numeroSolicitacao,
-                        bairro: bairro,
-                        cidade: cidadeForm,
-                        valorFrete: valorFreteAtual,
-                        whatsapp: whatsapp,
-                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
-                        regiao: regiao
-                    }).then((resultado) => {
-                        if (resultado.sucesso) {
-                            console.log('✅ [ENVIAR] WhatsApp de pagamento confirmado enviado!');
-                        } else if (resultado.ignorado) {
-                            console.log('ℹ️ [ENVIAR] WhatsApp de pagamento ignorado (sem número)');
-                        } else {
-                            console.warn('⚠️ [ENVIAR] WhatsApp de pagamento falhou:', resultado.erro);
-                        }
-                    }).catch((err) => {
-                        console.warn('⚠️ [ENVIAR] Erro no WhatsApp de pagamento (não crítico):', err.message || err);
-                    });
-                    waPromises.push(waPromise);
-                }
-
-                // ✅ CORREÇÃO: Aguardar e-mail e WhatsApp antes de redirecionar (modo automático)
                 if (modoAutomatico) {
-                    console.log('[AUTO] Modo automático - aguardando envio de e-mail e WhatsApp...');
-
-                    // Aguardar e-mail
+                    console.log('[AUTO] Modo automático - aguardando envio de e-mail...');
                     try {
                         await emailPromise;
                         console.log('[AUTO] ✅ E-mail processado');
                     } catch (e) {
                         console.warn('[AUTO] ⚠️ E-mail falhou (não crítico):', e.message || e);
                     }
+                }
 
-                    // Aguardar WhatsApps (com timeout de 20s para não travar)
-                    if (waPromises.length > 0) {
-                        console.log('[AUTO] ⏳ Aguardando WhatsApp(s)...');
+                // ============================================
+                // ✅ CORREÇÃO: ENVIO DE WHATSAPP - FIRE AND FORGET (NÃO BLOQUEANTE)
+                // Se falhar, o usuário pode reenviar via whatsapp-monitor.html
+                // ============================================
+                console.log('[ENVIAR] 📱 Disparando WhatsApps em background (fire-and-forget)...');
+
+                // Função helper para disparar sem aguardar
+                function dispararWhatsAppBackground(fn, dados, tipo) {
+                    setTimeout(async () => {
                         try {
-                            await Promise.race([
-                                Promise.all(waPromises),
-                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout WhatsApp')), 20000))
-                            ]);
-                            console.log('[AUTO] ✅ WhatsApp(s) processado(s)');
-                        } catch (waTimeout) {
-                            console.warn('[AUTO] ⚠️ WhatsApp timeout (20s), prosseguindo com redirecionamento...');
+                            const resultado = await fn(dados);
+                            if (resultado.sucesso) {
+                                console.log('✅ [WA-BG] WhatsApp ' + tipo + ' enviado com sucesso!');
+                            } else if (resultado.ignorado) {
+                                console.log('ℹ️ [WA-BG] WhatsApp ' + tipo + ' ignorado (sem número)');
+                            } else {
+                                console.warn('⚠️ [WA-BG] WhatsApp ' + tipo + ' falhou:', resultado.erro);
+                                console.log('[WA-BG] 💡 Reenvio disponível em whatsapp-monitor.html');
+                            }
+                        } catch (err) {
+                            console.warn('⚠️ [WA-BG] Erro no WhatsApp ' + tipo + ':', err.message || err);
+                            console.log('[WA-BG] 💡 Reenvio disponível em whatsapp-monitor.html');
                         }
-                    }
+                    }, 100); // Pequeno delay para não bloquear
+                }
 
-                    console.log('[AUTO] 🚀 Redirecionando para página de sucesso...');
+                // Disparar confirmação de solicitação (não aguarda)
+                if (whatsapp && whatsapp.trim()) {
+                    dispararWhatsAppBackground(enviarConfirmacaoSolicitacao, {
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
+                    }, 'confirmação de solicitação');
+                }
+
+                // Disparar confirmação de pagamento (não aguarda)
+                if (pagamentoConfirmado && whatsapp && whatsapp.trim()) {
+                    dispararWhatsAppBackground(enviarConfirmacaoPagamento, {
+                        nome: nome,
+                        numeroSolicitacao: numeroSolicitacao,
+                        bairro: bairro,
+                        cidade: cidadeForm,
+                        valorFrete: valorFreteAtual,
+                        whatsapp: whatsapp,
+                        solicitacaoId: (solicitacao && solicitacao.id ? solicitacao.id : null),
+                        regiao: regiao
+                    }, 'confirmação de pagamento');
+                }
+
+                // ✅ REDIRECIONAMENTO IMEDIATO - NÃO AGUARDA WHATSAPP
+                if (modoAutomatico) {
+                    console.log('[AUTO] 🚀 Redirecionando imediatamente para página de sucesso...');
+                    console.log('[AUTO] 💡 WhatsApp(s) sendo enviado(s) em background. Se falhar, reenvie via whatsapp-monitor.html');
                     redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFreteAtual);
                     return;
                 }
@@ -2398,7 +2376,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 btnSubmit.disabled = false;
             }
         }
-    </script>
     </script>
 </body>
 </html>
