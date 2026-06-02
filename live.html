@@ -123,7 +123,7 @@
         .btn-save:active { transform: scale(0.95); }
         .btn-save:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-save.saving { background: #ffc107; color: #212529; }
-        .btn-save.saved { background: #28a745; animation: pulseSave 0.5s ease; }
+        .btn-save.saved { background: #28a745 !important; animation: pulseSave 0.5s ease; }
         .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
         .btn-limpar:hover { background: #5a6268; transform: scale(1.05); }
         .btn-limpar:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
@@ -390,17 +390,17 @@
                         
                     </div>
                 </div>
-            <button class="backup-float-btn" id="backupFloatBtn" onclick="abrirModalBackup()" title="Backup Local">SAVE<span class="badge-count" id="backupBadge" style="display:none;">!</span></button>
+            <button class="backup-float-btn" id="backupFloatBtn" onclick="abrirModalBackup()" title="Backup Local">💾<span class="badge-count" id="backupBadge" style="display:none;">!</span></button>
             <div class="backup-modal-overlay" id="backupModalOverlay">
                 <div class="backup-modal-box">
-                    <h3>SAVE Backup Local</h3>
+                    <h3>💾 Backup Local</h3>
                     <div class="backup-status" id="backupStatusModal">
                         <span class="backup-dot"></span>
                         <span id="backupTextModal">Dados protegidos no navegador</span>
                     </div>
                     <p class="backup-info" style="font-size:12px;color:#666;margin:10px 0;">As vendas são salvas automaticamente a cada <span id="backupIntervalModal">5</span> segundos.</p>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-                        <button class="btn btn-info" onclick="salvarBackupManual()">SAVE Salvar Agora</button>
+                        <button class="btn btn-info" onclick="salvarBackupManual()">💾 Salvar Agora</button>
                         <button class="btn btn-warning" onclick="restaurarBackup()">SYNC Restaurar</button>
                         <button class="btn btn-danger" onclick="limparBackupLocal()">DEL Limpar</button>
                     </div>
@@ -989,7 +989,7 @@ function processarComandoVoz(transcript) {
             salvarVozAtual();
             linhaAtualVoz = linhaFocada + 1;
             ultimaLinhaGravacao = linhaAtualVoz;
-            document.getElementById('statusVoz').textContent = 'SAVE Linha ' + linhaFocada + ' salva! Fale valor da linha ' + linhaAtualVoz;
+            document.getElementById('statusVoz').textContent = '💾 Linha ' + linhaFocada + ' salva! Fale valor da linha ' + linhaAtualVoz;
             setTimeout(() => focarCampoVoz(linhaAtualVoz, 'valor'), 300);
         }, 500);
         return;
@@ -1820,8 +1820,8 @@ async function salvarVenda(linhaId) {
         marcarLinhaComoSalva(linhaId);
         if (btnSalvar) {
             btnSalvar.classList.remove('saving');
-            btnSalvar.textContent = '✓';
-            setTimeout(() => { btnSalvar.textContent = 'SAVE'; }, 1500);
+            btnSalvar.classList.add('saved');
+            setTimeout(() => { btnSalvar.textContent = '💾'; }, 1500);
         }
         showStatus('Item salvo com sucesso!', 'success');
         
@@ -1860,7 +1860,7 @@ async function salvarVenda(linhaId) {
         
     } catch (error) {
         console.error('Erro ao salvar:', error);
-        if (btnSalvar) { btnSalvar.classList.remove('saving'); btnSalvar.textContent = 'SAVE'; }
+        if (btnSalvar) { btnSalvar.classList.remove('saving'); btnSalvar.textContent = '💾'; }
         showStatus('Erro ao salvar: ' + error.message, 'error');
     }
 }
@@ -2507,7 +2507,7 @@ function salvarBackupLocal() {
     const chave = BACKUP_KEY + currentClienteId + '_' + codigoLiveAtual;
     localStorage.setItem(chave, JSON.stringify(dados));
     ultimoBackup = new Date();
-    atualizarStatusBackup('SAVE Salvo em ' + ultimoBackup.toLocaleTimeString('pt-BR'));
+    atualizarStatusBackup('💾 Salvo em ' + ultimoBackup.toLocaleTimeString('pt-BR'));
     const backupSection = document.getElementById('backupSection');
     if (backupSection) backupSection.style.display = 'block';
     console.log('[BACKUP] ' + dados.vendas.length + ' itens salvos localmente');
@@ -2570,7 +2570,7 @@ function restaurarBackup() {
 
 function salvarBackupManual() {
     salvarBackupLocal();
-    showStatus('SAVE Backup manual salvo!', 'success');
+    showStatus('💾 Backup manual salvo!', 'success');
 }
 
 function limparBackupLocal() {
