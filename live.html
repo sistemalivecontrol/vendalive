@@ -1837,14 +1837,12 @@ function criarLinhaComDados(venda) {
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="comprador-' + venda.linha_id + '" value="' + (venda.comprador || '') + '" oninput="filtrarSugestoes(this, \'comprador\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + venda.linha_id + ', \'comprador\')" autocomplete="off" placeholder="Nome ou Instagram" ' + disabled + '>' +
-        '<button class="clipboard-btn" onclick="event.preventDefault(); colarDoClipboard(document.getElementById(\'comprador-\' + venda.linha_id + \'))" ' + disabled + ' title="Colar">📋</button>' +
         '<div class="suggestions" id="sugestoes-comprador-' + venda.linha_id + '"></div>' +
         '</div>' +
         '</td>' +
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="fila-' + venda.linha_id + '" value="' + (venda.fila || '') + '" oninput="filtrarSugestoes(this, \'fila\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + venda.linha_id + ', \'fila\')" autocomplete="off" placeholder="Nome ou Instagram" ' + disabled + '>' +
-        '<button class="clipboard-btn" onclick="event.preventDefault(); colarDoClipboard(document.getElementById(\'fila-\' + venda.linha_id + \'))" ' + disabled + ' title="Colar">📋</button>' +
         '<div class="suggestions" id="sugestoes-fila-' + venda.linha_id + '"></div>' +
         '</div>' +
         '</td>' +
@@ -1869,14 +1867,12 @@ function adicionarLinha() {
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="comprador-' + linhaCount + '" oninput="filtrarSugestoes(this, \'comprador\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + linhaCount + ', \'comprador\')" autocomplete="off" placeholder="Nome ou Instagram">' +
-        '<button class="clipboard-btn" onclick="event.preventDefault(); colarDoClipboard(document.getElementById(\'comprador-\' + linhaCount + \'))" title="Colar">📋</button>' +
         '<div class="suggestions" id="sugestoes-comprador-' + linhaCount + '"></div>' +
         '</div>' +
         '</td>' +
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="fila-' + linhaCount + '" oninput="filtrarSugestoes(this, \'fila\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + linhaCount + ', \'fila\')" autocomplete="off" placeholder="Nome ou Instagram">' +
-        '<button class="clipboard-btn" onclick="event.preventDefault(); colarDoClipboard(document.getElementById(\'fila-\' + linhaCount + \'))" title="Colar">📋</button>' +
         '<div class="suggestions" id="sugestoes-fila-' + linhaCount + '"></div>' +
         '</div>' +
         '</td>' +
