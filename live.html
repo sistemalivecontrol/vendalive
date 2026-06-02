@@ -3,11 +3,7 @@
 <head>
 <!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
 <script>
-    // ===== VERSAO 3.0 - CORRECOES APLICADAS =====
-    // 1. Valor da live na grid usa mesmo filtro da tela aberta
-    // 2. Botões de microfone removidos das linhas (mantido gravação contínua no header)
-    // 3. Baseado no arquivo original do usuario (auth.js para autenticação)
-    console.log('[LIVE] === VERSAO 3.0 - CORRECOES APLICADAS ===');
+    console.log('[LIVE] V3.0');
 // ==========================================
 // SESSION.JS - Verificacao sincrona de login
 // Apenas verifica localStorage - NAO inicializa Supabase
@@ -602,51 +598,24 @@ function iniciarGravacao(input, btn) {
 }
 
 async function colarDoClipboard(input) {
-    if (!navigator.clipboard) { 
-        showStatus('Area de transferencia nao suportada', 'error'); 
-        return; 
-    }
     try {
         const text = await navigator.clipboard.readText();
         if (text && text.trim()) {
-            const textoLimpo = text.trim();
-            input.value = textoLimpo;
-
-            // Disparar eventos para atualizar a UI
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-
-            // Marcar linha como não salva
+            input.value = text.trim();
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
             marcarLinhaComoNaoSalva(input);
-
-            // Atualizar sugestões se for campo de comprador ou fila
-            const idParts = input.id ? input.id.split('-') : [];
-            if (idParts.length === 2) {
-                const campo = idParts[0];
-                const linhaId = idParts[1];
-                if (campo === 'comprador' || campo === 'fila') {
-                    filtrarSugestoes(input, campo);
-                }
+            if (input.id && (input.id.startsWith('comprador-') || input.id.startsWith('fila-'))) {
+                const tipo = input.id.split('-')[0];
+                filtrarSugestoes(input, tipo);
             }
-
-            showStatus('📋 Texto colado: ' + textoLimpo.substring(0, 30) + (textoLimpo.length > 30 ? '...' : ''), 'success');
-        } else { 
-            showStatus('Area de transferencia vazia', 'info'); 
+            showStatus('Texto colado!', 'success');
+        } else {
+            showStatus('Area de transferencia vazia', 'info');
         }
     } catch (err) {
-        console.error('[COLAR] Erro ao colar:', err);
-        // Tentar fallback com execCommand
-        try {
-            input.focus();
-            input.select();
-            const ok = document.execCommand('paste');
-            if (ok) {
-                marcarLinhaComoNaoSalva(input);
-                showStatus('Texto colado!', 'success');
-                return;
-            }
-        } catch (e2) {}
-        showStatus('❌ Erro ao colar. Use Ctrl+V manualmente', 'error');
+        console.error('Erro ao colar:', err);
+        showStatus('Erro ao colar. Use Ctrl+V', 'error');
     }
 }function pararGravacao() {
     if (recognition) { try { recognition.stop(); } catch (e) {} }
