@@ -848,7 +848,7 @@
 
                 loading.style.display = 'none';
                 todosPixs = pixsEnriquecidos;
-                atualizarStatsPix(todosPixs);
+                // Stats serão atualizados em renderizarPixFiltrados com dados filtrados
                 renderizarPixFiltrados();
 
             } catch (error) {
@@ -881,6 +881,9 @@
             const lista = document.getElementById('pix-lista');
             let pixsFiltrados = aplicarFiltroPix(todosPixs, filtroPixAtual);
             pixsFiltrados = filtrarPorDataENome(pixsFiltrados);
+
+            // Atualizar estatísticas com dados FILTRADOS (visíveis)
+            atualizarStatsPix(pixsFiltrados);
 
             if (pixsFiltrados.length === 0) {
                 lista.innerHTML = '<div class="sem-pix">Nenhum PIX ' + (filtroPixAtual === 'aguardando' ? 'pendente' : 'encontrado') + '</div>';
@@ -1035,7 +1038,7 @@ function filtrarPix(tipo, btnElement) {
                     return;
                 }
                 todasAsaas = cobrancas || [];
-                atualizarStatsAsaas(todasAsaas);
+                // Stats serão atualizados em renderizarAsaasFiltrados com dados filtrados
                 renderizarAsaasFiltrados();
 
             } catch (error) {
@@ -1132,6 +1135,9 @@ function filtrarPix(tipo, btnElement) {
             const lista = document.getElementById('asaas-lista');
             let cobrancasFiltradas = aplicarFiltroAsaas(todasAsaas, filtroAsaasAtual);
             cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            // Atualizar estatísticas com dados FILTRADOS (visíveis)
+            atualizarStatsAsaas(cobrancasFiltradas);
 
             if (cobrancasFiltradas.length === 0) {
                 lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Asaas encontrada' + (filtroAsaasAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
@@ -1265,7 +1271,7 @@ function filtrarAsaas(tipo, btnElement) {
                     return;
                 }
                 todasMp = cobrancas;
-                atualizarStatsMp(todasMp);
+                // Stats serão atualizados em renderizarMpFiltrados com dados filtrados
                 renderizarMpFiltrados();
 
             } catch (error) {
@@ -1365,6 +1371,9 @@ function filtrarAsaas(tipo, btnElement) {
             const lista = document.getElementById('mp-lista');
             let cobrancasFiltradas = aplicarFiltroMp(todasMp, filtroMpAtual);
             cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            // Atualizar estatísticas com dados FILTRADOS (visíveis)
+            atualizarStatsMp(cobrancasFiltradas);
 
             if (cobrancasFiltradas.length === 0) {
                 lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Mercado Pago encontrada' + (filtroMpAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
@@ -1502,7 +1511,7 @@ function filtrarMp(tipo, btnElement) {
                     return;
                 }
                 todasInfinite = cobrancas || [];
-                atualizarStatsInfinite(todasInfinite);
+                // Stats serão atualizados em renderizarInfiniteFiltrados com dados filtrados
                 renderizarInfiniteFiltrados();
 
             } catch (error) {
@@ -1594,6 +1603,9 @@ function filtrarMp(tipo, btnElement) {
             const lista = document.getElementById('infinite-lista');
             let cobrancasFiltradas = aplicarFiltroInfinite(todasInfinite, filtroInfiniteAtual);
             cobrancasFiltradas = filtrarPorDataENome(cobrancasFiltradas);
+
+            // Atualizar estatísticas com dados FILTRADOS (visíveis)
+            atualizarStatsInfinite(cobrancasFiltradas);
 
             if (cobrancasFiltradas.length === 0) {
                 lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca InfinitePay encontrada' + (filtroInfiniteAtual !== 'todos' ? ' para este filtro' : '') + '</div>';
