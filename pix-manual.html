@@ -302,6 +302,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -596,6 +597,13 @@
             return dia + '/' + mes + '/' + ano;
         }
 
+        function normalizarTexto(texto) {
+            if (!texto) return '';
+            return texto.toLowerCase()
+                .normalize('NFD')
+                .replace(/[̀-ͯ]/g, '');
+        }
+
         function filtrarPorDataENome(itens) {
             return itens.filter(item => {
                 // Filtro de data
@@ -618,10 +626,24 @@
                     }
                 }
 
-                // Filtro de nome
+                // Filtro de nome (ignora acentos, busca em múltiplos campos)
                 if (filtroNomeComprador) {
-                    const nome = (item.comprador_nome || item.comprador || item.cliente_nome || '').toLowerCase();
-                    if (!nome.includes(filtroNomeComprador)) return false;
+                    const termoBusca = normalizarTexto(filtroNomeComprador);
+                    const nome = normalizarTexto(item.comprador_nome || item.comprador || item.cliente_nome || '');
+                    const telefone = normalizarTexto(item.comprador_telefone || item.telefone || '');
+                    const email = normalizarTexto(item.comprador_email || item.email || '');
+                    const instagram = normalizarTexto(item.instagram || '');
+                    const codigo = normalizarTexto(item.codigo_live || '');
+
+                    const matchNome = nome.includes(termoBusca);
+                    const matchTelefone = telefone.includes(termoBusca);
+                    const matchEmail = email.includes(termoBusca);
+                    const matchInstagram = instagram.includes(termoBusca);
+                    const matchCodigo = codigo.includes(termoBusca);
+
+                    if (!matchNome && !matchTelefone && !matchEmail && !matchInstagram && !matchCodigo) {
+                        return false;
+                    }
                 }
 
                 return true;
