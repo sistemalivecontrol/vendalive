@@ -84,10 +84,10 @@
         .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
         .suggestions.active { display: block; }
         .suggestion-item { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; font-size: 13px; }
-        .suggestion-item:hover, .suggestion-item.selected { background: #0B193F; color: white; }
-        .suggestion-item.selected .suggestion-secondary { color: rgba(255,255,255,0.8); }
+        .suggestion-item:hover, .suggestion-item.selected { background: #0B193F; color: white; font-weight: 700; }
+        .suggestion-item.selected .suggestion-secondary { color: rgba(255,255,255,0.9); font-weight: 600; }
         .suggestion-item .suggestion-main { font-weight: 600; color: #333; }
-        .suggestion-item:hover .suggestion-main, .suggestion-item.selected .suggestion-main { color: white; }
+        .suggestion-item:hover .suggestion-main, .suggestion-item.selected .suggestion-main { color: white; font-weight: 700; }
         .suggestion-item .suggestion-secondary { font-size: 11px; color: #666; margin-top: 2px; }
         .suggestion-item.sugestao-usada-na-live { background: #fff3cd; border-left: 3px solid #ffc107; }
         .suggestion-item.sugestao-usada-na-live:hover { background: #0B193F; color: white; }
