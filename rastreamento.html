@@ -1272,10 +1272,10 @@ async function aplicarFiltros() {
                 if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
                 if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
 
-                // ✅ MELHORIA: Se tiver observações, mostrar abaixo do nome com destaque
+                // ✅ MELHORIA: Se tiver observações, mostrar aviso abaixo do nome
                 let nomeComObs = cliente.nome || '-';
                 if (s.observacoes && s.observacoes.trim()) {
-                    nomeComObs = cliente.nome + '\n\n*****' + s.observacoes + '***';
+                    nomeComObs = cliente.nome + '\n\n***Contêm Observações***';
                 }
 
                 return [
@@ -1285,7 +1285,7 @@ async function aplicarFiltros() {
                     s.regiao || endereco.regiao || '-',
                     formatarCEP(endereco.cep),
                     endereco.cidade || '-',
-                    s.observacoes && s.observacoes.trim() ? '' : (s.observacoes || '-'),
+                    s.observacoes || '-',
                     dadosPacote.join(' | ') || '-'
                 ];
             });
@@ -1330,11 +1330,11 @@ async function aplicarFiltros() {
                     cellPadding: 3,
                     lineHeight: 1.4
                 },
-                // ✅ MELHORIA: Formatação especial para observações no nome
+                // ✅ MELHORIA: Formatação especial para aviso de observações no nome
                 didParseCell: function(data) {
                     if (data.section === 'body' && data.column.index === 1) {
                         const text = data.cell.raw;
-                        if (text && text.includes('*****')) {
+                        if (text && text.includes('***Contêm Observações***')) {
                             data.cell.styles.textColor = [220, 20, 60]; // Vermelho escuro
                             data.cell.styles.fontStyle = 'bold';
                         }
