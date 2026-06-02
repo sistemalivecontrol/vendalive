@@ -319,6 +319,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -1271,14 +1272,22 @@ async function aplicarFiltros() {
                 if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
                 if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
 
+                // ✅ MELHORIA: Se tiver observações, mostrar abaixo do nome com destaque
+                let nomeComObs = cliente.nome || '-';
+                if (s.observacoes && s.observacoes.trim()) {
+                    nomeComObs = cliente.nome + '
+
+*****' + s.observacoes + '***';
+                }
+
                 return [
                     formatarDataBr(s.criado_em),
-                    cliente.nome || '-',
+                    nomeComObs,
                     cliente.instagram || '-',
                     s.regiao || endereco.regiao || '-',
                     formatarCEP(endereco.cep),
                     endereco.cidade || '-',
-                    s.observacoes || '-',
+                    s.observacoes && s.observacoes.trim() ? '' : (s.observacoes || '-'),
                     dadosPacote.join(' | ') || '-'
                 ];
             });
@@ -1302,24 +1311,36 @@ async function aplicarFiltros() {
                     textColor: [0, 0, 0],
                     fillColor: [255, 255, 255],
                     minCellHeight: 18,
-                    valign: 'top'
+                    valign: 'top',
+                    cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
                 },
                 alternateRowStyles: { fillColor: [255, 255, 255] },
                 columnStyles: {
                     0: { cellWidth: 25 },
-                    1: { cellWidth: 45 },
-                    2: { cellWidth: 30 },
-                    3: { cellWidth: 40 },
-                    4: { cellWidth: 25 },
-                    5: { cellWidth: 30 },
-                    6: { cellWidth: 50 },
-                    7: { cellWidth: 40 }
+                    1: { cellWidth: 55 },
+                    2: { cellWidth: 28 },
+                    3: { cellWidth: 35 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 28 },
+                    6: { cellWidth: 40 },
+                    7: { cellWidth: 35 }
                 },
                 margin: { top: 30, left: 10, right: 10 },
                 styles: {
                     lineColor: [0, 0, 0],
                     lineWidth: 0.5,
-                    cellPadding: 3
+                    cellPadding: 3,
+                    lineHeight: 1.4
+                },
+                // ✅ MELHORIA: Formatação especial para observações no nome
+                didParseCell: function(data) {
+                    if (data.section === 'body' && data.column.index === 1) {
+                        const text = data.cell.raw;
+                        if (text && text.includes('*****')) {
+                            data.cell.styles.textColor = [220, 20, 60]; // Vermelho escuro
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
                 }
             });
 
