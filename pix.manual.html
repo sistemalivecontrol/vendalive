@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
 <script>
 (function(){
     'use strict';
@@ -63,8 +62,6 @@
     .tab.infinite-tab.ativo { background: linear-gradient(135deg, #7B1FA2, #9C27B0); color: white; }
     .tab-content { display: none; }
     .tab-content.ativo { display: block; }
-
-    /* ===== FILTROS DE LIVE E CLIENTE ===== */
     .filtros-superiores { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: end; }
     .filtro-grupo { display: flex; flex-direction: column; gap: 6px; }
     .filtro-grupo label { font-size: 0.85rem; font-weight: 600; color: #0B193F; }
@@ -73,7 +70,6 @@
     .filtro-grupo input { min-width: 250px; }
     .btn-limpar-filtros { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; height: fit-content; transition: all 0.3s; }
     .btn-limpar-filtros:hover { background: #495057; }
-
     .botoes-centro { text-align: center; margin: 20px 0; }
     .botoes-centro button { display: inline-block; padding: 10px 18px; border: 2px solid #0B193F; background: white; color: #0B193F; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; margin: 5px; }
     .botoes-centro button:hover { background: #0B193F; color: white; }
@@ -404,10 +400,7 @@
         let isLoadingAsaas = false;
         let isLoadingMp = false;
         let isLoadingInfinite = false;
-        let livesPix = [];
-        let livesAsaas = [];
-        let livesMp = [];
-        let livesInfinite = [];
+        let todasLives = []; // Array global de lives da tabela lives_pg
 
         function mostrarAba(botao, aba) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
@@ -473,6 +466,8 @@
                 usuarioLogado = session.user;
                 document.getElementById('userInfo').style.display = 'flex';
                 document.getElementById('userEmail').textContent = session.user.email;
+                // Carregar lives primeiro
+                await carregarLives();
                 carregarPix();
                 if (!autoRefreshInterval) {
                     autoRefreshInterval = setInterval(() => {
@@ -485,27 +480,47 @@
             } catch (error) { console.error('[PIX-CONF] Erro inicializacao:', error); }
         });
 
-        function extrairLivesUnicas(cobrancas, campoLive) {
-            const lives = new Set();
-            cobrancas.forEach(c => {
-                const live = c[campoLive] || c.codigo_live || 'Sem Live';
-                if (live && live !== 'Sem Live') lives.add(live);
-            });
-            return Array.from(lives).sort((a, b) => b.localeCompare(a));
+        // ===== CARREGAR LIVES DA TABELA lives_pg =====
+        async function carregarLives() {
+            try {
+                const { data: lives, error } = await supabaseClient
+                    .from('lives_pg')
+                    .select('codigo, data_live')
+                    .eq('cliente_id', clienteSistemaId)
+                    .order('data_live', { ascending: false });
+                if (error) {
+                    console.error('[PIX-MANUAL] Erro ao carregar lives:', error);
+                    return;
+                }
+                todasLives = lives || [];
+                // Preencher todos os selects de live
+                preencherSelectLives('filtro-live-pix', todasLives);
+                preencherSelectLives('filtro-live-asaas', todasLives);
+                preencherSelectLives('filtro-live-mp', todasLives);
+                preencherSelectLives('filtro-live-infinite', todasLives);
+            } catch (e) {
+                console.error('[PIX-MANUAL] Erro carregarLives:', e);
+            }
         }
 
-        function preencherSelectLives(selectId, lives, liveSelecionada) {
+        function preencherSelectLives(selectId, lives) {
             const select = document.getElementById(selectId);
-            const valorAtual = select.value || liveSelecionada || '';
+            if (!select) return;
+            const valorAtual = select.value;
             select.innerHTML = '<option value="">Todas as Lives</option>';
             lives.forEach(live => {
                 const option = document.createElement('option');
-                option.value = live;
-                option.textContent = live;
-                if (live === valorAtual) option.selected = true;
+                option.value = live.codigo;
+                option.textContent = live.codigo + ' (' + new Date(live.data_live).toLocaleDateString('pt-BR') + ')';
+                if (live.codigo === valorAtual) option.selected = true;
                 select.appendChild(option);
             });
-            if (valorAtual && lives.includes(valorAtual)) select.value = valorAtual;
+            // Se não tinha valor selecionado, selecionar a primeira (mais recente)
+            if (!valorAtual && lives.length > 0) {
+                select.value = lives[0].codigo;
+            } else if (valorAtual) {
+                select.value = valorAtual;
+            }
         }
 
         function filtrarPorCliente(cobrancas, termo, campoNome) {
@@ -556,10 +571,6 @@
                 loading.style.display = 'none';
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 todosPixs = pixs || [];
-                livesPix = extrairLivesUnicas(todosPixs, 'codigo_live');
-                const selectLive = document.getElementById('filtro-live-pix');
-                const liveSelecionada = livesPix.length > 0 ? livesPix[0] : '';
-                preencherSelectLives('filtro-live-pix', livesPix, selectLive.value || liveSelecionada);
                 aplicarFiltrosSuperioresPix();
             } catch (error) {
                 loading.style.display = 'none';
@@ -578,7 +589,7 @@
         }
 
         function limparFiltrosPix() {
-            document.getElementById('filtro-live-pix').value = '';
+            document.getElementById('filtro-live-pix').value = todasLives.length > 0 ? todasLives[0].codigo : '';
             document.getElementById('filtro-cliente-pix').value = '';
             aplicarFiltrosSuperioresPix();
         }
@@ -630,11 +641,11 @@
                 const isCanceladoLink = p.status === 'cancelado_link';
                 const clienteClicou = p.cliente_disse_pago === true;
                 let statusClass = 'status-gerado';
-                let statusText = '📱 Gerado (aguardando cliente)';
-                if (isCancelado) { statusClass = 'status-cancelado'; statusText = '❌ Cancelado Manual'; }
-                else if (isCanceladoLink) { statusClass = 'status-cancelado-link'; statusText = '🔗 Cancelado por Link'; }
-                else if (isConfirmado || isPago) { statusClass = 'status-confirmado'; statusText = '✅ Confirmado'; }
-                else if (clienteClicou) { statusClass = 'status-aguardando'; statusText = '👆 Cliente disse que pagou'; }
+                let statusText = 'Gerado (aguardando cliente)';
+                if (isCancelado) { statusClass = 'status-cancelado'; statusText = 'Cancelado Manual'; }
+                else if (isCanceladoLink) { statusClass = 'status-cancelado-link'; statusText = 'Cancelado por Link'; }
+                else if (isConfirmado || isPago) { statusClass = 'status-confirmado'; statusText = 'Confirmado'; }
+                else if (clienteClicou) { statusClass = 'status-aguardando'; statusText = 'Cliente disse que pagou'; }
                 html += '<div class="pix-card ' + (isConfirmado ? 'pago' : '') + ' ' + (isCancelado ? 'cancelado' : '') + '">';
                 html += '<div class="pix-header">';
                 html += '<div class="pix-info">';
@@ -652,10 +663,10 @@
                 html += '</div></div>';
                 if (!isConfirmado && !isCancelado) {
                     html += '<div class="pix-acoes">';
-                    if (!clienteClicou) html += '<button class="btn-copiar-link" onclick="copiarLinkPix(\'" + p.id + "\')">📋 Copiar Link</button>';
-                    html += '<button class="btn-confirmar" onclick="confirmarPagamento(\'" + p.id + "\', \'" + p.venda_id + "\')">✅ Confirmar (vi no app)</button>';
+                    if (!clienteClicou) html += '<button class="btn-copiar-link" onclick="copiarLinkPix('' + p.id + '')">📋 Copiar Link</button>';
+                    html += '<button class="btn-confirmar" onclick="confirmarPagamento('' + p.id + '', '' + p.venda_id + '')">✅ Confirmar (vi no app)</button>';
                     if (p.comprovante_url) html += '<a href="' + p.comprovante_url + '" target="_blank" class="btn-comprovante">📎 Ver Comprovante</a>';
-                    html += '<button class="btn-cancelar" onclick="cancelarPix(\'" + p.id + "\')">❌ Não recebi</button>';
+                    html += '<button class="btn-cancelar" onclick="cancelarPix('' + p.id + '')">❌ Não recebi</button>';
                     html += '</div>';
                 } else {
                     html += '<div class="pix-acoes">';
@@ -765,10 +776,6 @@
                 loading.style.display = 'none';
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 todasAsaas = cobrancas || [];
-                livesAsaas = extrairLivesUnicas(todasAsaas, 'codigo_live');
-                const selectLive = document.getElementById('filtro-live-asaas');
-                const liveSelecionada = livesAsaas.length > 0 ? livesAsaas[0] : '';
-                preencherSelectLives('filtro-live-asaas', livesAsaas, selectLive.value || liveSelecionada);
                 aplicarFiltrosSuperioresAsaas();
             } catch (error) {
                 loading.style.display = 'none';
@@ -787,7 +794,7 @@
         }
 
         function limparFiltrosAsaas() {
-            document.getElementById('filtro-live-asaas').value = '';
+            document.getElementById('filtro-live-asaas').value = todasLives.length > 0 ? todasLives[0].codigo : '';
             document.getElementById('filtro-cliente-asaas').value = '';
             aplicarFiltrosSuperioresAsaas();
         }
@@ -843,7 +850,7 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link">🔗 Ver Link</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkAsaas(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkAsaas('' + c.invoice_url + '')">📋 Copiar Link</button>';
                 }
                 html += '</div></div>';
             }
@@ -863,8 +870,6 @@
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 if (!cobrancas || cobrancas.length === 0) { lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Asaas encontrada</div>'; return; }
                 todasAsaas = cobrancas;
-                livesAsaas = extrairLivesUnicas(todasAsaas, 'codigo_live');
-                preencherSelectLives('filtro-live-asaas', livesAsaas, '');
                 document.getElementById('filtro-live-asaas').value = '';
                 document.getElementById('filtro-cliente-asaas').value = '';
                 atualizarStatsAsaas(todasAsaas);
@@ -932,10 +937,6 @@
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 if (!cobrancas || cobrancas.length === 0) { lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca Mercado Pago encontrada</div>'; return; }
                 todasMp = cobrancas;
-                livesMp = extrairLivesUnicas(todasMp, 'codigo_live');
-                const selectLive = document.getElementById('filtro-live-mp');
-                const liveSelecionada = livesMp.length > 0 ? livesMp[0] : '';
-                preencherSelectLives('filtro-live-mp', livesMp, selectLive.value || liveSelecionada);
                 aplicarFiltrosSuperioresMp();
             } catch (error) {
                 loading.style.display = 'none';
@@ -954,7 +955,7 @@
         }
 
         function limparFiltrosMp() {
-            document.getElementById('filtro-live-mp').value = '';
+            document.getElementById('filtro-live-mp').value = todasLives.length > 0 ? todasLives[0].codigo : '';
             document.getElementById('filtro-cliente-mp').value = '';
             aplicarFiltrosSuperioresMp();
         }
@@ -1015,7 +1016,7 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #009EE3, #007EB5);">🔗 Ver Link MP</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkMp(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkMp('' + c.invoice_url + '')">📋 Copiar Link</button>';
                 }
                 html += '</div></div>';
             }
@@ -1035,8 +1036,6 @@
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 if (!cobrancas || cobrancas.length === 0) { lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca MP encontrada</div>'; return; }
                 todasMp = cobrancas;
-                livesMp = extrairLivesUnicas(todasMp, 'codigo_live');
-                preencherSelectLives('filtro-live-mp', livesMp, '');
                 document.getElementById('filtro-live-mp').value = '';
                 document.getElementById('filtro-cliente-mp').value = '';
                 atualizarStatsMp(todasMp);
@@ -1105,10 +1104,6 @@
                 loading.style.display = 'none';
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 todasInfinite = cobrancas || [];
-                livesInfinite = extrairLivesUnicas(todasInfinite, 'codigo_live');
-                const selectLive = document.getElementById('filtro-live-infinite');
-                const liveSelecionada = livesInfinite.length > 0 ? livesInfinite[0] : '';
-                preencherSelectLives('filtro-live-infinite', livesInfinite, selectLive.value || liveSelecionada);
                 aplicarFiltrosSuperioresInfinite();
             } catch (error) {
                 loading.style.display = 'none';
@@ -1127,7 +1122,7 @@
         }
 
         function limparFiltrosInfinite() {
-            document.getElementById('filtro-live-infinite').value = '';
+            document.getElementById('filtro-live-infinite').value = todasLives.length > 0 ? todasLives[0].codigo : '';
             document.getElementById('filtro-cliente-infinite').value = '';
             aplicarFiltrosSuperioresInfinite();
         }
@@ -1174,9 +1169,9 @@
                 html += '<div class="pix-acoes">';
                 if (c.invoice_url) {
                     html += '<a href="' + c.invoice_url + '" target="_blank" class="btn-ver-link" style="background:linear-gradient(135deg, #7B1FA2, #9C27B0);">🔗 Ver Link</a>';
-                    html += '<button class="btn-copiar-link" onclick="copiarLinkInfinite(\'" + c.invoice_url + "\')">📋 Copiar Link</button>';
+                    html += '<button class="btn-copiar-link" onclick="copiarLinkInfinite('' + c.invoice_url + '')">📋 Copiar Link</button>';
                 }
-                if (isPendente) html += '<button class="btn-confirmar" onclick="confirmarInfinite(\'" + c.id + "\')">✅ Marcar como Pago</button>';
+                if (isPendente) html += '<button class="btn-confirmar" onclick="confirmarInfinite('' + c.id + '')">✅ Marcar como Pago</button>';
                 html += '</div></div>';
             }
             lista.innerHTML = html;
@@ -1195,8 +1190,6 @@
                 if (error) { lista.innerHTML = '<div class="sem-pix">Erro: ' + error.message + '</div>'; return; }
                 if (!cobrancas || cobrancas.length === 0) { lista.innerHTML = '<div class="sem-pix">Nenhuma cobranca InfinitePay encontrada</div>'; return; }
                 todasInfinite = cobrancas;
-                livesInfinite = extrairLivesUnicas(todasInfinite, 'codigo_live');
-                preencherSelectLives('filtro-live-infinite', livesInfinite, '');
                 document.getElementById('filtro-live-infinite').value = '';
                 document.getElementById('filtro-cliente-infinite').value = '';
                 atualizarStatsInfinite(todasInfinite);
