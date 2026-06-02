@@ -124,6 +124,12 @@
         .btn-save:disabled { background: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-save.saving { background: #ffc107; color: #212529; }
         .btn-save.saved { background: #28a745; animation: pulseSave 0.5s ease; }
+        .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 10px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
+        .btn-limpar:hover { background: #5a6268; transform: scale(1.05); }
+        .btn-limpar:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
+        .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 10px; font-weight: 600; transition: all 0.2s ease; }
+        .btn-excluir:hover { background: #c82333; transform: scale(1.05); }
+        .btn-excluir:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
         @keyframes pulseSave { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .info-text { color: #6c757d; font-size: 12px; margin-top: 5px; }
         .live-info { background: #d4edda; border: 1px solid #28a745; border-radius: 6px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -1649,6 +1655,42 @@ async function carregarVendasExistentes() {
     }
 }
 
+function limparLinha(linhaId) {
+    if (liveBloqueada) return;
+    if (!confirm('Limpar a linha ' + linhaId + '?')) return;
+    document.getElementById('valor-' + linhaId).value = '';
+    document.getElementById('codigo-' + linhaId).value = '';
+    document.getElementById('comprador-' + linhaId).value = '';
+    document.getElementById('fila-' + linhaId).value = '';
+    marcarLinhaComoNaoSalva(document.getElementById('valor-' + linhaId));
+    showStatus('Linha ' + linhaId + ' limpa!', 'info');
+}
+
+function excluirLinha(linhaId) {
+    if (liveBloqueada) return;
+    if (!confirm('Excluir a linha ' + linhaId + ' permanentemente?')) return;
+    const linha = document.getElementById('linha-' + linhaId);
+    if (linha) {
+        // Remover do banco se tiver ID
+        const venda = vendas.find(v => v.linha_id === linhaId && v.codigo_live === codigoLiveAtual);
+        if (venda && venda.id) {
+            window.supabaseClient.from('vendas_live').delete().eq('id', venda.id).then(() => {
+                vendas = vendas.filter(v => v.linha_id !== linhaId);
+                linha.remove();
+                atualizarContagemItens();
+                atualizarTotalVendidoHeader();
+                showStatus('Linha ' + linhaId + ' excluida!', 'success');
+            });
+        } else {
+            linha.remove();
+            vendas = vendas.filter(v => v.linha_id !== linhaId);
+            atualizarContagemItens();
+            atualizarTotalVendidoHeader();
+            showStatus('Linha ' + linhaId + ' removida!', 'success');
+        }
+    }
+}
+
 function marcarLinhaComoNaoSalva(input) {
     const linhaId = input.id.split('-')[1];
     if (!linhaId) return;
@@ -1849,8 +1891,10 @@ function criarLinhaComDados(venda) {
         '<div class="suggestions" id="sugestoes-fila-' + venda.linha_id + '"></div>' +
         '</div>' +
         '</td>' +
-        '<td>' +
-        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + '>SAVE</button>' +
+        '<td style="white-space: nowrap;">' +
+        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">SAVE</button>' +
+        '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">LIMP</button>' +
+        '<button class="btn-excluir" onclick="excluirLinha(' + venda.linha_id + ')" ' + disabled + ' title="Excluir">X</button>' +
         '</td>';
     tbody.appendChild(tr);
     if (!jaSalvo) verificarCamposObrigatorios(venda.linha_id);
@@ -1879,8 +1923,10 @@ function adicionarLinha() {
         '<div class="suggestions" id="sugestoes-fila-' + linhaCount + '"></div>' +
         '</div>' +
         '</td>' +
-        '<td>' +
-        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;">SAVE</button>' +
+        '<td style="white-space: nowrap;">' +
+        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">SAVE</button>' +
+        '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">LIMP</button>' +
+        '<button class="btn-excluir" onclick="excluirLinha(' + linhaCount + ')" title="Excluir">X</button>' +
         '</td>';
     tbody.appendChild(tr);
     linhasNaoSalvas.add(linhaCount);
