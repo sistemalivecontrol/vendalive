@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- CACHE BUST -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="version" content="2.0">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Vendas - Live</title>
@@ -716,6 +722,7 @@
     </div>
 
     <script>
+    console.log('[LIVE] === VERSAO 2.0 - CACHE BUST ===');
         // ============================================
         // CONFIGURAÇÃO SUPABASE
         // ============================================
@@ -763,7 +770,7 @@
                 script.onload = () => {
                     if (typeof supabase !== 'undefined') {
                         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                        console.log('[LIVE] Supabase CDN carregado');
+                        console.log('[LIVE] Supabase CDN carregado - VERSAO 2.0');
                         resolve();
                     } else {
                         reject(new Error('Supabase não disponível após carregar CDN'));
