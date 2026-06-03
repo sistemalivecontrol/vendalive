@@ -12,9 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ===== CORREÇÃO LOGO VENDALIVE - TUDO BRANCO ===== -->
+    <!-- ===== CORRECAO LOGO VENDALIVE - TUDO BRANCO ===== -->
     <style>
-      /* RESET - força visibilidade em todos os elementos do header */
+      /* RESET - forca visibilidade em todos os elementos do header */
       header *, nav *, .header *, .nav *, [class*="header"] *, [class*="nav"] * {
         overflow: visible !important;
         text-overflow: clip !important;
@@ -70,7 +70,7 @@
         color: #ffffff !important;
       }
 
-      /* TEXTO "Live" - BRANCO TAMBÉM */
+      /* TEXTO "Live" - BRANCO TAMBEM */
       .logo span:last-child, .brand span:last-child,
       .nav-logo span:last-child, .header-logo span:last-child,
       .logo > span:last-of-type, .brand > span:last-of-type,
@@ -103,7 +103,7 @@
       }
 
 
-      /* ÍCONE SVG do logo - forçar branco */
+      /* ICONE SVG do logo - forcar branco */
       .logo svg *, .brand svg *, .nav-logo svg *, .header-logo svg *,
       .site-logo svg *, .brand-name svg *,
       [class*="logo"] svg *, [class*="brand"] svg * {
@@ -164,13 +164,29 @@
     </style>
     <script type="module" crossorigin src="./assets/index-DW7JCCa_.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
+<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
 
-    <!-- Script de correção dinâmica após React renderizar -->
+    <!-- ===== SECAO DE CONTATO ===== -->
+    <div id="contact-section" style="background: #0a1628; padding: 40px 20px; text-align: center; font-family: 'Inter', system-ui, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0; letter-spacing: 0.05em; text-transform: uppercase;">Fale Conosco</p>
+        <a href="mailto:contato@vendalive.com.br" style="color: #ffffff; font-size: 18px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          contato@vendalive.com.br
+        </a>
+      </div>
+    </div>
+    <!-- ============================ -->
+
+    <!-- Script de correcao dinamica apos React renderizar -->
     <script>
-      // FORÇAR links a abrir na MESMA aba (remove target="_blank")
+      // FORCAR links a abrir na MESMA aba (remove target="_blank")
       (function() {
         var observer = new MutationObserver(function() {
           document.querySelectorAll('a[target="_blank"]').forEach(function(a) {
@@ -181,7 +197,7 @@
       })();
       (function() {
         function fixLogo() {
-          // Procura por todos os possíveis logos
+          // Procura por todos os possiveis logos
           var selectors = [
             '.logo', '.brand', '.nav-logo', '.header-logo', '.site-logo', '.brand-name',
             '[class*="logo"]', '[class*="brand"]'
@@ -190,7 +206,7 @@
           selectors.forEach(function(sel) {
             var elements = document.querySelectorAll(sel);
             elements.forEach(function(el) {
-              // Força estilos inline (mais específico que CSS)
+              // Forca estilos inline (mais especifico que CSS)
               el.style.overflow = 'visible';
               el.style.whiteSpace = 'nowrap';
               el.style.minWidth = 'max-content';
@@ -211,7 +227,7 @@
                 span.style.fontWeight = '700';
               });
 
-              // Forçar SVG do ícone branco
+              // Forcar SVG do icone branco
               var svgElements = el.querySelectorAll('svg *');
               svgElements.forEach(function(el) {
                 el.style.stroke = '#ffffff';
@@ -226,18 +242,18 @@
           });
         }
 
-        // Executa após carregamento
+        // Executa apos carregamento
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', fixLogo);
         } else {
           fixLogo();
         }
 
-        // Reexecuta após 1s e 3s (React pode renderizar depois)
+        // Reexecuta apos 1s e 3s (React pode renderizar depois)
         setTimeout(fixLogo, 1000);
         setTimeout(fixLogo, 3000);
 
-        // Observa mudanças no DOM (React re-renderiza)
+        // Observa mudancas no DOM (React re-renderiza)
         var observer = new MutationObserver(function(mutations) {
           fixLogo();
         });
