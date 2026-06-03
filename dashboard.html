@@ -389,6 +389,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <!-- Mobile Menu Overlay -->
@@ -775,33 +776,79 @@
     async function carregarLivesRecentes() {
       if (!clienteId) return;
       try {
-        var result = await supabaseClient
-          .from('vendas_pg').select('codigo_live, data_venda, total, status_pagamento')
-          .eq('cliente_id', clienteId).order('data_venda', { ascending: false });
         var tbody = document.getElementById('tabela-lives');
-        if (result.error) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ef4444;padding:40px;">Erro: ' + result.error.message + '</td></tr>'; return; }
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px;">Carregando lives...</td></tr>';
+
+        // Buscar lives da tabela lives_pg (igual ao live.html)
+        var result = await supabaseClient
+          .from('lives_pg')
+          .select('codigo, data_live, status, total_vendas, created_at')
+          .eq('cliente_id', clienteId)
+          .order('data_live', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (result.error) { 
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ef4444;padding:40px;">Erro: ' + result.error.message + '</td></tr>'; 
+          return; 
+        }
+
         var lives = result.data;
-        if (!lives || lives.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px;">Nenhuma live encontrada</td></tr>'; return; }
+        if (!lives || lives.length === 0) { 
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px;">Nenhuma live encontrada</td></tr>'; 
+          return; 
+        }
 
-        var grouped = {};
-        lives.forEach(function(v) {
-          var cod = v.codigo_live || 'Sem codigo';
-          if (!grouped[cod]) grouped[cod] = { codigo: cod, data: v.data_venda, vendas: 0, total: 0 };
-          grouped[cod].vendas++;
-          grouped[cod].total += v.total || 0;
-        });
-        var livesArray = Object.values(grouped).slice(0, 10);
+        // Para cada live, buscar vendas da tabela vendas_live e calcular total (igual ao live.html)
+        var livesComTotais = await Promise.all(
+          lives.map(async function(live) {
+            var vendasResult = await supabaseClient
+              .from('vendas_live')
+              .select('valor, comprador')
+              .eq('cliente_id', clienteId)
+              .eq('codigo_live', live.codigo);
 
-        tbody.innerHTML = livesArray.map(function(l) {
-          var data = l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '-';
+            var totalCalculado = 0;
+            var vendasValidas = 0;
+
+            if (!vendasResult.error && vendasResult.data) {
+              vendasResult.data.forEach(function(v) {
+                var valor = parseFloat(v.valor) || 0;
+                var temComprador = v.comprador && v.comprador.trim().length > 0;
+                if (valor > 0 && temComprador) {
+                  totalCalculado += valor;
+                  vendasValidas++;
+                }
+              });
+            }
+
+            return { 
+              codigo: live.codigo, 
+              data: live.data_live, 
+              status: live.status,
+              vendas: vendasValidas, 
+              total: totalCalculado 
+            };
+          })
+        );
+
+        tbody.innerHTML = livesComTotais.map(function(l) {
+          var data = l.data ? new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
+          var statusBadge = l.status === 'ativa' 
+            ? '<span class="status-badge status-pendente">&#9203; Ativa</span>'
+            : '<span class="status-badge status-pago">&#9989; Finalizada</span>';
           return '<tr>' +
             '<td><strong>' + l.codigo + '</strong></td>' +
             '<td>' + data + '</td>' +
             '<td>' + l.vendas + '</td>' +
             '<td>R$ ' + l.total.toFixed(2).replace('.', ',') + '</td>' +
-            '<td><span class="status-badge status-pago">&#9989; Finalizada</span></td></tr>';
+            '<td>' + statusBadge + '</td></tr>';
         }).join('');
-      } catch (err) {}
+      } catch (err) {
+        console.error('[DASHBOARD] Erro ao carregar lives:', err);
+        var tbody = document.getElementById('tabela-lives');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ef4444;padding:40px;">Erro ao carregar lives</td></tr>';
+      }
     }
 
     async function carregarGraficoVendas() {
