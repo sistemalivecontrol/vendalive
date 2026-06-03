@@ -361,6 +361,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -864,8 +865,7 @@
                 cidade: cidade,
                 estado: document.getElementById('estado').value,
                 regiao: document.getElementById('regiao').value || null,
-                ativo: document.getElementById('statusEndereco').value === 'ativo',
-                atualizado_em: new Date().toISOString()
+                ativo: document.getElementById('statusEndereco').value === 'ativo'
             };
 
             try {
