@@ -749,7 +749,7 @@
                 const codigos = lives.map(function(l) { return l.codigo; });
                 const { data: vendas, error: vendasError } = await supabaseClient
                     .from('vendas_live')
-                    .select('codigo_live, valor')
+                    .select('codigo_live, valor, comprador')
                     .in('codigo_live', codigos)
                     .eq('cliente_id', clienteSistemaId);
                 if (vendasError) throw vendasError;
