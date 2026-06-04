@@ -320,6 +320,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -377,7 +378,7 @@
                     <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Buscar</button>
                     <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar Filtros</button>
                     <button class="btn btn-success" onclick="abrirModalNovaSolicitacao()">➕ Nova Solicitação</button>
-                    <button class="btn btn-warning" id="btnGerarPDF" onclick="gerarPDF()" disabled>📄 Gerar PDF</button>
+                    <button class="btn btn-warning" id="btnGerarPDF" onclick="abrirRelatorioSolicitacoes()" disabled>📄 Gerar PDF</button>
                     <button class="btn btn-etiqueta" id="btnGerarEtiquetas" onclick="gerarEtiquetas()" disabled>🏷️ Gerar Etiquetas PDF</button>
                     <button class="btn btn-pdf" id="btnEmitirEtiquetas" onclick="abrirModalEtiquetas()" disabled>📋 Emitir Etiquetas</button>
                 </div>
@@ -2207,7 +2208,32 @@ Qualquer dúvida, estou por aqui! 💕
         }
 
     </script>
-    <script src="whatsapp-envios-log.js?v=20260529"></script>
+    <script src="whatsapp-envios-log.js?v=20260529">
+        // ============================================
+        // ABRIR RELATÓRIO DE SOLICITAÇÕES EM NOVA PÁGINA
+        // ============================================
+        function abrirRelatorioSolicitacoes() {
+            if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma solicitação', 'error'); return; }
+
+            // Guardar IDs selecionados no sessionStorage para a página de relatório
+            const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
+            const ids = selecionados.map(s => s.id);
+            sessionStorage.setItem('relatorio_ids', JSON.stringify(ids));
+
+            // Guardar filtros atuais
+            const filtros = {
+                numero: document.getElementById('filtroNumero').value,
+                status: document.getElementById('filtroStatus').value,
+                dataInicio: document.getElementById('filtroDataInicio').value,
+                dataFim: document.getElementById('filtroDataFim').value,
+                nomeCliente: document.getElementById('filtroNomeCliente').value
+            };
+            sessionStorage.setItem('relatorio_filtros', JSON.stringify(filtros));
+
+            window.open('rel_solicitacoes.html', '_blank');
+        }
+
+</script>
 
     <!-- Modal Detalhes Cobrança PIX -->
     <div class="modal" id="modalDetalhesPix">
