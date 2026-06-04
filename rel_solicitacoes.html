@@ -28,56 +28,56 @@
     <script src="./navmenu.js?v=20260529"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: white; padding: 15px 25px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .btn-voltar { background: #0B193F; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
-        .btn-voltar:hover { background: #1a3a6e; }
-        .header-center h1 { color: #0B193F; font-size: 1.4rem; }
-        .header-center p { color: #666; font-size: 0.8rem; }
-        .btn-acao { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: white; padding: 20px 30px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .btn-voltar { background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .header-center h1 { color: #0B193F; font-size: 1.6rem; margin-bottom: 3px; }
+        .header-center p { color: #636E72; font-size: 0.85rem; }
+        .btn-acao { padding: 12px 24px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .btn-acao:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
         .btn-pdf { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
-        .btn-pdf:hover { background: #8e44ad; }
         .btn-imprimir { background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; margin-left: 8px; }
-        .btn-imprimir:hover { background: #1a3a6e; }
-        .content { padding: 20px; }
-        .info-relatorio { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 15px; margin-bottom: 15px; border-radius: 0 6px 6px 0; font-size: 0.9rem; color: #333; }
-        .table-container { overflow-x: auto; }
+        .content { padding: 30px; }
+        .info-relatorio { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
+        .info-relatorio strong { color: #1976d2; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; }
+        .stat-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; }
+        .table-container { overflow-x: auto; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; background: white; }
-        thead { background: white; }
-        th { padding: 8px 10px; text-align: left; font-weight: 700; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #000; border-top: 2px solid #000; }
-        td { padding: 6px 10px; border-bottom: 1px solid #000; font-size: 11px; vertical-align: top; }
-        tr:hover { background: #fafafa; }
-        .numero-pedido { font-family: monospace; font-weight: bold; font-size: 0.85rem; }
-        .tag-regiao { font-size: 0.75rem; }
-        .pix-valor { font-weight: 700; color: #0B193F; }
-        .pix-data { font-size: 0.75rem; color: #555; }
+        thead { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; }
+        th { padding: 10px 10px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        td { padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+        tr:hover { background: #f8f9fa; }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .status-pendente { background: #fff3cd; color: #856404; }
+        .status-em_separacao { background: #d1ecf1; color: #0c5460; }
+        .status-enviado { background: #d4edda; color: #155724; }
+        .status-entregue { background: #c3e6cb; color: #1e7e34; }
+        .status-cancelado { background: #f8d7da; color: #721c24; }
+        .numero-pedido { display: inline-block; background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; font-family: monospace; letter-spacing: 0.5px; }
+        .tag-regiao { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .tag-floripa { background: #E3F2FD; color: #1565C0; }
+        .tag-sc { background: #E8F5E9; color: #2E7D32; }
+        .tag-outros { background: #FFF3E0; color: #E65100; }
+        .pix-info { display: flex; flex-direction: column; gap: 2px; }
+        .pix-valor { font-weight: 700; color: #0B193F; font-size: 0.9rem; }
+        .pix-data { font-size: 0.75rem; color: #636E72; }
         .pix-status-pago { color: #27ae60; font-weight: 600; font-size: 0.75rem; }
         .pix-status-pendente { color: #f39c12; font-weight: 600; font-size: 0.75rem; }
         .pix-status-cancelado { color: #e74c3c; font-weight: 600; font-size: 0.75rem; }
         .loading { text-align: center; padding: 40px; color: #666; }
-        .empty-state { text-align: center; padding: 40px; color: #666; }
-        .alert { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; }
+        .empty-state { text-align: center; padding: 60px; color: #666; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .resumo { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; font-size: 0.9rem; }
-        .resumo-item { background: #f8f9fa; padding: 8px 15px; border-radius: 6px; }
-        .resumo-item strong { color: #0B193F; }
-
-        /* ===== PRINT STYLES ===== */
-        @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; border-radius: 0; max-width: 100%; }
-            .header { border-bottom: 2px solid #000; padding: 10px 15px; }
-            .btn-voltar, .btn-pdf, .btn-imprimir { display: none !important; }
-            .info-relatorio { background: none; border: 1px solid #ddd; }
-            .resumo { display: none; }
-            table { font-size: 10px; }
-            th { background: white !important; border-bottom: 2px solid #000 !important; border-top: 2px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            td { border-bottom: 1px solid #000 !important; }
-        }
+        .cliente-info { display: none; background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
+        .cliente-info strong { color: #1976d2; }
+        @media print { body { background: white; padding: 0; } .container { box-shadow: none; border-radius: 0; } .btn-voltar, .btn-pdf, .btn-imprimir { display: none !important; } .info-relatorio { background: none; border: 1px solid #ddd; } .stats-grid { display: none; } }
     </style>
 <base target="_blank">
 </head>
@@ -88,7 +88,7 @@
                 <button class="btn-voltar" onclick="window.location.href='rastreamento.html'">← Voltar</button>
                 <div class="header-center">
                     <h1>📄 Relatorio de Solicitacoes</h1>
-                    <p id="subtitulo">Loja e Brecho Pingo de Gente</p>
+                    <p>Relatorio completo com dados de pagamento PIX</p>
                 </div>
             </div>
             <div>
@@ -98,33 +98,45 @@
         </div>
         <div class="content">
             <div id="alertContainer"></div>
+            <div id="clienteInfo" class="cliente-info"><strong>Cliente:</strong> <span id="nomeCliente"></span></div>
             <div class="info-relatorio" id="infoPeriodo">
                 <strong>Periodo:</strong> <span id="periodoTexto"></span>
             </div>
-            <div class="resumo" id="resumoContainer"></div>
+            <div class="stats-grid">
+                <div class="stat-card"><h4>Total</h4><div class="number" id="totalSolicitacoes">0</div></div>
+                <div class="stat-card"><h4>Pendentes</h4><div class="number" id="totalPendentes">0</div></div>
+                <div class="stat-card"><h4>Em Separacao</h4><div class="number" id="totalSeparacao">0</div></div>
+                <div class="stat-card"><h4>Enviados</h4><div class="number" id="totalEnviados">0</div></div>
+                <div class="stat-card"><h4>Entregues</h4><div class="number" id="totalEntregues">0</div></div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60, #219a52);"><h4>Total PIX Pago</h4><div class="number" id="totalPixPago">R$ 0,00</div></div>
+            </div>
             <div class="table-container">
                 <table id="tabelaRelatorio">
                     <thead>
                         <tr>
-                            <th>Data</th>
+                            <th>Nº Pedido</th>
+                            <th>Data / Hora</th>
                             <th>Nome</th>
+                            <th>CPF</th>
+                            <th>WhatsApp</th>
                             <th>Instagram</th>
                             <th>Regiao</th>
                             <th>CEP</th>
-                            <th>Cidade</th>
-                            <th>Observacoes</th>
-                            <th>Dados do pacote</th>
+                            <th>Endereco</th>
+                            <th>Status</th>
+                            <th>Codigo Rastreio</th>
                             <th>💳 Pagamento PIX</th>
+                            <th>Observacoes</th>
                         </tr>
                     </thead>
-                    <tbody id="tbodyRelatorio"><tr><td colspan="9" class="loading">Carregando...</td></tr></tbody>
+                    <tbody id="tbodyRelatorio"><tr><td colspan="13" class="loading">Carregando solicitacoes...</td></tr></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        console.log('[REL_SOLICITACOES] v2026-06-04 - Layout simples com PIX');
+        console.log('[REL_SOLICITACOES] v2026-06-04 - Layout atual + PDF simples com PIX');
         let supabaseClient = null;
         let clienteAtual = null;
         let solicitacoes = [];
@@ -149,8 +161,20 @@
                 return;
             }
 
+            await mostrarInfoCliente();
             await carregarSolicitacoes();
         });
+
+        async function mostrarInfoCliente() {
+            try {
+                const { data: cliente } = await supabaseClient
+                    .from('clientes_sistema').select('nome').eq('id', clienteAtual).single();
+                if (cliente) {
+                    document.getElementById('nomeCliente').textContent = cliente.nome;
+                    document.getElementById('clienteInfo').style.display = 'block';
+                }
+            } catch (e) { console.error(e); }
+        }
 
         async function carregarSolicitacoes() {
             try {
@@ -163,9 +187,7 @@
 
                 if (idsFromStorage) {
                     const ids = JSON.parse(idsFromStorage);
-                    if (ids && ids.length > 0) {
-                        query = query.in('id', ids);
-                    }
+                    if (ids && ids.length > 0) query = query.in('id', ids);
                     sessionStorage.removeItem('relatorio_ids');
                 }
 
@@ -200,7 +222,7 @@
                 solicitacoes = data || [];
                 await carregarDadosPix();
                 atualizarTabela();
-                atualizarResumo();
+                atualizarEstatisticas();
             } catch (error) {
                 showAlert('Erro ao carregar: ' + error.message, 'error');
             }
@@ -230,67 +252,72 @@
         function atualizarTabela() {
             const tbody = document.getElementById('tbodyRelatorio');
             if (solicitacoes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhuma solicitacao encontrada</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" class="empty-state">Nenhuma solicitacao encontrada</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = solicitacoes.map((s) => {
                 const cliente = s.clientes_pg || {};
                 const endereco = s.enderecos_pg || {};
-                const data = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '-';
+                const dataSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '-';
+                const horaSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
+                const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || ''}${endereco.complemento ? ' - ' + endereco.complemento : ''} - ${endereco.bairro || ''}, ${endereco.cidade || ''}`;
 
-                const dim = [s.altura_cm, s.largura_cm, s.comprimento_cm].filter(Boolean);
-                const dadosPacote = [];
-                if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
-                if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
-
-                // Dados PIX
                 const cobranca = s.cobranca_id ? cobrancasCache[s.cobranca_id] : null;
-                let pixHtml = '<span style="color:#999;">-</span>';
+                let pixHtml = '<span style="color:#999;font-size:0.8rem;">-</span>';
                 if (cobranca) {
-                    const valor = cobranca.valor ? 'R$ ' + parseFloat(cobranca.valor).toFixed(2).replace('.', ',') : '-';
-                    const dataPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleDateString('pt-BR') : '-';
-                    const horaPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '';
+                    const valorFormatado = cobranca.valor ? 'R$ ' + parseFloat(cobranca.valor).toFixed(2).replace('.', ',') : '-';
+                    const dataPagamento = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleDateString('pt-BR') : '-';
+                    const horaPagamento = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                     const statusClass = cobranca.status === 'pago' ? 'pix-status-pago' : cobranca.status === 'pendente' ? 'pix-status-pendente' : 'pix-status-cancelado';
-                    const statusText = cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Pendente' : cobranca.status;
+                    const statusText = cobranca.status === 'pago' ? '✅ Pago' : cobranca.status === 'pendente' ? '⏳ Pendente' : '❌ ' + cobranca.status;
 
-                    pixHtml = `<div class="pix-valor">${valor}</div><div class="pix-data">${dataPag} ${horaPag ? 'as ' + horaPag : ''}</div><div class="${statusClass}">${statusText}</div>`;
-                }
-
-                let nome = cliente.nome || '-';
-                if (s.observacoes && s.observacoes.trim()) {
-                    nome += '
-
-***Contem Observacoes***';
+                    pixHtml = `<div class="pix-info"><span class="pix-valor">${valorFormatado}</span><span class="pix-data">${dataPagamento} ${horaPagamento ? 'as ' + horaPagamento : ''}</span><span class="${statusClass}">${statusText}</span></div>`;
                 }
 
                 return `<tr>
-                    <td>${data}</td>
-                    <td><strong>${nome.replace(/
-/g, '<br>')}</strong></td>
+                    <td><span class="numero-pedido">${s.numero_solicitacao || 'N/A'}</span></td>
+                    <td>${dataSolicitacao}<br><span style="font-size:0.75rem;color:#888;font-weight:500;">${horaSolicitacao}</span></td>
+                    <td><strong>${cliente.nome || 'N/A'}</strong></td>
+                    <td>${formatarCPF(cliente.cpf)}</td>
+                    <td>${cliente.whatsapp || '-'}</td>
                     <td>${cliente.instagram || '-'}</td>
-                    <td>${s.regiao || endereco.regiao || '-'}</td>
+                    <td>${getTagRegiao(s.regiao || endereco.regiao)}</td>
                     <td>${formatarCEP(endereco.cep)}</td>
-                    <td>${endereco.cidade || '-'}</td>
-                    <td style="max-width:150px; font-size:0.8rem;">${s.observacoes || '-'}</td>
-                    <td>${dadosPacote.join(' | ') || '-'}</td>
+                    <td style="max-width: 200px; font-size: 0.85rem;">${enderecoCompleto}</td>
+                    <td><span class="status-badge status-${s.status}">${formatarStatus(s.status)}</span></td>
+                    <td style="text-align: center; font-family: monospace; font-size: 0.8rem; color: #2E7D32; font-weight: 600;">${s.codigo_rastreio || '-'}</td>
                     <td>${pixHtml}</td>
+                    <td style="max-width: 150px; font-size: 0.8rem; color: #666;">${s.observacoes || '-'}</td>
                 </tr>`;
             }).join('');
         }
 
-        function atualizarResumo() {
-            const total = solicitacoes.length;
+        function atualizarEstatisticas() {
+            document.getElementById('totalSolicitacoes').textContent = solicitacoes.length;
+            document.getElementById('totalPendentes').textContent = solicitacoes.filter(s => s.status === 'pendente').length;
+            document.getElementById('totalSeparacao').textContent = solicitacoes.filter(s => s.status === 'em_separacao').length;
+            document.getElementById('totalEnviados').textContent = solicitacoes.filter(s => s.status === 'enviado').length;
+            document.getElementById('totalEntregues').textContent = solicitacoes.filter(s => s.status === 'entregue').length;
+
             let totalPix = 0;
             solicitacoes.forEach(s => {
                 if (s.cobranca_id && cobrancasCache[s.cobranca_id] && cobrancasCache[s.cobranca_id].status === 'pago') {
                     totalPix += parseFloat(cobrancasCache[s.cobranca_id].valor || 0);
                 }
             });
-            document.getElementById('resumoContainer').innerHTML = `
-                <div class="resumo-item"><strong>Total:</strong> ${total} solicitacoes</div>
-                <div class="resumo-item"><strong>PIX Pago:</strong> R$ ${totalPix.toFixed(2).replace('.', ',')}</div>
-            `;
+            document.getElementById('totalPixPago').textContent = 'R$ ' + totalPix.toFixed(2).replace('.', ',');
+        }
+
+        function formatarStatus(status) {
+            const map = { 'pendente': 'Pendente', 'em_separacao': 'Em Separacao', 'enviado': 'Enviado', 'entregue': 'Entregue', 'cancelado': 'Cancelado' };
+            return map[status] || status;
+        }
+
+        function formatarCPF(cpf) { 
+            if (!cpf) return '-'; 
+            cpf = cpf.toString().replace(/\D/g, ''); 
+            return cpf.length === 11 ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : cpf; 
         }
 
         function formatarCEP(cep) { 
@@ -305,14 +332,21 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        // ===== GERAR PDF (layout igual ao antigo do rastreamento) =====
+        function getTagRegiao(regiao) {
+            const r = (regiao || '').toLowerCase();
+            if (r.includes('florianopolis') || r.includes('floripa')) return '<span class="tag-regiao tag-floripa">🏠 Grande Florianopolis</span>';
+            if (r.includes('catarina') || r.includes('sc')) return '<span class="tag-regiao tag-sc">🌲 Santa Catarina</span>';
+            return '<span class="tag-regiao tag-outros">🇧🇷 Outros Estados</span>';
+        }
+
+        // ===== GERAR PDF - LAYOUT SIMPLES IGUAL AO ANTIGO + COLUNA PIX =====
         async function gerarPDF() {
             if (solicitacoes.length === 0) { showAlert('Nao ha solicitacoes para gerar PDF', 'warning'); return; }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
 
-            const ordenados = [...solicitacoes].sort((a, b) => {
+            const selecionados = [...solicitacoes].sort((a, b) => {
                 const nomeA = ((a.clientes_pg?.nome) || '').toLowerCase();
                 const nomeB = ((b.clientes_pg?.nome) || '').toLowerCase();
                 return nomeA.localeCompare(nomeB, 'pt-BR');
@@ -332,7 +366,7 @@
             doc.setLineWidth(0.5);
             doc.line(10, 25, 287, 25);
 
-            const dadosTabela = ordenados.map(s => {
+            const dadosTabela = selecionados.map(s => {
                 const cliente = s.clientes_pg || {};
                 const endereco = s.enderecos_pg || {};
                 const dim = [s.altura_cm, s.largura_cm, s.comprimento_cm].filter(Boolean);
@@ -340,9 +374,9 @@
                 if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
                 if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
 
-                let nome = cliente.nome || '-';
+                let nomeComObs = cliente.nome || '-';
                 if (s.observacoes && s.observacoes.trim()) {
-                    nome += '
+                    nomeComObs = cliente.nome + '
 
 ***Contem Observacoes***';
                 }
@@ -356,12 +390,12 @@
                     const horaPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '';
                     pixCol = `${valor}
 ${dataPag} ${horaPag ? 'as ' + horaPag : ''}
-${cobranca.status === 'pago' ? 'Pago' : cobranca.status}`;
+${cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Pendente' : cobranca.status}`;
                 }
 
                 return [
                     s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '-',
-                    nome,
+                    nomeComObs,
                     cliente.instagram || '-',
                     s.regiao || endereco.regiao || '-',
                     formatarCEP(endereco.cep),
@@ -397,12 +431,12 @@ ${cobranca.status === 'pago' ? 'Pago' : cobranca.status}`;
                 alternateRowStyles: { fillColor: [255, 255, 255] },
                 columnStyles: {
                     0: { cellWidth: 25 },
-                    1: { cellWidth: 50 },
+                    1: { cellWidth: 55 },
                     2: { cellWidth: 28 },
                     3: { cellWidth: 30 },
                     4: { cellWidth: 22 },
                     5: { cellWidth: 28 },
-                    6: { cellWidth: 35 },
+                    6: { cellWidth: 40 },
                     7: { cellWidth: 35 },
                     8: { cellWidth: 40 }
                 },
@@ -430,7 +464,7 @@ ${cobranca.status === 'pago' ? 'Pago' : cobranca.status}`;
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.text(
-                    `Pagina ${i} de ${pageCount} - Total de ${ordenados.length} solicitacoes`,
+                    `Pagina ${i} de ${pageCount} - Total de ${selecionados.length} solicitacoes`,
                     297 / 2, 210 - 10, { align: 'center' }
                 );
             }
