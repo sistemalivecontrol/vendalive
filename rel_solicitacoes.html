@@ -371,14 +371,12 @@
                 const endereco = s.enderecos_pg || {};
                 const dim = [s.altura_cm, s.largura_cm, s.comprimento_cm].filter(Boolean);
                 const dadosPacote = [];
-                if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
-                if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
+                if (s.peso_kg) dadosPacote.push('Peso: ' + s.peso_kg + 'kg');
+                if (dim.length > 0) dadosPacote.push('Medidas: ' + dim.join('x') + 'cm');
 
                 let nomeComObs = cliente.nome || '-';
                 if (s.observacoes && s.observacoes.trim()) {
-                    nomeComObs = cliente.nome + '
-
-***Contem Observacoes***';
+                    nomeComObs = cliente.nome + String.fromCharCode(10) + String.fromCharCode(10) + '***Contem Observacoes***';
                 }
 
                 // Dados PIX
@@ -388,9 +386,8 @@
                     const valor = cobranca.valor ? 'R$ ' + parseFloat(cobranca.valor).toFixed(2).replace('.', ',') : '-';
                     const dataPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleDateString('pt-BR') : '-';
                     const horaPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '';
-                    pixCol = `${valor}
-${dataPag} ${horaPag ? 'as ' + horaPag : ''}
-${cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Pendente' : cobranca.status}`;
+                    const statusText = cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Pendente' : cobranca.status;
+                    pixCol = valor + String.fromCharCode(10) + dataPag + ' ' + (horaPag ? 'as ' + horaPag : '') + String.fromCharCode(10) + statusText;
                 }
 
                 return [
@@ -464,7 +461,7 @@ ${cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Penden
                 doc.setFontSize(10);
                 doc.setTextColor(0, 0, 0);
                 doc.text(
-                    `Pagina ${i} de ${pageCount} - Total de ${selecionados.length} solicitacoes`,
+                    'Pagina ' + i + ' de ' + pageCount + ' - Total de ' + selecionados.length + ' solicitacoes',
                     297 / 2, 210 - 10, { align: 'center' }
                 );
             }
