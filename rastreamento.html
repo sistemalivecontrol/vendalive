@@ -2203,24 +2203,13 @@ Qualquer dúvida, estou por aqui! 💕
 
         // Logout usa auth.js - window.fazerLogout()
 
-        function fecharModalDetalhesPix() {
-            document.getElementById('modalDetalhesPix').classList.remove('active');
-        }
-
-    </script>
-    <script src="whatsapp-envios-log.js?v=20260529">
-        // ============================================
-        // ABRIR RELATÓRIO DE SOLICITAÇÕES EM NOVA PÁGINA
-        // ============================================
         function abrirRelatorioSolicitacoes() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma solicitação', 'error'); return; }
 
-            // Guardar IDs selecionados no sessionStorage para a página de relatório
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
             const ids = selecionados.map(s => s.id);
             sessionStorage.setItem('relatorio_ids', JSON.stringify(ids));
 
-            // Guardar filtros atuais
             const filtros = {
                 numero: document.getElementById('filtroNumero').value,
                 status: document.getElementById('filtroStatus').value,
@@ -2233,7 +2222,12 @@ Qualquer dúvida, estou por aqui! 💕
             window.open('rel_solicitacoes.html', '_blank');
         }
 
-</script>
+        function fecharModalDetalhesPix() {
+            document.getElementById('modalDetalhesPix').classList.remove('active');
+        }
+
+    </script>
+    <script src="whatsapp-envios-log.js?v=20260529"></script>
 
     <!-- Modal Detalhes Cobrança PIX -->
     <div class="modal" id="modalDetalhesPix">
