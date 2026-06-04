@@ -355,16 +355,16 @@
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('Loja e Brecho Pingo de Gente - Solicitacoes de Entrega', 15, 12);
+            doc.text('Loja e Brecho Pingo de Gente - Solicitacoes de Entrega', 20, 12);
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             const periodo = document.getElementById('periodoTexto').textContent;
-            doc.text('Periodo: ' + periodo, 15, 18);
+            doc.text('Periodo: ' + periodo, 20, 18);
 
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.5);
-            doc.line(10, 21, 287, 21);
+            doc.line(20, 21, 287, 21);
 
             const dadosTabela = selecionados.map(s => {
                 const cliente = s.clientes_pg || {};
@@ -434,7 +434,7 @@
                     6: { cellWidth: 50 },   // Observacoes
                     7: { cellWidth: 42 }    // PIX
                 },
-                margin: { top: 24, left: 8, right: 8 },
+                margin: { top: 24, left: 20, right: 8 },
                 styles: {
                     lineColor: [0, 0, 0],
                     lineWidth: 0.5,
