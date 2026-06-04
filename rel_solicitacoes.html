@@ -136,7 +136,7 @@
     </div>
 
     <script>
-        console.log('[REL_SOLICITACOES] v2026-06-04 - Layout atual + PDF simples com PIX');
+        console.log('[REL_SOLICITACOES] v2026-06-04-1937 - Margem 20mm + PDF simples com PIX');
         let supabaseClient = null;
         let clienteAtual = null;
         let solicitacoes = [];
@@ -341,6 +341,7 @@
 
         // ===== GERAR PDF - LAYOUT SIMPLES + COLUNA PIX =====
         async function gerarPDF() {
+            console.log('[PDF] Gerando com margem 20mm');
             if (solicitacoes.length === 0) { showAlert('Nao ha solicitacoes para gerar PDF', 'warning'); return; }
 
             const { jsPDF } = window.jspdf;
@@ -355,16 +356,16 @@
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('Loja e Brecho Pingo de Gente - Solicitacoes de Entrega', 15, 12);
+            doc.text('Loja e Brecho Pingo de Gente - Solicitacoes de Entrega', 20, 12);
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             const periodo = document.getElementById('periodoTexto').textContent;
-            doc.text('Periodo: ' + periodo, 15, 18);
+            doc.text('Periodo: ' + periodo, 20, 18);
 
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.5);
-            doc.line(10, 21, 287, 21);
+            doc.line(20, 21, 287, 21);
 
             const dadosTabela = selecionados.map(s => {
                 const cliente = s.clientes_pg || {};
@@ -398,6 +399,9 @@
                 ];
             });
 
+            // Largura total A4 landscape = 297mm
+            // Margens: 8mm esquerda + 8mm direita = 16mm
+            // Largura util = 281mm
             doc.autoTable({
                 head: [['Data', 'Nome', 'Instagram', 'Regiao', 'CEP', 'Cidade', 'Observacoes', 'Pagamento PIX']],
                 body: dadosTabela,
@@ -422,16 +426,16 @@
                 },
                 alternateRowStyles: { fillColor: [255, 255, 255] },
                 columnStyles: {
-                    0: { cellWidth: 22 },
-                    1: { cellWidth: 50 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 28 },
-                    4: { cellWidth: 20 },
-                    5: { cellWidth: 25 },
-                    6: { cellWidth: 45 },
-                    7: { cellWidth: 38 }
+                    0: { cellWidth: 24 },   // Data
+                    1: { cellWidth: 52 },   // Nome (maior)
+                    2: { cellWidth: 26 },   // Instagram
+                    3: { cellWidth: 32 },   // Regiao
+                    4: { cellWidth: 22 },   // CEP
+                    5: { cellWidth: 28 },   // Cidade
+                    6: { cellWidth: 50 },   // Observacoes
+                    7: { cellWidth: 42 }    // PIX
                 },
-                margin: { top: 24, left: 10, right: 10 },
+                margin: { top: 24, left: 20, right: 8 },
                 styles: {
                     lineColor: [0, 0, 0],
                     lineWidth: 0.5,
