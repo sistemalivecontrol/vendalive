@@ -332,6 +332,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -541,6 +542,7 @@ let currentUser = null, currentClienteId = null, currentUserNivel = null;
 let clientes = [], vendas = [], linhaCount = 0, dataLiveAtual = null, codigoLiveAtual = null;
 let linhasInicializadas = false;
 let dadosDoSupabaseCarregados = false;
+let nomesUsadosNaLive = new Set();
 let recognition = null, activeInput = null, selectedSuggestionIndex = -1;
 let liveBloqueada = false, inputAtualCadastro = null;
 let livesNaDataSelecionada = [], liveSelecionada = null, liveParaExcluir = null;
@@ -1589,6 +1591,7 @@ function trocarData() {
         liveBloqueada = false; liveSelecionada = null;
         livesNaDataSelecionada = []; linhasNaoSalvas.clear();
         compradoresNaLive.clear();
+        nomesUsadosNaLive.clear();
         document.getElementById('livesDisponiveis').style.display = 'none';
         document.getElementById('btnIniciarCadastro').style.display = 'none';
         atualizarGridLivesAposMudanca();
@@ -1626,13 +1629,22 @@ async function carregarVendasExistentes() {
         linhaCount = 0;
         linhasNaoSalvas.clear();
         compradoresNaLive.clear();
+        nomesUsadosNaLive.clear();
         const { data: liveData, error: liveError } = await window.supabaseClient.from('lives_pg').select('status').eq('cliente_id', currentClienteId).eq('codigo', codigoLiveAtual).single();
         if (liveError) { if (liveError.status === 401) { await limparSessaoERedirecionar(); return; } console.error('Erro ao carregar status:', liveError); }
         else if (liveData) { liveBloqueada = liveData.status === 'finalizada'; }
         const { data, error } = await window.supabaseClient.from('vendas_live').select('*').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).order('linha_id', { ascending: true });
         if (error) { if (error.status === 401) { await limparSessaoERedirecionar(); return; } console.error('Erro ao carregar vendas:', error); vendas = []; return; }
         vendas = (data || []).filter(v => v.valor > 0 || v.comprador?.trim() || v.codigo?.trim());
-        vendas.forEach(v => { if (v.comprador?.trim()) compradoresNaLive.add(v.comprador.trim().toLowerCase()); });
+        vendas.forEach(v => { 
+            if (v.comprador?.trim()) {
+                compradoresNaLive.add(v.comprador.trim().toLowerCase());
+                nomesUsadosNaLive.add(v.comprador.trim().toLowerCase());
+            }
+            if (v.fila?.trim()) {
+                nomesUsadosNaLive.add(v.fila.trim().toLowerCase());
+            }
+        });
         if (vendas.length === 0) {
             for (let i = 0; i < 150; i++) adicionarLinha();
             showStatus('Live ' + codigoLiveAtual + ' iniciada! Adicione os itens.', 'success');
@@ -1777,7 +1789,11 @@ async function salvarVendaSilencioso(linhaId) {
             else vendas.push(result.data[0]);
         }
     }
-    if (comprador) compradoresNaLive.add(comprador.toLowerCase());
+    if (comprador) {
+        compradoresNaLive.add(comprador.toLowerCase());
+        nomesUsadosNaLive.add(comprador.toLowerCase());
+    }
+    if (fila) nomesUsadosNaLive.add(fila.toLowerCase());
     marcarLinhaComoSalva(linhaId);
 }
 
@@ -1814,7 +1830,11 @@ async function salvarVenda(linhaId) {
                 else vendas.push(result.data[0]);
             }
         }
-        if (comprador) compradoresNaLive.add(comprador.toLowerCase());
+        if (comprador) {
+            compradoresNaLive.add(comprador.toLowerCase());
+            nomesUsadosNaLive.add(comprador.toLowerCase());
+        }
+        if (fila) nomesUsadosNaLive.add(fila.toLowerCase());
         atualizarContagemItens();
         atualizarTotalVendidoHeader();
         marcarLinhaComoSalva(linhaId);
@@ -2027,23 +2047,41 @@ function filtrarSugestoes(input, tipoCampo) {
         return;
     }
     const usadosNaLive = [];
-    const outros = [];
+    const novosNaLive = [];
     clientes.forEach(c => {
         const nome = c.nome?.toString().toLowerCase() || '';
         const insta = c.instagram?.toString().toLowerCase() || '';
         if (nome.includes(valor) || insta.includes(valor)) {
             const nomeLower = c.nome?.trim().toLowerCase();
             const instaLower = c.instagram?.trim().toLowerCase();
-            if (nomeLower && compradoresNaLive.has(nomeLower)) {
-                usadosNaLive.push(c);
-            } else if (instaLower && compradoresNaLive.has(instaLower)) {
+            // Verifica se o nome foi usado em QUALQUER campo da live (comprador ou fila)
+            // Verifica match exato OU parcial
+            let foiUsadoNaLive = false;
+            if (nomeLower) {
+                for (const nomeUsado of nomesUsadosNaLive) {
+                    if (nomeUsado === nomeLower || nomeUsado.includes(nomeLower) || nomeLower.includes(nomeUsado)) {
+                        foiUsadoNaLive = true;
+                        break;
+                    }
+                }
+            }
+            if (!foiUsadoNaLive && instaLower) {
+                for (const nomeUsado of nomesUsadosNaLive) {
+                    if (nomeUsado === instaLower || nomeUsado.includes(instaLower) || instaLower.includes(nomeUsado)) {
+                        foiUsadoNaLive = true;
+                        break;
+                    }
+                }
+            }
+            if (foiUsadoNaLive) {
                 usadosNaLive.push(c);
             } else {
-                outros.push(c);
+                novosNaLive.push(c);
             }
         }
     });
-    const filtrados = [...usadosNaLive, ...outros].slice(0, 10);
+    // Ordena: usados primeiro, depois novos
+    const filtrados = [...usadosNaLive, ...novosNaLive].slice(0, 10);
     if (filtrados.length === 0 && valor.length >= 2) {
         sugestoesDiv.innerHTML = '<div class="sugestao-cadastro" onclick="abrirCadastroCliente(' + "'" + valor + "'" + ', ' + "'" + linhaId + "'" + ', ' + "'" + tipoCampo + "'" + ')">+ Cadastrar "' + valor + '"</div>';
         sugestoesDiv.classList.add('active');
@@ -2060,8 +2098,25 @@ function filtrarSugestoes(input, tipoCampo) {
         const instaMatch = insta.toLowerCase().includes(valor);
         const nomeLower = nome.trim().toLowerCase();
         const instaLower = insta.trim().toLowerCase();
-        const foiUsadoNaLive = (nomeLower && compradoresNaLive.has(nomeLower)) || 
-                               (instaLower && compradoresNaLive.has(instaLower));
+        // Verifica se foi usado em qualquer campo da live
+        // Verifica match exato OU parcial (nome digitado contido no nome usado, ou vice-versa)
+        let foiUsadoNaLive = false;
+        if (nomeLower) {
+            for (const nomeUsado of nomesUsadosNaLive) {
+                if (nomeUsado === nomeLower || nomeUsado.includes(nomeLower) || nomeLower.includes(nomeUsado)) {
+                    foiUsadoNaLive = true;
+                    break;
+                }
+            }
+        }
+        if (!foiUsadoNaLive && instaLower) {
+            for (const nomeUsado of nomesUsadosNaLive) {
+                if (nomeUsado === instaLower || nomeUsado.includes(instaLower) || instaLower.includes(nomeUsado)) {
+                    foiUsadoNaLive = true;
+                    break;
+                }
+            }
+        }
         const classeUsado = foiUsadoNaLive ? 'sugestao-usada-na-live' : '';
         const badgeUsado = foiUsadoNaLive ? '<span class="badge-usada">USADO</span>' : '';
         let html = '';
@@ -2270,6 +2325,7 @@ async function executarResetarLive() {
         liveBloqueada = false;
         linhasNaoSalvas.clear();
         compradoresNaLive.clear();
+        nomesUsadosNaLive.clear();
         for (let i = 0; i < 150; i++) adicionarLinha();
         liberarCampos();
         atualizarContagemItens();
