@@ -3,12 +3,6 @@
 <head>
 <!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
 <script>
-// ==========================================
-// SESSION.JS - Verificacao sincrona de login
-// Apenas verifica localStorage - NAO inicializa Supabase
-// O auth.js ja cuida da inicializacao do Supabase
-// v2.0 - Sem inicializacao de Supabase (evita duplicacao)
-// ==========================================
 (function(){
     'use strict';
     const SESSAO_KEY='usuarioLogado';
@@ -21,8 +15,6 @@
     verificarSessaoSincrona();
 })();
 </script>
-<!-- ================================================ -->
-
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,252 +25,88 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-
         .header { background: white; padding: 20px 30px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .header-left { display: flex; align-items: center; gap: 20px; }
         .btn-voltar { background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
         .header-center h1 { color: #0B193F; font-size: 1.6rem; margin-bottom: 3px; }
         .header-center p { color: #636E72; font-size: 0.85rem; }
-
         .filters-section { background: #f8f9fa; border-radius: 15px; padding: 25px; margin: 25px; }
         .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; color: #555; margin-bottom: 8px; font-size: 14px; }
         .form-group input, .form-group select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: #0B193F; }
-
         .filter-actions { display: flex; gap: 12px; flex-wrap: wrap; }
         .btn { padding: 12px 24px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
         .btn-primary { background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; }
         .btn-success { background: linear-gradient(135deg, #27ae60, #219a52); color: white; }
         .btn-secondary { background: linear-gradient(135deg, #636E72, #495057); color: white; }
-
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 0 25px 25px; }
         .stat-card { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; }
         .stat-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
         .stat-card .number { font-size: 32px; font-weight: bold; }
-
         .table-container { overflow-x: auto; margin: 0 25px 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
         thead { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; }
         th { padding: 12px 10px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
         tr:hover { background: #f8f9fa; }
-
         .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; display: inline-block; }
         .status-enviado { background: #d4edda; color: #155724; }
         .status-timeout { background: #fff3cd; color: #856404; }
         .status-falha { background: #f8d7da; color: #721c24; }
         .status-numero_invalido { background: #f8d7da; color: #721c24; }
         .status-reenviado { background: #d1ecf1; color: #0c5460; }
-
+        .status-processando { background: #e3f2fd; color: #1565c0; }
         .origem-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; }
         .origem-coblive { background: #E3F2FD; color: #1565C0; }
         .origem-rastreamento { background: #F3E5F5; color: #7B1FA2; }
         .origem-solicitacao-entrega { background: #E8F5E9; color: #2E7D32; }
-
-        .btn-reenviar {
-            background: linear-gradient(135deg, #FF8BA7, #FF6B8A);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .btn-reenviar { background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 5px; }
         .btn-reenviar:hover { transform: scale(1.05); box-shadow: 0 3px 10px rgba(255, 107, 138, 0.4); }
         .btn-reenviar:disabled { background: #ccc; cursor: not-allowed; transform: none; }
         .btn-reenviar.reenviando { background: linear-gradient(135deg, #f39c12, #e67e22); }
         .btn-reenviar.sucesso { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-
-        .toast-reenvio {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            z-index: 5000;
-            animation: slideUp 0.3s ease;
-            max-width: 400px;
-        }
+        .toast-reenvio { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 12px; color: white; font-weight: 600; z-index: 5000; animation: slideUp 0.3s ease; max-width: 400px; }
         .toast-reenvio.sucesso { background: linear-gradient(135deg, #27ae60, #2ecc71); }
         .toast-reenvio.erro { background: linear-gradient(135deg, #e74c3c, #c0392b); }
         .toast-reenvio.info { background: linear-gradient(135deg, #3498db, #2980b9); }
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .loading { text-align: center; padding: 40px; color: #666; }
         .empty-state { text-align: center; padding: 60px; color: #666; }
         .realtime-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #E8F5E9; border-radius: 20px; font-size: 0.85rem; color: #2E7D32; font-weight: 600; }
         .realtime-dot { width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
         .user-info { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 10px 18px; border-radius: 12px; border: 1px solid #e9ecef; }
         .btn-logout { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-
-        /* ===== MENU HAMBURGER ===== */
-        .nav-menu-btn {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            color: #0B193F;
-            cursor: pointer;
-            padding: 8px;
-            margin-right: 8px;
-            border-radius: 8px;
-            transition: background 0.2s;
-            flex-shrink: 0;
-        }
+        .nav-menu-btn { display: inline-flex !important; align-items: center; justify-content: center; background: none; border: none; color: #0B193F; cursor: pointer; padding: 8px; margin-right: 8px; border-radius: 8px; transition: background 0.2s; flex-shrink: 0; }
         .nav-menu-btn:hover { background: rgba(0,0,0,0.08); }
         .nav-menu-btn svg { width: 24px; height: 24px; }
-        .nav-menu-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 9998;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
+        .nav-menu-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
         .nav-menu-overlay.active { display: block; }
-        .nav-menu-panel {
-            position: fixed;
-            top: 0;
-            left: -320px;
-            width: 320px;
-            max-width: 85vw;
-            height: 100vh;
-            height: 100dvh;
-            background: #0a1628;
-            z-index: 9999;
-            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow-y: auto;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 4px 0 30px rgba(0,0,0,0.3);
-        }
+        .nav-menu-panel { position: fixed; top: 0; left: -320px; width: 320px; max-width: 85vw; height: 100vh; height: 100dvh; background: #0a1628; z-index: 9999; transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1); overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; box-shadow: 4px 0 30px rgba(0,0,0,0.3); }
         .nav-menu-panel.active { left: 0; }
         .nav-menu-panel::-webkit-scrollbar { width: 5px; }
         .nav-menu-panel::-webkit-scrollbar-track { background: transparent; }
         .nav-menu-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
-        .nav-menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 20px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            flex-shrink: 0;
-            position: sticky;
-            top: 0;
-            background: #0a1628;
-            z-index: 2;
-        }
-        .nav-menu-header .nav-menu-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-        }
+        .nav-menu-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; position: sticky; top: 0; background: #0a1628; z-index: 2; }
+        .nav-menu-header .nav-menu-brand { display: flex; align-items: center; gap: 10px; color: white; font-size: 16px; font-weight: 700; }
         .nav-menu-header .nav-menu-brand svg { width: 28px; height: 28px; }
-        .nav-menu-close {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-            line-height: 1;
-            padding: 0;
-        }
+        .nav-menu-close { background: rgba(255,255,255,0.08); border: none; color: white; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; line-height: 1; padding: 0; }
         .nav-menu-close:hover { background: rgba(255,255,255,0.15); }
         .nav-menu-links { padding: 12px 14px; flex: 1; }
-        .nav-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 13px 14px;
-            color: rgba(255,255,255,0.75);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            margin-bottom: 3px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-family: inherit;
-            position: relative;
-        }
+        .nav-menu-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 12px; transition: all 0.2s ease; margin-bottom: 3px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; position: relative; }
         .nav-menu-item .nav-icon { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
         .nav-menu-item .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-menu-item:hover { background: rgba(0,102,255,0.15); color: white; }
         .nav-menu-item.active { background: rgba(0,102,255,0.22); color: white; font-weight: 600; }
-        .nav-menu-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 20px;
-            background: #0066ff;
-            border-radius: 0 3px 3px 0;
-        }
-        .nav-menu-badge {
-            background: #ef4444;
-            color: white;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            flex-shrink: 0;
-            min-width: 20px;
-            text-align: center;
-        }
-        .nav-menu-separator {
-            height: 1px;
-            background: rgba(255,255,255,0.06);
-            margin: 10px 16px;
-        }
-        .nav-menu-section-title {
-            padding: 10px 18px 6px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255,255,255,0.35);
-        }
-        .nav-menu-footer {
-            padding: 14px 18px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
-            background: #0a1628;
-        }
+        .nav-menu-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: #0066ff; border-radius: 0 3px 3px 0; }
+        .nav-menu-badge { background: #ef4444; color: white; border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 700; flex-shrink: 0; min-width: 20px; text-align: center; }
+        .nav-menu-separator { height: 1px; background: rgba(255,255,255,0.06); margin: 10px 16px; }
+        .nav-menu-section-title { padding: 10px 18px 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); }
+        .nav-menu-footer { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; background: #0a1628; }
         .nav-menu-footer .nav-menu-item { padding: 10px 12px; font-size: 13px; color: rgba(255,255,255,0.5); }
         .nav-menu-footer .nav-menu-item:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); }
         .nav-menu-version { text-align: center; padding: 8px; font-size: 11px; color: rgba(255,255,255,0.2); }
@@ -294,18 +122,31 @@
         .nav-menu-panel.active .nav-menu-item:nth-child(9) { animation-delay: 0.27s; }
         .nav-menu-panel.active .nav-menu-item:nth-child(10) { animation-delay: 0.30s; }
         .nav-menu-panel.active .nav-menu-item:nth-child(11) { animation-delay: 0.33s; }
-        @keyframes navItemSlide {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes navItemSlide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         body.nav-menu-open { overflow: hidden; }
-        @media (max-width: 480px) {
-            .nav-menu-panel { width: 280px; }
-        }
+        @media (max-width: 480px) { .nav-menu-panel { width: 280px; } }
+        .auto-reenvio-panel { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffc107; border-radius: 15px; padding: 20px 25px; margin: 0 25px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .auto-reenvio-info h3 { color: #0B193F; font-size: 1.1rem; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+        .auto-reenvio-info p { color: #666; font-size: 0.85rem; }
+        .auto-reenvio-status { display: flex; align-items: center; gap: 12px; }
+        .status-led { width: 12px; height: 12px; border-radius: 50%; background: #ccc; box-shadow: 0 0 8px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .status-led.ativo { background: #4CAF50; box-shadow: 0 0 12px rgba(76, 175, 80, 0.6); animation: ledPulse 1.5s infinite; }
+        .status-led.inativo { background: #f44336; box-shadow: 0 0 8px rgba(244, 67, 54, 0.4); }
+        @keyframes ledPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .status-texto { font-weight: 600; font-size: 0.9rem; color: #555; }
+        .ultima-verificacao { font-size: 0.75rem; color: #888; margin-top: 3px; }
+        .btn-toggle-auto { padding: 10px 20px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-toggle-auto.ligar { background: linear-gradient(135deg, #27ae60, #219a52); color: white; }
+        .btn-toggle-auto.desligar { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .btn-toggle-auto:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .log-reenvio { background: #f8f9fa; border-radius: 10px; padding: 15px; margin: 0 25px 25px; max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #e0e0e0; }
+        .log-reenvio h4 { font-family: 'Segoe UI', sans-serif; margin-bottom: 10px; color: #0B193F; font-size: 13px; }
+        .log-entry { padding: 3px 0; border-bottom: 1px solid #eee; color: #555; }
+        .log-entry.sucesso { color: #27ae60; }
+        .log-entry.falha { color: #e74c3c; }
+        .log-entry.info { color: #3498db; }
     </style>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E📱%3C/text%3E%3C/svg%3E">
-
-    <!-- MENU FUNCTIONS NO HEAD -->
     <script>
     (function() {
         window.NAV_MENU_ITEMS = [
@@ -321,78 +162,16 @@
             { url: 'solicitacoes.html', icon: '📝', label: 'Formulario de Entregas' },
             { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' }
         ];
-
-        window.navGetCurrentPage = function() {
-            var path = window.location.pathname;
-            return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html';
-        };
-        window.navIsCurrent = function(url) {
-            var current = window.navGetCurrentPage();
-            return current === url || current.indexOf(url + '?') === 0;
-        };
-        window.navEscapeHtml = function(text) {
-            var div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        };
-        window.openMenu = function() {
-            var overlay = document.getElementById('navMenuOverlay');
-            var panel = document.getElementById('navMenuPanel');
-            if (overlay && panel) {
-                overlay.classList.add('active');
-                panel.classList.add('active');
-                document.body.classList.add('nav-menu-open');
-            }
-        };
-        window.closeMenu = function() {
-            var overlay = document.getElementById('navMenuOverlay');
-            var panel = document.getElementById('navMenuPanel');
-            if (overlay && panel) {
-                overlay.classList.remove('active');
-                panel.classList.remove('active');
-                document.body.classList.remove('nav-menu-open');
-            }
-        };
-        window.navGoTo = function(url) {
-            window.closeMenu();
-            setTimeout(function() { window.location.href = url; }, 280);
-        };
-        window.navDoLogout = function() {
-            window.closeMenu();
-            setTimeout(function() {
-                if (typeof window.fazerLogout === 'function') {
-                    window.fazerLogout();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            }, 280);
-        };
-        window.renderMenuLinks = function() {
-            var linksContainer = document.getElementById('navMenuLinks');
-            if (!linksContainer) return;
-            linksContainer.innerHTML = '';
-            var items = window.NAV_MENU_ITEMS;
-            for (var i = 0; i < items.length; i++) {
-                var item = items[i];
-                var active = window.navIsCurrent(item.url) ? ' active' : '';
-                var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : '';
-                var a = document.createElement('a');
-                a.href = item.url;
-                a.className = 'nav-menu-item' + active;
-                a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + window.navEscapeHtml(item.label) + '</span>' + badge;
-                if (active) {
-                    a.onclick = function(e) { e.preventDefault(); window.closeMenu(); };
-                } else {
-                    (function(url) {
-                        a.onclick = function(e) { e.preventDefault(); window.navGoTo(url); };
-                    })(item.url);
-                }
-                linksContainer.appendChild(a);
-            }
-        };
+        window.navGetCurrentPage = function() { var path = window.location.pathname; return path.substring(path.lastIndexOf('/') + 1) || 'dashboard.html'; };
+        window.navIsCurrent = function(url) { var current = window.navGetCurrentPage(); return current === url || current.indexOf(url + '?') === 0; };
+        window.navEscapeHtml = function(text) { var div = document.createElement('div'); div.textContent = text; return div.innerHTML; };
+        window.openMenu = function() { var overlay = document.getElementById('navMenuOverlay'); var panel = document.getElementById('navMenuPanel'); if (overlay && panel) { overlay.classList.add('active'); panel.classList.add('active'); document.body.classList.add('nav-menu-open'); } };
+        window.closeMenu = function() { var overlay = document.getElementById('navMenuOverlay'); var panel = document.getElementById('navMenuPanel'); if (overlay && panel) { overlay.classList.remove('active'); panel.classList.remove('active'); document.body.classList.remove('nav-menu-open'); } };
+        window.navGoTo = function(url) { window.closeMenu(); setTimeout(function() { window.location.href = url; }, 280); };
+        window.navDoLogout = function() { window.closeMenu(); setTimeout(function() { if (typeof window.fazerLogout === 'function') { window.fazerLogout(); } else { window.location.href = 'login.html'; } }, 280); };
+        window.renderMenuLinks = function() { var linksContainer = document.getElementById('navMenuLinks'); if (!linksContainer) return; linksContainer.innerHTML = ''; var items = window.NAV_MENU_ITEMS; for (var i = 0; i < items.length; i++) { var item = items[i]; var active = window.navIsCurrent(item.url) ? ' active' : ''; var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : ''; var a = document.createElement('a'); a.href = item.url; a.className = 'nav-menu-item' + active; a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + window.navEscapeHtml(item.label) + '</span>' + badge; if (active) { a.onclick = function(e) { e.preventDefault(); window.closeMenu(); }; } else { (function(url) { a.onclick = function(e) { e.preventDefault(); window.navGoTo(url); }; })(item.url); } linksContainer.appendChild(a); } };
     })();
     </script>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -400,27 +179,33 @@
         <div class="header">
             <div class="header-left">
                 <button class="nav-menu-btn" id="navMenuBtn" aria-label="Abrir menu">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <button class="btn-voltar" onclick="window.location.href='dashboard.html'">← Voltar</button>
-                <div class="header-center">
-                    <h1>📱 Monitor de Envios WhatsApp</h1>
-                    <p>Acompanhe todos os envios em tempo real</p>
-                </div>
+                <div class="header-center"><h1>📱 Monitor de Envios WhatsApp</h1><p>Acompanhe todos os envios em tempo real</p></div>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div class="realtime-indicator" id="realtimeIndicator">
-                    <span class="realtime-dot"></span> Tempo real ativo
-                </div>
-                <div class="user-info">
-                    <span id="userInfo">👤 Carregando...</span>
-                    <button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button>
-                </div>
+                <div class="realtime-indicator" id="realtimeIndicator"><span class="realtime-dot"></span> Tempo real ativo</div>
+                <div class="user-info"><span id="userInfo">👤 Carregando...</span><button class="btn-logout" onclick="window.fazerLogout()">🚪 Sair</button></div>
             </div>
+        </div>
+
+        <div class="auto-reenvio-panel" id="autoReenvioPanel">
+            <div class="auto-reenvio-info">
+                <h3>🤖 Reenvio Automático</h3>
+                <p>Verifica automaticamente mensagens com falha a cada 60 segundos e tenta reenviar quando a API acordar</p>
+                <div class="ultima-verificacao" id="ultimaVerificacao">Nunca verificado</div>
+            </div>
+            <div class="auto-reenvio-status">
+                <div class="status-led inativo" id="statusLed"></div>
+                <span class="status-texto" id="statusTexto">Desativado</span>
+                <button class="btn-toggle-auto ligar" id="btnToggleAuto" onclick="toggleReenvioAutomatico()">▶️ Ativar</button>
+            </div>
+        </div>
+
+        <div class="log-reenvio" id="logReenvio" style="display:none;">
+            <h4>📋 Log de Reenvio Automático</h4>
+            <div id="logReenvioContent"></div>
         </div>
 
         <div class="stats-grid">
@@ -434,94 +219,34 @@
         <div class="filters-section">
             <h3>📅 Filtros</h3>
             <div class="filter-grid">
-                <div class="form-group">
-                    <label>Data Início</label>
-                    <input type="date" id="filtroDataInicio">
-                </div>
-                <div class="form-group">
-                    <label>Data Fim</label>
-                    <input type="date" id="filtroDataFim">
-                </div>
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="filtroTipo">
-                        <option value="">Todos</option>
-                        <option value="pix_cobranca">PIX Cobrança</option>
-                        <option value="rastreamento">Rastreamento</option>
-                        <option value="confirmacao_solicitacao">Confirmação Solicitação</option>
-                        <option value="confirmacao_pagamento">Confirmação Pagamento</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="filtroStatus">
-                        <option value="">Todos</option>
-                        <option value="enviado">Enviado</option>
-                        <option value="timeout">Timeout</option>
-                        <option value="falha">Falha</option>
-                        <option value="numero_invalido">Número Inválido</option>
-                        <option value="reenviado">Reenviado</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Origem</label>
-                    <select id="filtroOrigem">
-                        <option value="">Todas</option>
-                        <option value="coblive">Cobrança Live</option>
-                        <option value="rastreamento">Rastreamento</option>
-                        <option value="solicitacao-entrega">Solicitação Entrega</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Buscar</label>
-                    <input type="text" id="filtroBusca" placeholder="Nome ou número...">
-                </div>
+                <div class="form-group"><label>Data Início</label><input type="date" id="filtroDataInicio"></div>
+                <div class="form-group"><label>Data Fim</label><input type="date" id="filtroDataFim"></div>
+                <div class="form-group"><label>Tipo</label><select id="filtroTipo"><option value="">Todos</option><option value="pix_cobranca">PIX Cobrança</option><option value="rastreamento">Rastreamento</option><option value="confirmacao_solicitacao">Confirmação Solicitação</option><option value="confirmacao_pagamento">Confirmação Pagamento</option></select></div>
+                <div class="form-group"><label>Status</label><select id="filtroStatus"><option value="">Todos</option><option value="enviado">Enviado</option><option value="timeout">Timeout</option><option value="falha">Falha</option><option value="numero_invalido">Número Inválido</option><option value="reenviado">Reenviado</option></select></div>
+                <div class="form-group"><label>Origem</label><select id="filtroOrigem"><option value="">Todas</option><option value="coblive">Cobrança Live</option><option value="rastreamento">Rastreamento</option><option value="solicitacao-entrega">Solicitação Entrega</option></select></div>
+                <div class="form-group"><label>Buscar</label><input type="text" id="filtroBusca" placeholder="Nome ou número..."></div>
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Filtrar</button>
                 <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar</button>
                 <button class="btn btn-success" onclick="carregarEnvios()">🔄 Atualizar</button>
                 <button class="btn" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white;" onclick="carregarTodosSemFiltroData()">📋 Mostrar Todos (Sem Data)</button>
-                <button class="btn" id="btnReenvioAuto" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white;" onclick="toggleReenvioAutomatico()">
-                    🤖 Reenvio Auto: OFF
-                </button>
             </div>
         </div>
 
         <div class="table-container">
             <table id="tabelaEnvios">
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Origem</th>
-                        <th>Tipo</th>
-                        <th>Status</th>
-                        <th>Número</th>
-                        <th>Cliente</th>
-                        <th>Mensagem</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyEnvios">
-                    <tr><td colspan="9" class="loading">Carregando envios...</td></tr>
-                </tbody>
+                <thead><tr><th>Data/Hora</th><th>Origem</th><th>Tipo</th><th>Status</th><th>Número</th><th>Cliente</th><th>Mensagem</th><th>Valor</th><th>Ações</th></tr></thead>
+                <tbody id="tbodyEnvios"><tr><td colspan="9" class="loading">Carregando envios...</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- OVERLAY E PAINEL DO MENU -->
     <div class="nav-menu-overlay" id="navMenuOverlay"></div>
     <nav class="nav-menu-panel" id="navMenuPanel">
         <div class="nav-menu-header">
             <div class="nav-menu-brand">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
-                    <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
-                    <path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
-                    <circle cx="72" cy="25" r="22" fill="#ffffff"/>
-                    <text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
-                </svg>
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/><path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/><path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/><circle cx="72" cy="25" r="22" fill="#ffffff"/><text x="72" y="32" text-anchor="middle" fill="#0a1628" font-size="16" font-weight="bold" font-family="Arial">LIVE</text></svg>
                 <span>Menu</span>
             </div>
             <button class="nav-menu-close" id="navMenuCloseBtn">&times;</button>
@@ -529,39 +254,27 @@
         <div class="nav-menu-links" id="navMenuLinks"></div>
         <div class="nav-menu-footer">
             <div class="nav-menu-separator"></div>
-            <a href="dashboard.html" class="nav-menu-item" id="navMenuDashboard">
-                <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
-            </a>
-            <button class="nav-menu-item" id="navMenuLogout">
-                <span class="nav-icon">🚪</span><span class="nav-label">Sair</span>
-            </button>
+            <a href="dashboard.html" class="nav-menu-item" id="navMenuDashboard"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></a>
+            <button class="nav-menu-item" id="navMenuLogout"><span class="nav-icon">🚪</span><span class="nav-label">Sair</span></button>
         </div>
     </nav>
 
     <script>
-        // ===== INICIALIZAÇÃO DO MENU =====
         document.addEventListener('DOMContentLoaded', function() {
             var btn = document.getElementById('navMenuBtn');
             if (btn) btn.addEventListener('click', window.openMenu);
-
             var overlay = document.getElementById('navMenuOverlay');
             if (overlay) overlay.addEventListener('click', window.closeMenu);
-
             var closeBtn = document.getElementById('navMenuCloseBtn');
             if (closeBtn) closeBtn.addEventListener('click', window.closeMenu);
-
             var dash = document.getElementById('navMenuDashboard');
             if (dash) dash.addEventListener('click', function(e) { e.preventDefault(); window.navGoTo('dashboard.html'); });
-
             var logout = document.getElementById('navMenuLogout');
             if (logout) logout.addEventListener('click', window.navDoLogout);
-
             document.addEventListener('keydown', function(e) { if (e.key === 'Escape') window.closeMenu(); });
-
             window.renderMenuLinks();
         });
 
-        // Constantes
         const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
         const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
         const EVOLUTION_INSTANCE = 'pingodegente';
@@ -571,48 +284,78 @@
         let clienteSistemaId = null;
         let canalRealtime = null;
         let enviosData = [];
-
-        // ✅ REENVIO AUTOMÁTICO
         let reenvioAutomaticoAtivo = false;
         let intervaloReenvioAuto = null;
-        const INTERVALO_VERIFICACAO_MS = 60000; // Verifica a cada 60s
-        const TEMPO_MINIMO_FALHA_MS = 60000; // Só reenvia se falhou há pelo menos 60s
+        const INTERVALO_VERIFICACAO_MS = 60000;
+        const TEMPO_MINIMO_FALHA_MS = 60000;
+        let logReenvioEntries = [];
+        let enviosEmProcessamento = new Set();
+
+        function adicionarLog(tipo, mensagem) {
+            const agora = new Date().toLocaleTimeString('pt-BR');
+            logReenvioEntries.unshift({ tempo: agora, tipo: tipo, mensagem: mensagem });
+            if (logReenvioEntries.length > 50) logReenvioEntries.pop();
+            atualizarLogUI();
+        }
+
+        function atualizarLogUI() {
+            const container = document.getElementById('logReenvioContent');
+            if (!container) return;
+            let html = '';
+            for (let i = 0; i < logReenvioEntries.length && i < 30; i++) {
+                const entry = logReenvioEntries[i];
+                html += '<div class="log-entry ' + entry.tipo + '"><span style="color:#888">[' + entry.tempo + ']</span> ' + entry.mensagem + '</div>';
+            }
+            container.innerHTML = html || '<div class="log-entry info">Nenhum log ainda...</div>';
+        }
+
+        function atualizarUltimaVerificacao(texto) {
+            const el = document.getElementById('ultimaVerificacao');
+            if (el) el.textContent = texto;
+        }
 
         function toggleReenvioAutomatico() {
-            const btn = document.getElementById('btnReenvioAuto');
+            const btn = document.getElementById('btnToggleAuto');
+            const led = document.getElementById('statusLed');
+            const texto = document.getElementById('statusTexto');
+            const logPanel = document.getElementById('logReenvio');
+
             reenvioAutomaticoAtivo = !reenvioAutomaticoAtivo;
 
             if (reenvioAutomaticoAtivo) {
-                btn.innerHTML = '🤖 Reenvio Auto: ON';
-                btn.style.background = 'linear-gradient(135deg, #27ae60, #219a52)';
-                console.log('[AUTO-REENVIO] ✅ Reenvio automático ATIVADO');
-                showToast('🤖 Reenvio automático ATIVADO - Verificando a cada 60s', 'sucesso');
-                // Executa imediatamente e agenda próximo
+                btn.innerHTML = '⏹️ Desativar';
+                btn.className = 'btn-toggle-auto desligar';
+                led.className = 'status-led ativo';
+                texto.textContent = 'Ativo - Verificando...';
+                if (logPanel) logPanel.style.display = 'block';
+                console.log('[AUTO-REENVIO] ATIVADO');
+                adicionarLog('info', 'Reenvio automatico ATIVADO');
+                showToast('Reenvio automatico ATIVADO - Verificando a cada 60s', 'sucesso');
                 verificarEFalhasReenviar();
                 intervaloReenvioAuto = setInterval(verificarEFalhasReenviar, INTERVALO_VERIFICACAO_MS);
             } else {
-                btn.innerHTML = '🤖 Reenvio Auto: OFF';
-                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
-                console.log('[AUTO-REENVIO] ❌ Reenvio automático DESATIVADO');
-                showToast('🤖 Reenvio automático DESATIVADO', 'info');
-                if (intervaloReenvioAuto) {
-                    clearInterval(intervaloReenvioAuto);
-                    intervaloReenvioAuto = null;
-                }
+                btn.innerHTML = '▶️ Ativar';
+                btn.className = 'btn-toggle-auto ligar';
+                led.className = 'status-led inativo';
+                texto.textContent = 'Desativado';
+                console.log('[AUTO-REENVIO] DESATIVADO');
+                adicionarLog('info', 'Reenvio automatico DESATIVADO');
+                showToast('Reenvio automatico DESATIVADO', 'info');
+                if (intervaloReenvioAuto) { clearInterval(intervaloReenvioAuto); intervaloReenvioAuto = null; }
             }
         }
 
-        // ✅ FUNÇÃO PRINCIPAL: Verifica falhas e reenvia automaticamente
         async function verificarEFalhasReenviar() {
             if (!reenvioAutomaticoAtivo || !supabaseClient || !clienteSistemaId) {
-                console.log('[AUTO-REENVIO] ⏸️ Pulando verificação (inativo ou sem conexão)');
+                console.log('[AUTO-REENVIO] Pulando verificacao');
                 return;
             }
-
-            console.log('[AUTO-REENVIO] 🔍 Verificando envios com falha...');
+            const agoraStr = new Date().toLocaleTimeString('pt-BR');
+            atualizarUltimaVerificacao('Ultima verificacao: ' + agoraStr + ' - Verificando...');
+            console.log('[AUTO-REENVIO] Verificando envios com falha...');
+            adicionarLog('info', 'Iniciando verificacao de falhas...');
 
             try {
-                // Buscar envios com status de falha/timeout dos últimos 24h
                 const vinteQuatroHorasAtras = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
                 const agora = new Date().toISOString();
 
@@ -627,118 +370,124 @@
                     .limit(50);
 
                 if (error) {
-                    console.error('[AUTO-REENVIO] ❌ Erro ao buscar falhas:', error);
+                    console.error('[AUTO-REENVIO] Erro ao buscar falhas:', error);
+                    adicionarLog('falha', 'Erro ao buscar falhas: ' + error.message);
+                    atualizarUltimaVerificacao('Ultima: ' + agoraStr + ' - Erro na busca');
                     return;
                 }
 
                 if (!falhas || falhas.length === 0) {
-                    console.log('[AUTO-REENVIO] ✅ Nenhuma falha encontrada para reenviar');
+                    console.log('[AUTO-REENVIO] Nenhuma falha encontrada');
+                    adicionarLog('info', 'Nenhuma falha nas ultimas 24h');
+                    atualizarUltimaVerificacao('Ultima: ' + agoraStr + ' - Nenhuma falha');
                     return;
                 }
 
-                console.log(`[AUTO-REENVIO] 📊 ${falhas.length} envio(s) com falha encontrado(s)`);
+                console.log('[AUTO-REENVIO] ' + falhas.length + ' envio(s) com falha');
+                adicionarLog('info', falhas.length + ' envio(s) com falha encontrado(s)');
 
-                // Reenviar cada um (sequencial para não sobrecarregar)
+                let reenviadosCount = 0, puladosCount = 0, falhasCount = 0;
+
                 for (const envio of falhas) {
-                    // Verificar se já passou tempo suficiente desde a falha
+                    if (enviosEmProcessamento.has(envio.id)) { puladosCount++; continue; }
                     const tempoDesdeFalha = Date.now() - new Date(envio.criado_em).getTime();
-                    if (tempoDesdeFalha < TEMPO_MINIMO_FALHA_MS) {
-                        console.log(`[AUTO-REENVIO] ⏳ Envio ${envio.id.substring(0,8)} muito recente (${Math.round(tempoDesdeFalha/1000)}s), aguardando...`);
-                        continue;
-                    }
+                    if (tempoDesdeFalha < TEMPO_MINIMO_FALHA_MS) { puladosCount++; continue; }
 
-                    await reenviarAutomatico(envio);
-                    // Pequeno delay entre reenvios para não sobrecarregar a API
+                    const resultado = await reenviarAutomatico(envio);
+                    if (resultado.sucesso) reenviadosCount++;
+                    else if (resultado.pulado) puladosCount++;
+                    else falhasCount++;
+
                     await new Promise(r => setTimeout(r, 3000));
                 }
 
-                console.log('[AUTO-REENVIO] ✅ Ciclo de reenvio automático concluído');
+                const resumo = reenviadosCount + ' reenviados | ' + puladosCount + ' pulados | ' + falhasCount + ' falhas';
+                console.log('[AUTO-REENVIO] Ciclo concluido:', resumo);
+                adicionarLog('sucesso', 'Ciclo concluido: ' + resumo);
+                atualizarUltimaVerificacao('Ultima: ' + agoraStr + ' - ' + resumo);
 
             } catch (e) {
-                console.error('[AUTO-REENVIO] ❌ Erro no ciclo de reenvio:', e);
+                console.error('[AUTO-REENVIO] Erro no ciclo:', e);
+                adicionarLog('falha', 'Erro no ciclo: ' + e.message);
+                atualizarUltimaVerificacao('Ultima: ' + agoraStr + ' - Erro no ciclo');
             }
         }
 
-        // ✅ FUNÇÃO: Reenvia uma mensagem específica automaticamente
         async function reenviarAutomatico(envio) {
             const logId = envio.id;
             const numero = envio.numero_destino || envio.numero || '';
             const mensagem = envio.mensagem || '';
+            const destinatario = envio.nome_destino || envio.destinatario || 'Cliente';
 
             if (!numero || !mensagem) {
-                console.warn(`[AUTO-REENVIO] ⚠️ Dados incompletos para envio ${logId.substring(0,8)}, pulando`);
-                return;
+                adicionarLog('falha', 'Dados incompletos: ' + destinatario);
+                return { sucesso: false, pulado: false, erro: 'Dados incompletos' };
             }
 
-            console.log(`[AUTO-REENVIO] 📤 Reenviando envio ${logId.substring(0,8)} para ${numero}...`);
+            enviosEmProcessamento.add(logId);
+            console.log('[AUTO-REENVIO] Reenviando ' + logId.substring(0,8) + ' para ' + numero);
+            adicionarLog('info', 'Reenviando: ' + destinatario + ' (' + numero + ')');
 
             try {
+                await supabaseClient.from('whatsapp_envios').update({
+                    status_envio: 'processando', status: 'processando',
+                    atualizado_em: new Date().toISOString()
+                }).eq('id', logId);
+
                 const resultado = await reenviarWhatsApp(numero, mensagem);
 
                 if (resultado.sucesso) {
-                    console.log(`[AUTO-REENVIO] ✅ Envio ${logId.substring(0,8)} reenviado com sucesso!`);
-
-                    // Atualizar no banco
-                    await supabaseClient
-                        .from('whatsapp_envios')
-                        .update({ 
-                            status_envio: 'reenviado', 
-                            status: 'reenviado',
-                            atualizado_em: new Date().toISOString(),
-                            resposta_api: resultado.dados || { reenvio_automatico: true }
-                        })
-                        .eq('id', logId);
-
-                    showToast(`✅ Reenvio automático: ${envio.destinatario || 'Cliente'}`, 'sucesso');
+                    console.log('[AUTO-REENVIO] Reenviado com sucesso: ' + logId.substring(0,8));
+                    adicionarLog('sucesso', 'Reenviado: ' + destinatario);
+                    await supabaseClient.from('whatsapp_envios').update({
+                        status_envio: 'reenviado', status: 'reenviado',
+                        atualizado_em: new Date().toISOString(),
+                        resposta_api: resultado.dados || { reenvio_automatico: true, hora: new Date().toISOString() }
+                    }).eq('id', logId);
+                    enviosEmProcessamento.delete(logId);
+                    return { sucesso: true, pulado: false };
                 } else {
-                    console.warn(`[AUTO-REENVIO] ⚠️ Reenvio ${logId.substring(0,8)} falhou: ${resultado.erro}`);
-
-                    // Atualizar tentativa de reenvio falho
-                    await supabaseClient
-                        .from('whatsapp_envios')
-                        .update({ 
-                            status_envio: 'falha',
-                            status: 'falha',
-                            atualizado_em: new Date().toISOString(),
-                            erro_envio: 'Reenvio automático falhou: ' + (resultado.erro || 'Erro desconhecido')
-                        })
-                        .eq('id', logId);
+                    console.warn('[AUTO-REENVIO] Falhou: ' + logId.substring(0,8) + ' - ' + resultado.erro);
+                    adicionarLog('falha', 'Falhou: ' + destinatario + ' - ' + resultado.erro);
+                    await supabaseClient.from('whatsapp_envios').update({
+                        status_envio: 'falha', status: 'falha',
+                        atualizado_em: new Date().toISOString(),
+                        erro_envio: 'Reenvio automatico falhou: ' + (resultado.erro || 'Erro desconhecido')
+                    }).eq('id', logId);
+                    enviosEmProcessamento.delete(logId);
+                    return { sucesso: false, pulado: false, erro: resultado.erro };
                 }
             } catch (e) {
-                console.error(`[AUTO-REENVIO] ❌ Erro ao reenviar ${logId.substring(0,8)}:`, e.message);
+                console.error('[AUTO-REENVIO] Erro: ' + logId.substring(0,8) + ' - ' + e.message);
+                adicionarLog('falha', 'Erro: ' + destinatario + ' - ' + e.message);
+                await supabaseClient.from('whatsapp_envios').update({
+                    status_envio: 'falha', status: 'falha',
+                    atualizado_em: new Date().toISOString()
+                }).eq('id', logId);
+                enviosEmProcessamento.delete(logId);
+                return { sucesso: false, pulado: false, erro: e.message };
             }
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
             await new Promise(resolve => {
-                const check = () => {
-                    if (window.supabaseClient) resolve();
-                    else setTimeout(check, 100);
-                };
+                const check = () => { if (window.supabaseClient) resolve(); else setTimeout(check, 100); };
                 check();
             });
-
             supabaseClient = window.supabaseClient;
             const session = await verificarSessao();
             if (!session) return;
-
             await carregarUsuarioLogado();
             clienteSistemaId = window.authClienteId;
-
             if (!clienteSistemaId) {
-                showToast('Erro: Cliente não identificado', 'erro');
+                showToast('Erro: Cliente nao identificado', 'erro');
                 setTimeout(() => window.location.href = 'login.html', 3000);
                 return;
             }
-
             const hoje = new Date();
             const seteDiasAtras = new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
             document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
             document.getElementById('filtroDataInicio').value = seteDiasAtras.toISOString().split('T')[0];
-
-            console.log('[MONITOR] Inicializando monitor. Cliente ID:', clienteSistemaId);
-            console.log('[MONITOR] Data início:', document.getElementById('filtroDataInicio').value);
-            console.log('[MONITOR] Data fim:', document.getElementById('filtroDataFim').value);
             await carregarEnvios();
             iniciarRealtime();
         });
@@ -747,11 +496,7 @@
             const tbody = document.getElementById('tbodyEnvios');
             tbody.innerHTML = '<tr><td colspan="9" class="loading">Carregando envios...</td></tr>';
             try {
-                console.log('[MONITOR] Carregando envios para cliente:', clienteSistemaId);
-                console.log('[MONITOR] Query cliente_sistema_id:', clienteSistemaId, 'tipo:', typeof clienteSistemaId);
-                let query = supabaseClient
-                    .from('whatsapp_envios')
-                    .select('*')
+                let query = supabaseClient.from('whatsapp_envios').select('*')
                     .eq('cliente_sistema_id', clienteSistemaId)
                     .order('criado_em', { ascending: false });
                 const dataInicio = document.getElementById('filtroDataInicio').value;
@@ -767,10 +512,6 @@
                 if (origem) query = query.eq('origem', origem);
                 const { data, error } = await query.limit(200);
                 if (error) throw error;
-                console.log('[MONITOR] Registros retornados:', data ? data.length : 0);
-                if (data && data.length > 0) {
-                    console.log('[MONITOR] Primeiro registro:', data[0]);
-                }
                 enviosData = data || [];
                 if (busca) {
                     enviosData = enviosData.filter(e => {
@@ -782,16 +523,15 @@
                 renderizarTabela();
                 atualizarEstatisticas();
             } catch (e) {
-                console.error('[MONITOR] Erro ao carregar envios:', e);
+                console.error('[MONITOR] Erro:', e);
                 tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
             }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tbodyEnvios');
-            console.log('[MONITOR] Renderizando', enviosData.length, 'registros');
             if (enviosData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><p>Nenhum envio encontrado</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div style="font-size:48px;margin-bottom:15px;">📭</div><p>Nenhum envio encontrado</p></td></tr>';
                 return;
             }
             var html = '';
@@ -808,27 +548,12 @@
                     var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
                     var statusClass = 'status-' + status;
                     var origemClass = 'origem-' + origem;
-                    var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitação' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
-                    var origemLabel = origem === 'coblive' ? '💰 COBRANÇA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITAÇÃO ENTREGA' : origem));
-
-                    // BOTÃO REENVIAR SEMPRE VISÍVEL - PARA TODOS OS REGISTROS
+                    var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitacao' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
+                    var origemLabel = origem === 'coblive' ? '💰 COBRANCA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITACAO ENTREGA' : origem));
                     var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
                     var btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
-
-                    html += '<tr>' +
-                        '<td>' + data + '</td>' +
-                        '<td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td>' +
-                        '<td>' + tipoLabel + '</td>' +
-                        '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>' +
-                        '<td>' + numero + '</td>' +
-                        '<td><strong>' + nome + '</strong></td>' +
-                        '<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + mensagem + '">' + mensagem + '</td>' +
-                        '<td><strong>' + valor + '</strong></td>' +
-                        '<td>' + btnReenviar + '</td>' +
-                    '</tr>';
-                } catch (err) {
-                    console.error('[MONITOR] Erro ao renderizar linha', i, ':', err);
-                }
+                    html += '<tr><td>' + data + '</td><td><span class="origem-badge ' + origemClass + '">' + origemLabel + '</span></td><td>' + tipoLabel + '</td><td><span class="status-badge ' + statusClass + '">' + status + '</span></td><td>' + numero + '</td><td><strong>' + nome + '</strong></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + mensagem + '">' + mensagem + '</td><td><strong>' + valor + '</strong></td><td>' + btnReenviar + '</td></tr>';
+                } catch (err) { console.error('[MONITOR] Erro linha', i, ':', err); }
             }
             tbody.innerHTML = html;
             setupReenviarListeners();
@@ -838,7 +563,7 @@
             const total = enviosData.length;
             const enviados = enviosData.filter(e => (e.status_envio || e.status) === 'enviado').length;
             const timeouts = enviosData.filter(e => (e.status_envio || e.status) === 'timeout').length;
-            const falhas = enviosData.filter(e => ['falha', 'numero_invalido'].includes(e.status_envio || e.status)).length;
+            const falhas = enviosData.filter(e => ['falha','numero_invalido'].includes(e.status_envio || e.status)).length;
             const reenviados = enviosData.filter(e => (e.status_envio || e.status) === 'reenviado').length;
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statEnviados').textContent = enviados;
@@ -848,42 +573,25 @@
         }
 
         function iniciarRealtime() {
-            canalRealtime = supabaseClient
-                .channel('whatsapp_envios_changes')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'whatsapp_envios',
-                    filter: 'cliente_sistema_id=eq.' + clienteSistemaId
-                }, (payload) => {
+            canalRealtime = supabaseClient.channel('whatsapp_envios_changes')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_envios', filter: 'cliente_sistema_id=eq.' + clienteSistemaId }, (payload) => {
                     enviosData.unshift(payload.new);
                     renderizarTabela();
                     atualizarEstatisticas();
                     showToast('📱 Novo envio detectado!', 'info');
                 })
-                .on('postgres_changes', {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'whatsapp_envios',
-                    filter: 'cliente_sistema_id=eq.' + clienteSistemaId
-                }, (payload) => {
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'whatsapp_envios', filter: 'cliente_sistema_id=eq.' + clienteSistemaId }, (payload) => {
                     const idx = enviosData.findIndex(e => e.id === payload.new.id);
-                    if (idx >= 0) {
-                        enviosData[idx] = payload.new;
-                        renderizarTabela();
-                        atualizarEstatisticas();
-                    }
+                    if (idx >= 0) { enviosData[idx] = payload.new; renderizarTabela(); atualizarEstatisticas(); }
                 })
                 .subscribe((status) => {
                     const indicator = document.getElementById('realtimeIndicator');
                     if (status === 'SUBSCRIBED') {
                         indicator.innerHTML = '<span class="realtime-dot"></span> Tempo real ativo';
-                        indicator.style.background = '#E8F5E9';
-                        indicator.style.color = '#2E7D32';
+                        indicator.style.background = '#E8F5E9'; indicator.style.color = '#2E7D32';
                     } else {
                         indicator.innerHTML = '⚠️ Reconectando...';
-                        indicator.style.background = '#FFF3E0';
-                        indicator.style.color = '#E65100';
+                        indicator.style.background = '#FFF3E0'; indicator.style.color = '#E65100';
                     }
                 });
         }
@@ -892,47 +600,34 @@
             const logId = btn.getAttribute('data-log-id');
             const numero = btn.getAttribute('data-numero');
             const mensagem = btn.getAttribute('data-mensagem');
-            const tipo = btn.getAttribute('data-tipo');
-
             if (!btn || btn.disabled) return;
-            btn.disabled = true;
-            btn.classList.add('reenviando');
-            btn.innerHTML = '⏳ Reenviando...';
+            btn.disabled = true; btn.classList.add('reenviando'); btn.innerHTML = '⏳ Reenviando...';
             try {
                 const resultado = await reenviarWhatsApp(numero, mensagem);
                 if (resultado.sucesso) {
                     await supabaseClient.from('whatsapp_envios').update({ status_envio: 'reenviado', atualizado_em: new Date().toISOString() }).eq('id', logId);
-                    btn.classList.remove('reenviando');
-                    btn.classList.add('sucesso');
-                    btn.innerHTML = '✅ Reenviado';
+                    btn.classList.remove('reenviando'); btn.classList.add('sucesso'); btn.innerHTML = '✅ Reenviado';
                     showToast('✅ Mensagem reenviada com sucesso!', 'sucesso');
                     setTimeout(() => carregarEnvios(), 1500);
                 } else {
-                    btn.disabled = false;
-                    btn.classList.remove('reenviando');
-                    btn.innerHTML = '🔄 Reenviar';
+                    btn.disabled = false; btn.classList.remove('reenviando'); btn.innerHTML = '🔄 Reenviar';
                     showToast('❌ ' + resultado.mensagem, 'erro');
                 }
             } catch (e) {
-                btn.disabled = false;
-                btn.classList.remove('reenviando');
-                btn.innerHTML = '🔄 Reenviar';
+                btn.disabled = false; btn.classList.remove('reenviando'); btn.innerHTML = '🔄 Reenviar';
                 showToast('❌ Erro: ' + e.message, 'erro');
             }
         }
 
-        // Event delegation para botões de reenvio
         function setupReenviarListeners() {
             const tbody = document.getElementById('tbodyEnvios');
             if (!tbody) return;
             tbody.addEventListener('click', function(e) {
                 const btn = e.target.closest('.btn-reenviar');
-                if (btn) {
-                    e.preventDefault();
-                    clickReenviar(btn);
-                }
+                if (btn) { e.preventDefault(); clickReenviar(btn); }
             });
         }
+
         async function reenviarWhatsApp(numero, mensagem) {
             let numeroLimpo = numero.replace(/\D/g, '');
             if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
@@ -946,17 +641,9 @@
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-
-                // ✅ CORREÇÃO: Ler resposta como texto primeiro, depois tentar JSON
                 const responseText = await response.text();
                 let data = null;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseErr) {
-                    console.warn('[REENVIAR] ⚠️ Resposta não é JSON:', responseText.substring(0, 200));
-                    data = { raw: responseText };
-                }
-
+                try { data = JSON.parse(responseText); } catch (parseErr) { data = { raw: responseText }; }
                 if (!response.ok) {
                     return { sucesso: false, erro: (data && data.message) ? data.message : ('HTTP ' + response.status), mensagem: 'Erro ao reenviar', dados: data };
                 }
@@ -970,29 +657,19 @@
         }
 
         async function carregarTodosSemFiltroData() {
-            console.log('[MONITOR] Carregando TODOS os registros sem filtro de data...');
             const tbody = document.getElementById('tbodyEnvios');
             tbody.innerHTML = '<tr><td colspan="9" class="loading">Carregando todos os envios...</td></tr>';
             try {
-                let query = supabaseClient
-                    .from('whatsapp_envios')
-                    .select('*')
+                let query = supabaseClient.from('whatsapp_envios').select('*')
                     .eq('cliente_sistema_id', clienteSistemaId)
                     .order('criado_em', { ascending: false });
-
                 const { data, error } = await query.limit(500);
                 if (error) throw error;
-                console.log('[MONITOR] Todos os registros (sem filtro data):', data ? data.length : 0);
-                if (data && data.length > 0) {
-                    console.log('[MONITOR] Primeiro registro:', data[0]);
-                    console.log('[MONITOR] Último registro:', data[data.length - 1]);
-                }
                 enviosData = data || [];
                 renderizarTabela();
                 atualizarEstatisticas();
-                showToast('📋 Mostrando ' + enviosData.length + ' registros (sem filtro de data)', 'sucesso');
+                showToast('📋 Mostrando ' + enviosData.length + ' registros', 'sucesso');
             } catch (e) {
-                console.error('[MONITOR] Erro ao carregar todos:', e);
                 tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Erro: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
             }
         }
@@ -1015,10 +692,7 @@
             toast.className = 'toast-reenvio ' + tipo;
             toast.textContent = mensagem;
             document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'slideUp 0.3s ease reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            setTimeout(() => { toast.style.animation = 'slideUp 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); }, 4000);
         }
     </script>
 </body>
