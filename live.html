@@ -2054,25 +2054,9 @@ function filtrarSugestoes(input, tipoCampo) {
         if (nome.includes(valor) || insta.includes(valor)) {
             const nomeLower = c.nome?.trim().toLowerCase();
             const instaLower = c.instagram?.trim().toLowerCase();
-            // Verifica se o nome foi usado em QUALQUER campo da live (comprador ou fila)
-            // Verifica match exato OU parcial
-            let foiUsadoNaLive = false;
-            if (nomeLower) {
-                for (const nomeUsado of nomesUsadosNaLive) {
-                    if (nomeUsado === nomeLower || nomeUsado.includes(nomeLower) || nomeLower.includes(nomeUsado)) {
-                        foiUsadoNaLive = true;
-                        break;
-                    }
-                }
-            }
-            if (!foiUsadoNaLive && instaLower) {
-                for (const nomeUsado of nomesUsadosNaLive) {
-                    if (nomeUsado === instaLower || nomeUsado.includes(instaLower) || instaLower.includes(nomeUsado)) {
-                        foiUsadoNaLive = true;
-                        break;
-                    }
-                }
-            }
+            // Verifica se o nome EXATO do cliente foi usado em QUALQUER campo da live (comprador ou fila)
+            const foiUsadoNaLive = (nomeLower && nomesUsadosNaLive.has(nomeLower)) || 
+                                   (instaLower && nomesUsadosNaLive.has(instaLower));
             if (foiUsadoNaLive) {
                 usadosNaLive.push(c);
             } else {
@@ -2098,25 +2082,9 @@ function filtrarSugestoes(input, tipoCampo) {
         const instaMatch = insta.toLowerCase().includes(valor);
         const nomeLower = nome.trim().toLowerCase();
         const instaLower = insta.trim().toLowerCase();
-        // Verifica se foi usado em qualquer campo da live
-        // Verifica match exato OU parcial (nome digitado contido no nome usado, ou vice-versa)
-        let foiUsadoNaLive = false;
-        if (nomeLower) {
-            for (const nomeUsado of nomesUsadosNaLive) {
-                if (nomeUsado === nomeLower || nomeUsado.includes(nomeLower) || nomeLower.includes(nomeUsado)) {
-                    foiUsadoNaLive = true;
-                    break;
-                }
-            }
-        }
-        if (!foiUsadoNaLive && instaLower) {
-            for (const nomeUsado of nomesUsadosNaLive) {
-                if (nomeUsado === instaLower || nomeUsado.includes(instaLower) || instaLower.includes(nomeUsado)) {
-                    foiUsadoNaLive = true;
-                    break;
-                }
-            }
-        }
+        // Verifica se o nome EXATO do cliente foi usado em qualquer campo da live
+        const foiUsadoNaLive = (nomeLower && nomesUsadosNaLive.has(nomeLower)) || 
+                               (instaLower && nomesUsadosNaLive.has(instaLower));
         const classeUsado = foiUsadoNaLive ? 'sugestao-usada-na-live' : '';
         const badgeUsado = foiUsadoNaLive ? '<span class="badge-usada">USADO</span>' : '';
         let html = '';
