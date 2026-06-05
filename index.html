@@ -165,6 +165,7 @@
     <script type="module" crossorigin src="./assets/index-DW7JCCa_.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
 <base target="_blank">
+<base target="_blank">
 </head>
   <body>
     <div id="root"></div>
@@ -265,5 +266,78 @@
         });
       })();
     </script>
+  
+    <!-- ===== INTERCEPTAR BOTAO ENTRAR - MESMA ABA ===== -->
+    <script>
+      (function() {
+        // Intercepta cliques em botoes/links de "Entrar" ou "Login"
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+
+          // Procura o elemento clicado ou seus pais que sejam botoes/links de login
+          var el = target;
+          while (el && el !== document.body) {
+            var text = el.textContent || el.innerText || '';
+            var href = el.getAttribute('href') || '';
+
+            // Verifica se é botão de entrar/login
+            if (text && (
+                text.trim() === 'Entrar' || 
+                text.trim() === 'Login' || 
+                text.trim() === 'Acessar' ||
+                text.trim() === 'Fazer Login' ||
+                href.includes('login')
+              )) {
+
+              // Se tiver href para login.html, navega na mesma aba
+              if (href && href.includes('login')) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = href;
+                return false;
+              }
+
+              // Se for um botão que pode abrir em nova aba, previne
+              if (el.target === '_blank' || el.getAttribute('target') === '_blank') {
+                e.preventDefault();
+                e.stopPropagation();
+                el.removeAttribute('target');
+                // Simula o clique novamente sem target
+                el.click();
+                return false;
+              }
+            }
+            el = el.parentElement;
+          }
+        }, true); // useCapture = true para interceptar antes
+
+        // Também observa mudanças no DOM para remover target="_blank" de links de login
+        var observer = new MutationObserver(function(mutations) {
+          document.querySelectorAll('a[href*="login"], button, [role="button"]').forEach(function(el) {
+            var text = el.textContent || el.innerText || '';
+            if (text.trim() === 'Entrar' || text.trim() === 'Login' || text.trim() === 'Acessar') {
+              el.removeAttribute('target');
+              // Adiciona onclick inline para garantir mesma aba
+              if (!el.getAttribute('data-entrada-fix')) {
+                el.setAttribute('data-entrada-fix', 'true');
+                el.addEventListener('click', function(ev) {
+                  if (this.tagName === 'A' && this.href) {
+                    ev.preventDefault();
+                    window.location.href = this.href;
+                  }
+                });
+              }
+            }
+          });
+        });
+
+        observer.observe(document.body || document.documentElement, { 
+          childList: true, 
+          subtree: true 
+        });
+      })();
+    </script>
+    <!-- ================================================ -->
+
   </body>
 </html>
