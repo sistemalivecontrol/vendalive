@@ -321,6 +321,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -755,11 +756,21 @@ let solicitacoes = [];
                     const rastreamentos = rastreamentosCache[sol.id] || [];
                     if (rastreamentos.length > 0) {
                         const maisRecente = rastreamentos[0];
-                        sol.codigo_rastreio = maisRecente.codigo_rastreio;
-                        sol.forma_envio = maisRecente.forma_envio;
-                        sol.data_envio = maisRecente.data_envio;
-                        sol.data_entrega_prevista = maisRecente.data_entrega_prevista;
-                        sol.rastreamento_id = maisRecente.id;
+                        // ✅ FORÇAR atribuição - sobrescreve qualquer valor existente
+                        sol.codigo_rastreio = maisRecente.codigo_rastreio || null;
+                        sol.forma_envio = maisRecente.forma_envio || null;
+                        sol.data_envio = maisRecente.data_envio || null;
+                        sol.data_entrega_prevista = maisRecente.data_entrega_prevista || null;
+                        sol.rastreamento_id = maisRecente.id || null;
+                        console.log("[RASTREIO] ✅ " + sol.numero_solicitacao + " → código: " + sol.codigo_rastreio);
+                    } else {
+                        // Limpar valores quando não há rastreamento
+                        sol.codigo_rastreio = null;
+                        sol.forma_envio = null;
+                        sol.data_envio = null;
+                        sol.data_entrega_prevista = null;
+                        sol.rastreamento_id = null;
+                        console.log("[RASTREIO] ❌ " + sol.numero_solicitacao + " → sem rastreamento");
                     }
                 });
 
@@ -883,7 +894,9 @@ async function aplicarFiltros() {
                     <td style="max-width: 200px; font-size: 0.85rem;">${enderecoCompleto}</td>
                     <td><span class="status-badge status-${s.status}">${formatarStatus(s.status)}</span></td>
                     <td style="text-align: center; vertical-align: middle;">
-                        ${s.codigo_rastreio ? `<span style="font-family: monospace; font-size: 0.8rem; color: #2E7D32; font-weight: 600;">${s.codigo_rastreio}</span>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
+                        ${(s.codigo_rastreio || (rastreamentosCache[s.id] && rastreamentosCache[s.id][0] && rastreamentosCache[s.id][0].codigo_rastreio)) 
+                            ? `<span class="codigo-rastreio-badge" onclick="abrirModalRastreio('${s.id}')" title="Clique para ver/editar rastreio">${s.codigo_rastreio || rastreamentosCache[s.id][0].codigo_rastreio}</span>` 
+                            : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
                     </td>
                     <td class="actions-cell" style="vertical-align: top; white-space: nowrap;">
                         <div style="display: flex; flex-direction: column; gap: 2px; align-items: stretch;">
