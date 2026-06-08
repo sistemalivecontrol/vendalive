@@ -1911,10 +1911,15 @@ Obrigada pela preferência! 🥰`;
                 showAlert('Cliente não possui WhatsApp cadastrado', 'error');
                 return;
             }
-            if (!sol.codigo_rastreio) {
+            // ✅ CORREÇÃO: Verificar código de rastreio tanto em sol quanto no cache
+            const codigoRastreio = sol.codigo_rastreio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].codigo_rastreio) || null;
+            if (!codigoRastreio) {
                 showAlert('Esta solicitação não possui código de rastreio cadastrado', 'error');
                 return;
             }
+            // Atribuir o código ao sol para garantir que gerarUrlRastreioWhatsApp funcione
+            sol.codigo_rastreio = codigoRastreio;
+            sol.forma_envio = sol.forma_envio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].forma_envio) || 'correios';
             // Gerar URL de rastreamento
             const urlRastreamento = gerarUrlRastreioWhatsApp(sol);
             // Formatar data prevista
