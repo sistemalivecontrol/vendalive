@@ -2118,10 +2118,26 @@ Qualquer dúvida, estou por aqui! 💕
 
         // Mensagem de Rastreamento Enviado
         async function enviarRastreamentoWhatsApp(dados) {
-            const texto = `Oi ${dados.nome.split(' ')[0]}! 👋\n\n🚚 *Seu pedido foi enviado!*\n\n📦 *Nº do Pedido:* ${dados.numeroSolicitacao}\n🔍 *Código de Rastreio:* ${dados.codigoRastreio}\n🚛 *Transportadora:* ${dados.transportadora}\n\n🔗 *Acompanhe sua entrega:*\n${dados.urlRastreamento}\n\n${dados.dataPrevista ? '📅 *Previsão de Entrega:* ' + dados.dataPrevista + '\n\n' : ''}Qualquer dúvida, estou por aqui! 💕\n\n_Pingo de Gente - LiveControl_`;
-            
+            // ✅ Usar a mesma mensagem do Instagram (mais amigável, sem markdown pesado)
+            const texto = `Oi ${dados.nome.split(' ')[0]}! 👋
+
+Seu pedido da Pingo de Gente foi enviado! 🚚✨
+
+📦 Nº do Pedido: ${dados.numeroSolicitacao}
+🔍 Código de Rastreio: ${dados.codigoRastreio}
+🚛 Transportadora: ${dados.transportadora}
+
+🔗 Acompanhe sua entrega:
+${dados.urlRastreamento}
+
+${dados.dataPrevista ? '📅 Previsão de Entrega: ' + dados.dataPrevista + '
+
+' : ''}Qualquer dúvida, estou por aqui! 💕
+Obrigada pela preferência! 🥰`;
+
             return await enviarWhatsApp(dados.whatsapp, texto);
         }
+
 
         // ============================================
         // ENVIO DE RASTREAMENTO VIA WHATSAPP (BOTÃO)
