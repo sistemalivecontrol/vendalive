@@ -1881,8 +1881,13 @@ async function aplicarFiltros() {
         function gerarMensagemInstagram(sol, urlRastreamento) {
             const cliente = sol.clientes_pg || {};
             const numero = sol.numero_solicitacao || 'N/A';
-            const codigo = sol.codigo_rastreio || 'N/A';
-            const formaEnvio = formatarFormaEnvio(sol.forma_envio);
+
+            // ✅ CORREÇÃO: Verificar código de rastreio tanto em sol.codigo_rastreio quanto no cache
+            const codigoRastreio = sol.codigo_rastreio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].codigo_rastreio) || null;
+            const formaEnvio = sol.forma_envio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].forma_envio) || null;
+            const urlRastreio = urlRastreamento || (codigoRastreio ? gerarUrlRastreioWhatsApp(sol) : null);
+
+            console.log('[INSTAGRAM MSG] Pedido:', numero, '| Código:', codigoRastreio, '| Forma:', formaEnvio);
 
             let mensagem = `Oi ${cliente.nome ? cliente.nome.split(' ')[0] : ''}! 👋
 
@@ -1893,14 +1898,14 @@ async function aplicarFiltros() {
             mensagem += `📦 Nº do Pedido: ${numero}
 `;
 
-            if (sol.codigo_rastreio) {
-                mensagem += `🔍 Código de Rastreio: ${codigo}
+            if (codigoRastreio) {
+                mensagem += `🔍 Código de Rastreio: ${codigoRastreio}
 `;
-                mensagem += `🚛 Transportadora: ${formaEnvio}
+                mensagem += `🚛 Transportadora: ${formatarFormaEnvio(formaEnvio)}
 `;
-                if (urlRastreamento) mensagem += `
+                if (urlRastreio) mensagem += `
 🔗 Acompanhe sua entrega:
-${urlRastreamento}
+${urlRastreio}
 `;
             }
 
