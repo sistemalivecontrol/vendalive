@@ -2213,10 +2213,16 @@ Qualquer dúvida, estou por aqui! 💕
 
         // Gerar URL de rastreamento para WhatsApp
         function gerarUrlRastreioWhatsApp(sol) {
-            if (!sol.codigo_rastreio) return '';
-            const formaEnvio = sol.forma_envio || 'correios';
+            // ✅ CORREÇÃO: Verificar código de rastreio tanto em sol quanto no cache
+            const codigoRastreio = sol.codigo_rastreio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].codigo_rastreio) || null;
+            if (!codigoRastreio) return '';
+
+            const formaEnvio = sol.forma_envio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].forma_envio) || 'correios';
             const geradorUrl = URLS_RASTREAMENTO[formaEnvio];
-            return geradorUrl ? geradorUrl(sol.codigo_rastreio) : `https://www.google.com/search?q=rastreamento+${sol.codigo_rastreio}`;
+            const url = geradorUrl ? geradorUrl(codigoRastreio) : `https://www.google.com/search?q=rastreamento+${codigoRastreio}`;
+
+            console.log('[URL RASTREIO] Forma:', formaEnvio, '| Código:', codigoRastreio, '| URL:', url);
+            return url;
         }
 
         // Logout usa auth.js - window.fazerLogout()
