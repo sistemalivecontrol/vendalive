@@ -22,7 +22,6 @@
 })();
 </script>
 <!-- ================================================ -->
-
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -198,7 +197,6 @@
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         .modal-header { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { font-size: 24px; }
         .modal-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: transform 0.3s; }
@@ -266,7 +264,6 @@
         .erro-config h3 { color: #e65100; margin-bottom: 10px; }
         .erro-config p { color: #666; margin-bottom: 15px; }
         .erro-config code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    
         /* ===== MODAL RASTREIO (do antigo) ===== */
         .historico-rastreamentos { background: #F5F5F5; border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
         .historico-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #FF6B8A; }
@@ -278,7 +275,6 @@
         .codigo-preview-label { font-size: 0.75rem; color: #4CAF50; text-transform: uppercase; margin-bottom: 5px; }
         .btn-apagar-rastreio { width: 100%; background: linear-gradient(135deg, #ff7675, #d63031); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s; margin-top: 10px; }
         .btn-apagar-rastreio:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4); }
-
         /* ===== MODAL INSTAGRAM (do antigo) ===== */
         .preview-instagram { background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px; padding: 20px; margin-top: 20px; border: 2px dashed #FF8BA7; }
         .preview-instagram h4 { color: #FF6B8A; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase; }
@@ -287,7 +283,6 @@
         .btn-abrir-instagram:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4); }
         .instagram-info { background: #FFF3E0; border: 2px solid #FF9800; border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; font-size: 0.9rem; color: #E65100; }
         .instagram-info strong { display: block; margin-bottom: 5px; }
-
         /* ===== MODAL INSTRUÇÕES DESKTOP ===== */
         .modal-instrucoes-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 4000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-instrucoes-overlay.ativo { display: flex; }
@@ -304,7 +299,6 @@
         .btn-copiar-abrir:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 138, 0.4); }
         .link-perfil { display: inline-block; margin-top: 10px; color: #1976D2; text-decoration: none; font-weight: 600; }
         .link-perfil:hover { text-decoration: underline; }
-
         /* ===== BOTÕES DE AÇÃO ADICIONAIS ===== */
         .btn-rastreio { background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; }
         .btn-rastreio:hover { transform: scale(1.05); }
@@ -315,7 +309,6 @@
         .btn-instagram:hover { transform: scale(1.05); }
         .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 </style>
-    
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -408,7 +401,6 @@
             </div>
         </div>
     </div>
-
     <div id="modalSolicitacao" class="modal">
         <div class="modal-content">
             <div class="modal-header"><h2 id="modalTitle">Nova Solicitação de Entrega</h2><button class="modal-close" onclick="fecharModal()">&times;</button></div>
@@ -458,7 +450,6 @@
             <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button><button class="btn btn-success" onclick="salvarSolicitacao()">Salvar Solicitação</button></div>
         </div>
     </div>
-
     <div id="modalVisualizar" class="modal">
         <div class="modal-content">
             <div class="modal-header"><h2>Detalhes da Solicitação</h2><button class="modal-close" onclick="fecharModalVisualizar()">&times;</button></div>
@@ -466,8 +457,6 @@
             <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModalVisualizar()">Fechar</button><button class="btn btn-primary" onclick="imprimirSolicitacao()">🖨️ Imprimir</button></div>
         </div>
     </div>
-
-    
     <!-- Modal Cadastrar/Editar Rastreio -->
     <div class="modal" id="modalRastreio">
         <div class="modal-content">
@@ -520,7 +509,6 @@
             </div>
         </div>
     </div>
-
     <!-- Modal Enviar Instagram -->
     <div class="modal" id="modalInstagram">
         <div class="modal-content">
@@ -549,7 +537,6 @@
             </div>
         </div>
     </div>
-
     <!-- Modal de Instruções Desktop -->
     <div class="modal-instrucoes-overlay" id="modalInstrucoesDesktop">
         <div class="modal-instrucoes">
@@ -581,9 +568,7 @@
             </div>
         </div>
     </div>
-
     <div id="printArea" class="print-area"></div>
-
     <script>
         // Variáveis globais (auth.js fornece supabaseClient, authClienteId)
         console.log('[RASTREAMENTO] v2026-05-29-1447 - Cache busting ativado');
@@ -605,7 +590,6 @@
             'retirada': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`,
             'outro': (codigo) => `https://www.google.com/search?q=rastreamento+${codigo}`
         };
-
         const REMETENTE = {
             nome: 'Amanda Marcelino',
             endereco: 'Rua Arnoldo Silveira de Souza, 50 - Casa',
@@ -614,15 +598,11 @@
             estado: 'SC',
             cep: '88104-740'
         };
-
         let rastreamentosCache = {};
         let instagramAtual = '';
-
 let solicitacoes = [];
         let clientes = [];
         let idsSelecionados = new Set();
-
-        
         // ============================================
         // DADOS DO USUÁRIO LOGADO - PADRÃO
         // ============================================
@@ -631,7 +611,6 @@ let solicitacoes = [];
         // ============================================
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('[GERENCIAMENTO v10.0] DOM carregado, iniciando...');
-
             // Aguardar auth.js inicializar
             await new Promise(resolve => {
                 const check = () => {
@@ -640,33 +619,25 @@ let solicitacoes = [];
                 };
                 check();
             });
-
             // Alias para compatibilidade
             supabaseClient = window.supabaseClient;
-
             // Usar auth.js para autenticação
             const session = await verificarSessao();
             if (!session) return; // Redirecionado pelo auth.js
-
             await carregarUsuarioLogado();
-
             // Atribuir variáveis para compatibilidade
             usuarioAtual = window.authUsuario;
             clienteAtual = window.authClienteId;
-
             if (!clienteAtual) {
                 showAlert('Erro: Cliente não identificado.', 'error');
                 setTimeout(() => { window.location.replace('login.html'); }, 3000);
                 return;
             }
-
             console.log('[GERENCIAMENTO] ✅ Autenticado via auth.js. Cliente ID:', clienteAtual);
-
             await mostrarInfoCliente();
             await carregarClientes();
             await carregarSolicitacoes();
         });
-
         async function mostrarInfoCliente() {
             try {
                 const { data: cliente } = await supabaseClient
@@ -677,7 +648,6 @@ let solicitacoes = [];
                 }
             } catch (e) { console.error(e); }
         }
-
         // ============================================
         // CARREGAR DADOS - CORRIGIDO
         // ============================================
@@ -689,12 +659,10 @@ let solicitacoes = [];
                     .eq('cliente_id', clienteAtual)
                     .order('nome');
                 if (error) throw error;
-
                 clientes = data || [];
                 const filtroCliente = document.getElementById('filtroCliente');
                 filtroCliente.innerHTML = `<option value="${clienteAtual}">Meus Clientes</option>`;
                 filtroCliente.value = clienteAtual;
-
                 const clienteSelect = document.getElementById('clienteSelect');
                 clienteSelect.innerHTML = '<option value="">Selecione...</option>';
                 clientes.forEach(c => {
@@ -706,7 +674,6 @@ let solicitacoes = [];
                 clienteSelect.addEventListener('change', function() { carregarEnderecosCliente(this.value); });
             } catch (error) { showAlert('Erro ao carregar clientes: ' + error.message, 'error'); }
         }
-
         async function carregarSolicitacoes() {
             try {
                 const { data, error } = await supabaseClient
@@ -715,43 +682,33 @@ let solicitacoes = [];
                     .eq('cliente_id', clienteAtual)
                     .order('criado_em', { ascending: false });
                 if (error) throw error;
-
                 solicitacoes = data || [];
-
                 // Carregar rastreamentos para cada solicitação
                 await carregarRastreamentos();
-
                 atualizarTabela();
                 atualizarEstatisticas();
             } catch (error) {
                 showAlert('Erro ao carregar: ' + error.message, 'error');
             }
         }
-
         async function carregarRastreamentos() {
             if (!supabaseClient || solicitacoes.length === 0) return;
-
             const solicitacaoIds = solicitacoes.map(s => s.id);
-
             try {
                 const { data, error } = await supabaseClient
                     .from('rastreamentos_pg')
                     .select('*')
                     .in('solicitacao_id', solicitacaoIds)
                     .order('data_cadastro', { ascending: false });
-
                 if (error) throw error;
-
                 rastreamentosCache = {};
                 solicitacaoIds.forEach(id => rastreamentosCache[id] = []);
-
                 (data || []).forEach(rast => {
                     if (!rastreamentosCache[rast.solicitacao_id]) {
                         rastreamentosCache[rast.solicitacao_id] = [];
                     }
                     rastreamentosCache[rast.solicitacao_id].push(rast);
                 });
-
                 solicitacoes.forEach(sol => {
                     const rastreamentos = rastreamentosCache[sol.id] || [];
                     if (rastreamentos.length > 0) {
@@ -773,13 +730,10 @@ let solicitacoes = [];
                         console.log("[RASTREIO] ❌ " + sol.numero_solicitacao + " → sem rastreamento");
                     }
                 });
-
             } catch (e) {
                 console.error('Erro ao carregar rastreamentos:', e);
             }
         }
-
-        
 // ============================================
 // NORMALIZAÇÃO DE TEXTO (remove acentos, lowercase)
 // ============================================
@@ -792,47 +746,36 @@ function normalizarTexto(texto) {
         .replace(/[^a-z0-9\s]/g, '')
         .trim();
 }
-
 function textoContemBusca(texto, busca) {
     if (!texto || !busca) return false;
     const textoNormalizado = normalizarTexto(texto);
     const buscaNormalizada = normalizarTexto(busca);
     return textoNormalizado.includes(buscaNormalizada);
 }
-
-
 async function aplicarFiltros() {
             const numero = document.getElementById('filtroNumero').value.trim();
             const status = document.getElementById('filtroStatus').value;
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
             const nomeCliente = document.getElementById('filtroNomeCliente').value.trim();
-
             try {
                 // Se tem filtro por nome, usamos abordagem diferente
                 // porque o Supabase não faz ilike com unaccent em relacionamentos
                 let query = supabaseClient.from('solicitacoes_pg')
                     .select(`*, cobranca_id, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
                     .eq('cliente_id', clienteAtual);
-
                 if (numero) query = query.ilike('numero_solicitacao', `%${numero}%`);
                 if (status) query = query.eq('status', status);
-
                 // NÃO aplicamos filtro de nome no Supabase - faremos no cliente
                 // para ter controle total de acentos e case
-
                 var dataHoraInicio = getDataHoraCompleta('inicio');
                 var dataHoraFim = getDataHoraCompleta('fim');
-
                 if (dataHoraInicio) query = query.gte('criado_em', dataHoraInicio);
                 if (dataHoraFim) query = query.lte('criado_em', dataHoraFim);
                 query = query.order('criado_em', { ascending: false });
-
                 const { data, error } = await query;
                 if (error) throw error;
-
                 let resultado = data || [];
-
                 // FILTRO POR NOME NO LADO DO CLIENTE (com normalização de acentos)
                 if (nomeCliente) {
                     resultado = resultado.filter(s => {
@@ -841,7 +784,6 @@ async function aplicarFiltros() {
                         return textoContemBusca(nomeClienteFinal, nomeCliente);
                     });
                 }
-
                 solicitacoes = resultado;
                 idsSelecionados.clear();
                 atualizarTabela();
@@ -862,7 +804,6 @@ async function aplicarFiltros() {
                 });
             }
         }
-
         // ============================================
         // ATUALIZAR INTERFACE - CORRIGIDO
         // ============================================
@@ -872,7 +813,6 @@ async function aplicarFiltros() {
                 tbody.innerHTML = `<tr><td colspan="13" class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhuma solicitação encontrada</p></td></tr>`;
                 return;
             }
-
             tbody.innerHTML = solicitacoes.map((s, index) => {
                 // ✅ CORREÇÃO: clientes_pg (cliente final) em vez de clientes_sistema (empresa)
                 const cliente = s.clientes_pg || {};
@@ -880,7 +820,6 @@ async function aplicarFiltros() {
                 const dataSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleDateString('pt-BR') : '-';
                 const horaSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                 const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || ''}${endereco.complemento ? ' - ' + endereco.complemento : ''} - ${endereco.bairro || ''}, ${endereco.cidade || ''}`;
-
                 return `<tr data-index="${index}">
                     <td class="checkbox-cell"><input type="checkbox" class="row-checkbox" onchange="toggleSelecao(${index})" value="${s.id}"></td>
                     <td><span class="numero-pedido">${s.numero_solicitacao || 'N/A'}</span></td>
@@ -894,9 +833,7 @@ async function aplicarFiltros() {
                     <td style="max-width: 200px; font-size: 0.85rem;">${enderecoCompleto}</td>
                     <td><span class="status-badge status-${s.status}">${formatarStatus(s.status)}</span></td>
                     <td style="text-align: center; vertical-align: middle;">
-                        ${(s.codigo_rastreio || (rastreamentosCache[s.id] && rastreamentosCache[s.id][0] && rastreamentosCache[s.id][0].codigo_rastreio)) 
-                            ? `<span class="codigo-rastreio-badge" onclick="abrirModalRastreio('${s.id}')" title="Clique para ver/editar rastreio">${s.codigo_rastreio || rastreamentosCache[s.id][0].codigo_rastreio}</span>` 
-                            : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
+                        ${(s.codigo_rastreio || (rastreamentosCache[s.id] && rastreamentosCache[s.id][0] && rastreamentosCache[s.id][0].codigo_rastreio)) ? `<span class="codigo-rastreio-badge" onclick="abrirModalRastreio('${s.id}')" title="Clique para ver/editar rastreio">${s.codigo_rastreio || rastreamentosCache[s.id][0].codigo_rastreio}</span>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
                     </td>
                     <td class="actions-cell" style="vertical-align: top; white-space: nowrap;">
                         <div style="display: flex; flex-direction: column; gap: 2px; align-items: stretch;">
@@ -911,7 +848,6 @@ async function aplicarFiltros() {
                 </tr>`;
             }).join('');
         }
-
         function atualizarEstatisticas() {
             document.getElementById('totalSolicitacoes').textContent = solicitacoes.length;
             document.getElementById('totalPendentes').textContent = solicitacoes.filter(s => s.status === 'pendente').length;
@@ -920,17 +856,14 @@ async function aplicarFiltros() {
             document.getElementById('totalEntregues').textContent = solicitacoes.filter(s => s.status === 'entregue').length;
             atualizarBotoes();
         }
-
         function formatarStatus(status) {
             const map = { 'pendente': 'Pendente', 'em_separacao': 'Em Separação', 'enviado': 'Enviado', 'entregue': 'Entregue', 'cancelado': 'Cancelado' };
             return map[status] || status;
         }
-
         function formatarFormaEnvio(forma) {
             const map = { 'correios_pac': 'Correios PAC', 'correios_sedex': 'Correios SEDEX', 'transportadora': 'Transportadora', 'motoboy': 'Motoboy', 'retirada': 'Retirada' };
             return map[forma] || forma || '-';
         }
-
         function formatarCNPJ(cnpj) { 
             if (!cnpj) return '-'; 
             cnpj = cnpj.toString().replace(/\D/g, ''); 
@@ -938,7 +871,6 @@ async function aplicarFiltros() {
                 ? cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') 
                 : cnpj; 
         }
-
         // ✅ ADICIONADO: Formatar CPF do cliente final
         function formatarCPF(cpf) { 
             if (!cpf) return '-'; 
@@ -947,26 +879,22 @@ async function aplicarFiltros() {
                 ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') 
                 : cpf; 
         }
-
         function formatarCEP(cep) { 
             if (!cep) return '-'; 
             cep = cep.toString().replace(/\D/g, ''); 
             return cep.length === 8 ? cep.replace(/(\d{5})(\d{3})/, '$1-$2') : cep; 
         }
-
         function formatarWhatsApp(telefone) { 
             if (!telefone) return '-'; 
             let num = telefone.toString().replace(/\D/g, ''); 
             return num.startsWith('55') ? num : '55' + num; 
         }
-
         function getTagRegiao(regiao) {
             const r = (regiao || '').toLowerCase();
             if (r.includes('florianópolis') || r.includes('floripa')) return '<span class="tag-regiao tag-floripa">🏠 Grande Florianópolis</span>';
             if (r.includes('catarina') || r.includes('sc')) return '<span class="tag-regiao tag-sc">🌲 Santa Catarina</span>';
             return '<span class="tag-regiao tag-outros">🇧🇷 Outros Estados</span>';
         }
-
         // ============================================
         // SELEÇÃO EM MASSA
         // ============================================
@@ -978,50 +906,41 @@ async function aplicarFiltros() {
             document.querySelectorAll('#tbodySolicitacoes tr').forEach(tr => tr.classList.toggle('selecionado', all));
             atualizarBotoes();
         }
-
         function toggleSelecao(index) {
             if (idsSelecionados.has(index)) idsSelecionados.delete(index); else idsSelecionados.add(index);
             const tr = document.querySelector(`tr[data-index="${index}"]`);
             if (tr) tr.classList.toggle('selecionado', idsSelecionados.has(index));
             atualizarBotoes();
         }
-
         function atualizarBotoes() {
             const habilitado = idsSelecionados.size > 0;
             document.getElementById('btnGerarPDF').disabled = !habilitado;
             document.getElementById('btnGerarEtiquetas').disabled = !habilitado;
             document.getElementById('btnEmitirEtiquetas').disabled = !habilitado;
         }
-
         // ============================================
         // FILTROS
         // ============================================
         function sincronizarDataHora(tipo) {
             var dataInput = document.getElementById('filtroData' + (tipo === 'inicio' ? 'Inicio' : 'Fim'));
             var horaInput = document.getElementById('filtroHora' + (tipo === 'inicio' ? 'Inicio' : 'Fim'));
-
             if (!dataInput.value) {
                 // Se limpar a data, limpar também a hora
                 horaInput.value = '';
                 return;
             }
-
             // Se a data foi preenchida mas a hora está vazia, definir padrão
             if (!horaInput.value) {
                 horaInput.value = tipo === 'inicio' ? '00:00' : '23:59';
             }
         }
-
         function getDataHoraCompleta(tipo) {
             var data = document.getElementById('filtroData' + (tipo === 'inicio' ? 'Inicio' : 'Fim')).value;
             var hora = document.getElementById('filtroHora' + (tipo === 'inicio' ? 'Inicio' : 'Fim')).value;
-
             if (!data) return null;
-
             // Se tem data mas não tem hora, usar padrão
             var horaPadrao = tipo === 'inicio' ? '00:00' : '23:59';
             var horaFinal = hora || horaPadrao;
-
             // Criar data no timezone local e converter para ISO string (UTC)
             // Isso garante que o filtro respeite exatamente a hora selecionada pelo usuário
             var partesData = data.split('-');
@@ -1036,7 +955,6 @@ async function aplicarFiltros() {
             );
             return dataLocal.toISOString();
         }
-
         function limparFiltros() {
             document.getElementById('filtroNumero').value = '';
             document.getElementById('filtroStatus').value = '';
@@ -1048,7 +966,6 @@ async function aplicarFiltros() {
             idsSelecionados.clear();
             carregarSolicitacoes();
         }
-
         // ============================================
         // MODAIS
         // ============================================
@@ -1058,7 +975,6 @@ async function aplicarFiltros() {
             document.getElementById('solicitacaoId').value = '';
             document.getElementById('modalSolicitacao').classList.add('active');
         }
-
         async function editarSolicitacao(id) {
             const s = solicitacoes.find(x => x.id === id);
             if (!s) return;
@@ -1085,11 +1001,9 @@ async function aplicarFiltros() {
             document.getElementById('emailEnviado').checked = s.email_enviado || false;
             document.getElementById('modalSolicitacao').classList.add('active');
         }
-
         function fecharModal() { document.getElementById('modalSolicitacao').classList.remove('active'); }
         function fecharModalVisualizar() { document.getElementById('modalVisualizar').classList.remove('active'); }
         function fecharModalEtiquetas() { document.getElementById('modalEtiquetas').classList.remove('active'); }
-
         // ============================================
         // SALVAR
         // ============================================
@@ -1098,7 +1012,6 @@ async function aplicarFiltros() {
             const clientePgId = document.getElementById('clienteSelect').value;
             const enderecoId = document.getElementById('enderecoSelect').value;
             if (!clientePgId || !enderecoId) { showAlert('Selecione cliente e endereço', 'error'); return; }
-
             const dados = {
                 cliente_id: clienteAtual, cliente_pg_id: clientePgId, endereco_id: enderecoId,
                 data_corte_semanal: document.getElementById('dataCorte').value || null,
@@ -1119,7 +1032,6 @@ async function aplicarFiltros() {
                 email_enviado: document.getElementById('emailEnviado').checked,
                 atualizado_em: new Date().toISOString()
             };
-
             try {
                 if (id) {
                     const { error } = await supabaseClient.from('solicitacoes_pg').update(dados).eq('id', id);
@@ -1136,7 +1048,6 @@ async function aplicarFiltros() {
                 carregarSolicitacoes();
             } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
         }
-
         // ============================================
         // VISUALIZAR - CORRIGIDO
         // ============================================
@@ -1177,7 +1088,6 @@ async function aplicarFiltros() {
             document.getElementById('visualizarContent').innerHTML = content;
             document.getElementById('modalVisualizar').classList.add('active');
         }
-
         // ============================================
         // EXCLUIR
         // ============================================
@@ -1190,7 +1100,6 @@ async function aplicarFiltros() {
                 carregarSolicitacoes();
             } catch (error) { showAlert('Erro: ' + error.message, 'error'); }
         }
-
         async function verCobrancaPix(cobrancaId) {
             if (!supabaseClient) { showAlert('Sistema não conectado.', 'error'); return; }
             if (!cobrancaId || cobrancaId === 'null' || cobrancaId === 'undefined') {
@@ -1203,18 +1112,15 @@ async function aplicarFiltros() {
                     .select('id, comprador_nome, valor, status, status_mp, mp_payment_id, mp_ticket_url, pago_em, criado_em, atualizado_em, comprador_email, comprador_whatsapp, pagador_cpf_cnpj, comprador_cpf')
                     .eq('id', cobrancaId)
                     .maybeSingle();
-
                 if (error) {
                     console.error('Erro:', error);
                     showAlert('Erro ao buscar cobrança.', 'error');
                     return;
                 }
-
                 if (!cobranca) {
                     showAlert('Cobrança não encontrada.', 'warning');
                     return;
                 }
-
                 const statusText = cobranca.status === 'pago' ? '✅ Pago' : cobranca.status === 'pendente' ? '⏳ Pendente' : '❌ ' + cobranca.status;
                 const html = 
                     '<div style="padding:10px;">' +
@@ -1231,7 +1137,6 @@ async function aplicarFiltros() {
                     '<strong>Criado em:</strong> ' + (cobranca.criado_em ? new Date(cobranca.criado_em).toLocaleString('pt-BR') : '-') + '<br>' +
                     (cobranca.mp_ticket_url ? '<br><a href="' + cobranca.mp_ticket_url + '" target="_blank" style="color:#0B193F;font-weight:600;">🔗 Ver no Mercado Pago</a>' : '') +
                     '</div>';
-
                 // Abrir modal de detalhes da cobrança PIX
                 document.getElementById('modalDetalhesPixBody').innerHTML = html;
                 document.getElementById('modalDetalhesPixTitulo').textContent = '💳 Detalhes da Cobrança';
@@ -1241,16 +1146,13 @@ async function aplicarFiltros() {
                 showAlert('Erro ao buscar cobrança.', 'error');
             }
         }
-
         // ============================================
         // PDF - LAYOUT IGUAL AO ANTIGO (PORTRAIT)
         // ============================================
         async function gerarPDF() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
             selecionados.sort((a, b) => {
                 // ✅ CORREÇÃO: Ordenar por nome do cliente final (clientes_pg)
@@ -1258,12 +1160,10 @@ async function aplicarFiltros() {
                 const nomeB = ((b.clientes_pg?.nome) || '').toLowerCase();
                 return nomeA.localeCompare(nomeB, 'pt-BR');
             });
-
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.text('Loja e Brecho Pingo de Gente - Solicitacoes de Entrega', 15, 15);
-
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
             const dataInicio = document.getElementById('filtroDataInicio').value;
@@ -1272,11 +1172,9 @@ async function aplicarFiltros() {
                 ? `Periodo: ${formatarDataInputParaBr(dataInicio)} a ${formatarDataInputParaBr(dataFim)}`
                 : `Periodo: ${new Date().toLocaleDateString('pt-BR')}`;
             doc.text(periodo, 15, 22);
-
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.5);
             doc.line(10, 25, 287, 25);
-
             const dadosTabela = selecionados.map(s => {
                 // ✅ CORREÇÃO: clientes_pg (cliente final)
                 const cliente = s.clientes_pg || {};
@@ -1285,13 +1183,11 @@ async function aplicarFiltros() {
                 const dadosPacote = [];
                 if (s.peso_kg) dadosPacote.push(`Peso: ${s.peso_kg}kg`);
                 if (dim.length > 0) dadosPacote.push(`Medidas: ${dim.join('x')}cm`);
-
                 // ✅ MELHORIA: Se tiver observações, mostrar aviso abaixo do nome
                 let nomeComObs = cliente.nome || '-';
                 if (s.observacoes && s.observacoes.trim()) {
                     nomeComObs = cliente.nome + '\n\n***Contêm Observações***';
                 }
-
                 return [
                     formatarDataBr(s.criado_em),
                     nomeComObs,
@@ -1303,7 +1199,6 @@ async function aplicarFiltros() {
                     dadosPacote.join(' | ') || '-'
                 ];
             });
-
             doc.autoTable({
                 head: [['Data', 'Nome', 'Instagram', 'Regiao', 'CEP', 'Cidade', 'Observacoes', 'Dados do pacote']],
                 body: dadosTabela,
@@ -1355,7 +1250,6 @@ async function aplicarFiltros() {
                     }
                 }
             });
-
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -1368,69 +1262,54 @@ async function aplicarFiltros() {
                     { align: 'center' }
                 );
             }
-
             const pdfBlobUrl = doc.output('bloburl');
             const novaAba = window.open(pdfBlobUrl, '_blank');
             if (!novaAba) {
                 alert('❌ O navegador bloqueou a abertura de nova aba. Por favor, permita popups para este site.');
             }
         }
-
         function formatarDataInputParaBr(dataString) {
             if (!dataString) return '-';
             const partes = dataString.split('-');
             if (partes.length !== 3) return dataString;
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
-
         function formatarDataBr(data) {
             if (!data) return '-';
             const d = new Date(data);
             return isNaN(d.getTime()) ? data : d.toLocaleDateString('pt-BR');
         }
-
         // ============================================
         // ETIQUETAS PDF (4 POR PAGINA A4)
         // ============================================
         async function gerarEtiquetas() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('portrait', 'mm', 'a4');
-
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
-
             const margemX = 10, margemY = 10, gapX = 5, gapY = 5;
             const etiquetaLargura = 92.5, etiquetaAltura = 136;
             const posicoesX = [margemX, margemX + etiquetaLargura + gapX];
             const posicoesY = [margemY, margemY + etiquetaAltura + gapY];
-
             let etiquetaAtual = 0;
-
             selecionados.forEach((item, index) => {
                 const posicaoNaPagina = etiquetaAtual % 4;
                 const coluna = posicaoNaPagina % 2;
                 const linha = Math.floor(posicaoNaPagina / 2);
                 if (posicaoNaPagina === 0 && index > 0) doc.addPage();
-
                 const posX = posicoesX[coluna];
                 const posY = posicoesY[linha];
-
                 const endereco = item.enderecos_pg || {};
                 // ✅ CORREÇÃO: clientes_pg (cliente final) em vez de clientes_sistema
                 const cliente = item.clientes_pg || {};
-
                 doc.setDrawColor(0, 0, 0);
                 doc.setLineWidth(0.5);
                 doc.rect(posX, posY, etiquetaLargura, etiquetaAltura);
-
                 doc.line(posX, posY + 28, posX + etiquetaLargura, posY + 28);
-
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
                 doc.text('REMETENTE:', posX + 3, posY + 6);
-
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(0, 0, 0);
@@ -1439,32 +1318,26 @@ async function aplicarFiltros() {
                 doc.setFont('helvetica', 'normal');
                 doc.text(REMETENTE.endereco, posX + 3, posY + 19);
                 doc.text(`${REMETENTE.bairro} - ${REMETENTE.cidade} - ${REMETENTE.estado}`, posX + 3, posY + 24);
-
                 const destY = posY + 35;
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
                 doc.text('DESTINATARIO:', posX + 3, destY);
-
                 if (item.numero_solicitacao) {
                     doc.setFontSize(8);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(255, 107, 138);
                     doc.text(`PEDIDO: ${item.numero_solicitacao}`, posX + etiquetaLargura - 3, destY, { align: 'right' });
                 }
-
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(0, 0, 0);
                 const nome = (cliente.nome || 'NAO INFORMADO').toUpperCase();
                 const nomeLinhas = doc.splitTextToSize(nome, etiquetaLargura - 6);
                 doc.text(nomeLinhas, posX + 3, destY + 8);
-
                 let currentY = destY + 8 + (nomeLinhas.length * 5);
-
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'normal');
-
                 const rua = endereco.rua || '';
                 const numero = endereco.numero || 'S/N';
                 const complemento = endereco.complemento || '';
@@ -1473,58 +1346,46 @@ async function aplicarFiltros() {
                 const linhasEndereco = doc.splitTextToSize(linhaEndereco, etiquetaLargura - 6);
                 doc.text(linhasEndereco, posX + 3, currentY);
                 currentY += (linhasEndereco.length * 4.5) + 2;
-
                 if (endereco.bairro) {
                     doc.text(`Bairro: ${endereco.bairro}`, posX + 3, currentY);
                     currentY += 5;
                 }
-
                 doc.setFont('helvetica', 'bold');
                 doc.text(`${endereco.cidade || ''} - ${endereco.estado || 'SC'}`, posX + 3, currentY);
                 currentY += 8;
-
                 doc.setFontSize(11);
                 doc.text(`CEP: ${formatarCEP(endereco.cep)}`, posX + 3, currentY + 1);
-
                 const obsY = posY + etiquetaAltura - 20;
                 doc.setDrawColor(150, 150, 150);
                 doc.setLineWidth(0.3);
                 doc.line(posX + 3, obsY, posX + etiquetaLargura - 3, obsY);
-
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
                 doc.text('OBSERVACOES:', posX + 3, obsY + 5);
-
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(0, 0, 0);
                 const obs = item.observacoes || 'Nenhuma observacao';
                 const linhasObs = doc.splitTextToSize(obs, etiquetaLargura - 6);
                 doc.text(linhasObs.slice(0, 2), posX + 3, obsY + 10);
-
                 doc.setFontSize(6);
                 doc.setTextColor(150, 150, 150);
                 doc.text(`${index + 1}/${selecionados.length}`, posX + etiquetaLargura - 2, posY + etiquetaAltura - 2, { align: 'right' });
-
                 etiquetaAtual++;
             });
-
             const pdfBlobUrl = doc.output('bloburl');
             const novaAba = window.open(pdfBlobUrl, '_blank');
             if (!novaAba) alert('❌ Permita popups para este site.');
         }
-
         // ============================================
         // ETIQUETAS MODAL (COPIAR CAMPOS)
         // ============================================
         function abrirModalEtiquetas() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
-
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
             const container = document.getElementById('etiquetasContainer');
             container.innerHTML = '';
-
             selecionados.forEach((item, idx) => {
                 const endereco = item.enderecos_pg || {};
                 // ✅ CORREÇÃO: clientes_pg (cliente final) em vez de clientes_sistema
@@ -1532,7 +1393,6 @@ async function aplicarFiltros() {
                 const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || 'S/N'}${endereco.complemento ? ' - ' + endereco.complemento : ''}`;
                 const cidadeUF = `${endereco.cidade || ''} - ${endereco.estado || 'SC'}`;
                 const temMedidas = item.peso_kg || item.altura_cm || item.largura_cm || item.comprimento_cm;
-
                 const medidasHtml = temMedidas ? `
                     <div class="etiqueta-secao">
                         <div class="etiqueta-secao-titulo">📦 Medidas do Pacote</div>
@@ -1547,7 +1407,6 @@ async function aplicarFiltros() {
                         <div class="etiqueta-secao-titulo">📦 Medidas do Pacote</div>
                         <div style="padding: 15px; background: #FFF3E0; border-radius: 8px; color: #E65100; font-size: 0.9rem;">⚠️ Medidas nao cadastradas</div>
                     </div>`;
-
                 const card = document.createElement('div');
                 card.className = 'etiqueta-card';
                 card.innerHTML = `
@@ -1579,10 +1438,8 @@ async function aplicarFiltros() {
                     </div>`;
                 container.appendChild(card);
             });
-
             document.getElementById('modalEtiquetas').classList.add('active');
         }
-
         function copiarCampo(elementId, botao) {
             const elemento = document.getElementById(elementId);
             if (!elemento) return;
@@ -1605,9 +1462,7 @@ async function aplicarFiltros() {
                 window.getSelection().removeAllRanges();
             });
         }
-
         function imprimirSolicitacao() { window.print(); }
-
         // ============================================
         // UTILITARIOS
         // ============================================
@@ -1619,8 +1474,6 @@ async function aplicarFiltros() {
             container.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);
         }
-
-
         // ============================================
         // FUNÇÕES DE RASTREIO (mescladas do antigo)
         // ============================================
@@ -1641,13 +1494,11 @@ async function aplicarFiltros() {
             }
             return valor;
         }
-
         function previewCodigoRastreio() {
             const input = document.getElementById('codigoRastreioModal');
             const preview = document.getElementById('codigoPreview');
             const extraido = document.getElementById('codigoExtraido');
             const codigo = extrairCodigoRastreio(input.value);
-
             if (codigo && input.value.includes('/')) {
                 extraido.textContent = codigo;
                 preview.classList.add('active');
@@ -1655,16 +1506,12 @@ async function aplicarFiltros() {
                 preview.classList.remove('active');
             }
         }
-
         async function abrirModalRastreio(solicitacaoId) {
             const sol = solicitacoes.find(s => s.id === solicitacaoId);
             if (!sol) return;
-
             document.getElementById('rastreioSolicitacaoId').value = solicitacaoId;
             document.getElementById('rastreioId').value = sol.rastreamento_id || '';
-
             await mostrarHistoricoRastreamentos(solicitacaoId);
-
             if (sol.rastreamento_id) {
                 const rastRecente = rastreamentosCache[solicitacaoId]?.[0];
                 if (rastRecente) {
@@ -1683,22 +1530,18 @@ async function aplicarFiltros() {
                 document.getElementById('observacoesRastreio').value = '';
                 document.getElementById('btnApagarRastreio').style.display = 'none';
             }
-
             // Preview de código de rastreio
             document.getElementById('codigoPreview').classList.remove('active');
             document.getElementById('modalRastreio').classList.add('active');
         }
-
         async function mostrarHistoricoRastreamentos(solicitacaoId) {
             const historicoDiv = document.getElementById('historicoRastreamentos');
             const listaDiv = document.getElementById('listaHistorico');
             const rastreamentos = rastreamentosCache[solicitacaoId] || [];
-
             if (rastreamentos.length === 0) {
                 historicoDiv.style.display = 'none';
                 return;
             }
-
             let html = '';
             rastreamentos.forEach((rast) => {
                 const dataCad = new Date(rast.data_cadastro).toLocaleString('pt-BR');
@@ -1712,38 +1555,30 @@ async function aplicarFiltros() {
                     </div>
                 `;
             });
-
             listaDiv.innerHTML = html;
             historicoDiv.style.display = 'block';
         }
-
         async function salvarRastreio(event) {
             event.preventDefault();
-
             const solicitacaoId = document.getElementById('rastreioSolicitacaoId').value;
             const rastreioId = document.getElementById('rastreioId').value;
             const codigoInput = document.getElementById('codigoRastreioModal').value.trim();
             const codigo = extrairCodigoRastreio(codigoInput);
-
             if (!codigo && !rastreioId) {
                 alert('⚠️ Informe um código de rastreio');
                 return;
             }
-
             if (!codigo && rastreioId) {
                 alert('⚠️ Para remover o rastreamento, use o botão "Apagar Rastreio"');
                 return;
             }
-
             const dataEnvio = document.getElementById('dataEnvioModal').value || null;
             const dataPrevista = document.getElementById('dataPrevistaModal').value || null;
             const formaEnvio = document.getElementById('formaEnvioModal').value;
             const observacoes = document.getElementById('observacoesRastreio').value || null;
             const deveEnviarWhatsApp = document.getElementById('enviarWhatsApp')?.checked;
-
             try {
                 let result;
-
                 if (rastreioId) {
                     result = await supabaseClient
                         .from('rastreamentos_pg')
@@ -1769,47 +1604,35 @@ async function aplicarFiltros() {
                         })
                         .select();
                 }
-
                 if (result.error) throw result.error;
-
                 await supabaseClient
                     .from('solicitacoes_pg')
                     .update({ status: 'enviado' })
                     .eq('id', solicitacaoId);
-
                 showAlert('✅ Rastreio salvo com sucesso!', 'success');
-
                 fecharModalRastreio();
                 await carregarSolicitacoes();
-
             } catch (e) {
                 console.error('Erro ao salvar rastreio:', e);
                 showAlert('❌ Erro ao salvar rastreio: ' + e.message, 'error');
             }
         }
-
         async function apagarRastreio() {
             const rastreioId = document.getElementById('rastreioId').value;
             const solicitacaoId = document.getElementById('rastreioSolicitacaoId').value;
-
             if (!rastreioId) {
                 alert('⚠️ Nenhum rastreamento para apagar');
                 return;
             }
-
             if (!confirm('🗑️ Tem certeza que deseja APAGAR este rastreamento?\n\nEsta ação não pode ser desfeita!')) return;
             if (!confirm('⚠️ CONFIRMAÇÃO FINAL:\n\nO rastreamento será permanentemente removido. Deseja continuar?')) return;
-
             try {
                 const { error } = await supabaseClient
                     .from('rastreamentos_pg')
                     .delete()
                     .eq('id', rastreioId);
-
                 if (error) throw error;
-
                 const rastreamentosRestantes = rastreamentosCache[solicitacaoId]?.filter(r => r.id !== rastreioId) || [];
-
                 if (rastreamentosRestantes.length === 0) {
                     await supabaseClient
                         .from('solicitacoes_pg')
@@ -1826,78 +1649,59 @@ async function aplicarFiltros() {
                         })
                         .eq('id', solicitacaoId);
                 }
-
                 fecharModalRastreio();
                 await carregarSolicitacoes();
                 showAlert('✅ Rastreamento apagado com sucesso!', 'success');
-
             } catch (e) {
                 console.error('Erro ao apagar rastreio:', e);
                 showAlert('❌ Erro ao apagar rastreamento: ' + e.message, 'error');
             }
         }
-
-        
-
         function fecharModalRastreio() {
             document.getElementById('modalRastreio').classList.remove('active');
         }
-
         // ============================================
         // FUNÇÕES INSTAGRAM (mescladas do antigo)
         // ============================================
         function abrirModalInstagram(solicitacaoId) {
             const sol = solicitacoes.find(s => s.id === solicitacaoId);
             if (!sol) return;
-
             const cliente = sol.clientes_pg || {};
             if (!cliente.instagram) {
                 showAlert('Cliente não possui Instagram cadastrado', 'error');
                 return;
             }
-
             instagramAtual = cliente.instagram.replace('@', '').trim();
             document.getElementById('igClienteNome').value = `${cliente.nome} (@${instagramAtual})`;
-
             const urlRastreamento = gerarUrlRastreamento(sol);
             const mensagem = gerarMensagemInstagram(sol, urlRastreamento);
             document.getElementById('igMensagem').value = mensagem;
             document.getElementById('igPreview').textContent = mensagem;
-
             document.getElementById('igMensagem').oninput = function() {
                 document.getElementById('igPreview').textContent = this.value;
             };
-
             document.getElementById('modalInstagram').classList.add('active');
         }
-
         function gerarUrlRastreamento(sol) {
             if (!sol.codigo_rastreio) return null;
             const formaEnvio = sol.forma_envio || 'correios';
             const geradorUrl = URLS_RASTREAMENTO[formaEnvio];
             return geradorUrl ? geradorUrl(sol.codigo_rastreio) : `https://www.google.com/search?q=rastreamento+${sol.codigo_rastreio}`;
         }
-
         function gerarMensagemInstagram(sol, urlRastreamento) {
             const cliente = sol.clientes_pg || {};
             const numero = sol.numero_solicitacao || 'N/A';
-
             // ✅ CORREÇÃO: Verificar código de rastreio tanto em sol.codigo_rastreio quanto no cache
             const codigoRastreio = sol.codigo_rastreio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].codigo_rastreio) || null;
             const formaEnvio = sol.forma_envio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].forma_envio) || null;
             const urlRastreio = urlRastreamento || (codigoRastreio ? gerarUrlRastreioWhatsApp(sol) : null);
-
             console.log('[INSTAGRAM MSG] Pedido:', numero, '| Código:', codigoRastreio, '| Forma:', formaEnvio);
-
             let mensagem = `Oi ${cliente.nome ? cliente.nome.split(' ')[0] : ''}! 👋
-
 `;
             mensagem += `Seu pedido da Pingo de Gente foi enviado! 🚚✨
-
 `;
             mensagem += `📦 Nº do Pedido: ${numero}
 `;
-
             if (codigoRastreio) {
                 mensagem += `🔍 Código de Rastreio: ${codigoRastreio}
 `;
@@ -1908,65 +1712,51 @@ async function aplicarFiltros() {
 ${urlRastreio}
 `;
             }
-
             if (sol.data_entrega_prevista) {
                 mensagem += `
 📅 Previsão de Entrega: ${new Date(sol.data_entrega_prevista).toLocaleDateString('pt-BR')}
 `;
             }
-
             mensagem += `
 Qualquer dúvida, estou por aqui! 💕
 `;
             mensagem += `Obrigada pela preferência! 🥰`;
-
             return mensagem;
         }
-
         function abrirInstagramCliente() {
             if (!instagramAtual) {
                 showAlert('Não foi possível encontrar o Instagram do cliente', 'error');
                 return;
             }
-
             const username = instagramAtual.replace('@', '').trim();
             const userAgent = navigator.userAgent.toLowerCase();
             const isAndroid = /android/.test(userAgent);
             const isIOS = /iphone|ipad|ipod/.test(userAgent);
             const isMobile = isAndroid || isIOS;
-
             if (isMobile) {
                 abrirInstagramMobile(username, isAndroid, isIOS);
             } else {
                 abrirInstagramDesktop(username);
             }
         }
-
         function abrirInstagramMobile(username, isAndroid, isIOS) {
             const webUrl = `https://www.instagram.com/${username}`;
-
             if (isAndroid) {
                 const appUrl = `instagram://user?username=${username}`;
                 const intentUrl = `intent://instagram.com/_u/${username}#Intent;package=com.instagram.android;scheme=https;end`;
-
                 window.location.href = appUrl;
-
                 setTimeout(() => {
                     if (document.hidden) return;
                     window.location.href = intentUrl;
-
                     setTimeout(() => {
                         if (document.hidden) return;
                         window.open(webUrl, '_blank');
                         mostrarInstrucoesDesktop(username, webUrl);
                     }, 800);
                 }, 600);
-
             } else if (isIOS) {
                 const appUrl = `instagram://user?username=${username}`;
-
                 window.location.href = appUrl;
-
                 setTimeout(() => {
                     if (document.hidden) return;
                     window.open(webUrl, '_blank');
@@ -1974,26 +1764,21 @@ Qualquer dúvida, estou por aqui! 💕
                 }, 800);
             }
         }
-
         function abrirInstagramDesktop(username) {
             const webUrl = `https://www.instagram.com/${username}`;
             window.open(webUrl, '_blank');
-
             setTimeout(() => {
                 mostrarInstrucoesDesktop(username, webUrl);
             }, 500);
         }
-
         function mostrarInstrucoesDesktop(username, perfilUrl) {
             document.getElementById('instrucoesUsername').textContent = '@' + username;
             document.getElementById('linkPerfilWeb').href = perfilUrl;
             document.getElementById('modalInstrucoesDesktop').classList.add('ativo');
         }
-
         function fecharModalInstrucoes() {
             document.getElementById('modalInstrucoesDesktop').classList.remove('ativo');
         }
-
         function copiarEAbrirDirect() {
             const mensagem = document.getElementById('igMensagem').value;
             navigator.clipboard.writeText(mensagem).then(() => {
@@ -2004,12 +1789,10 @@ Qualquer dúvida, estou por aqui! 💕
                 showAlert('Erro ao copiar mensagem. Copie manualmente.', 'error');
             });
         }
-
         function copiarParaInstagram() {
             const mensagem = document.getElementById('igMensagem').value;
             navigator.clipboard.writeText(mensagem).then(() => {
                 showAlert('✅ Mensagem copiada!', 'success');
-
                 const modalInstrucoes = document.getElementById('modalInstrucoesDesktop');
                 if (!modalInstrucoes.classList.contains('ativo')) {
                     if (instagramAtual && confirm('Mensagem copiada! Deseja abrir o Instagram agora?')) {
@@ -2026,12 +1809,9 @@ Qualquer dúvida, estou por aqui! 💕
                 showAlert('✅ Mensagem copiada!', 'success');
             });
         }
-
         function fecharModalInstagram() {
             document.getElementById('modalInstagram').classList.remove('active');
         }
-
-
 // ============================================
 // EVOLUTION API - ENVIO DE WHATSAPP
 // ============================================
@@ -2039,31 +1819,25 @@ Qualquer dúvida, estou por aqui! 💕
         window.EVOLUTION_API_URL = window.EVOLUTION_API_URL || 'https://evolution-api-o12a.onrender.com';
         window.EVOLUTION_API_KEY = window.EVOLUTION_API_KEY || '8117861c85b102b1fafd496132bba462';
         window.EVOLUTION_INSTANCE = window.EVOLUTION_INSTANCE || 'pingodegente';
-
         async function enviarWhatsApp(numero, texto) {
             let numeroLimpo = numero.replace(/\D/g, '');
             if (!numeroLimpo.startsWith('55')) {
                 numeroLimpo = '55' + numeroLimpo;
             }
-            
             // Tentativa 1 com timeout de 20s
             let resultado = await _enviarWhatsApp(numeroLimpo, texto, 20000);
-            
             // Se falhou por timeout, tentar mais uma vez
             if (!resultado.sucesso && resultado.erro === 'Timeout') {
                 console.log('[EVOLUTION] Timeout na tentativa 1, aguardando 3s para retry...');
                 await new Promise(r => setTimeout(r, 3000));
                 resultado = await _enviarWhatsApp(numeroLimpo, texto, 25000);
             }
-            
             return resultado;
         }
-
         async function _enviarWhatsApp(numeroLimpo, texto, timeoutMs) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
                 const response = await fetch(`${window.EVOLUTION_API_URL}/message/sendText/${window.EVOLUTION_INSTANCE}`, {
                     method: 'POST',
                     headers: {
@@ -2077,10 +1851,8 @@ Qualquer dúvida, estou por aqui! 💕
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                
                 const data = await response.json();
                 console.log('[EVOLUTION] Response:', JSON.stringify(data));
-                
                 // Tratar erro 400: número não existe no WhatsApp
                 if (!response.ok) {
                     if (data.response && data.response.message && Array.isArray(data.response.message)) {
@@ -2090,21 +1862,17 @@ Qualquer dúvida, estou por aqui! 💕
                             return { sucesso: false, erro: 'NÚMERO_INVÁLIDO', dados: data, mensagem: 'Este número não está cadastrado no WhatsApp: ' + msg.number };
                         }
                     }
-                    
                     // WORKAROUND: Erro Prisma (mensagem geralmente enviada mesmo com erro)
                     const isPrismaError = data.response &&
                                          data.response.message &&
                                          Array.isArray(data.response.message) &&
                                          data.response.message.some(m => typeof m === 'string' && m.includes('Prisma'));
-                    
                     if (isPrismaError) {
                         console.warn('[EVOLUTION] Workaround Prisma: erro 400 ignorado');
                         return { sucesso: true, dados: data, warning: 'Erro interno do servidor (Prisma), mas mensagem foi enviada' };
                     }
-                    
                     return { sucesso: false, erro: data.error || 'HTTP ' + response.status, dados: data };
                 }
-                
                 return { sucesso: true, dados: data };
             } catch (erro) {
                 if (erro.name === 'AbortError') {
@@ -2115,30 +1883,20 @@ Qualquer dúvida, estou por aqui! 💕
                 return { sucesso: false, erro: erro.message };
             }
         }
-
         // Mensagem de Rastreamento Enviado
         async function enviarRastreamentoWhatsApp(dados) {
             // ✅ Usar a mesma mensagem do Instagram (mais amigável, sem markdown pesado)
             const texto = `Oi ${dados.nome.split(' ')[0]}! 👋
-
 Seu pedido da Pingo de Gente foi enviado! 🚚✨
-
 📦 Nº do Pedido: ${dados.numeroSolicitacao}
 🔍 Código de Rastreio: ${dados.codigoRastreio}
 🚛 Transportadora: ${dados.transportadora}
-
 🔗 Acompanhe sua entrega:
 ${dados.urlRastreamento}
-
-${dados.dataPrevista ? '📅 Previsão de Entrega: ' + dados.dataPrevista + '
-
-' : ''}Qualquer dúvida, estou por aqui! 💕
+${dados.dataPrevista ? '📅 Previsão de Entrega: ' + dados.dataPrevista + '\n\n' : ''}Qualquer dúvida, estou por aqui! 💕
 Obrigada pela preferência! 🥰`;
-
             return await enviarWhatsApp(dados.whatsapp, texto);
         }
-
-
         // ============================================
         // ENVIO DE RASTREAMENTO VIA WHATSAPP (BOTÃO)
         // ============================================
@@ -2148,27 +1906,22 @@ Obrigada pela preferência! 🥰`;
                 showAlert('Solicitação não encontrada', 'error');
                 return;
             }
-
             const cliente = sol.clientes_pg || {};
             if (!cliente.whatsapp) {
                 showAlert('Cliente não possui WhatsApp cadastrado', 'error');
                 return;
             }
-
             if (!sol.codigo_rastreio) {
                 showAlert('Esta solicitação não possui código de rastreio cadastrado', 'error');
                 return;
             }
-
             // Gerar URL de rastreamento
             const urlRastreamento = gerarUrlRastreioWhatsApp(sol);
-
             // Formatar data prevista
             let dataPrevista = '';
             if (sol.data_entrega_prevista) {
                 dataPrevista = new Date(sol.data_entrega_prevista).toLocaleDateString('pt-BR');
             }
-
             const dados = {
                 nome: cliente.nome || 'Cliente',
                 numeroSolicitacao: sol.numero_solicitacao || 'N/A',
@@ -2178,26 +1931,21 @@ Obrigada pela preferência! 🥰`;
                 dataPrevista: dataPrevista,
                 whatsapp: cliente.whatsapp
             };
-
             // Mostrar spinner/loading no botão
             const btn = event.target.closest('button') || event.target;
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '⏳ Enviando...';
             btn.disabled = true;
-
             try {
                 const resultado = await enviarRastreamentoWhatsApp(dados);
-
                 // ✅ REGISTRAR LOG AUTOMÁTICO NA TABELA whatsapp_envios
                 if (typeof enviarRastreamentoWhatsAppComLog === 'function') {
                     await enviarRastreamentoWhatsAppComLog(cliente, sol, resultado);
                 }
-
                 if (resultado.sucesso) {
                     // ✅ MENSAGEM ENVIADA COM SUCESSO
                     showAlert('✅ Mensagem enviada com sucesso para ' + cliente.whatsapp + '!', 'success');
                     console.log('[WHATSAPP] ✅ Mensagem enviada para', cliente.whatsapp);
-                    
                     // Efeito visual no botão: mudar para verde por 3 segundos
                     btn.innerHTML = '✅ Enviado!';
                     btn.style.background = 'linear-gradient(135deg, #4CAF50, #388E3C)';
@@ -2207,7 +1955,6 @@ Obrigada pela preferência! 🥰`;
                         btn.disabled = false;
                     }, 3000);
                     return; // Não executar finally imediatamente
-                    
                 } else if (resultado.erro === 'NÚMERO_INVÁLIDO') {
                     showAlert('📱 ' + (resultado.mensagem || 'Este número não está cadastrado no WhatsApp'), 'warning');
                 } else if (resultado.erro === 'Timeout') {
@@ -2226,30 +1973,23 @@ Obrigada pela preferência! 🥰`;
                 }
             }
         }
-
         // Gerar URL de rastreamento para WhatsApp
         function gerarUrlRastreioWhatsApp(sol) {
             // ✅ CORREÇÃO: Verificar código de rastreio tanto em sol quanto no cache
             const codigoRastreio = sol.codigo_rastreio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].codigo_rastreio) || null;
             if (!codigoRastreio) return '';
-
             const formaEnvio = sol.forma_envio || (rastreamentosCache[sol.id] && rastreamentosCache[sol.id][0] && rastreamentosCache[sol.id][0].forma_envio) || 'correios';
             const geradorUrl = URLS_RASTREAMENTO[formaEnvio];
             const url = geradorUrl ? geradorUrl(codigoRastreio) : `https://www.google.com/search?q=rastreamento+${codigoRastreio}`;
-
             console.log('[URL RASTREIO] Forma:', formaEnvio, '| Código:', codigoRastreio, '| URL:', url);
             return url;
         }
-
         // Logout usa auth.js - window.fazerLogout()
-
         function abrirRelatorioSolicitacoes() {
             if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma solicitação', 'error'); return; }
-
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
             const ids = selecionados.map(s => s.id);
             sessionStorage.setItem('relatorio_ids', JSON.stringify(ids));
-
             const filtros = {
                 numero: document.getElementById('filtroNumero').value,
                 status: document.getElementById('filtroStatus').value,
@@ -2258,17 +1998,13 @@ Obrigada pela preferência! 🥰`;
                 nomeCliente: document.getElementById('filtroNomeCliente').value
             };
             sessionStorage.setItem('relatorio_filtros', JSON.stringify(filtros));
-
             window.location.href = 'rel_solicitacoes.html';
         }
-
         function fecharModalDetalhesPix() {
             document.getElementById('modalDetalhesPix').classList.remove('active');
         }
-
     </script>
     <script src="whatsapp-envios-log.js?v=20260529"></script>
-
     <!-- Modal Detalhes Cobrança PIX -->
     <div class="modal" id="modalDetalhesPix">
         <div class="modal-content">
@@ -2277,6 +2013,5 @@ Obrigada pela preferência! 🥰`;
             <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharModalDetalhesPix()">Fechar</button></div>
         </div>
     </div>
-
 </body>
 </html>
