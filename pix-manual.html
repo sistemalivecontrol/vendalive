@@ -227,6 +227,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -267,12 +268,12 @@
                     <div class="stat-card"><h3 id="stat-total">0</h3><p>Total</p></div>
                 </div>
                 <div class="botoes-centro" style="text-align:center !important; margin:20px 0;">
-                    <button class="ativo" onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
+                    <button onclick="filtrarPix('aguardando')">⏳ Todos Pendentes</button>
                     <button onclick="filtrarPix('cliente-clicou')">👆 Cliente Clicou "Paguei"</button>
                     <button onclick="filtrarPix('confirmados')">✅ Confirmados</button>
                     <button class="cancelados-btn" onclick="filtrarPix('cancelados')">❌ Cancelados Manual</button>
                     <button class="cancelado-link-btn" onclick="filtrarPix('cancelado-link')">🔗 Cancelados Link</button>
-                    <button onclick="filtrarPix('todos')">📋 Todos</button>
+                    <button class="ativo" onclick="filtrarPix('todos')">📋 Todos</button>
                     <button onclick="carregarPix()">🔄 Atualizar</button>
                 </div>
                 <div id="loading-pix" class="loading" style="display:none;"><p>Carregando...</p></div>
@@ -370,7 +371,7 @@
         let supabaseClient = null;
         let usuarioLogado = null;
         let clienteSistemaId = null;
-        let filtroPixAtual = 'aguardando';
+        let filtroPixAtual = 'todos';
         let filtroAsaasAtual = 'todos';
         let filtroMpAtual = 'todos';
         let filtroInfiniteAtual = 'todos';
@@ -547,7 +548,7 @@
                 atualizarStatsPix(todosPixs);
                 let pixsFiltrados = aplicarFiltroPix(todosPixs, filtroPixAtual);
                 if (pixsFiltrados.length === 0) {
-                    lista.innerHTML = '<div class="sem-pix">Nenhum PIX ' + (filtroPixAtual === 'aguardando' ? 'pendente' : 'encontrado') + '</div>';
+                    lista.innerHTML = '<div class="sem-pix">Nenhum PIX encontrado</div>';
                     return;
                 }
                 const vendaIds = [...new Set(pixsFiltrados.map(p => p.venda_id).filter(Boolean))];
@@ -651,7 +652,7 @@
 
         function filtrarPix(tipo) {
             filtroPixAtual = tipo;
-            document.querySelectorAll('#aba-pix .filtros button').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('#aba-pix .botoes-centro button').forEach(b => b.classList.remove('ativo'));
             event.target.classList.add('ativo');
             carregarPix();
         }
@@ -893,7 +894,7 @@
 
         function filtrarAsaas(tipo) {
             filtroAsaasAtual = tipo;
-            document.querySelectorAll('#aba-asaas .filtros button').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('#aba-asaas .botoes-centro button').forEach(b => b.classList.remove('ativo'));
             event.target.classList.add('ativo');
             carregarAsaas();
         }
@@ -1118,7 +1119,7 @@
 
         function filtrarMp(tipo) {
             filtroMpAtual = tipo;
-            document.querySelectorAll('#aba-mp .filtros button').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('#aba-mp .botoes-centro button').forEach(b => b.classList.remove('ativo'));
             event.target.classList.add('ativo');
             carregarMp();
         }
@@ -1328,7 +1329,7 @@
 
         function filtrarInfinite(tipo) {
             filtroInfiniteAtual = tipo;
-            document.querySelectorAll('#aba-infinite .filtros button').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('#aba-infinite .botoes-centro button').forEach(b => b.classList.remove('ativo'));
             event.target.classList.add('ativo');
             carregarInfinite();
         }
