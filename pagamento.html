@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento - VendaLive</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(91, 155, 213, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(11, 25, 63, 0.8) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(91, 155, 213, 0.05) 0%, transparent 60%);
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .logo h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .logo h1 span { color: #5b9bd5; }
+        .logo p {
+            color: rgba(255,255,255,0.45);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .plano-info {
+            background: rgba(91, 155, 213, 0.1);
+            border: 1px solid rgba(91, 155, 213, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .plano-info .nome {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .plano-info .preco {
+            color: #5b9bd5;
+            font-size: 36px;
+            font-weight: 800;
+        }
+        .plano-info .preco span {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+        }
+        .plano-info .desc {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #5b9bd5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 20px;
+        }
+        .error-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .error-state h3 {
+            color: #f87171;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .error-state p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .success-state {
+            text-align: center;
+            padding: 20px;
+        }
+        .success-state .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+        }
+        .success-state h3 {
+            color: #4ade80;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .success-state p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+        .payment-option:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(91, 155, 213, 0.3);
+            transform: translateY(-1px);
+        }
+        .payment-option .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(91, 155, 213, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .payment-option .info {
+            flex: 1;
+            text-align: left;
+        }
+        .payment-option .info .nome {
+            font-weight: 600;
+            font-size: 15px;
+            color: white;
+            margin-bottom: 2px;
+        }
+        .payment-option .info .desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+        .payment-option .arrow {
+            color: rgba(255,255,255,0.3);
+            font-size: 18px;
+        }
+
+        .pix-section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        .pix-section h4 {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        .pix-qr {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .pix-qr img {
+            width: 200px;
+            height: 200px;
+        }
+        .pix-code {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            word-break: break-all;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pix-code:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(91, 155, 213, 0.3);
+        }
+        .btn-copiar {
+            padding: 10px 20px;
+            background: #5b9bd5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-copiar:hover {
+            background: #4a8bc4;
+        }
+        .btn-voltar {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-voltar:hover { color: #5b9bd5; }
+
+        .info-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .info-box p strong {
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 28px 20px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">
+                <img src="./img/logo-livecontrol.png" alt="VendaLive">
+                <h1>Venda<span>Live</span></h1>
+                <p>Ative sua conta para começar a usar</p>
+            </div>
+
+            <div id="conteudo">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Gerando sua cobrança...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const PLANOS = {
+            basic: { nome: 'Basic', valor: 80.00, desc: 'Até 3 usuários · Suporte por e-mail' },
+            premium: { nome: 'Premium', valor: 100.00, desc: 'Usuários ilimitados · Suporte prioritário' }
+        };
+
+        // Pegar dados do cadastro do localStorage
+        const dadosCadastro = JSON.parse(localStorage.getItem('cadastroPendente') || '{}');
+        const conteudo = document.getElementById('conteudo');
+
+        async function gerarCobranca() {
+            if (!dadosCadastro.cliente_id) {
+                mostrarErro('Dados do cadastro não encontrados. Por favor, faça o cadastro novamente.');
+                return;
+            }
+
+            const plano = dadosCadastro.plano || 'basic';
+            const p = PLANOS[plano];
+
+            // Mostrar info do plano
+            conteudo.innerHTML = `
+                <div class="plano-info">
+                    <div class="nome">Plano ${p.nome}</div>
+                    <div class="preco">R$ ${p.valor.toFixed(2).replace('.', ',')}<span>/mês</span></div>
+                    <div class="desc">${p.desc}</div>
+                </div>
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Gerando cobrança no Asaas...</p>
+                </div>
+            `;
+
+            try {
+                // Chamar Edge Function para criar assinatura no Asaas
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/asaas-criar-assinatura`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        nome: dadosCadastro.nome_empresa || dadosCadastro.nome_responsavel,
+                        email: dadosCadastro.email,
+                        cpfCnpj: dadosCadastro.cnpj,
+                        telefone: dadosCadastro.telefone,
+                        plano: plano,
+                        cliente_id: dadosCadastro.cliente_id
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Erro ao gerar cobrança');
+                }
+
+                // Salvar dados do pagamento no localStorage
+                localStorage.setItem('pagamentoPendente', JSON.stringify({
+                    ...result,
+                    plano: plano,
+                    cliente_id: dadosCadastro.cliente_id
+                }));
+
+                // Mostrar opções de pagamento
+                mostrarOpcoesPagamento(result, p);
+
+            } catch (error) {
+                console.error('[PAGAMENTO] Erro:', error);
+                mostrarErro('Erro ao gerar cobrança: ' + error.message);
+            }
+        }
+
+        function mostrarOpcoesPagamento(dados, plano) {
+            conteudo.innerHTML = `
+                <div class="plano-info">
+                    <div class="nome">Plano ${plano.nome}</div>
+                    <div class="preco">R$ ${plano.valor.toFixed(2).replace('.', ',')}<span>/mês</span></div>
+                    <div class="desc">Vencimento: ${new Date(dados.vencimento).toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="info-box">
+                    <p>Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.</p>
+                </div>
+                <div class="payment-options">
+                    <a href="${dados.invoice_url}" target="_blank" class="payment-option">
+                        <div class="icon">💳</div>
+                        <div class="info">
+                            <div class="nome">Cartão de Crédito</div>
+                            <div class="desc">Pagamento recorrente automático</div>
+                        </div>
+                        <div class="arrow">›</div>
+                    </a>
+                    <a href="${dados.bank_slip_url || dados.invoice_url}" target="_blank" class="payment-option">
+                        <div class="icon">📄</div>
+                        <div class="info">
+                            <div class="nome">Boleto Bancário</div>
+                            <div class="desc">Vencimento em ${new Date(dados.vencimento).toLocaleDateString('pt-BR')}</div>
+                        </div>
+                        <div class="arrow">›</div>
+                    </a>
+                    ${dados.pix_qr_code ? `
+                    <div class="payment-option" onclick="mostrarPIX()" style="cursor:pointer">
+                        <div class="icon">⚡</div>
+                        <div class="info">
+                            <div class="nome">PIX</div>
+                            <div class="desc">Pagamento instantâneo com QR Code</div>
+                        </div>
+                        <div class="arrow">›</div>
+                    </div>
+                    ` : ''}
+                </div>
+                <a href="cadastro.html" class="btn-voltar">← Voltar para cadastro</a>
+            `;
+        }
+
+        function mostrarPIX() {
+            const pagamento = JSON.parse(localStorage.getItem('pagamentoPendente') || '{}');
+            if (!pagamento.pix_qr_code) return;
+
+            conteudo.innerHTML = `
+                <div class="success-state">
+                    <div class="icon">⚡</div>
+                    <h3>Pagamento via PIX</h3>
+                    <p>Escaneie o QR Code ou copie o código PIX para pagar</p>
+                </div>
+                <div class="pix-section">
+                    <h4>QR Code PIX</h4>
+                    <div class="pix-qr">
+                        <img src="data:image/png;base64,${pagamento.pix_qr_code}" alt="QR Code PIX">
+                    </div>
+                    <div class="pix-code" onclick="copiarPIX()" title="Clique para copiar">
+                        ${pagamento.pix_payload || 'Código PIX não disponível'}
+                    </div>
+                    <button class="btn-copiar" onclick="copiarPIX()">📋 Copiar Código PIX</button>
+                </div>
+                <div class="info-box">
+                    <p><strong>Importante:</strong> Após o pagamento, aguarde alguns minutos para a confirmação automática. Você receberá um e-mail quando sua conta for ativada.</p>
+                </div>
+                <a href="login.html" class="btn-voltar">→ Já paguei? Ir para Login</a>
+            `;
+        }
+
+        function copiarPIX() {
+            const pagamento = JSON.parse(localStorage.getItem('pagamentoPendente') || '{}');
+            if (pagamento.pix_payload) {
+                navigator.clipboard.writeText(pagamento.pix_payload).then(() => {
+                    alert('✅ Código PIX copiado! Abra seu app bancário e cole o código.');
+                });
+            }
+        }
+
+        function mostrarErro(mensagem) {
+            conteudo.innerHTML = `
+                <div class="error-state">
+                    <div class="icon">⚠️</div>
+                    <h3>Ops! Algo deu errado</h3>
+                    <p>${mensagem}</p>
+                    <a href="cadastro.html" class="btn-voltar" style="display:inline-block;padding:12px 24px;background:#5b9bd5;color:white;border-radius:10px;text-decoration:none;font-weight:600;">Voltar para Cadastro</a>
+                </div>
+            `;
+        }
+
+        // Iniciar ao carregar a página
+        gerarCobranca();
+    </script>
+</body>
+</html>
