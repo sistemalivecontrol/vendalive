@@ -909,13 +909,13 @@
                 };
                 localStorage.setItem('cadastroPendente', JSON.stringify(dadosCadastro));
 
-                successDiv.innerHTML = '✅ Conta criada com sucesso!<br><br>Em instantes você será redirecionado para o pagamento da mensalidade.';
+                successDiv.innerHTML = '✅ Conta criada com sucesso!<br><br>Redirecionando para o pagamento...';
                 successDiv.style.display = 'block';
 
                 // Redirecionar para página de pagamento (ou dashboard com aviso)
                 setTimeout(() => {
                     // Por enquanto redireciona para login, depois mudamos para pagamento Asaas
-                    window.location.href = 'login.html?cadastro=sucesso&plano=' + plano;
+                    window.location.href = 'pagamento.html';
                 }, 3000);
 
             } catch (error) {
