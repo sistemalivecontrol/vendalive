@@ -108,6 +108,8 @@ async function enviarSolicitacaoLogin(e) {
       campo_mensagem: mensagem || "Nenhuma mensagem",
       // Resumo formatado para o template
       resumo_dados: "Nome: " + nome + " | E-mail: " + email + " | WhatsApp: " + whatsapp + " | Loja: " + (loja || "Não informado"),
+      // Mensagem amigável para o cliente (já incluída no e-mail que você recebe)
+      mensagem_cliente: "Olá " + nome + ",\n\nObrigado pelo seu interesse no VendaLive! Estamos muito felizes em ter você conosco.\n\nPara começar a testar o sistema, utilize os dados de acesso abaixo:\n\n🔐 Dados de Acesso (Teste)\n👤 Login: teste@teste.com.br\n🔑 Senha: 123456\n\n⚠️ Atenção: Este é um usuário de teste. Entre em contato para receber o login e senha definitivo.\n\n🚀 Acessar o VendaLive:\nhttps://vendalive.com.br/login.html\n\nOu acesse diretamente: vendalive.com.br/login.html\n\nSe tiver alguma dúvida, entre em contato conosco pelo WhatsApp ou e-mail. Estamos aqui para ajudar!\n\nEquipe VendaLive\ncontato@vendalive.com.br",
       // Observações completas (fallback)
       observacoes: "Solicitação de acesso de teste ao VendaLive.\n\nDados:\n- Nome: " + nome + "\n- E-mail: " + email + "\n- WhatsApp: " + whatsapp + "\n- Loja/Instagram: " + (loja || "Não informado") + "\n- Mensagem: " + (mensagem || "Nenhuma") + "\n\nEnviado em: " + new Date().toLocaleString("pt-BR")
     };
