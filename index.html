@@ -339,68 +339,86 @@
     </script>
     <!-- ================================================ -->
 
-    <!-- ===== AJUSTES MENU: PLANOS (ANCORA), DEMONSTRACAO (WHATSAPP), REMOVER ATUALIZACOES ===== -->
+    <!-- ===== AJUSTES MENU: PLANOS (ANCORA), DEMONSTRACAO (WHATSAPP), OCULTAR ATUALIZACOES ===== -->
     <script>
       (function() {
         const WHATSAPP_DEMO_URL = 'https://api.whatsapp.com/send/?phone=5547935053141&text=Ol%C3%A1%21%20Tenho%20interesse%20em%20uma%20Demonstra%C3%A7%C3%A3o%20do%20Sistema.&type=phone_number&app_absent=0';
         
+        // Marca elementos já processados para não reprocessar
+        var processedLinks = new WeakSet();
+        
         function ajustarMenu() {
-          // 1) Link "Planos" -> âncora #planos
-          document.querySelectorAll('a, button, [role="link"]').forEach(function(el) {
+          // Busca todos os links possíveis no footer/menu
+          var allLinks = document.querySelectorAll('a, button, [role="link"], [class*="link"]');
+          
+          allLinks.forEach(function(el) {
+            // Pula se já processou este elemento
+            if (processedLinks.has(el)) return;
+            
             var text = (el.textContent || el.innerText || '').trim();
             var href = (el.getAttribute('href') || '').trim();
             
-            // Planos e Preços -> âncora #planos na mesma página
+            // --- 1) PLANOS E PREÇOS -> âncora #planos ---
             if (text === 'Planos e Preços' || text === 'Planos' || text === 'Preços') {
+              processedLinks.add(el);
               el.setAttribute('href', '#planos');
               el.removeAttribute('target');
-              el.addEventListener('click', function(ev) {
+              // Remove qualquer listener anterior e adiciona novo
+              el.onclick = function(ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
-                // Verifica se existe a seção #planos na página
                 var secaoPlanos = document.getElementById('planos');
                 if (secaoPlanos) {
                   secaoPlanos.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                  // Se não existe a seção, cria um âncora invisível no final da página
-                  // e tenta rolar até lá, ou simplesmente faz nada
                   window.location.hash = 'planos';
                 }
                 return false;
-              });
+              };
             }
             
-            // Demonstração -> WhatsApp
-            if (text === 'Demonstração' || text === 'Demo' || text === 'Demonstracao') {
+            // --- 2) DEMONSTRAÇÃO -> WhatsApp ---
+            else if (text === 'Demonstração' || text === 'Demo' || text === 'Demonstracao') {
+              processedLinks.add(el);
               el.setAttribute('href', WHATSAPP_DEMO_URL);
               el.setAttribute('target', '_blank');
               el.setAttribute('rel', 'noopener noreferrer');
+              el.onclick = null; // Limpa onclick anterior
             }
             
-            // Atualizações -> remover completamente
-            if (text === 'Atualizações' || text === 'Atualizacoes' || text === 'Updates') {
-              // Remove o elemento e seu container <li> se existir
+            // --- 3) ATUALIZAÇÕES -> OCULTAR (não remover!) ---
+            else if (text === 'Atualizações' || text === 'Atualizacoes' || text === 'Updates') {
+              processedLinks.add(el);
+              // Oculta visualmente mas mantém no DOM
+              el.style.display = 'none';
+              el.style.visibility = 'hidden';
+              el.style.pointerEvents = 'none';
+              // Também oculta o container pai (li ou div) se for um item de lista
               var parent = el.parentElement;
-              if (parent && (parent.tagName === 'LI' || parent.tagName === 'DIV')) {
-                parent.remove();
-              } else {
-                el.remove();
+              if (parent && (parent.tagName === 'LI' || parent.tagName === 'UL' || parent.tagName === 'DIV')) {
+                // Só oculta se o pai tiver apenas este link como filho visível
+                var siblings = Array.from(parent.children).filter(function(c) {
+                  return c !== el && c.style.display !== 'none';
+                });
+                if (siblings.length === 0) {
+                  parent.style.display = 'none';
+                  parent.style.visibility = 'hidden';
+                }
               }
             }
           });
         }
 
-        // Executa imediatamente e após React renderizar
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', ajustarMenu);
-        } else {
-          ajustarMenu();
-        }
-        setTimeout(ajustarMenu, 500);
+        // Executa imediatamente
+        ajustarMenu();
+        
+        // Reexecuta após React renderizar
+        setTimeout(ajustarMenu, 300);
+        setTimeout(ajustarMenu, 800);
         setTimeout(ajustarMenu, 1500);
         setTimeout(ajustarMenu, 3000);
 
-        // Observa mudanças no DOM para re-aplicar
+        // Observa mudanças no DOM
         var observer = new MutationObserver(function() {
           ajustarMenu();
         });
@@ -417,10 +435,9 @@
       (function() {
         function garantirAncoraPlanos() {
           if (!document.getElementById('planos')) {
-            // Cria uma âncora invisível no final da página, antes do footer/contato
             var ancora = document.createElement('div');
             ancora.id = 'planos';
-            ancora.style.cssText = 'position: relative; top: -80px; height: 0; width: 0;';
+            ancora.style.cssText = 'position: relative; top: -80px; height: 0; width: 0; pointer-events: none;';
             
             var contactSection = document.getElementById('contact-section');
             if (contactSection && contactSection.parentElement) {
