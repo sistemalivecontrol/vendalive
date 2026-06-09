@@ -98,13 +98,17 @@ async function enviarSolicitacaoLogin(e) {
       loja: loja || "Não informado",
       mensagem: mensagem || "Nenhuma mensagem",
       data_solicitacao: new Date().toLocaleDateString("pt-BR"),
+      hora_solicitacao: new Date().toLocaleTimeString("pt-BR"),
       regiao: "Solicitação de Login de Testes",
-      rua: "-",
-      numero: "-",
-      complemento: "-",
-      bairro: "-",
-      cidade: "-",
-      cep: "-",
+      // Campos individuais para o template
+      campo_nome: nome,
+      campo_email: email,
+      campo_whatsapp: whatsapp,
+      campo_loja: loja || "Não informado",
+      campo_mensagem: mensagem || "Nenhuma mensagem",
+      // Resumo formatado para o template
+      resumo_dados: "Nome: " + nome + " | E-mail: " + email + " | WhatsApp: " + whatsapp + " | Loja: " + (loja || "Não informado"),
+      // Observações completas (fallback)
       observacoes: "Solicitação de acesso de teste ao VendaLive.\n\nDados:\n- Nome: " + nome + "\n- E-mail: " + email + "\n- WhatsApp: " + whatsapp + "\n- Loja/Instagram: " + (loja || "Não informado") + "\n- Mensagem: " + (mensagem || "Nenhuma") + "\n\nEnviado em: " + new Date().toLocaleString("pt-BR")
     };
 
