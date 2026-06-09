@@ -162,7 +162,7 @@
     <style>
       * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     </style>
-    <script type="module" crossorigin src="./assets/index-DW7JCCa_.js"></script>
+    <script type="module" crossorigin src="./assets/index-DW7JCCa_.js?v=2"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C3lEyXtq.css">
 <base target="_blank">
 <base target="_blank">
@@ -188,6 +188,7 @@
         setTimeout(window._emailjsInit, 2000);
       });
     </script>
+<base target="_blank">
 <base target="_blank">
 </head>
   <body>
@@ -362,5 +363,63 @@
     </script>
     <!-- ================================================ -->
 
-  </body>
+  
+    <!-- ===== INTERCEPTAR LINKS DOS PLANOS ===== -->
+    <script>
+      (function() {
+        // Intercepta cliques nos botões "Escolher Plano Basic" e "Escolher Plano Premium"
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+          var el = target;
+
+          // Procura o elemento clicado ou seus pais que sejam links de plano
+          while (el && el !== document.body) {
+            var text = (el.textContent || el.innerText || '').trim();
+            var href = el.getAttribute('href') || '';
+
+            // Detecta botão de plano Basic
+            if (text === 'Escolher Plano Basic' || href.includes('Plano Basic')) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = 'cadastro.html?plano=basic';
+              return false;
+            }
+
+            // Detecta botão de plano Premium
+            if (text === 'Escolher Plano Premium' || href.includes('Plano Premium')) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = 'cadastro.html?plano=premium';
+              return false;
+            }
+
+            el = el.parentElement;
+          }
+        }, true);
+
+        // Também observa mudanças no DOM (React re-renderiza)
+        var observer = new MutationObserver(function(mutations) {
+          document.querySelectorAll('a[href*="Plano Basic"], a[href*="Plano Premium"]').forEach(function(el) {
+            if (el.getAttribute('href').includes('Plano Basic')) {
+              el.setAttribute('href', 'cadastro.html?plano=basic');
+              el.removeAttribute('target');
+              el.removeAttribute('rel');
+            }
+            if (el.getAttribute('href').includes('Plano Premium')) {
+              el.setAttribute('href', 'cadastro.html?plano=premium');
+              el.removeAttribute('target');
+              el.removeAttribute('rel');
+            }
+          });
+        });
+
+        observer.observe(document.body || document.documentElement, { 
+          childList: true, 
+          subtree: true 
+        });
+      })();
+    </script>
+    <!-- ========================================== -->
+
+</body>
 </html>
