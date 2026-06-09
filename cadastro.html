@@ -835,23 +835,49 @@
                     throw new Error('Erro ao criar usuário no sistema de autenticação.');
                 }
 
-                // 3. Criar cliente_sistema
+                // 3. Criar cliente_sistema (tenta com 'plano', se falhar tenta sem)
                 const dataExpiracao = new Date();
                 dataExpiracao.setDate(dataExpiracao.getDate() + 7); // 7 dias de teste
 
-                const { data: novoCliente, error: clienteError } = await supabaseClient
+                let novoCliente = null;
+                let clienteError = null;
+
+                // Tentativa 1: com coluna 'plano'
+                const result1 = await supabaseClient
                     .from('clientes_sistema')
                     .insert({
                         nome: nomeEmpresa,
                         email: email,
                         telefone: telefone,
                         cnpj: cnpj,
-                        ativo: false, // Inativo até pagar
+                        ativo: false,
                         data_expiracao: dataExpiracao.toISOString().split('T')[0],
                         plano: plano
                     })
                     .select()
                     .single();
+
+                if (result1.error && result1.error.message && result1.error.message.includes('plano')) {
+                    // Tentativa 2: sem coluna 'plano' (ainda não criada no banco)
+                    console.log('[CADASTRO] Coluna plano não existe, cadastrando sem ela...');
+                    const result2 = await supabaseClient
+                        .from('clientes_sistema')
+                        .insert({
+                            nome: nomeEmpresa,
+                            email: email,
+                            telefone: telefone,
+                            cnpj: cnpj,
+                            ativo: false,
+                            data_expiracao: dataExpiracao.toISOString().split('T')[0]
+                        })
+                        .select()
+                        .single();
+                    novoCliente = result2.data;
+                    clienteError = result2.error;
+                } else {
+                    novoCliente = result1.data;
+                    clienteError = result1.error;
+                }
 
                 if (clienteError) throw new Error('Erro ao criar cliente: ' + clienteError.message);
 
