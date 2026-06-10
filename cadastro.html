@@ -286,7 +286,13 @@
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; font-size: 13px; color: #8b9dc3; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Escolha seu Plano</label>
 
-                    <div class="plano-card selected" data-plano="Basic" data-valor="80.00" onclick="selecionarPlano(this)">
+                    <div class="plano-card selected" data-plano="Teste" data-valor="0.00" data-teste="true" onclick="selecionarPlano(this)">
+                        <h3>🎁 Plano Teste Grátis</h3>
+                        <div class="preco">GRÁTIS<span>/7 dias</span></div>
+                        <p style="font-size: 12px; color: #8b9dc3; margin-top: 4px;">Teste todas as funcionalidades por 7 dias</p>
+                    </div>
+
+                    <div class="plano-card" data-plano="Basic" data-valor="80.00" onclick="selecionarPlano(this)">
                         <h3>Plano Basic</h3>
                         <div class="preco">R$ 80,00<span>/mês</span></div>
                         <p style="font-size: 12px; color: #8b9dc3; margin-top: 4px;">Ideal para começar</p>
@@ -300,7 +306,7 @@
                 </div>
 
                 <button type="button" class="btn btn-primary" id="btn-cadastrar" onclick="realizarCadastro()">
-                    <span id="btn-texto">Criar Conta e Ir para Pagamento</span>
+                    <span id="btn-texto">Criar Conta e Começar Teste Grátis</span>
                 </button>
 
                 <button type="button" class="btn btn-secondary" onclick="window.location.href='login.html'">
@@ -332,8 +338,9 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         let supabaseClient = null;
-        let planoSelecionado = 'Basic';
-        let valorPlano = 80.00;
+        let planoSelecionado = 'Teste';
+        let valorPlano = 0.00;
+        let isPlanoTeste = true;
 
         // ============================================
         // INICIALIZAÇÃO
@@ -372,7 +379,17 @@
             elemento.classList.add('selected');
             planoSelecionado = elemento.dataset.plano;
             valorPlano = parseFloat(elemento.dataset.valor);
-            console.log('[CADASTRO] Plano selecionado:', planoSelecionado, 'R$', valorPlano);
+            isPlanoTeste = elemento.dataset.teste === 'true';
+
+            // Atualizar texto do botão
+            const btnTexto = document.getElementById('btn-texto');
+            if (isPlanoTeste) {
+                btnTexto.textContent = 'Criar Conta e Começar Teste Grátis';
+            } else {
+                btnTexto.textContent = 'Criar Conta e Ir para Pagamento';
+            }
+
+            console.log('[CADASTRO] Plano selecionado:', planoSelecionado, 'R$', valorPlano, 'Teste:', isPlanoTeste);
         }
 
         // ============================================
@@ -541,6 +558,56 @@
                     console.log('[CADASTRO] Usuário criado em usuarios_pg');
                 } catch (e) {
                     console.warn('[CADASTRO] Erro ao criar em usuarios_pg (pode já existir):', e);
+                }
+
+                // 4. VERIFICAR SE É PLANO TESTE GRÁTIS
+                if (isPlanoTeste || planoSelecionado === 'Teste') {
+                    console.log('[CADASTRO] Plano Teste Grátis - Ativando conta...');
+
+                    // Calcular data de expiração (7 dias)
+                    const hoje = new Date();
+                    const dataExpiracao = new Date(hoje.getTime() + (7 * 24 * 60 * 60 * 1000)).toISOString();
+
+                    // Ativar cliente imediatamente
+                    const { error: updateError } = await supabaseClient
+                        .from('clientes_sistema')
+                        .update({
+                            ativo: true,
+                            status_pagamento: 'teste',
+                            data_ultimo_pagamento: hoje.toISOString(),
+                            data_expiracao: dataExpiracao,
+                            plano: 'Teste',
+                            updated_at: hoje.toISOString()
+                        })
+                        .eq('id', clienteId);
+
+                    if (updateError) {
+                        console.error('[CADASTRO] Erro ao ativar teste:', updateError);
+                        throw new Error('Erro ao ativar conta de teste');
+                    }
+
+                    console.log('[CADASTRO] ✅ Conta de teste ativada! Expira em:', dataExpiracao);
+
+                    // Salvar dados da sessão
+                    const dadosSessao = {
+                        auth_id: authId,
+                        usuario_id: usuario.id,
+                        nome: nome,
+                        email: email,
+                        cliente_id: clienteId,
+                        cliente_nome: nome,
+                        nivel_acesso: 'admin',
+                        ativo: true,
+                        login_time: new Date().toISOString()
+                    };
+                    localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                    localStorage.setItem('clienteId', clienteId);
+                    localStorage.setItem('nivelAcesso', 'admin');
+
+                    // 5. REDIRECIONAR PARA DASHBOARD (sem pagamento)
+                    console.log('[CADASTRO] Redirecionando para dashboard...');
+                    window.location.href = 'dashboard.html';
+                    return;
                 }
 
                 // 4. SALVAR DADOS NO SESSION STORAGE PARA PAGAMENTO
