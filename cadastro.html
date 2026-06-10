@@ -434,6 +434,8 @@
                     }
                 });
 
+                let authId = null;
+
                 if (authError) {
                     // Se o email já existe, tentar login
                     if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
@@ -444,18 +446,22 @@
                         });
 
                         if (loginError) throw new Error('Email já cadastrado. Use outro email ou faça login.');
-                        authData.user = loginData.user;
+                        authId = loginData.user.id;
+                        console.log('[CADASTRO] Usuário logado:', authId);
                     } else {
                         throw authError;
                     }
+                } else {
+                    authId = authData.user.id;
+                    console.log('[CADASTRO] Usuário Auth criado:', authId);
                 }
-
-                const authId = authData.user.id;
-                console.log('[CADASTRO] Usuário Auth criado:', authId);
 
                 // 2. Criar cliente no banco (clientes_sistema)
                 console.log('[CADASTRO] Criando cliente no banco...');
-                const { data: clienteData, error: clienteError } = await supabaseClient
+                let clienteData = null;
+                let clienteId = null;
+
+                const { data: novoCliente, error: clienteError } = await supabaseClient
                     .from('clientes_sistema')
                     .insert({
                         nome: nome,
@@ -473,46 +479,68 @@
                 if (clienteError) {
                     // Se CNPJ duplicado
                     if (clienteError.message.includes('duplicate') || clienteError.message.includes('unique constraint')) {
-                        // Buscar cliente existente
-                        const { data: existente } = await supabaseClient
+                        console.log('[CADASTRO] CNPJ/Email duplicado, buscando cliente existente...');
+
+                        // Buscar cliente existente por email
+                        const { data: existente, error: buscaError } = await supabaseClient
                             .from('clientes_sistema')
                             .select('*')
                             .eq('email', email)
                             .single();
 
-                        if (existente) {
-                            console.log('[CADASTRO] Cliente existente encontrado:', existente.id);
-                            // Atualizar auth_id
-                            await supabaseClient
+                        if (buscaError || !existente) {
+                            // Tentar buscar por CNPJ
+                            const { data: existenteCnpj, error: buscaCnpjError } = await supabaseClient
                                 .from('clientes_sistema')
-                                .update({ auth_id: authId })
-                                .eq('id', existente.id);
+                                .select('*')
+                                .eq('cnpj', cpfCnpj.replace(/\D/g, ''))
+                                .single();
 
-                            clienteData = existente;
+                            if (buscaCnpjError || !existenteCnpj) {
+                                throw new Error('Erro ao criar cliente: ' + clienteError.message);
+                            }
+
+                            clienteData = existenteCnpj;
                         } else {
-                            throw clienteError;
+                            clienteData = existente;
                         }
+
+                        console.log('[CADASTRO] Cliente existente encontrado:', clienteData.id);
+
+                        // Atualizar auth_id do cliente existente
+                        await supabaseClient
+                            .from('clientes_sistema')
+                            .update({ auth_id: authId })
+                            .eq('id', clienteData.id);
+
                     } else {
                         throw clienteError;
                     }
+                } else {
+                    clienteData = novoCliente;
                 }
 
-                const clienteId = clienteData.id;
-                console.log('[CADASTRO] Cliente criado:', clienteId);
+                clienteId = clienteData.id;
+                console.log('[CADASTRO] Cliente ID:', clienteId);
 
                 // 3. Criar usuário na tabela usuarios_pg
                 console.log('[CADASTRO] Criando usuário na tabela usuarios_pg...');
-                await supabaseClient
-                    .from('usuarios_pg')
-                    .insert({
-                        auth_id: authId,
-                        email: email,
-                        nome: nome,
-                        cliente_id: clienteId,
-                        nivel_acesso: 'admin',
-                        ativo: true,
-                        criado_em: new Date().toISOString()
-                    });
+                try {
+                    await supabaseClient
+                        .from('usuarios_pg')
+                        .insert({
+                            auth_id: authId,
+                            email: email,
+                            nome: nome,
+                            cliente_id: clienteId,
+                            nivel_acesso: 'admin',
+                            ativo: true,
+                            criado_em: new Date().toISOString()
+                        });
+                    console.log('[CADASTRO] Usuário criado em usuarios_pg');
+                } catch (e) {
+                    console.warn('[CADASTRO] Erro ao criar em usuarios_pg (pode já existir):', e);
+                }
 
                 // 4. SALVAR DADOS NO SESSION STORAGE PARA PAGAMENTO
                 const dadosPagamento = {
@@ -524,7 +552,7 @@
                     telefone: telefone,
                     plano: planoSelecionado,
                     valor: valorPlano,
-                    asaas_customer_id: null
+                    asaas_customer_id: clienteData.asaas_customer_id || null
                 };
 
                 console.log('[CADASTRO] Salvando dados no sessionStorage:', dadosPagamento);
