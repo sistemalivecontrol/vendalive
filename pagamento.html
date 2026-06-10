@@ -477,6 +477,33 @@
         let pollingInterval = null;
 
         // ============================================
+        // FUNÇÃO: Fazer fetch autenticado nas Edge Functions
+        // ============================================
+        async function fetchEdgeFunction(url, body) {
+            // Obter token de autenticação do usuário logado
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const token = session?.access_token;
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            console.log('[FETCH] Chamando Edge Function:', url);
+            console.log('[FETCH] Headers:', Object.keys(headers));
+
+            return fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+        }
+
+        // ============================================
         // INICIALIZAÇÃO
         // ============================================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -692,21 +719,26 @@
         async function criarClienteAsaas() {
             console.log('[PAGAMENTO] Criando cliente no Asaas...');
 
-            const response = await fetch('/functions/v1/asaas-criar-cliente', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nome: dadosCadastro.nome,
-                    email: dadosCadastro.email,
-                    cpfCnpj: dadosCadastro.cnpj || dadosCadastro.cpf,
-                    phone: dadosCadastro.telefone,
-                    mobilePhone: dadosCadastro.telefone
-                })
+            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cliente', {
+                nome: dadosCadastro.nome,
+                email: dadosCadastro.email,
+                cpfCnpj: dadosCadastro.cnpj || dadosCadastro.cpf,
+                phone: dadosCadastro.telefone,
+                mobilePhone: dadosCadastro.telefone
             });
 
+            console.log('[PAGAMENTO] Response status:', response.status);
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro ao criar cliente no Asaas');
+                const text = await response.text();
+                console.error('[PAGAMENTO] Erro response:', text);
+                let errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Erro ao criar cliente no Asaas: ' + response.status + ' - ' + text.substring(0, 200));
+                }
+                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
             }
 
             const result = await response.json();
@@ -724,33 +756,23 @@
         async function criarAssinaturaCartao() {
             console.log('[PAGAMENTO] Criando assinatura com cartão...');
 
-            // Buscar configurações de pagamento
-            const { data: config, error: configError } = await supabaseClient
-                .from('configuracoes_pagamento')
-                .select('asaas_api_key, asaas_sandbox')
-                .limit(1)
-                .single();
-
-            if (configError || !config) {
-                throw new Error('Configurações de pagamento não encontradas');
-            }
-
-            // Chamar Edge Function para criar assinatura
-            const response = await fetch('/functions/v1/asaas-criar-assinatura', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_id: dadosCadastro.asaas_customer_id,
-                    valor: dadosCadastro.valor || 80.00,
-                    plano: dadosCadastro.plano || 'Basic',
-                    cliente_sistema_id: dadosCadastro.cliente_id,
-                    billingType: 'CREDIT_CARD'
-                })
+            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-assinatura', {
+                customer_id: dadosCadastro.asaas_customer_id,
+                valor: dadosCadastro.valor || 80.00,
+                plano: dadosCadastro.plano || 'Basic',
+                cliente_sistema_id: dadosCadastro.cliente_id,
+                billingType: 'CREDIT_CARD'
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro ao criar assinatura');
+                const text = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Erro ao criar assinatura: ' + response.status);
+                }
+                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
             }
 
             const result = await response.json();
@@ -779,21 +801,23 @@
         async function criarCobrancaPix() {
             console.log('[PAGAMENTO] Criando cobrança PIX...');
 
-            const response = await fetch('/functions/v1/asaas-criar-cobranca', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_id: dadosCadastro.asaas_customer_id,
-                    valor: dadosCadastro.valor || 80.00,
-                    descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
-                    billingType: 'PIX',
-                    cliente_sistema_id: dadosCadastro.cliente_id
-                })
+            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cobranca', {
+                customer_id: dadosCadastro.asaas_customer_id,
+                valor: dadosCadastro.valor || 80.00,
+                descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
+                billingType: 'PIX',
+                cliente_sistema_id: dadosCadastro.cliente_id
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro ao criar cobrança PIX');
+                const text = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Erro ao criar cobrança PIX: ' + response.status);
+                }
+                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
             }
 
             const result = await response.json();
@@ -825,21 +849,23 @@
         async function criarCobrancaBoleto() {
             console.log('[PAGAMENTO] Criando cobrança Boleto...');
 
-            const response = await fetch('/functions/v1/asaas-criar-cobranca', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_id: dadosCadastro.asaas_customer_id,
-                    valor: dadosCadastro.valor || 80.00,
-                    descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
-                    billingType: 'BOLETO',
-                    cliente_sistema_id: dadosCadastro.cliente_id
-                })
+            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cobranca', {
+                customer_id: dadosCadastro.asaas_customer_id,
+                valor: dadosCadastro.valor || 80.00,
+                descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
+                billingType: 'BOLETO',
+                cliente_sistema_id: dadosCadastro.cliente_id
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro ao criar boleto');
+                const text = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Erro ao criar boleto: ' + response.status);
+                }
+                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
             }
 
             const result = await response.json();
