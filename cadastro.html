@@ -424,6 +424,13 @@
                 return;
             }
 
+            // Validar formato do email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                mostrarStatus('error', 'E-mail inválido. Verifique o formato (ex: nome@email.com)');
+                return;
+            }
+
             if (senha.length < 6) {
                 mostrarStatus('error', 'A senha deve ter no mínimo 6 caracteres');
                 return;
