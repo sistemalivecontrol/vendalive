@@ -470,6 +470,9 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
+        // URL ABSOLUTA das Edge Functions (correção principal!)
+        const EDGE_FUNCTION_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
+
         let supabaseClient = null;
         let metodoSelecionado = null;
         let dadosCadastro = null;
@@ -479,7 +482,9 @@
         // ============================================
         // FUNÇÃO: Fazer fetch autenticado nas Edge Functions
         // ============================================
-        async function fetchEdgeFunction(url, body) {
+        async function fetchEdgeFunction(functionName, body) {
+            const url = EDGE_FUNCTION_BASE + '/' + functionName;
+
             // Obter token de autenticação do usuário logado
             const { data: { session } } = await supabaseClient.auth.getSession();
             const token = session?.access_token;
@@ -719,7 +724,7 @@
         async function criarClienteAsaas() {
             console.log('[PAGAMENTO] Criando cliente no Asaas...');
 
-            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cliente', {
+            const response = await fetchEdgeFunction('asaas-criar-cliente', {
                 nome: dadosCadastro.nome,
                 email: dadosCadastro.email,
                 cpfCnpj: dadosCadastro.cnpj || dadosCadastro.cpf,
@@ -756,7 +761,7 @@
         async function criarAssinaturaCartao() {
             console.log('[PAGAMENTO] Criando assinatura com cartão...');
 
-            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-assinatura', {
+            const response = await fetchEdgeFunction('asaas-criar-assinatura', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 plano: dadosCadastro.plano || 'Basic',
@@ -801,7 +806,7 @@
         async function criarCobrancaPix() {
             console.log('[PAGAMENTO] Criando cobrança PIX...');
 
-            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cobranca', {
+            const response = await fetchEdgeFunction('asaas-criar-cobranca', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
@@ -849,7 +854,7 @@
         async function criarCobrancaBoleto() {
             console.log('[PAGAMENTO] Criando cobrança Boleto...');
 
-            const response = await fetchEdgeFunction('/functions/v1/asaas-criar-cobranca', {
+            const response = await fetchEdgeFunction('asaas-criar-cobranca', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
