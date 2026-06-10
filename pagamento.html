@@ -297,6 +297,18 @@
             color: white;
         }
 
+        .debug-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,200,0,0.2);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            font-family: monospace;
+            word-break: break-all;
+        }
+
         @media (max-width: 480px) {
             .card { padding: 28px 20px; }
         }
@@ -322,6 +334,13 @@
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURAÇÃO ASAAS SANDBOX
+        // ============================================
+        const ASAAS_API_KEY = 'aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmVhN2YyZDA3LWQyMjQtNGNmYy1iNzQ5LWJkNjdhZWIyM2UzMDo6JGFhY2hfZmFkN2I5MzctODJlOC00OGIzLThlMjYtZmY4NzhlYzI4MmI3';
+        const ASAAS_BASE_URL = 'https://api-sandbox.asaas.com/v3';
+        const WALLET_ID = '0692dded-12f2-4d9c-a2ac-4c9dac28d3ab';
+
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -331,11 +350,13 @@
             premium: { nome: 'Premium', valor: 100.00, desc: 'Usuários ilimitados · Suporte prioritário' }
         };
 
-        // Pegar dados do cadastro do localStorage
         const dadosCadastro = JSON.parse(localStorage.getItem('cadastroPendente') || '{}');
         const conteudo = document.getElementById('conteudo');
 
         async function gerarCobranca() {
+            console.log('[PAGAMENTO] Iniciando...');
+            console.log('[PAGAMENTO] Dados cadastro:', dadosCadastro);
+
             if (!dadosCadastro.cliente_id) {
                 mostrarErro('Dados do cadastro não encontrados. Por favor, faça o cadastro novamente.');
                 return;
@@ -358,57 +379,168 @@
             `;
 
             try {
-                // Chamar Edge Function para criar assinatura no Asaas
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/asaas-criar-assinatura`, {
+                // 1. Criar cliente no Asaas (direto do frontend)
+                console.log('[PAGAMENTO] Etapa 1: Criando cliente no Asaas...');
+
+                const customerPayload = {
+                    name: dadosCadastro.nome_empresa || dadosCadastro.nome_responsavel || 'Cliente VendaLive',
+                    email: dadosCadastro.email,
+                    cpfCnpj: dadosCadastro.cnpj ? dadosCadastro.cnpj.replace(/\D/g, '') : undefined,
+                    phone: dadosCadastro.telefone ? dadosCadastro.telefone.replace(/\D/g, '') : undefined,
+                    mobilePhone: dadosCadastro.telefone ? dadosCadastro.telefone.replace(/\D/g, '') : undefined,
+                    notificationDisabled: false,
+                    walletId: WALLET_ID
+                };
+
+                // Remove undefined
+                Object.keys(customerPayload).forEach(key => {
+                    if (customerPayload[key] === undefined) delete customerPayload[key]
+                });
+
+                console.log('[PAGAMENTO] Customer payload:', customerPayload);
+
+                const customerRes = await fetch(`${ASAAS_BASE_URL}/customers`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        'access_token': ASAAS_API_KEY,
+                        'User-Agent': 'VendaLive/1.0'
                     },
-                    body: JSON.stringify({
-                        nome: dadosCadastro.nome_empresa || dadosCadastro.nome_responsavel,
-                        email: dadosCadastro.email,
-                        cpfCnpj: dadosCadastro.cnpj,
-                        telefone: dadosCadastro.telefone,
-                        plano: plano,
-                        cliente_id: dadosCadastro.cliente_id
-                    })
+                    body: JSON.stringify(customerPayload)
                 });
 
-                const result = await response.json();
+                const customerData = await customerRes.json();
+                console.log('[PAGAMENTO] Resposta cliente:', customerRes.status, customerData);
 
-                if (!result.success) {
-                    throw new Error(result.error || 'Erro ao gerar cobrança');
+                if (!customerRes.ok) {
+                    throw new Error(`Erro ao criar cliente: ${customerData.errors?.[0]?.description || customerData.message || JSON.stringify(customerData)}`);
                 }
 
-                // Salvar dados do pagamento no localStorage
+                const asaasCustomerId = customerData.id;
+                console.log('[PAGAMENTO] ✅ Cliente criado:', asaasCustomerId);
+
+                // 2. Criar assinatura
+                console.log('[PAGAMENTO] Etapa 2: Criando assinatura...');
+
+                const hoje = new Date();
+                const vencimento = new Date(hoje);
+                vencimento.setDate(vencimento.getDate() + 7);
+
+                const subscriptionPayload = {
+                    customer: asaasCustomerId,
+                    billingType: 'UNDEFINED',
+                    value: p.valor,
+                    nextDueDate: vencimento.toISOString().split('T')[0],
+                    cycle: 'MONTHLY',
+                    description: `VendaLive - Plano ${p.nome}`,
+                    walletId: WALLET_ID
+                };
+
+                const subscriptionRes = await fetch(`${ASAAS_BASE_URL}/subscriptions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'access_token': ASAAS_API_KEY,
+                        'User-Agent': 'VendaLive/1.0'
+                    },
+                    body: JSON.stringify(subscriptionPayload)
+                });
+
+                const subscriptionData = await subscriptionRes.json();
+                console.log('[PAGAMENTO] Resposta assinatura:', subscriptionRes.status, subscriptionData);
+
+                if (!subscriptionRes.ok) {
+                    throw new Error(`Erro ao criar assinatura: ${subscriptionData.errors?.[0]?.description || subscriptionData.message || JSON.stringify(subscriptionData)}`);
+                }
+
+                const asaasSubscriptionId = subscriptionData.id;
+                console.log('[PAGAMENTO] ✅ Assinatura criada:', asaasSubscriptionId);
+
+                // 3. Criar cobrança
+                console.log('[PAGAMENTO] Etapa 3: Criando cobrança...');
+
+                const paymentPayload = {
+                    customer: asaasCustomerId,
+                    subscription: asaasSubscriptionId,
+                    billingType: 'UNDEFINED',
+                    value: p.valor,
+                    dueDate: vencimento.toISOString().split('T')[0],
+                    description: `VendaLive - Primeira mensalidade - Plano ${p.nome}`,
+                    walletId: WALLET_ID
+                };
+
+                const paymentRes = await fetch(`${ASAAS_BASE_URL}/payments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'access_token': ASAAS_API_KEY,
+                        'User-Agent': 'VendaLive/1.0'
+                    },
+                    body: JSON.stringify(paymentPayload)
+                });
+
+                const paymentData = await paymentRes.json();
+                console.log('[PAGAMENTO] Resposta cobrança:', paymentRes.status, paymentData);
+
+                if (!paymentRes.ok) {
+                    throw new Error(`Erro ao criar cobrança: ${paymentData.errors?.[0]?.description || paymentData.message || JSON.stringify(paymentData)}`);
+                }
+
+                console.log('[PAGAMENTO] ✅ Cobrança criada:', paymentData.id);
+
+                // 4. Salvar dados no Supabase
+                console.log('[PAGAMENTO] Etapa 4: Salvando no Supabase...');
+
+                const { error: updateError } = await supabaseClient
+                    .from('clientes_sistema')
+                    .update({
+                        asaas_customer_id: asaasCustomerId,
+                        asaas_subscription_id: asaasSubscriptionId,
+                        status_pagamento: 'pendente'
+                    })
+                    .eq('id', dadosCadastro.cliente_id);
+
+                if (updateError) {
+                    console.error('[PAGAMENTO] Erro ao atualizar Supabase:', updateError);
+                } else {
+                    console.log('[PAGAMENTO] ✅ Supabase atualizado');
+                }
+
+                // 5. Salvar no localStorage e mostrar opções
                 localStorage.setItem('pagamentoPendente', JSON.stringify({
-                    ...result,
+                    asaas_customer_id: asaasCustomerId,
+                    asaas_subscription_id: asaasSubscriptionId,
+                    asaas_payment_id: paymentData.id,
+                    invoice_url: paymentData.invoiceUrl,
+                    bank_slip_url: paymentData.bankSlipUrl,
+                    pix_qr_code: paymentData.pixQrCode,
+                    pix_payload: paymentData.pixPayload,
+                    valor: p.valor,
+                    vencimento: vencimento.toISOString().split('T')[0],
                     plano: plano,
                     cliente_id: dadosCadastro.cliente_id
                 }));
 
-                // Mostrar opções de pagamento
-                mostrarOpcoesPagamento(result, p);
+                mostrarOpcoesPagamento(paymentData, p, vencimento);
 
             } catch (error) {
-                console.error('[PAGAMENTO] Erro:', error);
-                mostrarErro('Erro ao gerar cobrança: ' + error.message);
+                console.error('[PAGAMENTO] ❌ ERRO:', error);
+                mostrarErro('Erro ao gerar cobrança: ' + error.message, error);
             }
         }
 
-        function mostrarOpcoesPagamento(dados, plano) {
+        function mostrarOpcoesPagamento(dados, plano, vencimento) {
             conteudo.innerHTML = `
                 <div class="plano-info">
                     <div class="nome">Plano ${plano.nome}</div>
                     <div class="preco">R$ ${plano.valor.toFixed(2).replace('.', ',')}<span>/mês</span></div>
-                    <div class="desc">Vencimento: ${new Date(dados.vencimento).toLocaleDateString('pt-BR')}</div>
+                    <div class="desc">Vencimento: ${vencimento.toLocaleDateString('pt-BR')}</div>
                 </div>
                 <div class="info-box">
                     <p>Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.</p>
                 </div>
                 <div class="payment-options">
-                    <a href="${dados.invoice_url}" target="_blank" class="payment-option">
+                    <a href="${dados.invoiceUrl}" target="_blank" class="payment-option">
                         <div class="icon">💳</div>
                         <div class="info">
                             <div class="nome">Cartão de Crédito</div>
@@ -416,15 +548,15 @@
                         </div>
                         <div class="arrow">›</div>
                     </a>
-                    <a href="${dados.bank_slip_url || dados.invoice_url}" target="_blank" class="payment-option">
+                    <a href="${dados.bankSlipUrl || dados.invoiceUrl}" target="_blank" class="payment-option">
                         <div class="icon">📄</div>
                         <div class="info">
                             <div class="nome">Boleto Bancário</div>
-                            <div class="desc">Vencimento em ${new Date(dados.vencimento).toLocaleDateString('pt-BR')}</div>
+                            <div class="desc">Vencimento em ${vencimento.toLocaleDateString('pt-BR')}</div>
                         </div>
                         <div class="arrow">›</div>
                     </a>
-                    ${dados.pix_qr_code ? `
+                    ${dados.pixQrCode ? `
                     <div class="payment-option" onclick="mostrarPIX()" style="cursor:pointer">
                         <div class="icon">⚡</div>
                         <div class="info">
@@ -475,18 +607,31 @@
             }
         }
 
-        function mostrarErro(mensagem) {
+        function mostrarErro(mensagem, errorDetails) {
+            let debugInfo = '';
+            if (errorDetails) {
+                debugInfo = `
+                    <div class="debug-box">
+                        <strong>Debug:</strong><br>
+                        Status: ${errorDetails.status || 'N/A'}<br>
+                        Message: ${errorDetails.message || 'N/A'}<br>
+                        ${errorDetails.errors ? 'Errors: ' + JSON.stringify(errorDetails.errors) : ''}
+                    </div>
+                `;
+            }
+
             conteudo.innerHTML = `
                 <div class="error-state">
                     <div class="icon">⚠️</div>
                     <h3>Ops! Algo deu errado</h3>
                     <p>${mensagem}</p>
-                    <a href="cadastro.html" class="btn-voltar" style="display:inline-block;padding:12px 24px;background:#5b9bd5;color:white;border-radius:10px;text-decoration:none;font-weight:600;">Voltar para Cadastro</a>
+                    <a href="cadastro.html" class="btn-copiar" style="display:inline-block;text-decoration:none;">Voltar para Cadastro</a>
+                    ${debugInfo}
                 </div>
             `;
         }
 
-        // Iniciar ao carregar a página
+        // Iniciar ao carregar
         gerarCobranca();
     </script>
 </body>
