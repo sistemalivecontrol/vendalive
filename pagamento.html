@@ -309,6 +309,28 @@
             word-break: break-all;
         }
 
+        .modo-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .modo-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modo-btn.active {
+            background: rgba(91, 155, 213, 0.2);
+            border-color: #5b9bd5;
+            color: white;
+        }
+
         @media (max-width: 480px) {
             .card { padding: 28px 20px; }
         }
@@ -324,6 +346,11 @@
                 <p>Ative sua conta para começar a usar</p>
             </div>
 
+            <div class="modo-toggle">
+                <button class="modo-btn active" onclick="setModo('edge')" id="btnModoEdge">Via Supabase (Seguro)</button>
+                <button class="modo-btn" onclick="setModo('proxy')" id="btnModoProxy">Via Proxy (Teste)</button>
+            </div>
+
             <div id="conteudo">
                 <div class="loading-state">
                     <div class="loading-spinner"></div>
@@ -335,26 +362,37 @@
 
     <script>
         // ============================================
-        // CONFIGURAÇÃO ASAAS SANDBOX
+        // CONFIGURAÇÃO
         // ============================================
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const ASAAS_API_KEY = 'aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmVhN2YyZDA3LWQyMjQtNGNmYy1iNzQ5LWJkNjdhZWIyM2UzMDo6JGFhY2hfZmFkN2I5MzctODJlOC00OGIzLThlMjYtZmY4NzhlYzI4MmI3';
         const ASAAS_BASE_URL = 'https://api-sandbox.asaas.com/v3';
         const WALLET_ID = '0692dded-12f2-4d9c-a2ac-4c9dac28d3ab';
 
-        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Proxy CORS público para testes (alternativa temporária)
+        const CORS_PROXY = 'https://corsproxy.io/?';
 
         const PLANOS = {
             basic: { nome: 'Basic', valor: 80.00, desc: 'Até 3 usuários · Suporte por e-mail' },
             premium: { nome: 'Premium', valor: 100.00, desc: 'Usuários ilimitados · Suporte prioritário' }
         };
 
+        let MODO_ATUAL = 'edge'; // 'edge' = Supabase Edge Function, 'proxy' = Proxy CORS
         const dadosCadastro = JSON.parse(localStorage.getItem('cadastroPendente') || '{}');
         const conteudo = document.getElementById('conteudo');
 
+        function setModo(modo) {
+            MODO_ATUAL = modo;
+            document.getElementById('btnModoEdge').classList.toggle('active', modo === 'edge');
+            document.getElementById('btnModoProxy').classList.toggle('active', modo === 'proxy');
+            gerarCobranca();
+        }
+
         async function gerarCobranca() {
-            console.log('[PAGAMENTO] Iniciando...');
+            console.log('[PAGAMENTO] Iniciando... Modo:', MODO_ATUAL);
             console.log('[PAGAMENTO] Dados cadastro:', dadosCadastro);
 
             if (!dadosCadastro.cliente_id) {
@@ -365,7 +403,6 @@
             const plano = dadosCadastro.plano || 'basic';
             const p = PLANOS[plano];
 
-            // Mostrar info do plano
             conteudo.innerHTML = `
                 <div class="plano-info">
                     <div class="nome">Plano ${p.nome}</div>
@@ -374,154 +411,45 @@
                 </div>
                 <div class="loading-state">
                     <div class="loading-spinner"></div>
-                    <p>Gerando cobrança no Asaas...</p>
+                    <p>${MODO_ATUAL === 'edge' ? 'Chamando Supabase Edge Function...' : 'Chamando via Proxy CORS...'}</p>
                 </div>
             `;
 
             try {
-                // 1. Criar cliente no Asaas (direto do frontend)
-                console.log('[PAGAMENTO] Etapa 1: Criando cliente no Asaas...');
+                let result;
 
-                const customerPayload = {
-                    name: dadosCadastro.nome_empresa || dadosCadastro.nome_responsavel || 'Cliente VendaLive',
-                    email: dadosCadastro.email,
-                    cpfCnpj: dadosCadastro.cnpj ? dadosCadastro.cnpj.replace(/\D/g, '') : undefined,
-                    phone: dadosCadastro.telefone ? dadosCadastro.telefone.replace(/\D/g, '') : undefined,
-                    mobilePhone: dadosCadastro.telefone ? dadosCadastro.telefone.replace(/\D/g, '') : undefined,
-                    notificationDisabled: false,
-                    walletId: WALLET_ID
-                };
-
-                // Remove undefined
-                Object.keys(customerPayload).forEach(key => {
-                    if (customerPayload[key] === undefined) delete customerPayload[key]
-                });
-
-                console.log('[PAGAMENTO] Customer payload:', customerPayload);
-
-                const customerRes = await fetch(`${ASAAS_BASE_URL}/customers`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'access_token': ASAAS_API_KEY,
-                        'User-Agent': 'VendaLive/1.0'
-                    },
-                    body: JSON.stringify(customerPayload)
-                });
-
-                const customerData = await customerRes.json();
-                console.log('[PAGAMENTO] Resposta cliente:', customerRes.status, customerData);
-
-                if (!customerRes.ok) {
-                    throw new Error(`Erro ao criar cliente: ${customerData.errors?.[0]?.description || customerData.message || JSON.stringify(customerData)}`);
-                }
-
-                const asaasCustomerId = customerData.id;
-                console.log('[PAGAMENTO] ✅ Cliente criado:', asaasCustomerId);
-
-                // 2. Criar assinatura
-                console.log('[PAGAMENTO] Etapa 2: Criando assinatura...');
-
-                const hoje = new Date();
-                const vencimento = new Date(hoje);
-                vencimento.setDate(vencimento.getDate() + 7);
-
-                const subscriptionPayload = {
-                    customer: asaasCustomerId,
-                    billingType: 'UNDEFINED',
-                    value: p.valor,
-                    nextDueDate: vencimento.toISOString().split('T')[0],
-                    cycle: 'MONTHLY',
-                    description: `VendaLive - Plano ${p.nome}`,
-                    walletId: WALLET_ID
-                };
-
-                const subscriptionRes = await fetch(`${ASAAS_BASE_URL}/subscriptions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'access_token': ASAAS_API_KEY,
-                        'User-Agent': 'VendaLive/1.0'
-                    },
-                    body: JSON.stringify(subscriptionPayload)
-                });
-
-                const subscriptionData = await subscriptionRes.json();
-                console.log('[PAGAMENTO] Resposta assinatura:', subscriptionRes.status, subscriptionData);
-
-                if (!subscriptionRes.ok) {
-                    throw new Error(`Erro ao criar assinatura: ${subscriptionData.errors?.[0]?.description || subscriptionData.message || JSON.stringify(subscriptionData)}`);
-                }
-
-                const asaasSubscriptionId = subscriptionData.id;
-                console.log('[PAGAMENTO] ✅ Assinatura criada:', asaasSubscriptionId);
-
-                // 3. Criar cobrança
-                console.log('[PAGAMENTO] Etapa 3: Criando cobrança...');
-
-                const paymentPayload = {
-                    customer: asaasCustomerId,
-                    subscription: asaasSubscriptionId,
-                    billingType: 'UNDEFINED',
-                    value: p.valor,
-                    dueDate: vencimento.toISOString().split('T')[0],
-                    description: `VendaLive - Primeira mensalidade - Plano ${p.nome}`,
-                    walletId: WALLET_ID
-                };
-
-                const paymentRes = await fetch(`${ASAAS_BASE_URL}/payments`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'access_token': ASAAS_API_KEY,
-                        'User-Agent': 'VendaLive/1.0'
-                    },
-                    body: JSON.stringify(paymentPayload)
-                });
-
-                const paymentData = await paymentRes.json();
-                console.log('[PAGAMENTO] Resposta cobrança:', paymentRes.status, paymentData);
-
-                if (!paymentRes.ok) {
-                    throw new Error(`Erro ao criar cobrança: ${paymentData.errors?.[0]?.description || paymentData.message || JSON.stringify(paymentData)}`);
-                }
-
-                console.log('[PAGAMENTO] ✅ Cobrança criada:', paymentData.id);
-
-                // 4. Salvar dados no Supabase
-                console.log('[PAGAMENTO] Etapa 4: Salvando no Supabase...');
-
-                const { error: updateError } = await supabaseClient
-                    .from('clientes_sistema')
-                    .update({
-                        asaas_customer_id: asaasCustomerId,
-                        asaas_subscription_id: asaasSubscriptionId,
-                        status_pagamento: 'pendente'
-                    })
-                    .eq('id', dadosCadastro.cliente_id);
-
-                if (updateError) {
-                    console.error('[PAGAMENTO] Erro ao atualizar Supabase:', updateError);
+                if (MODO_ATUAL === 'edge') {
+                    result = await chamarEdgeFunction(dadosCadastro, p);
                 } else {
-                    console.log('[PAGAMENTO] ✅ Supabase atualizado');
+                    result = await chamarViaProxy(dadosCadastro, p);
                 }
 
-                // 5. Salvar no localStorage e mostrar opções
+                if (!result.success) {
+                    throw new Error(result.error || 'Erro desconhecido');
+                }
+
+                // Salvar no localStorage
                 localStorage.setItem('pagamentoPendente', JSON.stringify({
-                    asaas_customer_id: asaasCustomerId,
-                    asaas_subscription_id: asaasSubscriptionId,
-                    asaas_payment_id: paymentData.id,
-                    invoice_url: paymentData.invoiceUrl,
-                    bank_slip_url: paymentData.bankSlipUrl,
-                    pix_qr_code: paymentData.pixQrCode,
-                    pix_payload: paymentData.pixPayload,
-                    valor: p.valor,
-                    vencimento: vencimento.toISOString().split('T')[0],
+                    ...result,
                     plano: plano,
                     cliente_id: dadosCadastro.cliente_id
                 }));
 
-                mostrarOpcoesPagamento(paymentData, p, vencimento);
+                // Atualizar Supabase com asaas_customer_id
+                if (result.asaas_customer_id) {
+                    const { error } = await supabaseClient
+                        .from('clientes_sistema')
+                        .update({
+                            asaas_customer_id: result.asaas_customer_id,
+                            asaas_subscription_id: result.asaas_subscription_id,
+                            status_pagamento: 'pendente'
+                        })
+                        .eq('id', dadosCadastro.cliente_id);
+
+                    if (error) console.error('[PAGAMENTO] Erro Supabase:', error);
+                }
+
+                mostrarOpcoesPagamento(result, p);
 
             } catch (error) {
                 console.error('[PAGAMENTO] ❌ ERRO:', error);
@@ -529,7 +457,143 @@
             }
         }
 
-        function mostrarOpcoesPagamento(dados, plano, vencimento) {
+        // MODO 1: Via Edge Function do Supabase (recomendado, seguro)
+        async function chamarEdgeFunction(dados, plano) {
+            console.log('[PAGAMENTO] Chamando Edge Function...');
+
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/asaas-criar-assinatura`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({
+                    nome: dados.nome_empresa || dados.nome_responsavel,
+                    email: dados.email,
+                    cpfCnpj: dados.cnpj,
+                    telefone: dados.telefone,
+                    plano: dados.plano,
+                    cliente_id: dados.cliente_id
+                })
+            });
+
+            const result = await response.json();
+            console.log('[PAGAMENTO] Resposta Edge Function:', response.status, result);
+
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP ${response.status}`);
+            }
+
+            return result;
+        }
+
+        // MODO 2: Via Proxy CORS público (para teste imediato)
+        async function chamarViaProxy(dados, plano) {
+            console.log('[PAGAMENTO] Chamando via Proxy CORS...');
+
+            // 1. Criar cliente
+            const customerPayload = {
+                name: dados.nome_empresa || dados.nome_responsavel || 'Cliente VendaLive',
+                email: dados.email,
+                cpfCnpj: dados.cnpj ? dados.cnpj.replace(/\D/g, '') : undefined,
+                phone: dados.telefone ? dados.telefone.replace(/\D/g, '') : undefined,
+                notificationDisabled: false,
+                walletId: WALLET_ID
+            };
+            Object.keys(customerPayload).forEach(k => {
+                if (customerPayload[k] === undefined) delete customerPayload[k];
+            });
+
+            const customerRes = await fetch(CORS_PROXY + encodeURIComponent(`${ASAAS_BASE_URL}/customers`), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': ASAAS_API_KEY,
+                    'User-Agent': 'VendaLive/1.0'
+                },
+                body: JSON.stringify(customerPayload)
+            });
+
+            const customerData = await customerRes.json();
+            console.log('[PAGAMENTO] Proxy - Cliente:', customerRes.status, customerData);
+
+            if (!customerRes.ok) {
+                throw new Error(`Cliente: ${customerData.errors?.[0]?.description || customerData.message}`);
+            }
+
+            const asaasCustomerId = customerData.id;
+
+            // 2. Criar assinatura
+            const hoje = new Date();
+            const vencimento = new Date(hoje);
+            vencimento.setDate(vencimento.getDate() + 7);
+
+            const subscriptionRes = await fetch(CORS_PROXY + encodeURIComponent(`${ASAAS_BASE_URL}/subscriptions`), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': ASAAS_API_KEY,
+                    'User-Agent': 'VendaLive/1.0'
+                },
+                body: JSON.stringify({
+                    customer: asaasCustomerId,
+                    billingType: 'UNDEFINED',
+                    value: plano.valor,
+                    nextDueDate: vencimento.toISOString().split('T')[0],
+                    cycle: 'MONTHLY',
+                    description: `VendaLive - Plano ${plano.nome}`,
+                    walletId: WALLET_ID
+                })
+            });
+
+            const subscriptionData = await subscriptionRes.json();
+            if (!subscriptionRes.ok) {
+                throw new Error(`Assinatura: ${subscriptionData.errors?.[0]?.description || subscriptionData.message}`);
+            }
+
+            const asaasSubscriptionId = subscriptionData.id;
+
+            // 3. Criar cobrança
+            const paymentRes = await fetch(CORS_PROXY + encodeURIComponent(`${ASAAS_BASE_URL}/payments`), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': ASAAS_API_KEY,
+                    'User-Agent': 'VendaLive/1.0'
+                },
+                body: JSON.stringify({
+                    customer: asaasCustomerId,
+                    subscription: asaasSubscriptionId,
+                    billingType: 'UNDEFINED',
+                    value: plano.valor,
+                    dueDate: vencimento.toISOString().split('T')[0],
+                    description: `VendaLive - Plano ${plano.nome}`,
+                    walletId: WALLET_ID
+                })
+            });
+
+            const paymentData = await paymentRes.json();
+            if (!paymentRes.ok) {
+                throw new Error(`Cobrança: ${paymentData.errors?.[0]?.description || paymentData.message}`);
+            }
+
+            return {
+                success: true,
+                asaas_customer_id: asaasCustomerId,
+                asaas_subscription_id: asaasSubscriptionId,
+                asaas_payment_id: paymentData.id,
+                invoice_url: paymentData.invoiceUrl,
+                bank_slip_url: paymentData.bankSlipUrl,
+                pix_qr_code: paymentData.pixQrCode,
+                pix_payload: paymentData.pixPayload,
+                valor: plano.valor,
+                vencimento: vencimento.toISOString().split('T')[0]
+            };
+        }
+
+        function mostrarOpcoesPagamento(dados, plano) {
+            const vencimento = new Date(dados.vencimento || Date.now());
+
             conteudo.innerHTML = `
                 <div class="plano-info">
                     <div class="nome">Plano ${plano.nome}</div>
@@ -540,7 +604,7 @@
                     <p>Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.</p>
                 </div>
                 <div class="payment-options">
-                    <a href="${dados.invoiceUrl}" target="_blank" class="payment-option">
+                    <a href="${dados.invoice_url}" target="_blank" class="payment-option">
                         <div class="icon">💳</div>
                         <div class="info">
                             <div class="nome">Cartão de Crédito</div>
@@ -548,7 +612,7 @@
                         </div>
                         <div class="arrow">›</div>
                     </a>
-                    <a href="${dados.bankSlipUrl || dados.invoiceUrl}" target="_blank" class="payment-option">
+                    <a href="${dados.bank_slip_url || dados.invoice_url}" target="_blank" class="payment-option">
                         <div class="icon">📄</div>
                         <div class="info">
                             <div class="nome">Boleto Bancário</div>
@@ -556,7 +620,7 @@
                         </div>
                         <div class="arrow">›</div>
                     </a>
-                    ${dados.pixQrCode ? `
+                    ${dados.pix_qr_code ? `
                     <div class="payment-option" onclick="mostrarPIX()" style="cursor:pointer">
                         <div class="icon">⚡</div>
                         <div class="info">
@@ -609,13 +673,11 @@
 
         function mostrarErro(mensagem, errorDetails) {
             let debugInfo = '';
-            if (errorDetails) {
+            if (errorDetails && typeof errorDetails === 'object') {
                 debugInfo = `
                     <div class="debug-box">
                         <strong>Debug:</strong><br>
-                        Status: ${errorDetails.status || 'N/A'}<br>
-                        Message: ${errorDetails.message || 'N/A'}<br>
-                        ${errorDetails.errors ? 'Errors: ' + JSON.stringify(errorDetails.errors) : ''}
+                        ${JSON.stringify(errorDetails, null, 2).substring(0, 500)}
                     </div>
                 `;
             }
@@ -625,13 +687,14 @@
                     <div class="icon">⚠️</div>
                     <h3>Ops! Algo deu errado</h3>
                     <p>${mensagem}</p>
-                    <a href="cadastro.html" class="btn-copiar" style="display:inline-block;text-decoration:none;">Voltar para Cadastro</a>
+                    <button onclick="gerarCobranca()" class="btn-copiar">🔄 Tentar Novamente</button>
+                    <a href="cadastro.html" class="btn-voltar">← Voltar para Cadastro</a>
                     ${debugInfo}
                 </div>
             `;
         }
 
-        // Iniciar ao carregar
+        // Iniciar
         gerarCobranca();
     </script>
 </body>
