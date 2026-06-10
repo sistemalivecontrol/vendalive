@@ -3,509 +3,1039 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagamento - VendaLive</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>VendaLive - Ativar Conta</title>
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/lojaebrechopingodegente/LiveControl@main/assets/favicon.ico" type="image/x-icon">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: #0B193F;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0a1628 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-            overflow-x: hidden;
+            padding: 20px;
+            color: #fff;
         }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at 0% 0%, rgba(91, 155, 213, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 100% 100%, rgba(11, 25, 63, 0.8) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(91, 155, 213, 0.05) 0%, transparent 60%);
-            z-index: 0;
-        }
+
         .container {
-            position: relative;
-            z-index: 1;
             width: 100%;
             max-width: 480px;
-            padding: 20px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
-        }
-        .logo {
             text-align: center;
-            margin-bottom: 28px;
         }
-        .logo img {
+
+        .logo {
             width: 80px;
             height: 80px;
-            border-radius: 20px;
-            margin-bottom: 12px;
-        }
-        .logo h1 {
-            color: white;
-            font-size: 24px;
-            font-weight: 800;
-        }
-        .logo h1 span { color: #5b9bd5; }
-        .logo p {
-            color: rgba(255,255,255,0.45);
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .plano-info {
-            background: rgba(91, 155, 213, 0.1);
-            border: 1px solid rgba(91, 155, 213, 0.2);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-        .plano-info .nome {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .plano-info .preco {
-            color: #5b9bd5;
-            font-size: 36px;
-            font-weight: 800;
-        }
-        .plano-info .preco span {
-            font-size: 16px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.5);
-        }
-        .plano-info .desc {
-            color: rgba(255,255,255,0.5);
-            font-size: 13px;
-            margin-top: 8px;
-        }
-
-        .loading-state {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #5b9bd5;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
             margin: 0 auto 20px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-state p {
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-        }
-
-        .error-state {
-            text-align: center;
-            padding: 20px;
-        }
-        .error-state .icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-        .error-state h3 {
-            color: #f87171;
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-        .error-state p {
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .success-state {
-            text-align: center;
-            padding: 20px;
-        }
-        .success-state .icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: rgba(34, 197, 94, 0.2);
+            background: linear-gradient(135deg, #4a9eff, #6b5ce7);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 32px;
+            font-size: 36px;
+            box-shadow: 0 8px 32px rgba(74, 158, 255, 0.3);
         }
-        .success-state h3 {
-            color: #4ade80;
-            font-size: 20px;
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, #4a9eff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .success-state p {
-            color: rgba(255,255,255,0.6);
+
+        .subtitle {
+            color: #8b9dc3;
             font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .plano-header {
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        .payment-options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .plano-nome {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
         }
-        .payment-option {
+
+        .plano-preco {
+            font-size: 36px;
+            font-weight: 700;
+            color: #4a9eff;
+            margin-bottom: 4px;
+        }
+
+        .plano-preco span {
+            font-size: 16px;
+            font-weight: 400;
+            color: #8b9dc3;
+        }
+
+        .plano-vencimento {
+            font-size: 13px;
+            color: #8b9dc3;
+        }
+
+        .info-box {
+            background: rgba(74, 158, 255, 0.1);
+            border-left: 3px solid #4a9eff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #b8c5d6;
+            line-height: 1.5;
+        }
+
+        .metodo-pagamento {
             display: flex;
             align-items: center;
             gap: 16px;
-            padding: 16px 20px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            color: white;
-        }
-        .payment-option:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(91, 155, 213, 0.3);
-            transform: translateY(-1px);
-        }
-        .payment-option .icon {
-            width: 44px;
-            height: 44px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            background: rgba(91, 155, 213, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .metodo-pagamento:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(74, 158, 255, 0.3);
+        }
+
+        .metodo-pagamento.selected {
+            border-color: #4a9eff;
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        .metodo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #4a9eff, #6b5ce7);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             flex-shrink: 0;
         }
-        .payment-option .info {
+
+        .metodo-info {
             flex: 1;
-            text-align: left;
-        }
-        .payment-option .info .nome {
-            font-weight: 600;
-            font-size: 15px;
-            color: white;
-            margin-bottom: 2px;
-        }
-        .payment-option .info .desc {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-        }
-        .payment-option .arrow {
-            color: rgba(255,255,255,0.3);
-            font-size: 18px;
         }
 
-        .pix-section {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
+        .metodo-titulo {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
         }
-        .pix-section h4 {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 16px;
-        }
-        .pix-qr {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            display: inline-block;
-        }
-        .pix-qr img {
-            width: 200px;
-            height: 200px;
-        }
-        .pix-code {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 12px;
-            font-family: monospace;
+
+        .metodo-desc {
             font-size: 12px;
-            color: rgba(255,255,255,0.7);
-            word-break: break-all;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
+            color: #8b9dc3;
         }
-        .pix-code:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(91, 155, 213, 0.3);
+
+        .metodo-arrow {
+            font-size: 20px;
+            color: #8b9dc3;
         }
-        .btn-copiar {
-            padding: 10px 20px;
-            background: #5b9bd5;
-            color: white;
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
             border: none;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn-copiar:hover {
-            background: #4a8bc4;
-        }
-        .btn-voltar {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.4);
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .btn-voltar:hover { color: #5b9bd5; }
 
-        .info-box {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
+        .btn-primary {
+            background: linear-gradient(135deg, #4a9eff, #6b5ce7);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(74, 158, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(74, 158, 255, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #8b9dc3;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-box {
+            display: none;
             padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .status-box.success {
+            display: block;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+
+        .status-box.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .status-box.warning {
+            display: block;
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #eab308;
+        }
+
+        .status-box.info {
+            display: block;
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            color: #4a9eff;
+        }
+
+        .dados-cliente {
             margin-bottom: 20px;
         }
-        .info-box p {
-            color: rgba(255,255,255,0.6);
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .info-box p strong {
-            color: white;
+
+        .dados-cliente h3 {
+            font-size: 14px;
+            color: #8b9dc3;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        @media (max-width: 480px) {
-            .card { padding: 28px 20px; }
+        .dado-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+        }
+
+        .dado-label {
+            color: #8b9dc3;
+        }
+
+        .dado-valor {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .polling-status {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(74, 158, 255, 0.05);
+            border: 1px dashed rgba(74, 158, 255, 0.3);
+            border-radius: 10px;
+            font-size: 13px;
+            color: #8b9dc3;
+            text-align: center;
+        }
+
+        .polling-status.active {
+            display: block;
+        }
+
+        .polling-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .hidden { display: none !important; }
+
+        .erro-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .erro-box h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .erro-box p {
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .warning-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
         }
     </style>
 <base target="_blank">
 </head>
 <body>
     <div class="container">
-        <div class="card">
-            <div class="logo">
-                <img src="./img/logo-livecontrol.png" alt="VendaLive">
-                <h1>Venda<span>Live</span></h1>
-                <p>Ative sua conta para começar a usar</p>
+        <!-- Logo e Título -->
+        <div class="logo">📺</div>
+        <h1>VendaLive</h1>
+        <p class="subtitle">Ative sua conta para começar a usar</p>
+
+        <!-- Card Principal -->
+        <div class="card" id="card-principal">
+            <!-- Plano -->
+            <div class="plano-header">
+                <div class="plano-nome" id="plano-nome">Plano Basic</div>
+                <div class="plano-preco" id="plano-preco">R$ 80,00<span>/mês</span></div>
+                <div class="plano-vencimento" id="plano-vencimento">Vencimento: 16/06/2026</div>
             </div>
 
-            <div id="conteudo">
-                <div class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>Gerando sua cobrança...</p>
+            <!-- Info -->
+            <div class="info-box">
+                Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.
+            </div>
+
+            <!-- Dados do Cliente (preenchidos via JS) -->
+            <div class="dados-cliente" id="dados-cliente">
+                <h3>Dados do Cadastro</h3>
+                <div class="dado-item">
+                    <span class="dado-label">Nome:</span>
+                    <span class="dado-valor" id="dc-nome">-</span>
                 </div>
+                <div class="dado-item">
+                    <span class="dado-label">E-mail:</span>
+                    <span class="dado-valor" id="dc-email">-</span>
+                </div>
+                <div class="dado-item">
+                    <span class="dado-label">CPF/CNPJ:</span>
+                    <span class="dado-valor" id="dc-cnpj">-</span>
+                </div>
+            </div>
+
+            <!-- Métodos de Pagamento -->
+            <div id="metodos-pagamento">
+                <div class="metodo-pagamento" id="metodo-cartao" onclick="selecionarMetodo('cartao')">
+                    <div class="metodo-icon">💳</div>
+                    <div class="metodo-info">
+                        <div class="metodo-titulo">Cartão de Crédito</div>
+                        <div class="metodo-desc">Pagamento recorrente automático</div>
+                    </div>
+                    <div class="metodo-arrow">›</div>
+                </div>
+
+                <div class="metodo-pagamento" id="metodo-pix" onclick="selecionarMetodo('pix')">
+                    <div class="metodo-icon">⚡</div>
+                    <div class="metodo-info">
+                        <div class="metodo-titulo">PIX</div>
+                        <div class="metodo-desc">Pagamento à vista com QR Code</div>
+                    </div>
+                    <div class="metodo-arrow">›</div>
+                </div>
+
+                <div class="metodo-pagamento" id="metodo-boleto" onclick="selecionarMetodo('boleto')">
+                    <div class="metodo-icon">📄</div>
+                    <div class="metodo-info">
+                        <div class="metodo-titulo">Boleto Bancário</div>
+                        <div class="metodo-desc">Vencimento em 3 dias úteis</div>
+                    </div>
+                    <div class="metodo-arrow">›</div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-box" id="status-box"></div>
+
+            <!-- Polling Status -->
+            <div class="polling-status" id="polling-status">
+                <span class="loading"></span>
+                Aguardando confirmação do pagamento<span class="polling-dots"></span>
+                <br><small>Tentativa <span id="polling-tentativa">1</span>/30</small>
+            </div>
+
+            <!-- Botões -->
+            <button class="btn btn-primary" id="btn-pagar" onclick="processarPagamento()" disabled>
+                <span id="btn-texto">Selecione um método de pagamento</span>
+            </button>
+
+            <button class="btn btn-secondary" id="btn-voltar" onclick="voltarCadastro()">
+                ← Voltar para Cadastro
+            </button>
+        </div>
+
+        <!-- Card de Erro (inicialmente oculto) -->
+        <div class="card hidden" id="card-erro">
+            <div class="erro-box">
+                <div class="warning-icon">⚠️</div>
+                <h3>Ops! Algo deu errado</h3>
+                <p id="erro-mensagem">Erro ao processar pagamento</p>
+                <button class="btn btn-primary" onclick="tentarNovamente()">
+                    🔄 Tentar Novamente
+                </button>
+                <button class="btn btn-secondary" onclick="voltarCadastro()">
+                    ← Voltar para Cadastro
+                </button>
+            </div>
+        </div>
+
+        <!-- Card de Sucesso (inicialmente oculto) -->
+        <div class="card hidden" id="card-sucesso">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+                <h2 style="font-size: 24px; margin-bottom: 12px; color: #22c55e;">Conta Ativada!</h2>
+                <p style="color: #8b9dc3; margin-bottom: 24px;">
+                    Seu pagamento foi confirmado e sua conta está ativa.
+                    <br>Você será redirecionado para o dashboard em <span id="contador">5</span> segundos...
+                </p>
+                <button class="btn btn-primary" onclick="irParaDashboard()">
+                    Acessar Dashboard →
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Supabase CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+
     <script>
+        // ============================================
+        // CONFIGURAÇÃO
+        // ============================================
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const PLANOS = {
-            basic: { nome: 'Basic', valor: 80.00, desc: 'Até 3 usuários · Suporte por e-mail' },
-            premium: { nome: 'Premium', valor: 100.00, desc: 'Usuários ilimitados · Suporte prioritário' }
-        };
+        let supabaseClient = null;
+        let metodoSelecionado = null;
+        let dadosCadastro = null;
+        let clienteId = null;
+        let pollingInterval = null;
 
-        const dadosCadastro = JSON.parse(localStorage.getItem('cadastroPendente') || '{}');
-        const conteudo = document.getElementById('conteudo');
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('[PAGAMENTO] Inicializando...');
 
-        async function gerarCobranca() {
-            console.log('[PAGAMENTO] Iniciando...');
-            console.log('[PAGAMENTO] Dados cadastro:', dadosCadastro);
+            // Aguardar Supabase carregar
+            await aguardarSupabase();
 
-            if (!dadosCadastro.cliente_id) {
-                mostrarErro('Dados do cadastro não encontrados. Por favor, faça o cadastro novamente.');
+            // Inicializar cliente Supabase
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('[PAGAMENTO] Supabase inicializado');
+            } else {
+                console.error('[PAGAMENTO] Supabase não disponível');
+                mostrarErro('Erro de conexão. Recarregue a página.');
                 return;
             }
 
-            const plano = dadosCadastro.plano || 'basic';
-            const p = PLANOS[plano];
+            // Carregar dados do cadastro
+            carregarDadosCadastro();
 
-            conteudo.innerHTML = `
-                <div class="plano-info">
-                    <div class="nome">Plano ${p.nome}</div>
-                    <div class="preco">R$ ${p.valor.toFixed(2).replace('.', ',')}<span>/mês</span></div>
-                    <div class="desc">${p.desc}</div>
-                </div>
-                <div class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>Gerando cobrança via Supabase...</p>
-                </div>
-            `;
+            // Verificar se já existe pagamento pendente
+            verificarPagamentoPendente();
+        });
+
+        async function aguardarSupabase(maxTentativas = 20) {
+            let tentativas = 0;
+            while (tentativas < maxTentativas) {
+                if (window.supabase && typeof window.supabase === 'object') {
+                    console.log('[PAGAMENTO] Supabase disponível após', tentativas, 'tentativas');
+                    return true;
+                }
+                tentativas++;
+                await new Promise(r => setTimeout(r, 300));
+            }
+            console.error('[PAGAMENTO] Supabase não carregou após', maxTentativas, 'tentativas');
+            return false;
+        }
+
+        // ============================================
+        // CARREGAR DADOS DO CADASTRO
+        // ============================================
+        function carregarDadosCadastro() {
+            // Buscar dados do sessionStorage (enviados do cadastro.html)
+            const dados = sessionStorage.getItem('cadastro_pendente');
+
+            if (dados) {
+                try {
+                    dadosCadastro = JSON.parse(dados);
+                    console.log('[PAGAMENTO] Dados do cadastro:', dadosCadastro);
+
+                    // Preencher dados na tela
+                    document.getElementById('dc-nome').textContent = dadosCadastro.nome || '-';
+                    document.getElementById('dc-email').textContent = dadosCadastro.email || '-';
+                    document.getElementById('dc-cnpj').textContent = dadosCadastro.cnpj || dadosCadastro.cpf || '-';
+
+                    // Atualizar plano se houver
+                    if (dadosCadastro.plano) {
+                        document.getElementById('plano-nome').textContent = 'Plano ' + dadosCadastro.plano;
+                    }
+                    if (dadosCadastro.valor) {
+                        document.getElementById('plano-preco').innerHTML = 
+                            'R$ ' + parseFloat(dadosCadastro.valor).toFixed(2).replace('.', ',') + '<span>/mês</span>';
+                    }
+
+                    // Calcular vencimento (hoje + 7 dias)
+                    const hoje = new Date();
+                    hoje.setDate(hoje.getDate() + 7);
+                    document.getElementById('plano-vencimento').textContent = 
+                        'Vencimento: ' + hoje.toLocaleDateString('pt-BR');
+
+                } catch (e) {
+                    console.error('[PAGAMENTO] Erro ao parsear dados:', e);
+                }
+            } else {
+                console.warn('[PAGAMENTO] Nenhum dado de cadastro encontrado no sessionStorage');
+                // Tentar buscar na URL
+                const params = new URLSearchParams(window.location.search);
+                const clienteIdUrl = params.get('cliente_id');
+                if (clienteIdUrl) {
+                    clienteId = clienteIdUrl;
+                    buscarClienteNoBanco(clienteId);
+                }
+            }
+        }
+
+        async function buscarClienteNoBanco(id) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    document.getElementById('dc-nome').textContent = data.nome || '-';
+                    document.getElementById('dc-email').textContent = data.email || '-';
+                    document.getElementById('dc-cnpj').textContent = data.cnpj || data.cpf_cnpj || '-';
+
+                    // Verificar se já está ativo
+                    if (data.ativo) {
+                        mostrarSucesso();
+                    }
+                }
+            } catch (e) {
+                console.error('[PAGAMENTO] Erro ao buscar cliente:', e);
+            }
+        }
+
+        // ============================================
+        // VERIFICAR PAGAMENTO PENDENTE
+        // ============================================
+        async function verificarPagamentoPendente() {
+            const pendente = sessionStorage.getItem('pagamento_pendente');
+            if (pendente) {
+                try {
+                    const dados = JSON.parse(pendente);
+                    console.log('[PAGAMENTO] Pagamento pendente encontrado:', dados);
+
+                    clienteId = dados.cliente_id;
+
+                    // Mostrar status de aguardando
+                    mostrarStatus('info', 'Aguardando confirmação do pagamento anterior...');
+
+                    // Iniciar polling
+                    iniciarPolling(clienteId);
+
+                    // Esconder métodos de pagamento
+                    document.getElementById('metodos-pagamento').classList.add('hidden');
+                    document.getElementById('btn-pagar').classList.add('hidden');
+
+                } catch (e) {
+                    console.error('[PAGAMENTO] Erro ao verificar pendente:', e);
+                }
+            }
+        }
+
+        // ============================================
+        // SELECIONAR MÉTODO DE PAGAMENTO
+        // ============================================
+        function selecionarMetodo(metodo) {
+            console.log('[PAGAMENTO] Método selecionado:', metodo);
+
+            // Remover seleção anterior
+            document.querySelectorAll('.metodo-pagamento').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Adicionar seleção
+            document.getElementById('metodo-' + metodo).classList.add('selected');
+            metodoSelecionado = metodo;
+
+            // Ativar botão
+            const btn = document.getElementById('btn-pagar');
+            btn.disabled = false;
+
+            const textos = {
+                'cartao': 'Pagar com Cartão de Crédito',
+                'pix': 'Gerar QR Code PIX',
+                'boleto': 'Gerar Boleto Bancário'
+            };
+            document.getElementById('btn-texto').textContent = textos[metodo];
+        }
+
+        // ============================================
+        // PROCESSAR PAGAMENTO
+        // ============================================
+        async function processarPagamento() {
+            if (!metodoSelecionado) {
+                mostrarStatus('warning', 'Selecione um método de pagamento');
+                return;
+            }
+
+            if (!dadosCadastro) {
+                mostrarErro('Dados do cadastro não encontrados. Volte ao cadastro.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-pagar');
+            btn.disabled = true;
+            document.getElementById('btn-texto').innerHTML = '<span class="loading"></span> Processando...';
 
             try {
-                // Chamar Edge Function do Supabase (sem CORS!)
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/asaas-criar-assinatura`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({
-                        nome: dadosCadastro.nome_empresa || dadosCadastro.nome_responsavel,
-                        email: dadosCadastro.email,
-                        cpfCnpj: dadosCadastro.cnpj,
-                        telefone: dadosCadastro.telefone,
-                        plano: dadosCadastro.plano,
-                        cliente_id: dadosCadastro.cliente_id
-                    })
-                });
+                console.log('[PAGAMENTO] Iniciando processamento:', metodoSelecionado);
 
-                const result = await response.json();
-                console.log('[PAGAMENTO] Resposta Edge Function:', response.status, result);
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || `HTTP ${response.status}`);
+                // 1. Criar cliente no Asaas (se ainda não tiver)
+                if (!dadosCadastro.asaas_customer_id) {
+                    await criarClienteAsaas();
                 }
 
-                // Salvar no localStorage
-                localStorage.setItem('pagamentoPendente', JSON.stringify({
-                    ...result,
-                    plano: plano,
-                    cliente_id: dadosCadastro.cliente_id
-                }));
-
-                // Atualizar Supabase com asaas_customer_id
-                if (result.asaas_customer_id) {
-                    const { error } = await supabaseClient
-                        .from('clientes_sistema')
-                        .update({
-                            asaas_customer_id: result.asaas_customer_id,
-                            asaas_subscription_id: result.asaas_subscription_id,
-                            status_pagamento: 'pendente'
-                        })
-                        .eq('id', dadosCadastro.cliente_id);
-
-                    if (error) console.error('[PAGAMENTO] Erro Supabase:', error);
+                // 2. Criar assinatura/cobrança
+                if (metodoSelecionado === 'cartao') {
+                    await criarAssinaturaCartao();
+                } else if (metodoSelecionado === 'pix') {
+                    await criarCobrancaPix();
+                } else if (metodoSelecionado === 'boleto') {
+                    await criarCobrancaBoleto();
                 }
-
-                mostrarOpcoesPagamento(result, p);
 
             } catch (error) {
-                console.error('[PAGAMENTO] ❌ ERRO:', error);
-                mostrarErro('Erro ao gerar cobrança: ' + error.message);
+                console.error('[PAGAMENTO] Erro:', error);
+                mostrarErro('Erro ao processar: ' + error.message);
+                btn.disabled = false;
+                document.getElementById('btn-texto').textContent = 'Tentar Novamente';
             }
         }
 
-        function mostrarOpcoesPagamento(dados, plano) {
-            const vencimento = new Date(dados.vencimento || Date.now());
+        // ============================================
+        // CRIAR CLIENTE NO ASAAS
+        // ============================================
+        async function criarClienteAsaas() {
+            console.log('[PAGAMENTO] Criando cliente no Asaas...');
 
-            conteudo.innerHTML = `
-                <div class="plano-info">
-                    <div class="nome">Plano ${plano.nome}</div>
-                    <div class="preco">R$ ${plano.valor.toFixed(2).replace('.', ',')}<span>/mês</span></div>
-                    <div class="desc">Vencimento: ${vencimento.toLocaleDateString('pt-BR')}</div>
-                </div>
-                <div class="info-box">
-                    <p>Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.</p>
-                </div>
-                <div class="payment-options">
-                    <a href="${dados.invoice_url}" target="_blank" class="payment-option">
-                        <div class="icon">💳</div>
-                        <div class="info">
-                            <div class="nome">Cartão de Crédito</div>
-                            <div class="desc">Pagamento recorrente automático</div>
-                        </div>
-                        <div class="arrow">›</div>
-                    </a>
-                    <a href="${dados.bank_slip_url || dados.invoice_url}" target="_blank" class="payment-option">
-                        <div class="icon">📄</div>
-                        <div class="info">
-                            <div class="nome">Boleto Bancário</div>
-                            <div class="desc">Vencimento em ${vencimento.toLocaleDateString('pt-BR')}</div>
-                        </div>
-                        <div class="arrow">›</div>
-                    </a>
-                    ${dados.pix_qr_code ? `
-                    <div class="payment-option" onclick="mostrarPIX()" style="cursor:pointer">
-                        <div class="icon">⚡</div>
-                        <div class="info">
-                            <div class="nome">PIX</div>
-                            <div class="desc">Pagamento instantâneo com QR Code</div>
-                        </div>
-                        <div class="arrow">›</div>
-                    </div>
-                    ` : ''}
-                </div>
-                <a href="cadastro.html" class="btn-voltar">← Voltar para cadastro</a>
-            `;
+            const response = await fetch('/functions/v1/asaas-criar-cliente', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: dadosCadastro.nome,
+                    email: dadosCadastro.email,
+                    cpfCnpj: dadosCadastro.cnpj || dadosCadastro.cpf,
+                    phone: dadosCadastro.telefone,
+                    mobilePhone: dadosCadastro.telefone
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erro ao criar cliente no Asaas');
+            }
+
+            const result = await response.json();
+            dadosCadastro.asaas_customer_id = result.customer_id;
+
+            // Salvar no sessionStorage
+            sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosCadastro));
+
+            console.log('[PAGAMENTO] Cliente Asaas criado:', result.customer_id);
         }
 
-        function mostrarPIX() {
-            const pagamento = JSON.parse(localStorage.getItem('pagamentoPendente') || '{}');
-            if (!pagamento.pix_qr_code) return;
+        // ============================================
+        // CRIAR ASSINATURA CARTÃO
+        // ============================================
+        async function criarAssinaturaCartao() {
+            console.log('[PAGAMENTO] Criando assinatura com cartão...');
 
-            conteudo.innerHTML = `
-                <div class="success-state">
-                    <div class="icon">⚡</div>
-                    <h3>Pagamento via PIX</h3>
-                    <p>Escaneie o QR Code ou copie o código PIX para pagar</p>
-                </div>
-                <div class="pix-section">
-                    <h4>QR Code PIX</h4>
-                    <div class="pix-qr">
-                        <img src="data:image/png;base64,${pagamento.pix_qr_code}" alt="QR Code PIX">
-                    </div>
-                    <div class="pix-code" onclick="copiarPIX()" title="Clique para copiar">
-                        ${pagamento.pix_payload || 'Código PIX não disponível'}
-                    </div>
-                    <button class="btn-copiar" onclick="copiarPIX()">📋 Copiar Código PIX</button>
-                </div>
-                <div class="info-box">
-                    <p><strong>Importante:</strong> Após o pagamento, aguarde alguns minutos para a confirmação automática. Você receberá um e-mail quando sua conta for ativada.</p>
-                </div>
-                <a href="login.html" class="btn-voltar">→ Já paguei? Ir para Login</a>
-            `;
-        }
+            // Buscar configurações de pagamento
+            const { data: config, error: configError } = await supabaseClient
+                .from('configuracoes_pagamento')
+                .select('asaas_api_key, asaas_sandbox')
+                .limit(1)
+                .single();
 
-        function copiarPIX() {
-            const pagamento = JSON.parse(localStorage.getItem('pagamentoPendente') || '{}');
-            if (pagamento.pix_payload) {
-                navigator.clipboard.writeText(pagamento.pix_payload).then(() => {
-                    alert('✅ Código PIX copiado! Abra seu app bancário e cole o código.');
-                });
+            if (configError || !config) {
+                throw new Error('Configurações de pagamento não encontradas');
+            }
+
+            // Chamar Edge Function para criar assinatura
+            const response = await fetch('/functions/v1/asaas-criar-assinatura', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_id: dadosCadastro.asaas_customer_id,
+                    valor: dadosCadastro.valor || 80.00,
+                    plano: dadosCadastro.plano || 'Basic',
+                    cliente_sistema_id: dadosCadastro.cliente_id,
+                    billingType: 'CREDIT_CARD'
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erro ao criar assinatura');
+            }
+
+            const result = await response.json();
+            console.log('[PAGAMENTO] Assinatura criada:', result);
+
+            // Salvar dados do pagamento pendente
+            sessionStorage.setItem('pagamento_pendente', JSON.stringify({
+                cliente_id: dadosCadastro.cliente_id,
+                asaas_subscription_id: result.subscription_id,
+                metodo: 'cartao',
+                criado_em: new Date().toISOString()
+            }));
+
+            // Redirecionar para fatura do Asaas
+            if (result.invoice_url) {
+                window.location.href = result.invoice_url;
+            } else {
+                // Se não tiver URL, iniciar polling
+                iniciarPolling(dadosCadastro.cliente_id);
             }
         }
 
+        // ============================================
+        // CRIAR COBRANÇA PIX
+        // ============================================
+        async function criarCobrancaPix() {
+            console.log('[PAGAMENTO] Criando cobrança PIX...');
+
+            const response = await fetch('/functions/v1/asaas-criar-cobranca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_id: dadosCadastro.asaas_customer_id,
+                    valor: dadosCadastro.valor || 80.00,
+                    descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
+                    billingType: 'PIX',
+                    cliente_sistema_id: dadosCadastro.cliente_id
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erro ao criar cobrança PIX');
+            }
+
+            const result = await response.json();
+            console.log('[PAGAMENTO] Cobrança PIX criada:', result);
+
+            // Salvar pagamento pendente
+            sessionStorage.setItem('pagamento_pendente', JSON.stringify({
+                cliente_id: dadosCadastro.cliente_id,
+                asaas_payment_id: result.payment_id,
+                metodo: 'pix',
+                qr_code: result.qr_code,
+                qr_code_base64: result.qr_code_base64,
+                invoice_url: result.invoice_url,
+                criado_em: new Date().toISOString()
+            }));
+
+            // Redirecionar para página de PIX
+            if (result.invoice_url) {
+                window.location.href = result.invoice_url;
+            } else {
+                // Mostrar QR code na tela
+                mostrarQrCodePix(result);
+            }
+        }
+
+        // ============================================
+        // CRIAR COBRANÇA BOLETO
+        // ============================================
+        async function criarCobrancaBoleto() {
+            console.log('[PAGAMENTO] Criando cobrança Boleto...');
+
+            const response = await fetch('/functions/v1/asaas-criar-cobranca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_id: dadosCadastro.asaas_customer_id,
+                    valor: dadosCadastro.valor || 80.00,
+                    descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
+                    billingType: 'BOLETO',
+                    cliente_sistema_id: dadosCadastro.cliente_id
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erro ao criar boleto');
+            }
+
+            const result = await response.json();
+            console.log('[PAGAMENTO] Boleto criado:', result);
+
+            // Redirecionar para fatura
+            if (result.invoice_url) {
+                window.location.href = result.invoice_url;
+            }
+        }
+
+        // ============================================
+        // MOSTRAR QR CODE PIX
+        // ============================================
+        function mostrarQrCodePix(dados) {
+            document.getElementById('metodos-pagamento').classList.add('hidden');
+            document.getElementById('btn-pagar').classList.add('hidden');
+            document.getElementById('btn-voltar').classList.add('hidden');
+
+            const container = document.getElementById('card-principal');
+            const qrDiv = document.createElement('div');
+            qrDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3 style="margin-bottom: 16px; color: #fff;">Escaneie o QR Code</h3>
+                    <img src="data:image/png;base64,${dados.qr_code_base64}" 
+                         style="max-width: 250px; border-radius: 12px; margin-bottom: 16px;" 
+                         alt="QR Code PIX">
+                    <p style="font-size: 12px; color: #8b9dc3; margin-bottom: 16px; word-break: break-all;">
+                        ${dados.qr_code}
+                    </p>
+                    <button class="btn btn-secondary" onclick="copiarPix('${dados.qr_code}')">
+                        📋 Copiar Código PIX
+                    </button>
+                </div>
+            `;
+            container.appendChild(qrDiv);
+
+            // Iniciar polling
+            iniciarPolling(dadosCadastro.cliente_id);
+        }
+
+        function copiarPix(codigo) {
+            navigator.clipboard.writeText(codigo).then(() => {
+                mostrarStatus('success', 'Código PIX copiado!');
+            });
+        }
+
+        // ============================================
+        // POLLING - VERIFICAR STATUS DO PAGAMENTO
+        // ============================================
+        function iniciarPolling(clienteId, maxTentativas = 30) {
+            console.log('[POLLING] Iniciando verificação para cliente:', clienteId);
+
+            let tentativas = 0;
+            const intervalo = 5000; // 5 segundos
+
+            document.getElementById('polling-status').classList.add('active');
+            document.getElementById('metodos-pagamento').classList.add('hidden');
+            document.getElementById('btn-pagar').classList.add('hidden');
+
+            const verificar = async () => {
+                tentativas++;
+                document.getElementById('polling-tentativa').textContent = tentativas;
+                console.log(`[POLLING] Tentativa ${tentativas}/${maxTentativas}`);
+
+                try {
+                    const { data: cliente, error } = await supabaseClient
+                        .from('clientes_sistema')
+                        .select('ativo, status_pagamento, data_ultimo_pagamento, asaas_customer_id')
+                        .eq('id', clienteId)
+                        .single();
+
+                    if (error) {
+                        console.error('[POLLING] Erro:', error);
+                        if (tentativas < maxTentativas) {
+                            pollingInterval = setTimeout(verificar, intervalo);
+                        }
+                        return;
+                    }
+
+                    console.log('[POLLING] Status do cliente:', cliente);
+
+                    // Se o cliente foi ativado
+                    if (cliente && cliente.ativo === true && cliente.status_pagamento === 'ativo') {
+                        console.log('[POLLING] ✅ Cliente ativado!');
+                        clearTimeout(pollingInterval);
+
+                        // Limpar pendente
+                        sessionStorage.removeItem('pagamento_pendente');
+                        sessionStorage.removeItem('cadastro_pendente');
+
+                        // Mostrar sucesso
+                        mostrarSucesso();
+                        return;
+                    }
+
+                    // Se ainda não ativou e tem mais tentativas
+                    if (tentativas < maxTentativas) {
+                        pollingInterval = setTimeout(verificar, intervalo);
+                    } else {
+                        console.log('[POLLING] ⏰ Máximo de tentativas atingido');
+                        document.getElementById('polling-status').innerHTML = `
+                            <span style="color: #eab308;">⚠️</span> Não recebemos a confirmação automática.<br>
+                            <small>Se você já pagou, <a href="#" onclick="location.reload()" style="color: #4a9eff;">clique aqui para verificar</a></small>
+                        `;
+
+                        // Mostrar botão de verificar
+                        document.getElementById('btn-pagar').classList.remove('hidden');
+                        document.getElementById('btn-pagar').disabled = false;
+                        document.getElementById('btn-texto').textContent = 'Verificar Pagamento';
+                        document.getElementById('btn-pagar').onclick = function() {
+                            location.reload();
+                        };
+                    }
+
+                } catch (err) {
+                    console.error('[POLLING] Erro inesperado:', err);
+                    if (tentativas < maxTentativas) {
+                        pollingInterval = setTimeout(verificar, intervalo);
+                    }
+                }
+            };
+
+            // Iniciar primeira verificação
+            verificar();
+        }
+
+        // ============================================
+        // MOSTRAR STATUS
+        // ============================================
+        function mostrarStatus(tipo, mensagem) {
+            const box = document.getElementById('status-box');
+            box.className = 'status-box ' + tipo;
+            box.textContent = mensagem;
+
+            setTimeout(() => {
+                box.className = 'status-box';
+            }, 5000);
+        }
+
+        // ============================================
+        // MOSTRAR ERRO
+        // ============================================
         function mostrarErro(mensagem) {
-            conteudo.innerHTML = `
-                <div class="error-state">
-                    <div class="icon">⚠️</div>
-                    <h3>Ops! Algo deu errado</h3>
-                    <p>${mensagem}</p>
-                    <button onclick="gerarCobranca()" class="btn-copiar">🔄 Tentar Novamente</button>
-                    <a href="cadastro.html" class="btn-voltar">← Voltar para Cadastro</a>
-                </div>
-            `;
+            console.error('[PAGAMENTO] Erro:', mensagem);
+            document.getElementById('card-principal').classList.add('hidden');
+            document.getElementById('card-erro').classList.remove('hidden');
+            document.getElementById('erro-mensagem').textContent = mensagem;
         }
 
-        // Iniciar
-        gerarCobranca();
+        // ============================================
+        // MOSTRAR SUCESSO
+        // ============================================
+        function mostrarSucesso() {
+            console.log('[PAGAMENTO] Sucesso! Redirecionando...');
+            document.getElementById('card-principal').classList.add('hidden');
+            document.getElementById('card-erro').classList.add('hidden');
+            document.getElementById('card-sucesso').classList.remove('hidden');
+
+            // Contador regressivo
+            let segundos = 5;
+            const contador = document.getElementById('contador');
+
+            const timer = setInterval(() => {
+                segundos--;
+                contador.textContent = segundos;
+                if (segundos <= 0) {
+                    clearInterval(timer);
+                    irParaDashboard();
+                }
+            }, 1000);
+        }
+
+        // ============================================
+        // NAVEGAÇÃO
+        // ============================================
+        function irParaDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function voltarCadastro() {
+            // Limpar dados pendentes
+            sessionStorage.removeItem('pagamento_pendente');
+            window.location.href = 'cadastro.html';
+        }
+
+        function tentarNovamente() {
+            document.getElementById('card-erro').classList.add('hidden');
+            document.getElementById('card-principal').classList.remove('hidden');
+            document.getElementById('btn-pagar').disabled = false;
+            document.getElementById('btn-texto').textContent = 'Selecione um método de pagamento';
+            metodoSelecionado = null;
+            document.querySelectorAll('.metodo-pagamento').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
     </script>
 </body>
 </html>
