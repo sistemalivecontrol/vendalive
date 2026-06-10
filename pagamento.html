@@ -470,7 +470,7 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-        // URL ABSOLUTA das Edge Functions (correção principal!)
+        // URL ABSOLUTA das Edge Functions
         const EDGE_FUNCTION_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
 
         let supabaseClient = null;
@@ -527,10 +527,39 @@
                 return;
             }
 
+            // CORREÇÃO: Verificar se há novo cadastro e limpar pagamento pendente antigo
+            const novoCadastro = sessionStorage.getItem('cadastro_pendente');
+            if (novoCadastro) {
+                try {
+                    const dadosNovo = JSON.parse(novoCadastro);
+                    const pagamentoPendente = sessionStorage.getItem('pagamento_pendente');
+
+                    if (pagamentoPendente) {
+                        const dadosPendente = JSON.parse(pagamentoPendente);
+
+                        // Se o cliente_id do pagamento pendente é diferente do novo cadastro,
+                        // significa que é um pagamento antigo - limpar!
+                        if (dadosPendente.cliente_id !== dadosNovo.cliente_id) {
+                            console.log('[PAGAMENTO] Limpando pagamento pendente antigo:', dadosPendente.cliente_id);
+                            console.log('[PAGAMENTO] Novo cadastro:', dadosNovo.cliente_id);
+                            sessionStorage.removeItem('pagamento_pendente');
+
+                            // Parar polling se estiver rodando
+                            if (pollingInterval) {
+                                clearTimeout(pollingInterval);
+                                pollingInterval = null;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[PAGAMENTO] Erro ao verificar pagamento pendente:', e);
+                }
+            }
+
             // Carregar dados do cadastro
             carregarDadosCadastro();
 
-            // Verificar se já existe pagamento pendente
+            // Verificar se já existe pagamento pendente (após limpar se necessário)
             verificarPagamentoPendente();
         });
 
@@ -635,12 +664,12 @@
                     // Mostrar status de aguardando
                     mostrarStatus('info', 'Aguardando confirmação do pagamento anterior...');
 
-                    // Iniciar polling
-                    iniciarPolling(clienteId);
-
-                    // Esconder métodos de pagamento
+                    // Esconder métodos de pagamento e botão
                     document.getElementById('metodos-pagamento').classList.add('hidden');
                     document.getElementById('btn-pagar').classList.add('hidden');
+
+                    // Iniciar polling
+                    iniciarPolling(clienteId);
 
                 } catch (e) {
                     console.error('[PAGAMENTO] Erro ao verificar pendente:', e);
@@ -793,8 +822,13 @@
 
             // Redirecionar para fatura do Asaas
             if (result.invoice_url) {
+                console.log('[PAGAMENTO] Redirecionando para:', result.invoice_url);
                 window.location.href = result.invoice_url;
+            } else if (result.payment_link) {
+                console.log('[PAGAMENTO] Redirecionando para payment_link:', result.payment_link);
+                window.location.href = result.payment_link;
             } else {
+                console.log('[PAGAMENTO] Sem URL de pagamento, iniciando polling');
                 // Se não tiver URL, iniciar polling
                 iniciarPolling(dadosCadastro.cliente_id);
             }
@@ -876,9 +910,20 @@
             const result = await response.json();
             console.log('[PAGAMENTO] Boleto criado:', result);
 
+            // Salvar pagamento pendente
+            sessionStorage.setItem('pagamento_pendente', JSON.stringify({
+                cliente_id: dadosCadastro.cliente_id,
+                asaas_payment_id: result.payment_id,
+                metodo: 'boleto',
+                invoice_url: result.invoice_url,
+                criado_em: new Date().toISOString()
+            }));
+
             // Redirecionar para fatura
             if (result.invoice_url) {
                 window.location.href = result.invoice_url;
+            } else {
+                mostrarErro('Erro ao gerar boleto. Tente novamente.');
             }
         }
 
@@ -1054,6 +1099,7 @@
         function voltarCadastro() {
             // Limpar dados pendentes
             sessionStorage.removeItem('pagamento_pendente');
+            sessionStorage.removeItem('cadastro_pendente');
             window.location.href = 'cadastro.html';
         }
 
