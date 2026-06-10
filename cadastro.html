@@ -3,213 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendaLive - Cadastro</title>
+    <title>VendaLive - Criar Conta</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: #0B193F;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: #fff;
             position: relative;
-            overflow-x: hidden;
         }
+
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse at 0% 0%, rgba(91, 155, 213, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 100% 100%, rgba(11, 25, 63, 0.8) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(91, 155, 213, 0.05) 0%, transparent 60%);
+                radial-gradient(ellipse at 50% 0%, rgba(91, 155, 213, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(11, 25, 63, 0.9) 0%, transparent 50%);
             z-index: 0;
-        }
-        .particles {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
             pointer-events: none;
         }
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            animation: float-particle linear infinite;
-        }
-        @keyframes float-particle {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
-        }
 
-        .login-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 100%;
-            min-height: 100vh;
+        .container {
             position: relative;
             z-index: 1;
-        }
-        .brand-side {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            position: relative;
-        }
-        .brand-content {
-            text-align: center;
-            max-width: 420px;
-        }
-        .logo-img {
-            width: 140px;
-            height: 140px;
-            border-radius: 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05);
-            margin-bottom: 32px;
-            animation: logo-glow 3s ease-in-out infinite;
-        }
-        @keyframes logo-glow {
-            0%, 100% { box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05); }
-            50% { box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(91,155,213,0.15), 0 0 0 1px rgba(255,255,255,0.05); }
-        }
-        .brand-title {
-            font-size: 42px;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
-        }
-        .brand-title span { color: #5b9bd5; }
-        .brand-subtitle {
-            color: rgba(255,255,255,0.45);
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            margin-bottom: 32px;
-        }
-        .brand-features {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            text-align: left;
-        }
-        .brand-feature {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px;
-            transition: all 0.3s;
-        }
-        .brand-feature:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.12);
-            transform: translateX(4px);
-        }
-        .brand-feature svg {
-            width: 20px;
-            height: 20px;
-            color: #5b9bd5;
-            flex-shrink: 0;
-        }
-        .brand-feature span {
-            color: rgba(255,255,255,0.7);
-            font-size: 14px;
-            font-weight: 500;
+            width: 100%;
+            max-width: 520px;
         }
 
-        .form-side {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            overflow-y: auto;
-            max-height: 100vh;
+        /* Header com logo */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
         }
-        .login-card {
-            width: 100%;
-            max-width: 480px;
+        .logo-img {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+        .header h1 span { color: #5b9bd5; }
+        .header p {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        /* Card principal */
+        .card {
             background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(30px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
+            border-radius: 20px;
             padding: 32px;
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .login-header h2 {
-            font-size: 24px;
+
+        .card-title {
+            font-size: 20px;
             font-weight: 700;
             color: white;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
-        .login-header p {
+        .card-subtitle {
             color: rgba(255,255,255,0.45);
             font-size: 14px;
+            margin-bottom: 24px;
         }
-        .form-group { margin-bottom: 16px; }
+
+        /* Form fields */
+        .form-group {
+            margin-bottom: 16px;
+        }
         .form-group label {
             display: block;
-            margin-bottom: 6px;
-            color: rgba(255,255,255,0.65);
-            font-weight: 500;
             font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 6px;
         }
-        .input-wrapper {
-            position: relative;
-        }
-        .input-wrapper svg {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: rgba(255,255,255,0.3);
-            pointer-events: none;
-        }
-        input {
+        .form-group input {
             width: 100%;
-            padding: 12px 16px 12px 44px;
+            padding: 12px 16px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 15px;
             color: white;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-        input:focus {
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+        .form-group input:focus {
             outline: none;
             border-color: #5b9bd5;
             background: rgba(255,255,255,0.08);
             box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15);
         }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Planos */
+        .planos-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .plano-card {
+            padding: 14px 16px;
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .plano-card:hover {
+            border-color: rgba(91, 155, 213, 0.4);
+            background: rgba(91, 155, 213, 0.04);
+        }
+        .plano-card.selected {
+            border-color: #5b9bd5;
+            background: rgba(91, 155, 213, 0.08);
+        }
+        .plano-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+        .plano-info p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+        }
+        .plano-preco {
+            text-align: right;
+        }
+        .plano-preco .valor {
+            font-size: 20px;
+            font-weight: 700;
+            color: #5b9bd5;
+        }
+        .plano-preco .periodo {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+        }
+        .plano-card.selected .plano-info p,
+        .plano-card.selected .plano-preco .periodo {
+            color: rgba(255,255,255,0.65);
+        }
+        .badge-gratis {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 6px;
+        }
+
+        /* Botão */
         .btn {
             width: 100%;
             padding: 14px;
-            background: #0B193F;
+            background: #5b9bd5;
             color: white;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -221,266 +212,203 @@
             gap: 8px;
         }
         .btn:hover {
-            background: #152B5C;
-            border-color: rgba(255,255,255,0.25);
+            background: #4a8bc4;
             transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 25px rgba(91, 155, 213, 0.3);
         }
         .btn:disabled {
             background: #1e293b;
-            border-color: transparent;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
             opacity: 0.6;
         }
+
+        /* Loading */
         .loading {
             display: inline-block;
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(255,255,255,.3);
-            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
             border-top-color: white;
-            animation: spin 0.8s ease-in-out infinite;
-            margin-left: 4px;
-            vertical-align: middle;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Status */
         .status-box {
             display: none;
             padding: 12px 16px;
             border-radius: 10px;
             margin-bottom: 16px;
             font-size: 13px;
+            font-weight: 500;
         }
         .status-box.error {
             display: block;
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
+            color: #f87171;
         }
         .status-box.success {
             display: block;
             background: rgba(34, 197, 94, 0.1);
             border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #22c55e;
+            color: #4ade80;
         }
 
-        .plano-section { margin-bottom: 20px; }
-        .plano-section > label {
-            display: block;
-            font-size: 13px;
-            color: rgba(255,255,255,0.65);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .plano-card {
-            padding: 14px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 10px;
-            background: rgba(255,255,255,0.03);
-        }
-        .plano-card:hover {
-            border-color: rgba(91, 155, 213, 0.5);
-            background: rgba(91, 155, 213, 0.05);
-        }
-        .plano-card.selected {
-            border-color: #5b9bd5;
-            background: rgba(91, 155, 213, 0.1);
-        }
-        .plano-card h3 {
-            font-size: 15px;
-            margin-bottom: 4px;
-            color: white;
-        }
-        .plano-card .preco {
-            font-size: 22px;
-            font-weight: 700;
-            color: #5b9bd5;
-        }
-        .plano-card .preco span {
-            font-size: 13px;
-            font-weight: 400;
-            color: rgba(255,255,255,0.5);
-        }
-        .plano-card p {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            margin-top: 4px;
-        }
-        .plano-card.selected p {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .erro-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
+        /* Footer */
+        .footer {
             text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
         }
-        .warning-icon {
+        .footer a {
+            color: #5b9bd5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Erro card */
+        .erro-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .erro-card .warning-icon {
             font-size: 48px;
             margin-bottom: 12px;
         }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.35);
-            text-decoration: none;
-            font-size: 13px;
-            transition: all 0.2s;
+        .erro-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
         }
-        .back-link:hover { color: #5b9bd5; }
+        .erro-card p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
 
         .hidden { display: none !important; }
 
-        @media (max-width: 768px) {
-            .login-layout { grid-template-columns: 1fr; }
-            .brand-side { display: none; }
-            .form-side { padding: 24px; max-height: none; }
-            .login-card { padding: 24px; }
+        /* Mobile */
+        @media (max-width: 480px) {
+            body { padding: 20px 16px; }
+            .card { padding: 24px 20px; }
+            .form-row { grid-template-columns: 1fr; }
+            .header h1 { font-size: 24px; }
         }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <div class="particles" id="particles"></div>
+    <div class="container">
+        <div class="header">
+            <img src="./img/logo-livecontrol.png" alt="VendaLive" class="logo-img">
+            <h1>Venda<span>Live</span></h1>
+            <p>Crie sua conta e comece a vender</p>
+        </div>
 
-    <div class="login-layout">
-        <div class="brand-side">
-            <div class="brand-content">
-                <img src="./img/logo-livecontrol.png" alt="VendaLive Logo" class="logo-img">
-                <h1 class="brand-title">Venda<span>Live</span></h1>
-                <p class="brand-subtitle">Sistema de Gestão para Lives</p>
-                <div class="brand-features">
-                    <div class="brand-feature">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        <span>Registro rápido de vendas durante a live</span>
+        <div class="card" id="card-form">
+            <div class="status-box" id="status-box"></div>
+
+            <div class="card-title">Criar conta</div>
+            <div class="card-subtitle">Preencha seus dados para começar</div>
+
+            <form id="form-cadastro" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="nome">Nome da Empresa / Nome Completo *</label>
+                    <input type="text" id="nome" placeholder="Ex: Loja Pingo de Gente" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cpf_cnpj">CPF ou CNPJ *</label>
+                        <input type="text" id="cpf_cnpj" placeholder="000.000.000-00" required>
                     </div>
-                    <div class="brand-feature">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                        <span>Cobrança automática via PIX</span>
-                    </div>
-                    <div class="brand-feature">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>Gestão completa de clientes e entregas</span>
-                    </div>
-                    <div class="brand-feature">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        <span>Relatórios em tempo real</span>
+                    <div class="form-group">
+                        <label for="telefone">Telefone *</label>
+                        <input type="text" id="telefone" placeholder="(47) 99999-9999" required>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail *</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="senha">Senha *</label>
+                        <input type="password" id="senha" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha_confirmar">Confirmar Senha *</label>
+                        <input type="password" id="senha_confirmar" placeholder="Repita a senha" required>
+                    </div>
+                </div>
+
+                <div style="margin-top: 8px;">
+                    <div class="planos-label">Escolha seu plano</div>
+
+                    <div class="plano-card selected" data-plano="Teste" data-valor="0.00" data-teste="true" onclick="selecionarPlano(this)">
+                        <div class="plano-info">
+                            <h3>Plano Teste <span class="badge-gratis">GRÁTIS</span></h3>
+                            <p>Teste todas as funcionalidades</p>
+                        </div>
+                        <div class="plano-preco">
+                            <div class="valor">7 dias</div>
+                            <div class="periodo">Sem cartão</div>
+                        </div>
+                    </div>
+
+                    <div class="plano-card" data-plano="Basic" data-valor="80.00" onclick="selecionarPlano(this)">
+                        <div class="plano-info">
+                            <h3>Plano Basic</h3>
+                            <p>Ideal para começar a vender</p>
+                        </div>
+                        <div class="plano-preco">
+                            <div class="valor">R$ 80</div>
+                            <div class="periodo">/mês</div>
+                        </div>
+                    </div>
+
+                    <div class="plano-card" data-plano="Pro" data-valor="150.00" onclick="selecionarPlano(this)">
+                        <div class="plano-info">
+                            <h3>Plano Pro</h3>
+                            <p>Para quem quer mais recursos</p>
+                        </div>
+                        <div class="plano-preco">
+                            <div class="valor">R$ 150</div>
+                            <div class="periodo">/mês</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" id="btn-cadastrar" onclick="realizarCadastro()">
+                    <span id="btn-texto">Criar Conta Grátis</span>
+                </button>
+            </form>
+
+            <div class="footer">
+                Já tem uma conta? <a href="login.html">Faça login</a>
             </div>
         </div>
 
-        <div class="form-side">
-            <div class="login-card" id="card-form">
-                <div class="login-header">
-                    <h2>Criar sua conta</h2>
-                    <p>Comece gratuitamente por 7 dias</p>
-                </div>
-
-                <div class="status-box" id="status-box"></div>
-
-                <form id="form-cadastro" onsubmit="return false;">
-                    <div class="form-group">
-                        <label for="nome">Nome da Empresa / Nome Completo *</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            <input type="text" id="nome" placeholder="Ex: Loja Pingo de Gente" required>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group">
-                            <label for="cpf_cnpj">CPF ou CNPJ *</label>
-                            <div class="input-wrapper">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                                <input type="text" id="cpf_cnpj" placeholder="000.000.000-00" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="telefone">Telefone *</label>
-                            <div class="input-wrapper">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                <input type="text" id="telefone" placeholder="(47) 99999-9999" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">E-mail *</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                            <input type="email" id="email" placeholder="seu@email.com" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="senha">Senha *</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <input type="password" id="senha" placeholder="Mínimo 6 caracteres" required minlength="6">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="senha_confirmar">Confirmar Senha *</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <input type="password" id="senha_confirmar" placeholder="Repita a senha" required>
-                        </div>
-                    </div>
-
-                    <div class="plano-section">
-                        <label>Escolha seu Plano</label>
-
-                        <div class="plano-card selected" data-plano="Teste" data-valor="0.00" data-teste="true" onclick="selecionarPlano(this)">
-                            <h3>🎁 Plano Teste Grátis</h3>
-                            <div class="preco">GRÁTIS<span>/7 dias</span></div>
-                            <p>Teste todas as funcionalidades por 7 dias</p>
-                        </div>
-
-                        <div class="plano-card" data-plano="Basic" data-valor="80.00" onclick="selecionarPlano(this)">
-                            <h3>Plano Basic</h3>
-                            <div class="preco">R$ 80,00<span>/mês</span></div>
-                            <p>Ideal para começar</p>
-                        </div>
-
-                        <div class="plano-card" data-plano="Pro" data-valor="150.00" onclick="selecionarPlano(this)">
-                            <h3>Plano Pro</h3>
-                            <div class="preco">R$ 150,00<span>/mês</span></div>
-                            <p>Para quem quer mais recursos</p>
-                        </div>
-                    </div>
-
-                    <button type="button" class="btn" id="btn-cadastrar" onclick="realizarCadastro()">
-                        <span id="btn-texto">Criar Conta e Começar Teste Grátis</span>
-                    </button>
-
-                    <a href="login.html" class="back-link">Já tem conta? Faça Login</a>
-                </form>
-            </div>
-
-            <div class="login-card hidden" id="card-erro">
-                <div class="erro-box">
-                    <div class="warning-icon">⚠️</div>
-                    <h3>Ops! Algo deu errado</h3>
-                    <p id="erro-mensagem">Erro ao processar cadastro</p>
-                    <button class="btn" onclick="tentarNovamente()">
-                        🔄 Tentar Novamente
-                    </button>
-                </div>
+        <div class="card hidden" id="card-erro">
+            <div class="erro-card">
+                <div class="warning-icon">⚠️</div>
+                <h3>Ops! Algo deu errado</h3>
+                <p id="erro-mensagem">Erro ao processar cadastro</p>
+                <button class="btn" onclick="tentarNovamente()">
+                    🔄 Tentar Novamente
+                </button>
             </div>
         </div>
     </div>
@@ -488,21 +416,6 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
 
     <script>
-        // Generate particles
-        const particlesContainer = document.getElementById('particles');
-        for (let i = 0; i < 20; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
-            p.style.animationDuration = (15 + Math.random() * 25) + 's';
-            p.style.animationDelay = (Math.random() * 20) + 's';
-            particlesContainer.appendChild(p);
-        }
-
-        // ============================================
-        // CONFIGURAÇÃO
-        // ============================================
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -511,14 +424,9 @@
         let valorPlano = 0.00;
         let isPlanoTeste = true;
 
-        // ============================================
-        // INICIALIZAÇÃO
-        // ============================================
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('[CADASTRO] Inicializando...');
-
             await aguardarSupabase();
-
             if (window.supabase && window.supabase.createClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('[CADASTRO] Supabase inicializado');
@@ -531,51 +439,31 @@
         async function aguardarSupabase(maxTentativas = 20) {
             let tentativas = 0;
             while (tentativas < maxTentativas) {
-                if (window.supabase && typeof window.supabase === 'object') {
-                    return true;
-                }
+                if (window.supabase && typeof window.supabase === 'object') return true;
                 tentativas++;
                 await new Promise(r => setTimeout(r, 300));
             }
             return false;
         }
 
-        // ============================================
-        // SELECIONAR PLANO
-        // ============================================
         function selecionarPlano(elemento) {
             document.querySelectorAll('.plano-card').forEach(el => el.classList.remove('selected'));
             elemento.classList.add('selected');
             planoSelecionado = elemento.dataset.plano;
             valorPlano = parseFloat(elemento.dataset.valor);
             isPlanoTeste = elemento.dataset.teste === 'true';
-
-            // Atualizar texto do botão
             const btnTexto = document.getElementById('btn-texto');
-            if (isPlanoTeste) {
-                btnTexto.textContent = 'Criar Conta e Começar Teste Grátis';
-            } else {
-                btnTexto.textContent = 'Criar Conta e Ir para Pagamento';
-            }
-
-            console.log('[CADASTRO] Plano selecionado:', planoSelecionado, 'R$', valorPlano, 'Teste:', isPlanoTeste);
+            btnTexto.textContent = isPlanoTeste ? 'Criar Conta Grátis' : 'Criar Conta e Pagar';
+            console.log('[CADASTRO] Plano:', planoSelecionado, 'R$', valorPlano);
         }
 
-        // ============================================
-        // VALIDAR CPF/CNPJ
-        // ============================================
         function validarCpfCnpj(valor) {
             const limpo = valor.replace(/\D/g, '');
             return limpo.length === 11 || limpo.length === 14;
         }
 
-        // ============================================
-        // REALIZAR CADASTRO
-        // ============================================
         async function realizarCadastro() {
             console.log('[CADASTRO] Iniciando cadastro...');
-
-            // Validar campos
             const nome = document.getElementById('nome').value.trim();
             const cpfCnpj = document.getElementById('cpf_cnpj').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
@@ -587,24 +475,19 @@
                 mostrarStatus('error', 'Preencha todos os campos obrigatórios');
                 return;
             }
-
             if (!validarCpfCnpj(cpfCnpj)) {
                 mostrarStatus('error', 'CPF ou CNPJ inválido');
                 return;
             }
-
-            // Validar formato do email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                mostrarStatus('error', 'E-mail inválido. Verifique o formato (ex: nome@email.com)');
+                mostrarStatus('error', 'E-mail inválido. Verifique o formato');
                 return;
             }
-
             if (senha.length < 6) {
                 mostrarStatus('error', 'A senha deve ter no mínimo 6 caracteres');
                 return;
             }
-
             if (senha !== senhaConfirmar) {
                 mostrarStatus('error', 'As senhas não conferem');
                 return;
@@ -615,42 +498,29 @@
             document.getElementById('btn-texto').innerHTML = '<span class="loading"></span> Criando conta...';
 
             try {
-                // 1. Criar usuário no Auth do Supabase
                 console.log('[CADASTRO] Criando usuário no Auth...');
                 const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                     email: email,
                     password: senha,
-                    options: {
-                        data: {
-                            nome: nome,
-                            telefone: telefone
-                        }
-                    }
+                    options: { data: { nome: nome, telefone: telefone } }
                 });
 
                 let authId = null;
-
                 if (authError) {
-                    // Se o email já existe, tentar login
                     if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
                         console.log('[CADASTRO] Email já existe, tentando login...');
                         const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
-                            email: email,
-                            password: senha
+                            email: email, password: senha
                         });
-
                         if (loginError) throw new Error('Email já cadastrado. Use outro email ou faça login.');
                         authId = loginData.user.id;
-                        console.log('[CADASTRO] Usuário logado:', authId);
                     } else {
                         throw authError;
                     }
                 } else {
                     authId = authData.user.id;
-                    console.log('[CADASTRO] Usuário Auth criado:', authId);
                 }
 
-                // 2. Criar cliente no banco (clientes_sistema)
                 console.log('[CADASTRO] Criando cliente no banco...');
                 let clienteData = null;
                 let clienteId = null;
@@ -671,42 +541,26 @@
                     .single();
 
                 if (clienteError) {
-                    // Se CNPJ duplicado
                     if (clienteError.message.includes('duplicate') || clienteError.message.includes('unique constraint')) {
-                        console.log('[CADASTRO] CNPJ/Email duplicado, buscando cliente existente...');
-
-                        // Buscar cliente existente por email
-                        const { data: existente, error: buscaError } = await supabaseClient
+                        console.log('[CADASTRO] Buscando cliente existente...');
+                        const { data: existente } = await supabaseClient
                             .from('clientes_sistema')
                             .select('*')
                             .eq('email', email)
                             .single();
-
-                        if (buscaError || !existente) {
-                            // Tentar buscar por CNPJ
-                            const { data: existenteCnpj, error: buscaCnpjError } = await supabaseClient
+                        if (existente) {
+                            clienteData = existente;
+                            await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existente.id);
+                        } else {
+                            const { data: existenteCnpj } = await supabaseClient
                                 .from('clientes_sistema')
                                 .select('*')
                                 .eq('cnpj', cpfCnpj.replace(/\D/g, ''))
                                 .single();
-
-                            if (buscaCnpjError || !existenteCnpj) {
-                                throw new Error('Erro ao criar cliente: ' + clienteError.message);
-                            }
-
+                            if (!existenteCnpj) throw new Error('Erro ao criar cliente: ' + clienteError.message);
                             clienteData = existenteCnpj;
-                        } else {
-                            clienteData = existente;
+                            await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existenteCnpj.id);
                         }
-
-                        console.log('[CADASTRO] Cliente existente encontrado:', clienteData.id);
-
-                        // Atualizar auth_id do cliente existente
-                        await supabaseClient
-                            .from('clientes_sistema')
-                            .update({ auth_id: authId })
-                            .eq('id', clienteData.id);
-
                     } else {
                         throw clienteError;
                     }
@@ -717,34 +571,26 @@
                 clienteId = clienteData.id;
                 console.log('[CADASTRO] Cliente ID:', clienteId);
 
-                // 3. Criar usuário na tabela usuarios_pg
                 console.log('[CADASTRO] Criando usuário na tabela usuarios_pg...');
                 try {
-                    await supabaseClient
-                        .from('usuarios_pg')
-                        .insert({
-                            auth_id: authId,
-                            email: email,
-                            nome: nome,
-                            cliente_id: clienteId,
-                            nivel_acesso: 'admin',
-                            ativo: true,
-                            criado_em: new Date().toISOString()
-                        });
-                    console.log('[CADASTRO] Usuário criado em usuarios_pg');
+                    await supabaseClient.from('usuarios_pg').insert({
+                        auth_id: authId,
+                        email: email,
+                        nome: nome,
+                        cliente_id: clienteId,
+                        nivel_acesso: 'admin',
+                        ativo: true,
+                        criado_em: new Date().toISOString()
+                    });
                 } catch (e) {
-                    console.warn('[CADASTRO] Erro ao criar em usuarios_pg (pode já existir):', e);
+                    console.warn('[CADASTRO] Erro ao criar em usuarios_pg:', e);
                 }
 
-                // 4. VERIFICAR SE É PLANO TESTE GRÁTIS
                 if (isPlanoTeste || planoSelecionado === 'Teste') {
-                    console.log('[CADASTRO] Plano Teste Grátis - Ativando conta...');
-
-                    // Calcular data de expiração (7 dias)
+                    console.log('[CADASTRO] Ativando conta de teste...');
                     const hoje = new Date();
                     const dataExpiracao = new Date(hoje.getTime() + (7 * 24 * 60 * 60 * 1000)).toISOString();
 
-                    // Ativar cliente imediatamente
                     const { error: updateError } = await supabaseClient
                         .from('clientes_sistema')
                         .update({
@@ -756,14 +602,10 @@
                         })
                         .eq('id', clienteId);
 
-                    if (updateError) {
-                        console.error('[CADASTRO] Erro ao ativar teste:', updateError);
-                        throw new Error('Erro ao ativar conta de teste');
-                    }
+                    if (updateError) throw new Error('Erro ao ativar conta de teste');
 
-                    console.log('[CADASTRO] ✅ Conta de teste ativada! Expira em:', dataExpiracao);
+                    console.log('[CADASTRO] ✅ Conta de teste ativada!');
 
-                    // Salvar dados da sessão
                     const dadosSessao = {
                         auth_id: authId,
                         usuario_id: authId,
@@ -779,13 +621,10 @@
                     localStorage.setItem('clienteId', clienteId);
                     localStorage.setItem('nivelAcesso', 'admin');
 
-                    // 5. REDIRECIONAR PARA DASHBOARD (sem pagamento)
-                    console.log('[CADASTRO] Redirecionando para dashboard...');
                     window.location.href = 'dashboard.html';
                     return;
                 }
 
-                // 4. SALVAR DADOS NO SESSION STORAGE PARA PAGAMENTO
                 const dadosPagamento = {
                     cliente_id: clienteId,
                     auth_id: authId,
@@ -797,12 +636,7 @@
                     valor: valorPlano,
                     asaas_customer_id: clienteData.asaas_customer_id || null
                 };
-
-                console.log('[CADASTRO] Salvando dados no sessionStorage:', dadosPagamento);
                 sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosPagamento));
-
-                // 5. REDIRECIONAR PARA PAGAMENTO
-                console.log('[CADASTRO] Redirecionando para pagamento...');
                 window.location.href = 'pagamento.html';
 
             } catch (error) {
@@ -813,22 +647,13 @@
             }
         }
 
-        // ============================================
-        // MOSTRAR STATUS
-        // ============================================
         function mostrarStatus(tipo, mensagem) {
             const box = document.getElementById('status-box');
             box.className = 'status-box ' + tipo;
             box.textContent = mensagem;
-
-            setTimeout(() => {
-                box.className = 'status-box';
-            }, 5000);
+            setTimeout(() => { box.className = 'status-box'; }, 5000);
         }
 
-        // ============================================
-        // MOSTRAR ERRO
-        // ============================================
         function mostrarErro(mensagem) {
             console.error('[CADASTRO] Erro:', mensagem);
             document.getElementById('card-form').classList.add('hidden');
@@ -840,7 +665,7 @@
             document.getElementById('card-erro').classList.add('hidden');
             document.getElementById('card-form').classList.remove('hidden');
             document.getElementById('btn-cadastrar').disabled = false;
-            document.getElementById('btn-texto').textContent = 'Criar Conta e Ir para Pagamento';
+            document.getElementById('btn-texto').textContent = 'Criar Conta Grátis';
         }
     </script>
 </body>
