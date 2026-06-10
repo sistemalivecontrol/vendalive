@@ -338,6 +338,24 @@
             font-size: 48px;
             margin-bottom: 12px;
         }
+
+        .nova-aba-msg {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .nova-aba-msg strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
     </style>
 <base target="_blank">
 </head>
@@ -377,6 +395,13 @@
                     <span class="dado-label">CPF/CNPJ:</span>
                     <span class="dado-valor" id="dc-cnpj">-</span>
                 </div>
+            </div>
+
+            <!-- Mensagem Nova Aba (inicialmente oculta) -->
+            <div class="nova-aba-msg hidden" id="nova-aba-msg">
+                <strong>✅ Página de pagamento aberta!</strong>
+                Uma nova aba foi aberta para você realizar o pagamento.<br>
+                <strong>Não feche esta aba!</strong> Assim que o pagamento for confirmado, você será redirecionado automaticamente.
             </div>
 
             <!-- Métodos de Pagamento -->
@@ -667,6 +692,7 @@
                     // Esconder métodos de pagamento e botão
                     document.getElementById('metodos-pagamento').classList.add('hidden');
                     document.getElementById('btn-pagar').classList.add('hidden');
+                    document.getElementById('nova-aba-msg').classList.remove('hidden');
 
                     // Iniciar polling
                     iniciarPolling(clienteId);
@@ -820,16 +846,21 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // Redirecionar para fatura do Asaas
-            if (result.invoice_url) {
-                console.log('[PAGAMENTO] Redirecionando para:', result.invoice_url);
-                window.location.href = result.invoice_url;
-            } else if (result.payment_link) {
-                console.log('[PAGAMENTO] Redirecionando para payment_link:', result.payment_link);
-                window.location.href = result.payment_link;
+            // ABRIR PÁGINA DO ASAAS EM NOVA ABA
+            if (result.invoice_url || result.payment_link) {
+                const url = result.invoice_url || result.payment_link;
+                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
+                window.open(url, '_blank');
+
+                // Mostrar mensagem na aba atual
+                document.getElementById('metodos-pagamento').classList.add('hidden');
+                document.getElementById('btn-pagar').classList.add('hidden');
+                document.getElementById('nova-aba-msg').classList.remove('hidden');
+
+                // Iniciar polling na aba atual
+                iniciarPolling(dadosCadastro.cliente_id);
             } else {
                 console.log('[PAGAMENTO] Sem URL de pagamento, iniciando polling');
-                // Se não tiver URL, iniciar polling
                 iniciarPolling(dadosCadastro.cliente_id);
             }
         }
@@ -873,12 +904,24 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // Redirecionar para página de PIX
-            if (result.invoice_url) {
-                window.location.href = result.invoice_url;
-            } else {
+            // ABRIR PÁGINA DO ASAAS EM NOVA ABA (se tiver URL)
+            if (result.invoice_url || result.payment_link) {
+                const url = result.invoice_url || result.payment_link;
+                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
+                window.open(url, '_blank');
+
+                // Mostrar mensagem na aba atual
+                document.getElementById('metodos-pagamento').classList.add('hidden');
+                document.getElementById('btn-pagar').classList.add('hidden');
+                document.getElementById('nova-aba-msg').classList.remove('hidden');
+
+                // Iniciar polling na aba atual
+                iniciarPolling(dadosCadastro.cliente_id);
+            } else if (result.qr_code_base64) {
                 // Mostrar QR code na tela
                 mostrarQrCodePix(result);
+            } else {
+                iniciarPolling(dadosCadastro.cliente_id);
             }
         }
 
@@ -919,9 +962,19 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // Redirecionar para fatura
-            if (result.invoice_url) {
-                window.location.href = result.invoice_url;
+            // ABRIR PÁGINA DO ASAAS EM NOVA ABA (se tiver URL)
+            if (result.invoice_url || result.payment_link) {
+                const url = result.invoice_url || result.payment_link;
+                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
+                window.open(url, '_blank');
+
+                // Mostrar mensagem na aba atual
+                document.getElementById('metodos-pagamento').classList.add('hidden');
+                document.getElementById('btn-pagar').classList.add('hidden');
+                document.getElementById('nova-aba-msg').classList.remove('hidden');
+
+                // Iniciar polling na aba atual
+                iniciarPolling(dadosCadastro.cliente_id);
             } else {
                 mostrarErro('Erro ao gerar boleto. Tente novamente.');
             }
