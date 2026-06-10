@@ -15,7 +15,7 @@
     const LOGIN_PAGE='login.html';
     const path=window.location.pathname.toLowerCase();
     const href=window.location.href.toLowerCase();
-    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html','cadastro.html'];
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
     function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
     function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
     verificarSessaoSincrona();
@@ -82,83 +82,6 @@
       transition: all 0.2s;
     }
     .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
-
-    /* ===== TRIAL BANNER ===== */
-    .trial-banner {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border: 1px solid #f59e0b;
-      border-radius: 12px;
-      padding: 14px 20px;
-      margin: 16px 16px 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-    }
-    .trial-banner:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
-      background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
-    }
-    .trial-banner-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-    }
-    .trial-banner-icon {
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-    .trial-banner-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .trial-banner-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #92400e;
-    }
-    .trial-banner-subtitle {
-      font-size: 12px;
-      color: #a16207;
-      font-weight: 500;
-    }
-    .trial-banner-days {
-      font-size: 13px;
-      font-weight: 700;
-      color: #92400e;
-      background: rgba(255,255,255,0.6);
-      padding: 4px 12px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
-    .trial-banner-arrow {
-      font-size: 18px;
-      color: #92400e;
-      flex-shrink: 0;
-    }
-    .trial-banner.hidden { display: none !important; }
-
-    @media (max-width: 640px) {
-      .trial-banner {
-        margin: 12px 12px 0 12px;
-        padding: 12px 14px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .trial-banner-content {
-        width: 100%;
-      }
-      .trial-banner-days {
-        align-self: flex-start;
-      }
-    }
 
     .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
 
@@ -467,7 +390,6 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
   <!-- Mobile Menu Overlay -->
@@ -555,19 +477,6 @@
       </span>
       <button class="btn-header" onclick="logout()">Sair</button>
     </div>
-  </div>
-
-  <!-- TRIAL BANNER -->
-  <div class="trial-banner hidden" id="trialBanner" onclick="irParaAtualizarPlano()">
-    <div class="trial-banner-content">
-      <span class="trial-banner-icon">&#9203;</span>
-      <div class="trial-banner-text">
-        <span class="trial-banner-title" id="trialBannerTitle">Atualizar o plano</span>
-        <span class="trial-banner-subtitle" id="trialBannerSubtitle">Caso o usuário clicar, chamar a página cadastro.html com os dados já preenchidos para ele escolher o plano e desabilitar o plano teste.</span>
-      </div>
-    </div>
-    <span class="trial-banner-days" id="trialBannerDays">0 dias</span>
-    <span class="trial-banner-arrow">&#10132;</span>
   </div>
 
   <div class="container">
@@ -686,7 +595,6 @@
     let usuarioAtual = null;
     let clienteId = null;
     let nomeCliente = 'Loja';
-    let dadosUsuarioParaCadastro = null;
 
     // ===== MOBILE MENU =====
     function abrirMenu() {
@@ -737,106 +645,12 @@
     async function iniciarApp() {
       await verificarAuth();
       if (usuarioAtual && clienteId) {
-        await verificarPlanoTeste();
         await verificarPixPendentes();
         await carregarMetricas();
         await carregarGraficoVendas();
         await carregarVendasRecentes();
         await carregarLivesRecentes();
       }
-    }
-
-    // ===== VERIFICAR PLANO DE TESTE =====
-    async function verificarPlanoTeste() {
-      if (!usuarioAtual) return;
-      try {
-        // Buscar dados do usuário incluindo plano e datas
-        var result = await supabaseClient
-          .from('usuarios_pg')
-          .select('plano, data_cadastro, data_ultimo_pagamento, dias_teste, nome, email, telefone, cpf_cnpj, asaas_customer_id')
-          .eq('id', usuarioAtual.id)
-          .single();
-
-        if (result.error || !result.data) return;
-
-        var userData = result.data;
-
-        // Guardar dados para passar ao cadastro.html
-        dadosUsuarioParaCadastro = {
-          nome: userData.nome || usuarioAtual.nome || '',
-          email: userData.email || usuarioAtual.email || '',
-          telefone: userData.telefone || '',
-          cpf_cnpj: userData.cpf_cnpj || '',
-          asaas_customer_id: userData.asaas_customer_id || ''
-        };
-
-        // Verificar se está em plano de teste
-        if (userData.plano !== 'teste' && userData.plano !== 'Teste' && userData.plano !== 'TESTE') {
-          // Não está em plano de teste, esconder banner
-          document.getElementById('trialBanner').classList.add('hidden');
-          return;
-        }
-
-        // Calcular dias restantes do teste
-        var diasTeste = userData.dias_teste || 7;
-        var dataCadastro = userData.data_cadastro ? new Date(userData.data_cadastro) : null;
-
-        if (!dataCadastro) {
-          document.getElementById('trialBanner').classList.add('hidden');
-          return;
-        }
-
-        var hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        dataCadastro.setHours(0, 0, 0, 0);
-
-        var diffTime = hoje.getTime() - dataCadastro.getTime();
-        var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        var diasRestantes = diasTeste - diffDays;
-
-        if (diasRestantes <= 0) {
-          // Teste expirado - mostrar mensagem de urgência
-          document.getElementById('trialBannerTitle').textContent = 'Seu período de teste expirou!';
-          document.getElementById('trialBannerSubtitle').textContent = 'Atualize seu plano agora para continuar usando o sistema.';
-          document.getElementById('trialBannerDays').textContent = 'Expirado';
-          document.getElementById('trialBannerDays').style.background = '#fecaca';
-          document.getElementById('trialBannerDays').style.color = '#991b1b';
-          document.getElementById('trialBanner').style.background = 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)';
-          document.getElementById('trialBanner').style.borderColor = '#ef4444';
-          document.getElementById('trialBanner').classList.remove('hidden');
-        } else if (diasRestantes <= 3) {
-          // Poucos dias restantes - alerta
-          document.getElementById('trialBannerTitle').textContent = 'Atualizar o plano - Faltam apenas ' + diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '') + ' de teste!';
-          document.getElementById('trialBannerSubtitle').textContent = 'Caso o usuário clicar, chamar a página cadastro.html com os dados já preenchidos para ele escolher o plano e desabilitar o plano teste.';
-          document.getElementById('trialBannerDays').textContent = diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '');
-          document.getElementById('trialBanner').classList.remove('hidden');
-        } else {
-          // Teste em andamento
-          document.getElementById('trialBannerTitle').textContent = 'Atualizar o plano - Faltam ' + diasRestantes + ' dias de teste';
-          document.getElementById('trialBannerSubtitle').textContent = 'Caso o usuário clicar, chamar a página cadastro.html com os dados já preenchidos para ele escolher o plano e desabilitar o plano teste.';
-          document.getElementById('trialBannerDays').textContent = diasRestantes + ' dias';
-          document.getElementById('trialBanner').classList.remove('hidden');
-        }
-
-      } catch (err) {
-        console.error('[DASHBOARD] Erro ao verificar plano de teste:', err);
-        document.getElementById('trialBanner').classList.add('hidden');
-      }
-    }
-
-    function irParaAtualizarPlano() {
-      if (!dadosUsuarioParaCadastro) return;
-
-      // Construir URL com dados preenchidos para cadastro.html
-      var params = new URLSearchParams();
-      params.append('modo', 'atualizar_plano');
-      params.append('nome', dadosUsuarioParaCadastro.nome);
-      params.append('email', dadosUsuarioParaCadastro.email);
-      if (dadosUsuarioParaCadastro.telefone) params.append('telefone', dadosUsuarioParaCadastro.telefone);
-      if (dadosUsuarioParaCadastro.cpf_cnpj) params.append('cpf_cnpj', dadosUsuarioParaCadastro.cpf_cnpj);
-      if (dadosUsuarioParaCadastro.asaas_customer_id) params.append('asaas_customer_id', dadosUsuarioParaCadastro.asaas_customer_id);
-
-      window.location.href = 'cadastro.html?' + params.toString();
     }
 
     async function verificarAuth() {
