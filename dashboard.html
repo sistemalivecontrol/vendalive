@@ -8,7 +8,7 @@
     const LOGIN_PAGE='login.html';
     const path=window.location.pathname.toLowerCase();
     const href=window.location.href.toLowerCase();
-    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html','cadastro.html'];
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html','cadastro.html','termo-de-uso.html','politica-privacidade.html','exclusao-sucesso.html'];
     function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
     function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
     verificarSessaoSincrona();
@@ -71,8 +71,13 @@
       font-weight: 500;
       font-family: 'Inter', sans-serif;
       transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
+    .btn-header svg { width: 14px; height: 14px; }
 
     /* ===== TRIAL BANNER ===== */
     .trial-banner {
@@ -425,6 +430,25 @@
     .icon-svg-sm { width: 14px; height: 14px; }
     .icon-svg-lg { width: 20px; height: 20px; }
 
+    /* Footer */
+    .dashboard-footer {
+      margin-top: 40px;
+      padding: 20px 16px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .dashboard-footer a {
+      color: #64748b;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .dashboard-footer a:hover {
+      color: #0B193F;
+      text-decoration: underline;
+    }
+
     @media (max-width: 1024px) {
       .grid { grid-template-columns: 1fr; gap: 16px; }
       .metrics { grid-template-columns: repeat(2, 1fr); }
@@ -455,8 +479,6 @@
       .metric-card .value { font-size: 16px; }
     }
   </style>
-<base target="_blank">
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -498,6 +520,9 @@
     <a href="configuracao-pagamento.html" class="mobile-menu-item" onclick="return goToMobile('configuracao-pagamento.html')">
       <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
     </a>
+    <a href="configuracoes.html" class="mobile-menu-item" onclick="return goToMobile('configuracoes.html')">
+      <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+    </a>
     <a href="alterar-senha.html" class="mobile-menu-item" onclick="return goToMobile('alterar-senha.html')">
       <span class="icon">&#128274;</span><span>Alterar Senha</span>
     </a>
@@ -506,7 +531,7 @@
     </a>
   </div>
 
-<div class="header">
+  <div class="header">
     <div class="header-left">
       <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -543,6 +568,13 @@
         </svg>
         ---
       </span>
+      <a href="configuracoes.html" class="btn-header" title="Configurações">
+        <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Config
+      </a>
       <button class="btn-header" onclick="logout()">Sair</button>
     </div>
   </div>
@@ -620,6 +652,9 @@
         <a href="configuracao-pagamento.html" class="menu-item" onclick="return goTo('configuracao-pagamento.html')">
           <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
         </a>
+        <a href="configuracoes.html" class="menu-item" onclick="return goTo('configuracoes.html')">
+          <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+        </a>
         <a href="alterar-senha.html" class="menu-item" onclick="return goTo('alterar-senha.html')">
           <span class="icon">&#128274;</span><span>Alterar Senha</span>
         </a>
@@ -627,7 +662,7 @@
           <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
         </a>
       </div>
-<div class="content">
+      <div class="content">
         <div class="card">
           <h2>&#128202; Vendas por Período</h2>
           <div class="chart-container" style="padding: 15px;">
@@ -669,6 +704,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer">
+    <p>
+      &copy; 2026 VendaLive | 
+      <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | 
+      <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a>
+    </p>
+  </footer>
 
   <script>
     const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
@@ -741,7 +785,6 @@
       }
     }
 
-    // ===== VERIFICAR PLANO DE TESTE - Busca data_expiracao em clientes_sistema =====
     async function verificarPlanoTeste() {
       console.log('[DASHBOARD] verificarPlanoTeste() iniciando...');
       if (!usuarioAtual || !clienteId) {
@@ -751,7 +794,6 @@
       try {
         console.log('[DASHBOARD] Buscando dados do cliente_sistema ID:', clienteId);
 
-        // Buscar data_expiracao e plano da tabela clientes_sistema
         var result = await supabaseClient
           .from('clientes_sistema')
           .select('id, nome, plano, data_expiracao, created_at')
@@ -775,7 +817,6 @@
         var clienteData = result.data;
         console.log('[DASHBOARD] Dados do cliente_sistema:', JSON.stringify(clienteData));
 
-        // Buscar dados do cliente_sistema (cnpj, telefone estão lá)
         var cliDadosResult = await supabaseClient
           .from('clientes_sistema')
           .select('nome, cnpj, email, telefone, asaas_customer_id')
@@ -785,7 +826,6 @@
         var clienteDados = cliDadosResult.data || {};
         console.log('[DASHBOARD] Dados do cliente_sistema:', JSON.stringify(clienteDados));
 
-        // Guardar dados para passar ao cadastro.html
         dadosUsuarioParaCadastro = {
           nome: usuarioAtual.nome || clienteDados.nome || usuarioAtual.email || '',
           email: usuarioAtual.email || clienteDados.email || '',
@@ -795,7 +835,6 @@
         };
         console.log('[DASHBOARD] Dados para cadastro:', JSON.stringify(dadosUsuarioParaCadastro));
 
-        // Verificar se esta em plano de teste
         var plano = (clienteData.plano || '').toString().toLowerCase().trim();
         console.log('[DASHBOARD] Plano do cliente_sistema:', plano);
 
@@ -805,14 +844,12 @@
           return;
         }
 
-        // Calcular dias restantes com base na data_expiracao
         var dataExpiracao = clienteData.data_expiracao ? new Date(clienteData.data_expiracao) : null;
 
         console.log('[DASHBOARD] data_expiracao:', dataExpiracao);
 
         if (!dataExpiracao || isNaN(dataExpiracao.getTime())) {
           console.log('[DASHBOARD] data_expiracao invalida, usando created_at como fallback');
-          // Fallback: usar created_at + 7 dias
           var dataCriacao = clienteData.created_at ? new Date(clienteData.created_at) : null;
           if (dataCriacao && !isNaN(dataCriacao.getTime())) {
             dataExpiracao = new Date(dataCriacao);
@@ -854,19 +891,16 @@
       }
 
       if (diasRestantes <= 0) {
-        // Teste expirado
         title.textContent = 'Seu período de teste expirou!';
         subtitle.textContent = 'Atualize seu plano agora para continuar usando o sistema sem interrupções.';
         daysEl.textContent = 'Expirado';
         banner.classList.add('urgent');
       } else if (diasRestantes <= 3) {
-        // Poucos dias restantes
         title.textContent = 'Atualizar o plano — Faltam apenas ' + diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '') + ' de teste!';
         subtitle.textContent = 'Clique aqui para escolher seu plano e manter sua conta ativa. Seus dados já estão preenchidos.';
         daysEl.textContent = diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '');
         banner.classList.remove('urgent');
       } else {
-        // Teste em andamento
         title.textContent = 'Atualizar o plano — Faltam ' + diasRestantes + ' dias de teste';
         subtitle.textContent = 'Clique aqui para escolher seu plano. Seus dados já estão preenchidos para facilitar.';
         daysEl.textContent = diasRestantes + ' dias';
