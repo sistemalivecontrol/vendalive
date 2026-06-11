@@ -2,14 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="version" content="2.0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="version" content="3.0-clean">
     <title>Redefinir Senha - VendaLive</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -139,7 +136,6 @@
             background: white;
             box-shadow: 0 0 0 3px rgba(11, 25, 63, 0.08);
         }
-        input[type="password"] { padding-right: 16px; }
 
         .btn {
             width: 100%;
@@ -167,15 +163,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
-        }
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
-            margin-top: 12px;
-        }
-        .btn-secondary:hover {
-            background: #e2e8f0;
             box-shadow: none;
         }
 
@@ -278,7 +265,7 @@
     <!-- HEADER -->
     <div class="header">
         <div class="header-left">
-            <a href="login.html" class="header-logo">
+            <a href="login.html" class="header-logo" target="_self">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
                     <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
@@ -291,7 +278,7 @@
             <div class="header-divider"></div>
             <h1>Redefinir Senha</h1>
         </div>
-        <a href="login.html" class="btn-header">
+        <a href="login.html" class="btn-header" target="_self">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 18l-6-6 6-6"/>
             </svg>
@@ -379,15 +366,18 @@
                     Sua senha foi alterada com sucesso.<br>
                     Você já pode fazer login com a nova senha.
                 </p>
-                <a href="login.html" class="btn" style="text-decoration: none;">
+                <a href="login.html" class="btn" style="text-decoration: none;" target="_self">
                     Ir para Login
                 </a>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js?v=3"></script>
     <script>
+        // Version 3.0 - Clean version, NO auth redirect script
+        console.log('[REDEFINIR] v3.0 loaded - public page, no auth redirect');
+
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -618,8 +608,6 @@
             }
         });
 
-        // Version 2.0 - Cache busted
-        console.log('[REDEFINIR] Page version 2.0 loaded - no auth redirect script');
         window.addEventListener('load', initSupabase);
     </script>
 </body>
