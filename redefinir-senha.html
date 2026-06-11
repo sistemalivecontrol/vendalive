@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - VendaLive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .logo p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 8px;
+            transition: all 0.3s;
+            background: #e0e0e0;
+        }
+        .strength-weak { background: #e74c3c; width: 33%; }
+        .strength-medium { background: #f39c12; width: 66%; }
+        .strength-strong { background: #27ae60; width: 100%; }
+        .requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .requirements li {
+            list-style: none;
+            margin-bottom: 4px;
+        }
+        .requirements li::before {
+            content: "○ ";
+            color: #999;
+        }
+        .requirements li.valid::before {
+            content: "✓ ";
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🔐 VendaLive</h1>
+            <p>Redefinir Senha</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Estado 1: Solicitar email (se não veio do link) -->
+        <div id="stepRequest" style="display: none;">
+            <div class="alert alert-info" style="display: block;">
+                Digite seu email para receber o link de redefinição.
+            </div>
+            <form id="formRequest">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="seu@email.com">
+                </div>
+                <button type="submit" class="btn" id="btnRequest">
+                    Enviar Link de Recuperação
+                </button>
+            </form>
+        </div>
+
+        <!-- Estado 2: Definir nova senha (veio do link do email) -->
+        <div id="stepReset" style="display: none;">
+            <div class="alert alert-info" style="display: block;">
+                Digite sua nova senha abaixo.
+            </div>
+            <form id="formReset">
+                <div class="form-group">
+                    <label for="newPassword">Nova Senha</label>
+                    <input type="password" id="newPassword" required 
+                           placeholder="Mínimo 8 caracteres" minlength="8">
+                    <div class="password-strength" id="strengthBar"></div>
+                    <ul class="requirements" id="requirements">
+                        <li id="reqLength">Mínimo 8 caracteres</li>
+                        <li id="reqUpper">Uma letra maiúscula</li>
+                        <li id="reqNumber">Um número</li>
+                        <li id="reqSpecial">Um caractere especial (!@#$...)</li>
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Nova Senha</label>
+                    <input type="password" id="confirmPassword" required 
+                           placeholder="Repita a senha">
+                </div>
+                <button type="submit" class="btn" id="btnReset">
+                    Redefinir Senha
+                </button>
+            </form>
+        </div>
+
+        <!-- Estado 3: Sucesso -->
+        <div id="stepSuccess" style="display: none; text-align: center;">
+            <div style="font-size: 60px; margin-bottom: 20px;">✅</div>
+            <h2 style="color: #27ae60; margin-bottom: 10px;">Senha Redefinida!</h2>
+            <p style="color: #666; margin-bottom: 30px;">
+                Sua senha foi alterada com sucesso.<br>
+                Você já pode fazer login com a nova senha.
+            </p>
+            <a href="login.html" class="btn" style="text-decoration: none; display: inline-block; text-align: center;">
+                Ir para Login
+            </a>
+        </div>
+
+        <div class="back-link">
+            <a href="login.html">← Voltar para Login</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script>
+        // CONFIGURAÇÃO - Use seu projeto
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type}" style="display: block;">${message}</div>`;
+        }
+
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        async function initSupabase() {
+            if (typeof supabase === 'undefined' || !supabase.createClient) {
+                setTimeout(initSupabase, 500);
+                return;
+            }
+            const { createClient } = supabase;
+            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            checkState();
+        }
+
+        // Verifica se veio do link de recuperação (tem token na URL)
+        function checkState() {
+            const hash = window.location.hash;
+            const params = new URLSearchParams(window.location.search);
+            const type = params.get('type');
+            
+            // Se tem token na URL (veio do email do Supabase)
+            if (hash.includes('access_token') || hash.includes('type=recovery')) {
+                document.getElementById('stepReset').style.display = 'block';
+                // O Supabase já processa o token automaticamente quando a página carrega
+            } else {
+                document.getElementById('stepRequest').style.display = 'block';
+            }
+        }
+
+        // Etapa 1: Solicitar link de recuperação
+        document.getElementById('formRequest').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert();
+            
+            const email = document.getElementById('email').value.trim();
+            const btn = document.getElementById('btnRequest');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/redefinir-senha.html'
+                });
+
+                if (error) throw error;
+
+                showAlert(
+                    '✉️ Link de recuperação enviado! Verifique seu email (incluindo spam).',
+                    'success'
+                );
+                document.getElementById('formRequest').style.display = 'none';
+                
+            } catch (err) {
+                showAlert('Erro: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Enviar Link de Recuperação';
+            }
+        });
+
+        // Validação de força da senha
+        document.getElementById('newPassword').addEventListener('input', function() {
+            const val = this.value;
+            const reqLength = val.length >= 8;
+            const reqUpper = /[A-Z]/.test(val);
+            const reqNumber = /[0-9]/.test(val);
+            const reqSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+            document.getElementById('reqLength').classList.toggle('valid', reqLength);
+            document.getElementById('reqUpper').classList.toggle('valid', reqUpper);
+            document.getElementById('reqNumber').classList.toggle('valid', reqNumber);
+            document.getElementById('reqSpecial').classList.toggle('valid', reqSpecial);
+
+            const strength = document.getElementById('strengthBar');
+            strength.className = 'password-strength';
+            if (reqLength && reqUpper && reqNumber && reqSpecial) {
+                strength.classList.add('strength-strong');
+            } else if (reqLength && (reqUpper || reqNumber)) {
+                strength.classList.add('strength-medium');
+            } else if (val.length > 0) {
+                strength.classList.add('strength-weak');
+            }
+        });
+
+        // Etapa 2: Definir nova senha
+        document.getElementById('formReset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert();
+
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('btnReset');
+
+            // Validações
+            if (newPass !== confirmPass) {
+                showAlert('As senhas não coincidem!');
+                return;
+            }
+            if (newPass.length < 8) {
+                showAlert('A senha deve ter no mínimo 8 caracteres!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Redefinindo...';
+
+            try {
+                const { error } = await supabaseClient.auth.updateUser({ 
+                    password: newPass 
+                });
+
+                if (error) throw error;
+
+                // Sucesso!
+                document.getElementById('stepReset').style.display = 'none';
+                document.getElementById('stepSuccess').style.display = 'block';
+                document.querySelector('.back-link').style.display = 'none';
+
+            } catch (err) {
+                showAlert('Erro ao redefinir: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Redefinir Senha';
+            }
+        });
+
+        // Inicializa
+        window.addEventListener('load', initSupabase);
+    </script>
+</body>
+</html>
