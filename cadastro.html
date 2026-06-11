@@ -435,7 +435,73 @@
                 console.error('[CADASTRO] Supabase não disponível');
                 mostrarErro('Erro de conexão. Recarregue a página.');
             }
+
+            // ===== LER PARAMETROS DA URL (ATUALIZAR PLANO) =====
+            lerParametrosURL();
         });
+
+        function lerParametrosURL() {
+            var params = new URLSearchParams(window.location.search);
+            var modo = params.get('modo');
+
+            console.log('[CADASTRO] Modo URL:', modo);
+
+            if (modo === 'atualizar_plano') {
+                console.log('[CADASTRO] Modo atualizar_plano detectado');
+
+                // Preencher campos com dados da URL
+                var nome = params.get('nome');
+                var email = params.get('email');
+                var telefone = params.get('telefone');
+                var cpf_cnpj = params.get('cpf_cnpj');
+
+                if (nome) {
+                    document.getElementById('nome').value = decodeURIComponent(nome);
+                    console.log('[CADASTRO] Nome preenchido:', decodeURIComponent(nome));
+                }
+                if (email) {
+                    document.getElementById('email').value = decodeURIComponent(email);
+                    console.log('[CADASTRO] Email preenchido:', decodeURIComponent(email));
+                }
+                if (telefone) {
+                    document.getElementById('telefone').value = decodeURIComponent(telefone);
+                }
+                if (cpf_cnpj) {
+                    document.getElementById('cpf_cnpj').value = decodeURIComponent(cpf_cnpj);
+                }
+
+                // Esconder plano de teste e selecionar Basic
+                var planoTeste = document.querySelector('.plano-card[data-plano="Teste"]');
+                if (planoTeste) {
+                    planoTeste.style.display = 'none';
+                    console.log('[CADASTRO] Plano Teste ocultado');
+                }
+
+                // Selecionar Plano Basic automaticamente
+                var planoBasic = document.querySelector('.plano-card[data-plano="Basic"]');
+                if (planoBasic) {
+                    document.querySelectorAll('.plano-card').forEach(function(el) { el.classList.remove('selected'); });
+                    planoBasic.classList.add('selected');
+                    planoSelecionado = 'Basic';
+                    valorPlano = 80.00;
+                    isPlanoTeste = false;
+                    document.getElementById('btn-texto').textContent = 'Atualizar Plano e Pagar';
+                    console.log('[CADASTRO] Plano Basic selecionado automaticamente');
+                }
+
+                // Atualizar titulo e subtitulo
+                document.querySelector('.card-title').textContent = 'Atualizar Plano';
+                document.querySelector('.card-subtitle').textContent = 'Escolha um plano para continuar usando o sistema';
+                document.querySelector('.header p').textContent = 'Atualize seu plano e mantenha sua conta ativa';
+
+                // Esconder campos de senha (usuario ja tem cadastro)
+                var senhaGroup = document.getElementById('senha').closest('.form-row');
+                if (senhaGroup) {
+                    senhaGroup.style.display = 'none';
+                    console.log('[CADASTRO] Campos de senha ocultados');
+                }
+            }
+        }
 
         async function aguardarSupabase(maxTentativas = 20) {
             let tentativas = 0;
