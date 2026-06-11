@@ -33,16 +33,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #f0f4f8;
+            color: #1e293b;
             line-height: 1.6;
             min-height: 100vh;
         }
 
         /* Header */
         .header {
-            background: var(--sidebar);
-            color: white;
+            background: #ffffff;
+            color: #1e293b;
             padding: 0 24px;
             height: 56px;
             display: flex;
@@ -61,7 +61,7 @@
         .btn-header {
             background: rgba(0, 102, 255, 0.15);
             border: 1px solid rgba(0, 102, 255, 0.3);
-            color: white;
+            color: #1e293b;
             padding: 6px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -91,14 +91,14 @@
             height: 32px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            color: #1e293b;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 13px;
             font-weight: 700;
         }
-        .user-name { font-size: 13px; font-weight: 600; color: white; }
+        .user-name { font-size: 13px; font-weight: 600; color: #1e293b; }
         .user-email { font-size: 11px; color: rgba(255,255,255,0.5); }
 
         /* Layout */
@@ -107,7 +107,7 @@
         /* Sidebar */
         .sidebar {
             width: 260px;
-            background: var(--sidebar);
+            background: #ffffff;
             color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
@@ -136,11 +136,11 @@
         }
         .menu-link:hover {
             background: var(--sidebar-hover);
-            color: white;
+            color: #1e293b;
         }
         .menu-link.active {
             background: rgba(0, 102, 255, 0.15);
-            color: white;
+            color: #1e293b;
             border-left-color: var(--primary);
         }
         .menu-link i { width: 20px; text-align: center; font-size: 16px; }
@@ -164,7 +164,7 @@
 
         /* Cards */
         .card {
-            background: var(--card);
+            background: #ffffff;
             backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -181,7 +181,7 @@
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border);
         }
-        .card-header h3 { font-size: 16px; color: white; font-weight: 600; }
+        .card-header h3 { font-size: 16px; color: #1e293b; font-weight: 600; }
         .card-header i { font-size: 18px; color: var(--primary); }
 
         /* User info card */
@@ -196,15 +196,15 @@
             height: 56px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            color: #1e293b;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 22px;
             font-weight: 700;
         }
-        .user-info-card .details h3 { font-size: 16px; color: white; margin-bottom: 2px; }
-        .user-info-card .details p { color: var(--text-muted); font-size: 14px; margin: 0; }
+        .user-info-card .details h3 { font-size: 16px; color: #1e293b; margin-bottom: 2px; }
+        .user-info-card .details p { color: #64748b; font-size: 14px; margin: 0; }
         .user-info-card .details .plano {
             color: var(--primary);
             font-size: 12px;
@@ -229,7 +229,7 @@
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             font-size: 15px;
-            color: white;
+            color: #1e293b;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
@@ -244,13 +244,13 @@
         }
         .form-group input:disabled {
             background: rgba(255,255,255,0.03);
-            color: var(--text-muted);
+            color: #64748b;
             cursor: not-allowed;
         }
         .form-group small {
             display: block;
             margin-top: 6px;
-            color: var(--text-muted);
+            color: #64748b;
             font-size: 12px;
         }
 
@@ -271,7 +271,7 @@
         }
         .btn-primary {
             background: var(--primary);
-            color: white;
+            color: #1e293b;
         }
         .btn-primary:hover {
             background: var(--primary-dark);
@@ -280,13 +280,13 @@
         }
         .btn-secondary {
             background: rgba(255,255,255,0.05);
-            color: white;
+            color: #1e293b;
             border: 1px solid rgba(255,255,255,0.1);
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); }
         .btn-danger {
             background: var(--danger);
-            color: white;
+            color: #1e293b;
         }
         .btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
         .btn-outline-danger {
@@ -349,14 +349,14 @@
         }
         .danger-zone-header h3 { font-size: 15px; font-weight: 600; }
         .danger-zone p {
-            color: var(--text-muted);
+            color: #64748b;
             margin-bottom: 16px;
             font-size: 14px;
         }
         .danger-zone ul {
             margin-left: 20px;
             margin-bottom: 16px;
-            color: var(--text-muted);
+            color: #64748b;
             font-size: 13px;
         }
         .danger-zone ul li { margin-bottom: 6px; }
@@ -369,7 +369,7 @@
             height: 16px;
             border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: #1e293b;
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -381,7 +381,7 @@
             right: 20px;
             padding: 14px 20px;
             border-radius: 10px;
-            color: white;
+            color: #1e293b;
             font-weight: 500;
             font-size: 14px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -427,8 +427,8 @@
             color: var(--danger);
             margin-bottom: 12px;
         }
-        .modal-header h3 { font-size: 18px; color: white; margin-bottom: 8px; font-weight: 600; }
-        .modal-header p { color: var(--text-muted); font-size: 14px; }
+        .modal-header h3 { font-size: 18px; color: #1e293b; margin-bottom: 8px; font-weight: 600; }
+        .modal-header p { color: #64748b; font-size: 14px; }
         .modal-body { padding: 20px 28px; }
         .modal-body .warning-text {
             background: var(--danger-light);
@@ -446,7 +446,7 @@
             text-transform: uppercase;
             background: rgba(255,255,255,0.05);
             border-color: rgba(255,255,255,0.1);
-            color: white;
+            color: #1e293b;
         }
         .modal-body .form-group input:focus {
             border-color: var(--danger);
@@ -479,11 +479,11 @@
             padding: 24px;
             text-align: center;
             border-top: 1px solid var(--border);
-            color: var(--text-muted);
+            color: #64748b;
             font-size: 12px;
         }
         .dashboard-footer a {
-            color: var(--text-muted);
+            color: #64748b;
             text-decoration: none;
             transition: color 0.2s;
         }
@@ -496,7 +496,7 @@
             display: none;
             background: none;
             border: none;
-            color: white;
+            color: #1e293b;
             font-size: 20px;
             cursor: pointer;
             padding: 8px;
@@ -528,7 +528,7 @@
             <h1>Configurações</h1>
         </div>
         <div class="header-actions">
-            <a href="termo-de-uso.html" target="_blank" class="btn-header" title="Termos de Uso">
+            <a href="termo-de-uso.html" class="btn-header" title="Termos de Uso">
                 <i class="fas fa-file-contract"></i>
             </a>
             <div class="user-info-header" onclick="logout()">
@@ -583,8 +583,8 @@
             <div class="sidebar-footer">
                 <p>&copy; 2026 VendaLive</p>
                 <p>
-                    <a href="termo-de-uso.html" target="_blank">Termos</a> &middot;
-                    <a href="politica-privacidade.html" target="_blank">Privacidade</a>
+                    <a href="termo-de-uso.html">Termos</a> &middot;
+                    <a href="politica-privacidade.html">Privacidade</a>
                 </p>
             </div>
         </aside>
@@ -723,8 +723,8 @@
             <footer class="dashboard-footer">
                 <p>
                     &copy; 2026 VendaLive Tecnologia |
-                    <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> |
-                    <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a> |
+                    <a href="termo-de-uso.html">Termos de Uso</a> |
+                    <a href="politica-privacidade.html">Política de Privacidade</a> |
                     <a href="#" onclick="iniciarExclusao(); return false;">Excluir Conta</a>
                 </p>
             </footer>
@@ -803,7 +803,7 @@
                     <div class="step-dot active"></div>
                     <div class="step-dot active"></div>
                 </div>
-                <p style="color: var(--text-muted); margin-top: 20px;">Por favor, não feche esta janela.</p>
+                <p style="color: #64748b; margin-top: 20px;">Por favor, não feche esta janela.</p>
             </div>
         </div>
     </div>
