@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -192,6 +193,68 @@
             margin-left: 6px;
         }
 
+        /* Termos de Aceite - Estilo Dark */
+        .termos-aceite {
+            margin: 20px 0;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.2s;
+        }
+        .termos-aceite:hover {
+            border-color: rgba(91, 155, 213, 0.3);
+        }
+        .termos-aceite.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        .termos-aceite label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+        .termos-aceite input[type="checkbox"] {
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            accent-color: #5b9bd5;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .termos-aceite a {
+            color: #5b9bd5;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .termos-aceite a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+        .termos-aceite .termos-error {
+            display: none;
+            color: #f87171;
+            font-size: 12px;
+            margin-top: 8px;
+            padding-left: 30px;
+            font-weight: 500;
+        }
+        .termos-aceite .termos-error.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
         /* Botão */
         .btn {
             width: 100%;
@@ -274,6 +337,25 @@
             text-decoration: underline;
         }
 
+        /* Footer legal */
+        .footer-legal {
+            text-align: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+        }
+        .footer-legal a {
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-legal a:hover {
+            color: #5b9bd5;
+            text-decoration: underline;
+        }
+
         /* Erro card */
         .erro-card {
             text-align: center;
@@ -305,7 +387,6 @@
             .header h1 { font-size: 24px; }
         }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -392,6 +473,24 @@
                     </div>
                 </div>
 
+                <!-- ============================================================ -->
+                <!-- TERMOS DE USO - CHECKBOX INTEGRADO -->
+                <!-- ============================================================ -->
+                <div class="termos-aceite" id="termosAceiteBox">
+                    <label>
+                        <input type="checkbox" id="aceiteTermos">
+                        <span>
+                            Li e aceito os <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> 
+                            e a <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a> 
+                            do VendaLive. Entendo que meus dados serão tratados conforme a LGPD e que posso solicitar a exclusão da minha conta a qualquer momento na página de Configurações.
+                        </span>
+                    </label>
+                    <div class="termos-error" id="termosError">
+                        <i class="fas fa-exclamation-circle"></i> Você precisa aceitar os termos para continuar.
+                    </div>
+                </div>
+                <!-- ============================================================ -->
+
                 <button type="button" class="btn" id="btn-cadastrar" onclick="realizarCadastro()">
                     <span id="btn-texto">Criar Conta Grátis</span>
                 </button>
@@ -399,6 +498,12 @@
 
             <div class="footer">
                 Já tem uma conta? <a href="login.html">Faça login</a>
+            </div>
+
+            <!-- Footer legal -->
+            <div class="footer-legal">
+                <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> &middot; 
+                <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a>
             </div>
         </div>
 
@@ -434,6 +539,17 @@
             } else {
                 console.error('[CADASTRO] Supabase não disponível');
                 mostrarErro('Erro de conexão. Recarregue a página.');
+            }
+
+            // Listener para esconder erro do termos quando marcar
+            const aceiteCheckbox = document.getElementById('aceiteTermos');
+            const termosError = document.getElementById('termosError');
+            const termosBox = document.getElementById('termosAceiteBox');
+            if (aceiteCheckbox) {
+                aceiteCheckbox.addEventListener('change', function() {
+                    if (termosError) termosError.classList.remove('show');
+                    if (termosBox) termosBox.classList.remove('error');
+                });
             }
 
             // ===== LER PARAMETROS DA URL (ATUALIZAR PLANO) =====
@@ -529,8 +645,39 @@
             return limpo.length === 11 || limpo.length === 14;
         }
 
+        // ============================================================
+        // VALIDAÇÃO DOS TERMOS DE USO
+        // ============================================================
+        function validarTermosAceite() {
+            const aceite = document.getElementById('aceiteTermos');
+            const errorDiv = document.getElementById('termosError');
+            const termosBox = document.getElementById('termosAceiteBox');
+
+            if (!aceite || !aceite.checked) {
+                if (errorDiv) errorDiv.classList.add('show');
+                if (termosBox) termosBox.classList.add('error');
+                if (aceite) {
+                    aceite.focus();
+                    aceite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+            if (errorDiv) errorDiv.classList.remove('show');
+            if (termosBox) termosBox.classList.remove('error');
+            return true;
+        }
+        // ============================================================
+
         async function realizarCadastro() {
             console.log('[CADASTRO] Iniciando cadastro...');
+
+            // ===== VALIDAÇÃO DOS TERMOS (PRIMEIRO) =====
+            if (!validarTermosAceite()) {
+                console.log('[CADASTRO] Termos não aceitos. Bloqueando cadastro.');
+                return;
+            }
+            // ===========================================
+
             const nome = document.getElementById('nome').value.trim();
             const cpfCnpj = document.getElementById('cpf_cnpj').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
