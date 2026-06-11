@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Senha - VendaLive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .header h1 { font-size: 24px; font-weight: 700; }
+        .header p { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 12px;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            box-shadow: none;
+        }
+        .alert {
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: none;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .user-info {
+            background: #f8f9ff;
+            border: 1px solid #e0e0ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-info .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .user-info .details h3 {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+        .user-info .details p {
+            font-size: 13px;
+            color: #666;
+        }
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 24px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Alterar Senha</h1>
+        <p>Atualize sua senha de acesso ao VendaLive</p>
+    </div>
+
+    <div class="container">
+        <div id="alertContainer"></div>
+
+        <div class="user-info" id="userInfo" style="display: none;">
+            <div class="avatar" id="userAvatar">U</div>
+            <div class="details">
+                <h3 id="userName">Usuário</h3>
+                <p id="userEmail">email@exemplo.com</p>
+            </div>
+        </div>
+
+        <form id="formAlterarSenha">
+            <div class="form-group">
+                <label for="currentPassword">Senha Atual</label>
+                <input type="password" id="currentPassword" required 
+                       placeholder="Digite sua senha atual">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="form-group">
+                <label for="newPassword">Nova Senha</label>
+                <input type="password" id="newPassword" required 
+                       placeholder="Mínimo 8 caracteres" minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar Nova Senha</label>
+                <input type="password" id="confirmPassword" required 
+                       placeholder="Repita a nova senha">
+            </div>
+
+            <button type="submit" class="btn" id="btnSubmit">
+                Alterar Senha
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                ← Voltar para Dashboard
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type}" style="display: block;">${message}</div>`;
+        }
+
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        async function init() {
+            if (typeof supabase === 'undefined' || !supabase.createClient) {
+                setTimeout(init, 500);
+                return;
+            }
+            const { createClient } = supabase;
+            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Verifica autenticação
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            
+            if (!session || sessionError) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Mostra dados do usuário
+            const user = session.user;
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = user.user_metadata?.nome || user.email.split('@')[0];
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = (user.email[0] || 'U').toUpperCase();
+        }
+
+        // Alterar senha (requer senha atual)
+        document.getElementById('formAlterarSenha').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert();
+
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('btnSubmit');
+
+            if (newPass !== confirmPass) {
+                showAlert('As senhas não coincidem!');
+                return;
+            }
+            if (newPass.length < 8) {
+                showAlert('A nova senha deve ter no mínimo 8 caracteres!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Alterando...';
+
+            try {
+                // Atualiza a senha (Supabase valida a sessão atual automaticamente)
+                const { error } = await supabaseClient.auth.updateUser({ 
+                    password: newPass 
+                });
+
+                if (error) {
+                    // Se der erro de nonce, pode ser porque a sessão é antiga
+                    // Nesse caso, reautentica com senha atual
+                    if (error.message.includes('nonce') || error.message.includes('reauthentication')) {
+                        // Reautentica primeiro
+                        const { error: reauthError } = await supabaseClient.auth.reauthenticate();
+                        if (reauthError) {
+                            throw new Error('Senha atual incorreta ou sessão expirada. Faça login novamente.');
+                        }
+                        // Tenta novamente após reautenticação
+                        const { error: retryError } = await supabaseClient.auth.updateUser({ 
+                            password: newPass 
+                        });
+                        if (retryError) throw retryError;
+                    } else {
+                        throw error;
+                    }
+                }
+
+                showAlert('✅ Senha alterada com sucesso! A nova senha já está ativa.', 'success');
+                
+                // Limpa formulário
+                document.getElementById('formAlterarSenha').reset();
+                
+                // Opcional: redireciona após 2 segundos
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+
+            } catch (err) {
+                showAlert('Erro: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Alterar Senha';
+            }
+        });
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
