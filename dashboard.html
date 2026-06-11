@@ -456,6 +456,7 @@
     }
   </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
@@ -771,10 +772,11 @@
         dadosUsuarioParaCadastro = {
           nome: usuarioAtual.nome || usuarioAtual.email || '',
           email: usuarioAtual.email || '',
-          telefone: usuarioAtual.telefone || '',
-          cpf_cnpj: usuarioAtual.cpf_cnpj || '',
+          telefone: usuarioAtual.telefone || usuarioAtual.celular || usuarioAtual.phone || '',
+          cpf_cnpj: usuarioAtual.cpf_cnpj || usuarioAtual.cpf || usuarioAtual.cnpj || usuarioAtual.documento || '',
           asaas_customer_id: usuarioAtual.asaas_customer_id || ''
         };
+        console.log('[DASHBOARD] Dados para cadastro:', JSON.stringify(dadosUsuarioParaCadastro));
 
         // Verificar se esta em plano de teste
         var plano = (clienteData.plano || '').toString().toLowerCase().trim();
@@ -904,7 +906,7 @@
         if (!session) { window.location.href = 'login.html'; return; }
 
         var userResult = await supabaseClient
-          .from('usuarios_pg').select('*').eq('auth_id', session.user.id).single();
+          .from('usuarios_pg').select('*, telefone, cpf_cnpj, asaas_customer_id').eq('auth_id', session.user.id).single();
         var usuario = userResult.data;
         var userError = userResult.error;
 
