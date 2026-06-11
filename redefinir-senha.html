@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Redefinir Senha - VendaLive</title>
+    <title>Alterar Senha - VendaLive</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,6 +39,18 @@
         .header-logo span { font-size: 16px; font-weight: 800; color: #ffffff; }
         .header-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px; }
         .header h1 { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .header-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 12px;
+        }
+        .header-info span {
+            color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
         .btn-header {
             background: rgba(0, 102, 255, 0.15);
             border: 1px solid rgba(0, 102, 255, 0.3);
@@ -96,6 +108,39 @@
             font-size: 14px;
         }
 
+        .user-info {
+            background: #f8f9ff;
+            border: 1px solid #e0e0ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-info .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .user-info .details h3 {
+            font-size: 15px;
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .user-info .details p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
         .form-group { margin-bottom: 20px; }
         label {
             display: block;
@@ -137,6 +182,32 @@
         }
         input[type="password"] { padding-right: 16px; }
 
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 24px 0;
+        }
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .divider-label::before,
+        .divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        .divider-label span {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -173,6 +244,7 @@
         .btn-secondary:hover {
             background: #e2e8f0;
             box-shadow: none;
+            transform: translateY(-1px);
         }
 
         .alert {
@@ -197,39 +269,6 @@
             background: #eff6ff;
             color: #2563eb;
             border: 1px solid #bfdbfe;
-        }
-
-        .password-strength {
-            height: 4px;
-            border-radius: 2px;
-            margin-top: 8px;
-            transition: all 0.3s;
-            background: #e2e8f0;
-        }
-        .strength-weak { background: #ef4444; width: 33%; }
-        .strength-medium { background: #f59e0b; width: 66%; }
-        .strength-strong { background: #10b981; width: 100%; }
-        .requirements {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 8px;
-            list-style: none;
-        }
-        .requirements li {
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .requirements li::before {
-            content: "○";
-            color: #94a3b8;
-            font-size: 10px;
-        }
-        .requirements li.valid::before {
-            content: "✓";
-            color: #10b981;
-            font-weight: 700;
         }
 
         .success-icon {
@@ -260,12 +299,17 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
+        .icon-svg-sm { width: 14px; height: 14px; }
+
         @media (max-width: 640px) {
             .main-content { margin: 20px auto; }
             .card { padding: 24px; border-radius: 12px; }
             .header { padding: 0 12px; height: 52px; }
             .header-logo span { font-size: 14px; }
             .header h1 { display: none; }
+            .header-info span { display: none; }
+            .header-info span:first-child { display: flex; }
         }
     </style>
 <base target="_blank">
@@ -274,7 +318,7 @@
     <!-- HEADER -->
     <div class="header">
         <div class="header-left">
-            <a href="login.html" class="header-logo">
+            <a href="dashboard.html" class="header-logo" target="_self">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
                     <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
@@ -285,14 +329,23 @@
                 <span>Venda<span style="color:#5b9bd5;">Live</span></span>
             </a>
             <div class="header-divider"></div>
-            <h1>Redefinir Senha</h1>
+            <h1>Alterar Senha</h1>
         </div>
-        <a href="login.html" class="btn-header">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 18l-6-6 6-6"/>
-            </svg>
-            Voltar para Login
-        </a>
+        <div class="header-info">
+            <span id="info-usuario">
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Carregando...
+            </span>
+            <a href="dashboard.html" class="btn-header" target="_self">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Dashboard
+            </a>
+        </div>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -300,83 +353,82 @@
         <div class="card">
             <div id="alertContainer"></div>
 
-            <!-- Estado 1: Solicitar email -->
-            <div id="stepRequest" style="display: none;">
-                <div class="card-header">
-                    <div class="icon-circle">🔐</div>
-                    <h2>Esqueceu a senha?</h2>
-                    <p>Digite seu email para receber o link de redefinição</p>
-                </div>
-                <form id="formRequest">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                            </svg>
-                            <input type="email" id="email" required placeholder="seu@email.com">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn" id="btnRequest">
-                        Enviar Link de Recuperação
-                    </button>
-                </form>
+            <div class="card-header">
+                <div class="icon-circle">🔐</div>
+                <h2>Alterar Senha</h2>
+                <p>Atualize sua senha de acesso ao VendaLive</p>
             </div>
 
-            <!-- Estado 2: Definir nova senha -->
-            <div id="stepReset" style="display: none;">
-                <div class="card-header">
-                    <div class="icon-circle">🔑</div>
-                    <h2>Nova Senha</h2>
-                    <p>Digite sua nova senha abaixo</p>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="details">
+                    <h3 id="userName">Usuário</h3>
+                    <p id="userEmail">email@exemplo.com</p>
                 </div>
-                <form id="formReset">
-                    <div class="form-group">
-                        <label for="newPassword">Nova Senha</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input type="password" id="newPassword" required 
-                                   placeholder="Mínimo 8 caracteres" minlength="8">
-                        </div>
-                        <div class="password-strength" id="strengthBar"></div>
-                        <ul class="requirements" id="requirements">
-                            <li id="reqLength">Mínimo 8 caracteres</li>
-                            <li id="reqUpper">Uma letra maiúscula</li>
-                            <li id="reqNumber">Um número</li>
-                            <li id="reqSpecial">Um caractere especial (!@#$...)</li>
-                        </ul>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirmar Nova Senha</label>
-                        <div class="input-wrapper">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input type="password" id="confirmPassword" required 
-                                   placeholder="Repita a senha">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn" id="btnReset">
-                        Redefinir Senha
-                    </button>
-                </form>
             </div>
 
-            <!-- Estado 3: Sucesso -->
+            <form id="formAlterarSenha">
+                <div class="form-group">
+                    <label for="currentPassword">Senha Atual</label>
+                    <div class="input-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input type="password" id="currentPassword" required 
+                               placeholder="Digite sua senha atual">
+                    </div>
+                </div>
+
+                <div class="divider-label">
+                    <span>Nova Senha</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Nova Senha</label>
+                    <div class="input-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input type="password" id="newPassword" required 
+                               placeholder="Mínimo 8 caracteres" minlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Nova Senha</label>
+                    <div class="input-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input type="password" id="confirmPassword" required 
+                               placeholder="Repita a nova senha">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="btnSubmit">
+                    Alterar Senha
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    Voltar para Dashboard
+                </button>
+            </form>
+
+            <!-- Estado de Sucesso -->
             <div id="stepSuccess" style="display: none; text-align: center;">
                 <div class="success-icon">✅</div>
-                <div class="success-title">Senha Redefinida!</div>
+                <div class="success-title">Senha Alterada!</div>
                 <p class="success-text">
-                    Sua senha foi alterada com sucesso.<br>
-                    Você já pode fazer login com a nova senha.
+                    Sua senha foi atualizada com sucesso.<br>
+                    Use a nova senha no próximo login.
                 </p>
-                <a href="login.html" class="btn" style="text-decoration: none;">
-                    Ir para Login
+                <a href="dashboard.html" class="btn" style="text-decoration: none;">
+                    Ir para Dashboard
                 </a>
             </div>
         </div>
@@ -388,7 +440,6 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         let supabaseClient = null;
-        let recoverySession = null;
 
         function showAlert(message, type = 'error') {
             const container = document.getElementById('alertContainer');
@@ -399,191 +450,126 @@
             document.getElementById('alertContainer').innerHTML = '';
         }
 
-        async function initSupabase() {
+        async function init() {
             if (typeof supabase === 'undefined' || !supabase.createClient) {
-                setTimeout(initSupabase, 500);
+                setTimeout(init, 500);
                 return;
             }
             const { createClient } = supabase;
             supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            checkState();
-        }
 
-        async function checkState() {
-            const hash = window.location.hash;
-            const searchParams = new URLSearchParams(window.location.search);
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
 
-            console.log('[REDEFINIR] Hash:', hash);
-            console.log('[REDEFINIR] Search:', window.location.search);
-
-            const errorCode = searchParams.get('error_code');
-            const errorDesc = searchParams.get('error_description');
-
-            if (errorCode) {
-                showAlert('⚠️ ' + (errorDesc || 'Link inválido ou expirado. Solicite um novo.'), 'error');
-                document.getElementById('stepRequest').style.display = 'block';
+            if (!session || sessionError) {
+                window.location.href = 'login.html';
                 return;
             }
 
-            if (hash && hash.includes('access_token')) {
-                console.log('[REDEFINIR] Token encontrado na hash, processando...');
-
-                try {
-                    const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-                    if (error) {
-                        console.error('[REDEFINIR] Erro ao obter sessão:', error);
-                        showAlert('Link inválido ou expirado. Solicite um novo link.', 'error');
-                        document.getElementById('stepRequest').style.display = 'block';
-                        return;
-                    }
-
-                    if (session) {
-                        console.log('[REDEFINIR] Sessão de recuperação ativa!');
-                        recoverySession = session;
-                        document.getElementById('stepReset').style.display = 'block';
-                    } else {
-                        const hashParams = new URLSearchParams(hash.substring(1));
-                        const accessToken = hashParams.get('access_token');
-                        const refreshToken = hashParams.get('refresh_token');
-                        const type = hashParams.get('type');
-
-                        console.log('[REDEFINIR] Token extraído manualmente, type:', type);
-
-                        if (accessToken && type === 'recovery') {
-                            const { data, error: setError } = await supabaseClient.auth.setSession({
-                                access_token: accessToken,
-                                refresh_token: refreshToken || ''
-                            });
-
-                            if (setError) {
-                                console.error('[REDEFINIR] Erro ao setar sessão:', setError);
-                                showAlert('Link inválido ou expirado. Solicite um novo link.', 'error');
-                                document.getElementById('stepRequest').style.display = 'block';
-                                return;
-                            }
-
-                            if (data.session) {
-                                recoverySession = data.session;
-                                document.getElementById('stepReset').style.display = 'block';
-                            } else {
-                                showAlert('Não foi possível validar o link. Solicite um novo.', 'error');
-                                document.getElementById('stepRequest').style.display = 'block';
-                            }
-                        } else {
-                            showAlert('Link inválido. Solicite um novo link de recuperação.', 'error');
-                            document.getElementById('stepRequest').style.display = 'block';
-                        }
-                    }
-                } catch (err) {
-                    console.error('[REDEFINIR] Erro:', err);
-                    showAlert('Erro ao processar o link. Tente novamente.', 'error');
-                    document.getElementById('stepRequest').style.display = 'block';
-                }
-            } else {
-                console.log('[REDEFINIR] Sem token, mostrando formulário de solicitação');
-                document.getElementById('stepRequest').style.display = 'block';
-            }
+            const user = session.user;
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = user.user_metadata?.nome || user.email.split('@')[0];
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = (user.email[0] || 'U').toUpperCase();
+            document.getElementById('info-usuario').innerHTML = `
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                ${user.user_metadata?.nome || user.email}
+            `;
         }
 
-        document.getElementById('formRequest').addEventListener('submit', async (e) => {
+        document.getElementById('formAlterarSenha').addEventListener('submit', async (e) => {
             e.preventDefault();
             clearAlert();
 
-            const email = document.getElementById('email').value.trim();
-            const btn = document.getElementById('btnRequest');
-            btn.disabled = true;
-            btn.innerHTML = 'Enviando... <span class="loading"></span>';
-
-            try {
-                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/redefinir-senha.html'
-                });
-
-                if (error) throw error;
-
-                showAlert('✉️ Link de recuperação enviado! Verifique seu email (incluindo spam).', 'success');
-                document.getElementById('formRequest').style.display = 'none';
-
-            } catch (err) {
-                showAlert('Erro: ' + err.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Enviar Link de Recuperação';
-            }
-        });
-
-        document.getElementById('newPassword').addEventListener('input', function() {
-            const val = this.value;
-            const reqLength = val.length >= 8;
-            const reqUpper = /[A-Z]/.test(val);
-            const reqNumber = /[0-9]/.test(val);
-            const reqSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(val);
-
-            document.getElementById('reqLength').classList.toggle('valid', reqLength);
-            document.getElementById('reqUpper').classList.toggle('valid', reqUpper);
-            document.getElementById('reqNumber').classList.toggle('valid', reqNumber);
-            document.getElementById('reqSpecial').classList.toggle('valid', reqSpecial);
-
-            const strength = document.getElementById('strengthBar');
-            strength.className = 'password-strength';
-            if (reqLength && reqUpper && reqNumber && reqSpecial) {
-                strength.classList.add('strength-strong');
-            } else if (reqLength && (reqUpper || reqNumber)) {
-                strength.classList.add('strength-medium');
-            } else if (val.length > 0) {
-                strength.classList.add('strength-weak');
-            }
-        });
-
-        document.getElementById('formReset').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearAlert();
-
+            const currentPass = document.getElementById('currentPassword').value;
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmPassword').value;
-            const btn = document.getElementById('btnReset');
+            const btn = document.getElementById('btnSubmit');
 
+            if (!currentPass) {
+                showAlert('Digite sua senha atual!');
+                return;
+            }
             if (newPass !== confirmPass) {
                 showAlert('As senhas não coincidem!');
                 return;
             }
             if (newPass.length < 8) {
-                showAlert('A senha deve ter no mínimo 8 caracteres!');
+                showAlert('A nova senha deve ter no mínimo 8 caracteres!');
+                return;
+            }
+            if (newPass === currentPass) {
+                showAlert('A nova senha deve ser diferente da senha atual!');
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = 'Redefinindo... <span class="loading"></span>';
+            btn.innerHTML = 'Validando... <span class="loading"></span>';
 
             try {
+                // 1. Pega sessão atual para obter email
                 const { data: { session } } = await supabaseClient.auth.getSession();
-
                 if (!session) {
-                    showAlert('Sessão de recuperação expirada. Solicite um novo link.');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Redefinir Senha';
+                    showAlert('Sessão expirada. Faça login novamente.');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
                     return;
                 }
 
-                const { error } = await supabaseClient.auth.updateUser({ 
+                const userEmail = session.user.email;
+                console.log('[ALTERAR-SENHA] Reautenticando usuário:', userEmail);
+
+                // 2. REAUTENTICA com email + senha atual (valida a senha atual)
+                btn.innerHTML = 'Verificando senha atual... <span class="loading"></span>';
+
+                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email: userEmail,
+                    password: currentPass
+                });
+
+                if (signInError) {
+                    console.error('[ALTERAR-SENHA] Erro na reautenticação:', signInError);
+                    throw new Error('Senha atual incorreta. Verifique e tente novamente.');
+                }
+
+                console.log('[ALTERAR-SENHA] Reautenticação OK, atualizando senha...');
+                btn.innerHTML = 'Atualizando senha... <span class="loading"></span>';
+
+                // 3. ATUALIZA a senha (agora com nonce/reauth válido)
+                const { error: updateError } = await supabaseClient.auth.updateUser({ 
                     password: newPass 
                 });
 
-                if (error) throw error;
+                if (updateError) {
+                    console.error('[ALTERAR-SENHA] Erro ao atualizar:', updateError);
+                    throw new Error('Erro ao atualizar senha: ' + updateError.message);
+                }
 
-                document.getElementById('stepReset').style.display = 'none';
+                console.log('[ALTERAR-SENHA] Senha alterada com sucesso!');
+
+                // 4. Sucesso!
+                document.getElementById('formAlterarSenha').style.display = 'none';
                 document.getElementById('stepSuccess').style.display = 'block';
+                showAlert('✅ Senha alterada com sucesso!', 'success');
 
-                await supabaseClient.auth.signOut();
+                // 5. Atualiza a sessão no localStorage para refletir a nova senha
+                const { data: { session: newSession } } = await supabaseClient.auth.getSession();
+                if (newSession) {
+                    const dadosSessao = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+                    dadosSessao.login_time = new Date().toISOString();
+                    localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                }
 
             } catch (err) {
-                showAlert('Erro ao redefinir: ' + err.message);
+                console.error('[ALTERAR-SENHA] Erro:', err);
+                showAlert('Erro: ' + err.message);
                 btn.disabled = false;
-                btn.innerHTML = 'Redefinir Senha';
+                btn.innerHTML = 'Alterar Senha';
             }
         });
 
-        window.addEventListener('load', initSupabase);
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
