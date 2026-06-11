@@ -3,28 +3,21 @@
 <head>
 <!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
 <script>
-// ==========================================
-// SESSION.JS - Verificacao sincrona de login
-// Apenas verifica localStorage - NAO inicializa Supabase
-// O auth.js ja cuida da inicializacao do Supabase
-// v2.0 - Sem inicializacao de Supabase (evita duplicacao)
-// ==========================================
 (function(){
     'use strict';
     const SESSAO_KEY='usuarioLogado';
     const LOGIN_PAGE='login.html';
     const path=window.location.pathname.toLowerCase();
     const href=window.location.href.toLowerCase();
-    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html','cadastro.html'];
     function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
     function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
     verificarSessaoSincrona();
 })();
 </script>
-<!-- ================================================ -->
 
   <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -41,7 +34,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; }
 
-    /* ===== HEADER ===== */
     .header {
       background: #0a1628;
       color: white;
@@ -83,9 +75,99 @@
     }
     .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
 
+    /* ===== TRIAL BANNER ===== */
+    .trial-banner {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 16px 16px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      position: relative;
+      z-index: 50;
+    }
+    .trial-banner:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+      background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+      border-color: #d97706;
+    }
+    .trial-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+    .trial-banner-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .trial-banner-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .trial-banner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #92400e;
+      line-height: 1.3;
+    }
+    .trial-banner-subtitle {
+      font-size: 12px;
+      color: #a16207;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .trial-banner-days {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400e;
+      background: rgba(255,255,255,0.7);
+      padding: 6px 14px;
+      border-radius: 20px;
+      white-space: nowrap;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      flex-shrink: 0;
+    }
+    .trial-banner-arrow {
+      font-size: 20px;
+      color: #92400e;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+    .trial-banner.hidden { display: none !important; }
+    .trial-banner.urgent {
+      background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%) !important;
+      border-color: #ef4444 !important;
+    }
+    .trial-banner.urgent .trial-banner-title { color: #991b1b !important; }
+    .trial-banner.urgent .trial-banner-subtitle { color: #b91c1c !important; }
+    .trial-banner.urgent .trial-banner-days { background: #fecaca !important; color: #991b1b !important; border-color: #ef4444 !important; }
+    .trial-banner.urgent .trial-banner-arrow { color: #991b1b !important; }
+
+    @media (max-width: 640px) {
+      .trial-banner {
+        margin: 12px 12px 0 12px;
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .trial-banner-content { width: 100%; }
+      .trial-banner-days { align-self: flex-start; }
+      .trial-banner-arrow { display: none; }
+    }
+
     .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
 
-    /* ===== MOBILE MENU ===== */
     .mobile-menu-btn {
       display: none;
       background: none;
@@ -125,11 +207,7 @@
       padding-bottom: 16px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .mobile-menu-header span {
-      font-size: 16px;
-      font-weight: 700;
-      color: white;
-    }
+    .mobile-menu-header span { font-size: 16px; font-weight: 700; color: white; }
     .mobile-menu-close {
       background: none;
       border: none;
@@ -165,7 +243,6 @@
       margin-left: auto;
     }
 
-    /* ===== METRICS ===== */
     .metrics {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -206,14 +283,12 @@
       font-weight: 500;
     }
 
-    /* ===== LAYOUT ===== */
     .grid {
       display: grid;
       grid-template-columns: 260px 1fr;
       gap: 24px;
     }
 
-    /* ===== SIDEBAR ===== */
     .sidebar {
       display: flex;
       flex-direction: column;
@@ -259,7 +334,6 @@
       text-align: center;
     }
 
-    /* ===== CONTENT ===== */
     .content {
       display: flex;
       flex-direction: column;
@@ -282,7 +356,6 @@
       gap: 8px;
     }
 
-    /* ===== TABLE ===== */
     .data-table {
       width: 100%;
       border-collapse: collapse;
@@ -349,12 +422,10 @@
     }
     .hidden { display: none !important; }
 
-    /* ===== ICONS ===== */
     .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
     .icon-svg-sm { width: 14px; height: 14px; }
     .icon-svg-lg { width: 20px; height: 20px; }
 
-    /* ===== MOBILE RESPONSIVE ===== */
     @media (max-width: 1024px) {
       .grid { grid-template-columns: 1fr; gap: 16px; }
       .metrics { grid-template-columns: repeat(2, 1fr); }
@@ -386,16 +457,9 @@
     }
   </style>
 <base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
-  <!-- Mobile Menu Overlay -->
   <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
-
-  <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-header">
       <span>Menu</span>
@@ -477,6 +541,19 @@
       </span>
       <button class="btn-header" onclick="logout()">Sair</button>
     </div>
+  </div>
+
+  <!-- TRIAL BANNER -->
+  <div class="trial-banner hidden" id="trialBanner" onclick="irParaAtualizarPlano()">
+    <div class="trial-banner-content">
+      <span class="trial-banner-icon">&#9203;</span>
+      <div class="trial-banner-text">
+        <span class="trial-banner-title" id="trialBannerTitle">Atualizar o plano</span>
+        <span class="trial-banner-subtitle" id="trialBannerSubtitle">Clique aqui para escolher seu plano e ativar sua conta.</span>
+      </div>
+    </div>
+    <span class="trial-banner-days" id="trialBannerDays">0 dias</span>
+    <span class="trial-banner-arrow">&#10132;</span>
   </div>
 
   <div class="container">
@@ -595,8 +672,8 @@
     let usuarioAtual = null;
     let clienteId = null;
     let nomeCliente = 'Loja';
+    let dadosUsuarioParaCadastro = null;
 
-    // ===== MOBILE MENU =====
     function abrirMenu() {
       document.getElementById('mobileMenu').classList.add('active');
       document.getElementById('mobileMenuOverlay').classList.add('active');
@@ -612,7 +689,6 @@
       setTimeout(function() { window.location.href = url; }, 300);
       return false;
     }
-
     function goTo(url) {
       window.location.href = url;
       return false;
@@ -643,14 +719,178 @@
     }
 
     async function iniciarApp() {
+      console.log('[DASHBOARD] Iniciando app...');
       await verificarAuth();
       if (usuarioAtual && clienteId) {
+        console.log('[DASHBOARD] Usuario autenticado, clienteId:', clienteId);
+        await verificarPlanoTeste();
         await verificarPixPendentes();
         await carregarMetricas();
         await carregarGraficoVendas();
         await carregarVendasRecentes();
         await carregarLivesRecentes();
+      } else {
+        console.log('[DASHBOARD] Usuario nao autenticado ou sem clienteId');
       }
+    }
+
+    // ===== VERIFICAR PLANO DE TESTE =====
+    async function verificarPlanoTeste() {
+      console.log('[DASHBOARD] verificarPlanoTeste() iniciando...');
+      if (!usuarioAtual) {
+        console.log('[DASHBOARD] usuarioAtual eh null, saindo');
+        return;
+      }
+      try {
+        console.log('[DASHBOARD] Buscando dados do usuario ID:', usuarioAtual.id);
+
+        // Buscar dados do usuario incluindo plano e datas
+        var result = await supabaseClient
+          .from('usuarios_pg')
+          .select('plano, data_cadastro, data_ultimo_pagamento, dias_teste, nome, email, telefone, cpf_cnpj, asaas_customer_id')
+          .eq('id', usuarioAtual.id)
+          .single();
+
+        console.log('[DASHBOARD] Resultado da consulta:', result);
+
+        if (result.error) {
+          console.error('[DASHBOARD] Erro na consulta:', result.error);
+          // Mostrar banner mesmo com erro (fallback)
+          mostrarBannerTesteGenerico();
+          return;
+        }
+
+        if (!result.data) {
+          console.log('[DASHBOARD] Nenhum dado retornado');
+          mostrarBannerTesteGenerico();
+          return;
+        }
+
+        var userData = result.data;
+        console.log('[DASHBOARD] Dados do usuario:', JSON.stringify(userData));
+
+        // Guardar dados para passar ao cadastro.html
+        dadosUsuarioParaCadastro = {
+          nome: userData.nome || usuarioAtual.nome || '',
+          email: userData.email || usuarioAtual.email || '',
+          telefone: userData.telefone || '',
+          cpf_cnpj: userData.cpf_cnpj || '',
+          asaas_customer_id: userData.asaas_customer_id || ''
+        };
+
+        console.log('[DASHBOARD] Plano do usuario:', userData.plano);
+
+        // Verificar se esta em plano de teste (case-insensitive)
+        var plano = (userData.plano || '').toString().toLowerCase().trim();
+        console.log('[DASHBOARD] Plano normalizado:', plano);
+
+        if (plano !== 'teste' && plano !== 'trial' && plano !== 'gratis' && plano !== 'free') {
+          console.log('[DASHBOARD] Plano nao eh teste, escondendo banner');
+          document.getElementById('trialBanner').classList.add('hidden');
+          return;
+        }
+
+        // Calcular dias restantes do teste
+        var diasTeste = userData.dias_teste || 7;
+        var dataCadastro = userData.data_cadastro ? new Date(userData.data_cadastro) : null;
+
+        console.log('[DASHBOARD] dias_teste:', diasTeste, 'data_cadastro:', dataCadastro);
+
+        if (!dataCadastro || isNaN(dataCadastro.getTime())) {
+          console.log('[DASHBOARD] data_cadastro invalida, usando fallback');
+          // Usar data de criacao do auth como fallback
+          mostrarBannerTesteGenerico(diasTeste);
+          return;
+        }
+
+        var hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        dataCadastro.setHours(0, 0, 0, 0);
+
+        var diffTime = hoje.getTime() - dataCadastro.getTime();
+        var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        var diasRestantes = diasTeste - diffDays;
+
+        console.log('[DASHBOARD] diffDays:', diffDays, 'diasRestantes:', diasRestantes);
+
+        mostrarBanner(diasRestantes, diasTeste);
+
+      } catch (err) {
+        console.error('[DASHBOARD] Erro ao verificar plano de teste:', err);
+        // Fallback: mostrar banner generico
+        mostrarBannerTesteGenerico();
+      }
+    }
+
+    function mostrarBanner(diasRestantes, diasTeste) {
+      var banner = document.getElementById('trialBanner');
+      var title = document.getElementById('trialBannerTitle');
+      var subtitle = document.getElementById('trialBannerSubtitle');
+      var daysEl = document.getElementById('trialBannerDays');
+
+      if (!banner || !title || !subtitle || !daysEl) {
+        console.error('[DASHBOARD] Elementos do banner nao encontrados!');
+        return;
+      }
+
+      if (diasRestantes <= 0) {
+        // Teste expirado
+        title.textContent = 'Seu período de teste expirou!';
+        subtitle.textContent = 'Atualize seu plano agora para continuar usando o sistema sem interrupções.';
+        daysEl.textContent = 'Expirado';
+        banner.classList.add('urgent');
+      } else if (diasRestantes <= 3) {
+        // Poucos dias restantes
+        title.textContent = 'Atualizar o plano — Faltam apenas ' + diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '') + ' de teste!';
+        subtitle.textContent = 'Clique aqui para escolher seu plano e manter sua conta ativa. Seus dados já estão preenchidos.';
+        daysEl.textContent = diasRestantes + ' dia' + (diasRestantes > 1 ? 's' : '');
+        banner.classList.remove('urgent');
+      } else {
+        // Teste em andamento
+        title.textContent = 'Atualizar o plano — Faltam ' + diasRestantes + ' dias de teste';
+        subtitle.textContent = 'Clique aqui para escolher seu plano. Seus dados já estão preenchidos para facilitar.';
+        daysEl.textContent = diasRestantes + ' dias';
+        banner.classList.remove('urgent');
+      }
+
+      banner.classList.remove('hidden');
+      console.log('[DASHBOARD] Banner exibido com', diasRestantes, 'dias restantes');
+    }
+
+    function mostrarBannerTesteGenerico(diasPadrao) {
+      var banner = document.getElementById('trialBanner');
+      var title = document.getElementById('trialBannerTitle');
+      var subtitle = document.getElementById('trialBannerSubtitle');
+      var daysEl = document.getElementById('trialBannerDays');
+
+      if (!banner || !title || !subtitle || !daysEl) return;
+
+      title.textContent = 'Atualizar o plano — Período de teste ativo';
+      subtitle.textContent = 'Clique aqui para escolher seu plano e ativar sua conta definitivamente.';
+      daysEl.textContent = (diasPadrao || 7) + ' dias';
+      banner.classList.remove('hidden');
+      console.log('[DASHBOARD] Banner generico exibido');
+    }
+
+    function irParaAtualizarPlano() {
+      console.log('[DASHBOARD] Clicou no banner, redirecionando...');
+      if (!dadosUsuarioParaCadastro) {
+        console.log('[DASHBOARD] Sem dados do usuario, redirecionando sem parametros');
+        window.location.href = 'cadastro.html?modo=atualizar_plano';
+        return;
+      }
+
+      var params = new URLSearchParams();
+      params.append('modo', 'atualizar_plano');
+      params.append('nome', dadosUsuarioParaCadastro.nome);
+      params.append('email', dadosUsuarioParaCadastro.email);
+      if (dadosUsuarioParaCadastro.telefone) params.append('telefone', dadosUsuarioParaCadastro.telefone);
+      if (dadosUsuarioParaCadastro.cpf_cnpj) params.append('cpf_cnpj', dadosUsuarioParaCadastro.cpf_cnpj);
+      if (dadosUsuarioParaCadastro.asaas_customer_id) params.append('asaas_customer_id', dadosUsuarioParaCadastro.asaas_customer_id);
+
+      var url = 'cadastro.html?' + params.toString();
+      console.log('[DASHBOARD] Redirecionando para:', url);
+      window.location.href = url;
     }
 
     async function verificarAuth() {
@@ -779,7 +1019,6 @@
         var tbody = document.getElementById('tabela-lives');
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px;">Carregando lives...</td></tr>';
 
-        // Buscar lives da tabela lives_pg (igual ao live.html)
         var result = await supabaseClient
           .from('lives_pg')
           .select('codigo, data_live, status, total_vendas, created_at')
@@ -799,7 +1038,6 @@
           return; 
         }
 
-        // Para cada live, buscar vendas da tabela vendas_live e calcular total (igual ao live.html)
         var livesComTotais = await Promise.all(
           lives.map(async function(live) {
             var vendasResult = await supabaseClient
