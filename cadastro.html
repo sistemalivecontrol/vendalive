@@ -306,6 +306,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -498,6 +499,39 @@
             document.getElementById('btn-texto').innerHTML = '<span class="loading"></span> Criando conta...';
 
             try {
+                // ===== VERIFICACAO: CPF/CNPJ ja cadastrado em plano de teste =====
+                if (isPlanoTeste || planoSelecionado === 'Teste') {
+                    console.log('[CADASTRO] Verificando se CPF/CNPJ ja tem plano de teste...');
+                    const cnpjLimpo = cpfCnpj.replace(/\D/g, '');
+                    const { data: clienteExistente, error: checkError } = await supabaseClient
+                        .from('clientes_sistema')
+                        .select('id, nome, plano, data_expiracao, created_at')
+                        .eq('cnpj', cnpjLimpo)
+                        .eq('plano', 'Teste')
+                        .maybeSingle();
+
+                    if (checkError) {
+                        console.log('[CADASTRO] Erro na verificacao:', checkError);
+                    } else if (clienteExistente) {
+                        console.log('[CADASTRO] Cliente com plano Teste ja existe:', clienteExistente);
+                        btn.disabled = false;
+                        document.getElementById('btn-texto').textContent = 'Criar Conta Grátis';
+                        mostrarStatus('error', 'Expirado Plano de Testes. Adquira um dos planos Basic ou Pro.');
+                        // Desselecionar plano teste e selecionar Basic
+                        document.querySelectorAll('.plano-card').forEach(el => el.classList.remove('selected'));
+                        const planoBasic = document.querySelector('.plano-card[data-plano="Basic"]');
+                        if (planoBasic) {
+                            planoBasic.classList.add('selected');
+                            planoSelecionado = 'Basic';
+                            valorPlano = 80.00;
+                            isPlanoTeste = false;
+                            document.getElementById('btn-texto').textContent = 'Criar Conta e Pagar';
+                        }
+                        return;
+                    }
+                }
+                // ================================================================
+
                 console.log('[CADASTRO] Criando usuário no Auth...');
                 const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                     email: email,
@@ -643,7 +677,7 @@
                 console.error('[CADASTRO] Erro:', error);
                 mostrarErro('Erro ao criar conta: ' + error.message);
                 btn.disabled = false;
-                document.getElementById('btn-texto').textContent = 'Criar Conta e Ir para Pagamento';
+                document.getElementById('btn-texto').textContent = isPlanoTeste ? 'Criar Conta Grátis' : 'Criar Conta e Pagar';
             }
         }
 
