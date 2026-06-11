@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<!-- ===== SESSION GUARD - VERIFICACAO DE LOGIN ===== -->
 <script>
 (function(){
     'use strict';
@@ -734,95 +733,97 @@
       }
     }
 
-    // ===== VERIFICAR PLANO DE TESTE =====
+    // ===== VERIFICAR PLANO DE TESTE - Busca data_expiracao em clientes_sistema =====
     async function verificarPlanoTeste() {
       console.log('[DASHBOARD] verificarPlanoTeste() iniciando...');
-      if (!usuarioAtual) {
-        console.log('[DASHBOARD] usuarioAtual eh null, saindo');
+      if (!usuarioAtual || !clienteId) {
+        console.log('[DASHBOARD] usuarioAtual ou clienteId null, saindo');
         return;
       }
       try {
-        console.log('[DASHBOARD] Buscando dados do usuario ID:', usuarioAtual.id);
+        console.log('[DASHBOARD] Buscando dados do cliente_sistema ID:', clienteId);
 
-        // Buscar dados do usuario incluindo plano e datas
+        // Buscar data_expiracao e plano da tabela clientes_sistema
         var result = await supabaseClient
-          .from('usuarios_pg')
-          .select('plano, data_cadastro, data_ultimo_pagamento, dias_teste, nome, email, telefone, cpf_cnpj, asaas_customer_id')
-          .eq('id', usuarioAtual.id)
-          .single();
+          .from('clientes_sistema')
+          .select('id, nome, plano, data_expiracao, created_at')
+          .eq('id', clienteId)
+          .maybeSingle();
 
-        console.log('[DASHBOARD] Resultado da consulta:', result);
+        console.log('[DASHBOARD] Resultado clientes_sistema:', result);
 
         if (result.error) {
-          console.error('[DASHBOARD] Erro na consulta:', result.error);
-          // Mostrar banner mesmo com erro (fallback)
+          console.error('[DASHBOARD] Erro na consulta clientes_sistema:', result.error);
           mostrarBannerTesteGenerico();
           return;
         }
 
         if (!result.data) {
-          console.log('[DASHBOARD] Nenhum dado retornado');
+          console.log('[DASHBOARD] Nenhum dado retornado de clientes_sistema');
           mostrarBannerTesteGenerico();
           return;
         }
 
-        var userData = result.data;
-        console.log('[DASHBOARD] Dados do usuario:', JSON.stringify(userData));
+        var clienteData = result.data;
+        console.log('[DASHBOARD] Dados do cliente_sistema:', JSON.stringify(clienteData));
 
         // Guardar dados para passar ao cadastro.html
         dadosUsuarioParaCadastro = {
-          nome: userData.nome || usuarioAtual.nome || '',
-          email: userData.email || usuarioAtual.email || '',
-          telefone: userData.telefone || '',
-          cpf_cnpj: userData.cpf_cnpj || '',
-          asaas_customer_id: userData.asaas_customer_id || ''
+          nome: usuarioAtual.nome || usuarioAtual.email || '',
+          email: usuarioAtual.email || '',
+          telefone: usuarioAtual.telefone || '',
+          cpf_cnpj: usuarioAtual.cpf_cnpj || '',
+          asaas_customer_id: usuarioAtual.asaas_customer_id || ''
         };
 
-        console.log('[DASHBOARD] Plano do usuario:', userData.plano);
-
-        // Verificar se esta em plano de teste (case-insensitive)
-        var plano = (userData.plano || '').toString().toLowerCase().trim();
-        console.log('[DASHBOARD] Plano normalizado:', plano);
+        // Verificar se esta em plano de teste
+        var plano = (clienteData.plano || '').toString().toLowerCase().trim();
+        console.log('[DASHBOARD] Plano do cliente_sistema:', plano);
 
         if (plano !== 'teste' && plano !== 'trial' && plano !== 'gratis' && plano !== 'free') {
-          console.log('[DASHBOARD] Plano nao eh teste, escondendo banner');
+          console.log('[DASHBOARD] Plano nao eh teste (eh: ' + plano + '), escondendo banner');
           document.getElementById('trialBanner').classList.add('hidden');
           return;
         }
 
-        // Calcular dias restantes do teste
-        var diasTeste = userData.dias_teste || 7;
-        var dataCadastro = userData.data_cadastro ? new Date(userData.data_cadastro) : null;
+        // Calcular dias restantes com base na data_expiracao
+        var dataExpiracao = clienteData.data_expiracao ? new Date(clienteData.data_expiracao) : null;
 
-        console.log('[DASHBOARD] dias_teste:', diasTeste, 'data_cadastro:', dataCadastro);
+        console.log('[DASHBOARD] data_expiracao:', dataExpiracao);
 
-        if (!dataCadastro || isNaN(dataCadastro.getTime())) {
-          console.log('[DASHBOARD] data_cadastro invalida, usando fallback');
-          // Usar data de criacao do auth como fallback
-          mostrarBannerTesteGenerico(diasTeste);
-          return;
+        if (!dataExpiracao || isNaN(dataExpiracao.getTime())) {
+          console.log('[DASHBOARD] data_expiracao invalida, usando created_at como fallback');
+          // Fallback: usar created_at + 7 dias
+          var dataCriacao = clienteData.created_at ? new Date(clienteData.created_at) : null;
+          if (dataCriacao && !isNaN(dataCriacao.getTime())) {
+            dataExpiracao = new Date(dataCriacao);
+            dataExpiracao.setDate(dataExpiracao.getDate() + 7);
+            console.log('[DASHBOARD] data_expiracao calculada:', dataExpiracao);
+          } else {
+            console.log('[DASHBOARD] Sem data de criacao tambem, usando generico');
+            mostrarBannerTesteGenerico();
+            return;
+          }
         }
 
         var hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
-        dataCadastro.setHours(0, 0, 0, 0);
+        dataExpiracao.setHours(0, 0, 0, 0);
 
-        var diffTime = hoje.getTime() - dataCadastro.getTime();
-        var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        var diasRestantes = diasTeste - diffDays;
+        var diffTime = dataExpiracao.getTime() - hoje.getTime();
+        var diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        console.log('[DASHBOARD] diffDays:', diffDays, 'diasRestantes:', diasRestantes);
+        console.log('[DASHBOARD] hoje:', hoje, 'dataExpiracao:', dataExpiracao, 'diasRestantes:', diasRestantes);
 
-        mostrarBanner(diasRestantes, diasTeste);
+        mostrarBanner(diasRestantes);
 
       } catch (err) {
         console.error('[DASHBOARD] Erro ao verificar plano de teste:', err);
-        // Fallback: mostrar banner generico
         mostrarBannerTesteGenerico();
       }
     }
 
-    function mostrarBanner(diasRestantes, diasTeste) {
+    function mostrarBanner(diasRestantes) {
       var banner = document.getElementById('trialBanner');
       var title = document.getElementById('trialBannerTitle');
       var subtitle = document.getElementById('trialBannerSubtitle');
@@ -857,7 +858,7 @@
       console.log('[DASHBOARD] Banner exibido com', diasRestantes, 'dias restantes');
     }
 
-    function mostrarBannerTesteGenerico(diasPadrao) {
+    function mostrarBannerTesteGenerico() {
       var banner = document.getElementById('trialBanner');
       var title = document.getElementById('trialBannerTitle');
       var subtitle = document.getElementById('trialBannerSubtitle');
@@ -867,7 +868,8 @@
 
       title.textContent = 'Atualizar o plano — Período de teste ativo';
       subtitle.textContent = 'Clique aqui para escolher seu plano e ativar sua conta definitivamente.';
-      daysEl.textContent = (diasPadrao || 7) + ' dias';
+      daysEl.textContent = 'Teste';
+      banner.classList.remove('urgent');
       banner.classList.remove('hidden');
       console.log('[DASHBOARD] Banner generico exibido');
     }
