@@ -768,13 +768,23 @@
         var clienteData = result.data;
         console.log('[DASHBOARD] Dados do cliente_sistema:', JSON.stringify(clienteData));
 
+        // Buscar dados do cliente_sistema (cnpj, telefone estão lá)
+        var cliDadosResult = await supabaseClient
+          .from('clientes_sistema')
+          .select('nome, cnpj, email, telefone, asaas_customer_id')
+          .eq('id', clienteId)
+          .maybeSingle();
+
+        var clienteDados = cliDadosResult.data || {};
+        console.log('[DASHBOARD] Dados do cliente_sistema:', JSON.stringify(clienteDados));
+
         // Guardar dados para passar ao cadastro.html
         dadosUsuarioParaCadastro = {
-          nome: usuarioAtual.nome || usuarioAtual.email || '',
-          email: usuarioAtual.email || '',
-          telefone: usuarioAtual.telefone || usuarioAtual.celular || usuarioAtual.phone || '',
-          cpf_cnpj: usuarioAtual.cpf_cnpj || usuarioAtual.cpf || usuarioAtual.cnpj || usuarioAtual.documento || '',
-          asaas_customer_id: usuarioAtual.asaas_customer_id || ''
+          nome: usuarioAtual.nome || clienteDados.nome || usuarioAtual.email || '',
+          email: usuarioAtual.email || clienteDados.email || '',
+          telefone: clienteDados.telefone || '',
+          cpf_cnpj: clienteDados.cnpj || '',
+          asaas_customer_id: clienteDados.asaas_customer_id || usuarioAtual.asaas_customer_id || ''
         };
         console.log('[DASHBOARD] Dados para cadastro:', JSON.stringify(dadosUsuarioParaCadastro));
 
@@ -906,7 +916,7 @@
         if (!session) { window.location.href = 'login.html'; return; }
 
         var userResult = await supabaseClient
-          .from('usuarios_pg').select('*, telefone, cpf_cnpj, asaas_customer_id').eq('auth_id', session.user.id).single();
+          .from('usuarios_pg').select('*').eq('auth_id', session.user.id).single();
         var usuario = userResult.data;
         var userError = userResult.error;
 
