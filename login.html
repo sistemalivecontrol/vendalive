@@ -488,6 +488,7 @@
 </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <!-- Particles -->
@@ -555,10 +556,12 @@
                 </form>
             </div>
 
-            <button type="button" id="btnSolicitarTeste" class="wa-link" onclick="abrirModalSolicitacao()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                Solicitar login e senha de teste!
-            </button>
+            <a href="cadastro.html" class="wa-link" style="text-decoration: none; margin-bottom: 12px; background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%); border-color: rgba(34, 197, 94, 0.3); color: #4ade80;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                🎁 Criar conta grátis - 7 dias de teste
+            </a>
+
+
 
             <a href="https://sistemalivecontrol.github.io/vendalive/" class="back-link" target="_self">&larr; Voltar para o site</a>
         </div>
@@ -675,62 +678,8 @@
                 }
             } catch (error) {}
         }
-        verificarSessaoExistente();
-    
-
-        // ===== MODAL SOLICITAÇÃO DE LOGIN DE TESTES =====
-        const EMAILJS_CONFIG_LOGIN = { 
-            PUBLIC_KEY: "R3iqK9BVPwhsiyJmk", 
-            SERVICE_ID: "service_oxzrjvr", 
-            TEMPLATE_ID: "template_s2qvbzx" 
-        };
-
-        function abrirModalSolicitacao() {
-            document.getElementById('modalSolicitacao').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function fecharModalSolicitacao() {
-            document.getElementById('modalSolicitacao').classList.remove('active');
-            document.body.style.overflow = '';
-            // Reset form
-            setTimeout(() => {
-                document.getElementById('formSolicitacaoLogin').reset();
-                document.getElementById('formSolicitacaoLogin').style.display = 'block';
-                document.getElementById('modalSucesso').style.display = 'none';
-                const btn = document.getElementById('btnEnviarSolicitacao');
-                btn.disabled = false;
-                document.getElementById('btnTextoSolicitacao').innerHTML = '🚀 Solicitar Acesso de Teste';
-            }, 300);
-        }
-
-        // Aguardar DOM estar pronto antes de adicionar listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fechar modal ao clicar fora
-            const modalOverlay = document.getElementById('modalSolicitacao');
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', function(e) {
-                    if (e.target === this) fecharModalSolicitacao();
-                });
-            }
-
-            // Fechar com ESC
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') fecharModalSolicitacao();
-            });
-
-            // Form submit listener
-            const formSolicitacao = document.getElementById('formSolicitacaoLogin');
-            if (formSolicitacao) {
-                formSolicitacao.addEventListener('submit', enviarSolicitacaoLoginTeste);
-            }
-        });
-
-        // Carregar EmailJS
-        function carregarEmailJSLogin() {
-            return new Promise((resolve, reject) => {
-                if (window.emailjs) { 
-                    try { emailjs.init(EMAILJS_CONFIG_LOGIN.PUBLIC_KEY); } catch(e){}
+        verificarSessaoExistente();, 300);
+        }}});catch(e){}
                     resolve(); 
                     return; 
                 }
@@ -743,17 +692,7 @@
                 script.onerror = reject;
                 document.head.appendChild(script);
             });
-        }
-
-        // Garantir EmailJS pronto
-        async function garantirEmailJSLoginPronto() {
-            return new Promise((resolve, reject) => {
-                let tentativas = 0;
-                const maxTentativas = 20;
-                const check = () => {
-                    tentativas++;
-                    if (typeof emailjs !== "undefined" && emailjs.send) {
-                        try { if (!emailjs._initialized) emailjs.init(EMAILJS_CONFIG_LOGIN.PUBLIC_KEY); } catch(e){}
+        }catch(e){}
                         resolve();
                     } else if (tentativas >= maxTentativas) {
                         reject(new Error("EmailJS não carregou"));
@@ -763,52 +702,7 @@
                 };
                 check();
             });
-        }
-
-        // Enviar solicitação
-        async function enviarSolicitacaoLoginTeste(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const btn = document.getElementById('btnEnviarSolicitacao');
-            const btnTexto = document.getElementById('btnTextoSolicitacao');
-            const form = document.getElementById('formSolicitacaoLogin');
-            const sucesso = document.getElementById('modalSucesso');
-
-            const nome = document.getElementById('modalNome').value;
-            const email = document.getElementById('modalEmail').value;
-            const whatsapp = document.getElementById('modalWhatsapp').value;
-            const loja = document.getElementById('modalLoja').value;
-            const mensagem = document.getElementById('modalMensagem').value;
-
-            btn.disabled = true;
-            btnTexto.innerHTML = '⏳ Enviando...';
-
-            try {
-                await garantirEmailJSLoginPronto();
-
-                const templateParams = {
-                    to_email: "contato@vendalive.com.br",
-                    reply_to: email,
-                    from_name: nome,
-                    numero_solicitacao: "LOGIN-TESTE-" + Date.now().toString().slice(-6),
-                    nome: nome,
-                    email: email,
-                    whatsapp: whatsapp,
-                    loja: loja || "Não informado",
-                    mensagem: mensagem || "Nenhuma mensagem",
-                    data_solicitacao: new Date().toLocaleDateString("pt-BR"),
-                    hora_solicitacao: new Date().toLocaleTimeString("pt-BR"),
-                    regiao: "Solicitação de Login de Testes",
-                    campo_nome: nome,
-                    campo_email: email,
-                    campo_whatsapp: whatsapp,
-                    campo_loja: loja || "Não informado",
-                    campo_mensagem: mensagem || "Nenhuma mensagem",
-                    resumo_dados: "Nome: " + nome + " | E-mail: " + email + " | WhatsApp: " + whatsapp + " | Loja: " + (loja || "Não informado"),
-                    mensagem_cliente: "Olá " + nome + ",\n\nObrigado pelo seu interesse no VendaLive! Estamos muito felizes em ter você conosco.\n\nPara começar a testar o sistema, utilize os dados de acesso abaixo:\n\n🔐 Dados de Acesso (Teste)\n👤 Login: teste@teste.com.br\n🔑 Senha: 123456\n\n⚠️ Atenção: Este é um usuário de teste. Entre em contato para receber o login e senha definitivo.\n\n🚀 Acessar o VendaLive:\nhttps://vendalive.com.br/login.html\n\nOu acesse diretamente: vendalive.com.br/login.html\n\nSe tiver alguma dúvida, entre em contato conosco pelo WhatsApp ou e-mail. Estamos aqui para ajudar!\n\nEquipe VendaLive\ncontato@vendalive.com.br",
-                    observacoes: "Solicitação de acesso de teste ao VendaLive.\n\nDados:\n- Nome: " + nome + "\n- E-mail: " + email + "\n- WhatsApp: " + whatsapp + "\n- Loja/Instagram: " + (loja || "Não informado") + "\n- Mensagem: " + (mensagem || "Nenhuma") + "\n\nEnviado em: " + new Date().toLocaleString("pt-BR")
-                };
+        };
 
                 await emailjs.send(EMAILJS_CONFIG_LOGIN.SERVICE_ID, EMAILJS_CONFIG_LOGIN.TEMPLATE_ID, templateParams);
 
@@ -825,68 +719,6 @@
                 btn.disabled = false;
                 btnTexto.innerHTML = '🚀 Solicitar Acesso de Teste';
             }
-        }
-
-        // Pré-carregar EmailJS
-        carregarEmailJSLogin().catch(() => {});
-</script>
-
-    <!-- Modal Solicitação de Login de Testes -->
-    <div class="modal-overlay" id="modalSolicitacao">
-        <div class="modal-content">
-            <button class="modal-close" onclick="fecharModalSolicitacao()">&times;</button>
-
-            <div class="modal-header">
-                <div class="modal-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                        <polyline points="10 17 15 12 10 7"/>
-                        <line x1="15" y1="12" x2="3" y2="12"/>
-                    </svg>
-                </div>
-                <h3>Solicitar Login de Testes</h3>
-                <p>Preencha seus dados e receba acesso ao sistema</p>
-            </div>
-
-            <form class="modal-form" id="formSolicitacaoLogin">
-                <div class="form-group">
-                    <label for="modalNome">Nome completo *</label>
-                    <input type="text" id="modalNome" required placeholder="Seu nome">
-                </div>
-                <div class="form-group">
-                    <label for="modalEmail">E-mail *</label>
-                    <input type="email" id="modalEmail" required placeholder="seu@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="modalWhatsapp">WhatsApp *</label>
-                    <input type="tel" id="modalWhatsapp" required placeholder="(48) 99999-9999">
-                </div>
-                <div class="form-group">
-                    <label for="modalLoja">Nome da loja / Instagram</label>
-                    <input type="text" id="modalLoja" placeholder="@sualoja ou nome da loja">
-                </div>
-                <div class="form-group">
-                    <label for="modalMensagem">Mensagem (opcional)</label>
-                    <textarea id="modalMensagem" rows="3" placeholder="Conte um pouco sobre suas lives de vendas..."></textarea>
-                </div>
-
-                <button type="submit" id="btnEnviarSolicitacao">
-                    <span id="btnTextoSolicitacao">🚀 Solicitar Acesso de Teste</span>
-                </button>
-
-                <p class="modal-privacy">Seus dados são protegidos e usados apenas para contato sobre o VendaLive.</p>
-            </form>
-
-            <div class="modal-success" id="modalSucesso">
-                <div class="success-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                </div>
-                <h4>Solicitação Enviada!</h4>
-                <p>Entraremos em contato em breve no e-mail e WhatsApp informados.</p>
-            </div>
-        </div>
-    </div>
+        }</script>
 </body>
 </html>
