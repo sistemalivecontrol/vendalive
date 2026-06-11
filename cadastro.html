@@ -551,13 +551,19 @@
                 mostrarStatus('error', 'E-mail inválido. Verifique o formato');
                 return;
             }
-            if (senha.length < 6) {
-                mostrarStatus('error', 'A senha deve ter no mínimo 6 caracteres');
-                return;
-            }
-            if (senha !== senhaConfirmar) {
-                mostrarStatus('error', 'As senhas não conferem');
-                return;
+            // No modo atualizar_plano, nao validar senhas (usuario ja esta logado)
+            var params = new URLSearchParams(window.location.search);
+            var modo = params.get('modo');
+
+            if (modo !== 'atualizar_plano') {
+                if (senha.length < 6) {
+                    mostrarStatus('error', 'A senha deve ter no mínimo 6 caracteres');
+                    return;
+                }
+                if (senha !== senhaConfirmar) {
+                    mostrarStatus('error', 'As senhas não conferem');
+                    return;
+                }
             }
 
             const btn = document.getElementById('btn-cadastrar');
@@ -598,74 +604,155 @@
                 }
                 // ================================================================
 
-                console.log('[CADASTRO] Criando usuário no Auth...');
-                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: senha,
-                    options: { data: { nome: nome, telefone: telefone } }
-                });
-
+                var paramsAuth = new URLSearchParams(window.location.search);
+                var modoAuth = paramsAuth.get('modo');
                 let authId = null;
-                if (authError) {
-                    if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
-                        console.log('[CADASTRO] Email já existe, tentando login...');
-                        const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
-                            email: email, password: senha
-                        });
-                        if (loginError) throw new Error('Email já cadastrado. Use outro email ou faça login.');
-                        authId = loginData.user.id;
+
+                if (modoAuth === 'atualizar_plano') {
+                    // Modo atualizar: usar sessao atual do Supabase Auth
+                    console.log('[CADASTRO] Modo atualizar_plano - buscando sessao atual...');
+                    const { data: sessionData } = await supabaseClient.auth.getSession();
+                    if (sessionData && sessionData.session) {
+                        authId = sessionData.session.user.id;
+                        console.log('[CADASTRO] Usando authId da sessao atual:', authId);
                     } else {
-                        throw authError;
+                        throw new Error('Sessão não encontrada. Faça login novamente.');
                     }
                 } else {
-                    authId = authData.user.id;
+                    console.log('[CADASTRO] Criando usuário no Auth...');
+                    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: senha,
+                        options: { data: { nome: nome, telefone: telefone } }
+                    });
+
+                    if (authError) {
+                        if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+                            console.log('[CADASTRO] Email já existe, tentando login...');
+                            const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
+                                email: email, password: senha
+                            });
+                            if (loginError) throw new Error('Email já cadastrado. Use outro email ou faça login.');
+                            authId = loginData.user.id;
+                        } else {
+                            throw authError;
+                        }
+                    } else {
+                        authId = authData.user.id;
+                    }
                 }
 
-                console.log('[CADASTRO] Criando cliente no banco...');
+                console.log('[CADASTRO] Criando/atualizando cliente no banco...');
                 let clienteData = null;
                 let clienteId = null;
 
-                const { data: novoCliente, error: clienteError } = await supabaseClient
-                    .from('clientes_sistema')
-                    .insert({
-                        nome: nome,
-                        cnpj: cpfCnpj.replace(/\D/g, ''),
-                        email: email,
-                        telefone: telefone,
-                        ativo: false,
-                        status_pagamento: 'pendente',
-                        plano: planoSelecionado,
-                        created_at: new Date().toISOString()
-                    })
-                    .select()
-                    .single();
+                var paramsCliente = new URLSearchParams(window.location.search);
+                var modoCliente = paramsCliente.get('modo');
+                var cnpjLimpo = cpfCnpj.replace(/\D/g, '');
 
-                if (clienteError) {
-                    if (clienteError.message.includes('duplicate') || clienteError.message.includes('unique constraint')) {
-                        console.log('[CADASTRO] Buscando cliente existente...');
-                        const { data: existente } = await supabaseClient
+                if (modoCliente === 'atualizar_plano') {
+                    // Modo atualizar: buscar cliente existente pelo CNPJ e atualizar
+                    console.log('[CADASTRO] Modo atualizar - buscando cliente por CNPJ:', cnpjLimpo);
+                    const { data: existente, error: findError } = await supabaseClient
+                        .from('clientes_sistema')
+                        .select('*')
+                        .eq('cnpj', cnpjLimpo)
+                        .maybeSingle();
+
+                    if (findError) {
+                        console.log('[CADASTRO] Erro ao buscar cliente:', findError);
+                    }
+
+                    if (existente) {
+                        console.log('[CADASTRO] Cliente encontrado, atualizando plano...');
+                        clienteData = existente;
+                        clienteId = existente.id;
+
+                        // Atualizar apenas o plano e dados
+                        const { error: updateError } = await supabaseClient
                             .from('clientes_sistema')
-                            .select('*')
-                            .eq('email', email)
-                            .single();
-                        if (existente) {
-                            clienteData = existente;
-                            await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existente.id);
+                            .update({
+                                plano: planoSelecionado,
+                                nome: nome,
+                                telefone: telefone,
+                                email: email,
+                                ativo: true,
+                                status_pagamento: 'pendente',
+                                auth_id: authId
+                            })
+                            .eq('id', clienteId);
+
+                        if (updateError) {
+                            console.log('[CADASTRO] Erro ao atualizar cliente:', updateError);
                         } else {
-                            const { data: existenteCnpj } = await supabaseClient
-                                .from('clientes_sistema')
-                                .select('*')
-                                .eq('cnpj', cpfCnpj.replace(/\D/g, ''))
-                                .single();
-                            if (!existenteCnpj) throw new Error('Erro ao criar cliente: ' + clienteError.message);
-                            clienteData = existenteCnpj;
-                            await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existenteCnpj.id);
+                            console.log('[CADASTRO] Cliente atualizado com sucesso!');
                         }
                     } else {
-                        throw clienteError;
+                        console.log('[CADASTRO] Cliente nao encontrado, criando novo...');
+                        // Fallback: criar novo se nao encontrar
+                        const { data: novoCliente, error: clienteError } = await supabaseClient
+                            .from('clientes_sistema')
+                            .insert({
+                                nome: nome,
+                                cnpj: cnpjLimpo,
+                                email: email,
+                                telefone: telefone,
+                                ativo: true,
+                                status_pagamento: 'pendente',
+                                plano: planoSelecionado,
+                                auth_id: authId,
+                                created_at: new Date().toISOString()
+                            })
+                            .select()
+                            .single();
+
+                        if (clienteError) throw clienteError;
+                        clienteData = novoCliente;
                     }
                 } else {
-                    clienteData = novoCliente;
+                    // Modo normal: criar novo cliente
+                    const { data: novoCliente, error: clienteError } = await supabaseClient
+                        .from('clientes_sistema')
+                        .insert({
+                            nome: nome,
+                            cnpj: cnpjLimpo,
+                            email: email,
+                            telefone: telefone,
+                            ativo: false,
+                            status_pagamento: 'pendente',
+                            plano: planoSelecionado,
+                            created_at: new Date().toISOString()
+                        })
+                        .select()
+                        .single();
+
+                    if (clienteError) {
+                        if (clienteError.message.includes('duplicate') || clienteError.message.includes('unique constraint')) {
+                            console.log('[CADASTRO] Buscando cliente existente...');
+                            const { data: existente } = await supabaseClient
+                                .from('clientes_sistema')
+                                .select('*')
+                                .eq('email', email)
+                                .single();
+                            if (existente) {
+                                clienteData = existente;
+                                await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existente.id);
+                            } else {
+                                const { data: existenteCnpj } = await supabaseClient
+                                    .from('clientes_sistema')
+                                    .select('*')
+                                    .eq('cnpj', cnpjLimpo)
+                                    .single();
+                                if (!existenteCnpj) throw new Error('Erro ao criar cliente: ' + clienteError.message);
+                                clienteData = existenteCnpj;
+                                await supabaseClient.from('clientes_sistema').update({ auth_id: authId }).eq('id', existenteCnpj.id);
+                            }
+                        } else {
+                            throw clienteError;
+                        }
+                    } else {
+                        clienteData = novoCliente;
+                    }
                 }
 
                 clienteId = clienteData.id;
@@ -684,6 +771,26 @@
                     });
                 } catch (e) {
                     console.warn('[CADASTRO] Erro ao criar em usuarios_pg:', e);
+                }
+
+                // No modo atualizar_plano, pular ativacao de teste e ir direto para pagamento
+                if (modoCliente === 'atualizar_plano' && !isPlanoTeste) {
+                    console.log('[CADASTRO] Modo atualizar_plano - redirecionando para pagamento...');
+
+                    const dadosPagamento = {
+                        cliente_id: clienteId,
+                        auth_id: authId,
+                        nome: nome,
+                        email: email,
+                        cnpj: cnpjLimpo,
+                        telefone: telefone,
+                        plano: planoSelecionado,
+                        valor: valorPlano,
+                        asaas_customer_id: clienteData.asaas_customer_id || null
+                    };
+                    sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosPagamento));
+                    window.location.href = 'pagamento.html';
+                    return;
                 }
 
                 if (isPlanoTeste || planoSelecionado === 'Teste') {
