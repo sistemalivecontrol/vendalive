@@ -5,38 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - VendaLive</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #eff6ff;
-            --secondary: #64748b;
-            --danger: #dc2626;
-            --danger-light: #fef2f2;
-            --danger-border: #fecaca;
-            --danger-hover: #b91c1c;
-            --success: #16a34a;
-            --warning: #ca8a04;
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --sidebar: #1e293b;
-            --sidebar-text: #94a3b8;
-            --sidebar-hover: #334155;
+            --primary: #5b9bd5;
+            --primary-dark: #4a8bc4;
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.1);
+            --danger-border: rgba(239, 68, 68, 0.3);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --bg: #0B193F;
+            --bg-light: #0f1d4a;
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.06);
+            --text: #ffffff;
+            --text-light: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.45);
+            --border: rgba(255, 255, 255, 0.08);
+            --sidebar: #0a1628;
+            --sidebar-text: rgba(255, 255, 255, 0.6);
+            --sidebar-hover: rgba(0, 102, 255, 0.15);
             --radius: 12px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            min-height: 100vh;
         }
 
-        .app-container { display: flex; min-height: 100vh; }
+        /* Header */
+        .header {
+            background: var(--sidebar);
+            color: white;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; }
+        .header-logo i { color: var(--primary); font-size: 20px; }
+        .header h1 { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .btn-header {
+            background: rgba(0, 102, 255, 0.15);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
+        .btn-header i { font-size: 14px; }
+        .user-info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .user-info-header:hover { background: rgba(255,255,255,0.05); }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .user-name { font-size: 13px; font-weight: 600; color: white; }
+        .user-email { font-size: 11px; color: rgba(255,255,255,0.5); }
 
+        /* Layout */
+        .app-container { display: flex; min-height: calc(100vh - 56px); }
+
+        /* Sidebar */
         .sidebar {
             width: 260px;
             background: var(--sidebar);
@@ -44,26 +112,14 @@
             display: flex;
             flex-direction: column;
             position: fixed;
-            height: 100vh;
+            height: calc(100vh - 56px);
             left: 0;
-            top: 0;
+            top: 56px;
             z-index: 100;
             transition: transform 0.3s;
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
-        .sidebar-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .sidebar-header h1 {
-            font-size: 1.3rem;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .sidebar-header h1 i { color: var(--primary); }
         .sidebar-menu { flex: 1; padding: 16px 0; overflow-y: auto; }
-        .menu-item { display: block; }
         .menu-link {
             display: flex;
             align-items: center;
@@ -71,147 +127,139 @@
             padding: 12px 20px;
             color: var(--sidebar-text);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 14px;
+            font-weight: 500;
             transition: all 0.2s;
             border-left: 3px solid transparent;
+            margin: 2px 8px;
+            border-radius: 8px;
         }
-        .menu-link:hover, .menu-link.active {
+        .menu-link:hover {
             background: var(--sidebar-hover);
+            color: white;
+        }
+        .menu-link.active {
+            background: rgba(0, 102, 255, 0.15);
             color: white;
             border-left-color: var(--primary);
         }
-        .menu-link i { width: 20px; text-align: center; font-size: 1rem; }
+        .menu-link i { width: 20px; text-align: center; font-size: 16px; }
         .sidebar-footer {
             padding: 16px 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.8rem;
-            color: var(--sidebar-text);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
         }
-        .sidebar-footer a { color: var(--sidebar-text); text-decoration: none; }
-        .sidebar-footer a:hover { color: white; text-decoration: underline; }
+        .sidebar-footer a { color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+        .sidebar-footer a:hover { color: var(--primary); }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 260px;
-            min-height: 100vh;
+            min-height: calc(100vh - 56px);
+            padding: 24px;
+            max-width: 900px;
         }
 
-        .header {
-            background: white;
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-        .header h2 { font-size: 1.3rem; color: var(--text); display: flex; align-items: center; gap: 10px; }
-        .header-actions { display: flex; gap: 10px; align-items: center; }
-        .btn-header {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-header:hover { background: var(--border); }
-        .user-info-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .user-info-header:hover { background: var(--bg); }
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            font-weight: 700;
-        }
-        .user-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
-        .user-email { font-size: 0.75rem; color: var(--text-light); }
-
-        .content {
-            padding: 32px;
-            max-width: 800px;
-        }
+        /* Cards */
         .card {
             background: var(--card);
-            border-radius: var(--radius);
-            padding: 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
         }
+        .card:hover { border-color: rgba(255,255,255,0.12); }
         .card-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 20px;
             padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
-        .card-header h3 { font-size: 1.15rem; color: var(--text); }
-        .card-header i { font-size: 1.1rem; color: var(--primary); }
+        .card-header h3 { font-size: 16px; color: white; font-weight: 600; }
+        .card-header i { font-size: 18px; color: var(--primary); }
+
+        /* User info card */
+        .user-info-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px;
+        }
+        .user-info-card .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .user-info-card .details h3 { font-size: 16px; color: white; margin-bottom: 2px; }
+        .user-info-card .details p { color: var(--text-muted); font-size: 14px; margin: 0; }
+        .user-info-card .details .plano {
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Form */
         .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text);
-            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
         }
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 12px 14px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            font-family: inherit;
-            background: white;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
+        .form-group input::placeholder,
+        .form-group select::placeholder { color: rgba(255,255,255,0.3); }
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15);
         }
         .form-group input:disabled {
-            background: var(--bg);
-            color: var(--text-light);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-muted);
             cursor: not-allowed;
         }
         .form-group small {
             display: block;
-            margin-top: 4px;
-            color: var(--text-light);
-            font-size: 0.85rem;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
         }
+
+        /* Buttons */
         .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -219,35 +267,35 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            font-family: inherit;
+            font-family: 'Inter', sans-serif;
         }
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--primary);
             color: white;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
         }
         .btn-primary:hover {
+            background: var(--primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 25px rgba(91, 155, 213, 0.3);
         }
         .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-            border: 2px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .btn-secondary:hover { background: var(--border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
         .btn-danger {
             background: var(--danger);
             color: white;
         }
-        .btn-danger:hover { background: var(--danger-hover); transform: translateY(-1px); }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
         .btn-outline-danger {
             background: transparent;
             color: var(--danger);
-            border: 2px solid var(--danger);
+            border: 1px solid var(--danger-border);
         }
         .btn-outline-danger:hover { background: var(--danger-light); }
-        .btn-sm { padding: 8px 16px; font-size: 0.9rem; }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
         .actions {
             display: flex;
             gap: 12px;
@@ -255,34 +303,40 @@
             padding-top: 20px;
             border-top: 1px solid var(--border);
         }
+
+        /* Info/Warning boxes */
         .info-box {
-            background: var(--primary-light);
-            border-left: 4px solid var(--primary);
-            padding: 16px;
+            background: rgba(91, 155, 213, 0.08);
+            border-left: 3px solid var(--primary);
+            padding: 14px 16px;
             border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 0.95rem;
+            font-size: 13px;
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            color: rgba(255,255,255,0.7);
         }
-        .info-box i { color: var(--primary); margin-top: 2px; }
+        .info-box i { color: var(--primary); margin-top: 2px; font-size: 14px; }
         .warning-box {
-            background: #fef3c7;
-            border-left: 4px solid var(--warning);
-            padding: 16px;
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 3px solid var(--warning);
+            padding: 14px 16px;
             border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 0.95rem;
+            font-size: 13px;
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            color: rgba(255,255,255,0.7);
         }
-        .warning-box i { color: var(--warning); margin-top: 2px; }
+        .warning-box i { color: var(--warning); margin-top: 2px; font-size: 14px; }
+
+        /* Danger Zone */
         .danger-zone {
-            border: 2px solid var(--danger-border);
+            border: 1px solid var(--danger-border);
             background: var(--danger-light);
-            border-radius: var(--radius);
+            border-radius: 16px;
             padding: 24px;
             margin-top: 32px;
         }
@@ -293,19 +347,22 @@
             margin-bottom: 16px;
             color: var(--danger);
         }
-        .danger-zone-header h3 { font-size: 1.1rem; }
+        .danger-zone-header h3 { font-size: 15px; font-weight: 600; }
         .danger-zone p {
-            color: var(--text-light);
+            color: var(--text-muted);
             margin-bottom: 16px;
-            font-size: 0.95rem;
+            font-size: 14px;
         }
         .danger-zone ul {
             margin-left: 20px;
             margin-bottom: 16px;
-            color: var(--text-light);
-            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-size: 13px;
         }
         .danger-zone ul li { margin-bottom: 6px; }
+        .danger-zone ul li strong { color: rgba(255,255,255,0.8); }
+
+        /* Loading */
         .loading {
             display: inline-block;
             width: 16px;
@@ -316,15 +373,18 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast */
         .toast {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 16px 20px;
+            padding: 14px 20px;
             border-radius: 10px;
             color: white;
             font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 1000;
             transform: translateX(400px);
             transition: transform 0.3s ease;
@@ -334,55 +394,66 @@
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
         .toast.info { background: var(--primary); }
+
+        /* Modals */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 2000;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
         .modal-overlay.active { display: flex; }
         .modal {
-            background: white;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
             border-radius: 16px;
             max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
         .modal-header {
-            padding: 24px 24px 0;
+            padding: 28px 28px 0;
             text-align: center;
         }
         .modal-header i {
-            font-size: 3rem;
+            font-size: 40px;
             color: var(--danger);
             margin-bottom: 12px;
         }
-        .modal-header h3 { font-size: 1.3rem; margin-bottom: 8px; }
-        .modal-header p { color: var(--text-light); font-size: 0.95rem; }
-        .modal-body { padding: 20px 24px; }
+        .modal-header h3 { font-size: 18px; color: white; margin-bottom: 8px; font-weight: 600; }
+        .modal-header p { color: var(--text-muted); font-size: 14px; }
+        .modal-body { padding: 20px 28px; }
         .modal-body .warning-text {
             background: var(--danger-light);
             border: 1px solid var(--danger-border);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 16px;
-            font-size: 0.9rem;
-            color: var(--danger);
+            font-size: 13px;
+            color: #fca5a5;
         }
         .modal-body .form-group input {
             text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
+            font-size: 16px;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .modal-body .form-group input:focus {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
         }
         .modal-footer {
-            padding: 0 24px 24px;
+            padding: 0 28px 28px;
             display: flex;
             gap: 12px;
         }
@@ -394,48 +465,50 @@
             margin-bottom: 20px;
         }
         .step-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--border);
+            background: rgba(255,255,255,0.2);
             transition: background 0.3s;
         }
         .step-dot.active { background: var(--danger); }
-        .hidden { display: none !important; }
 
+        /* Footer */
         .dashboard-footer {
             margin-top: 40px;
-            padding: 24px 32px;
+            padding: 24px;
             text-align: center;
             border-top: 1px solid var(--border);
-            color: var(--text-light);
-            font-size: 0.85rem;
-            background: white;
+            color: var(--text-muted);
+            font-size: 12px;
         }
         .dashboard-footer a {
-            color: var(--text-light);
+            color: var(--text-muted);
             text-decoration: none;
             transition: color 0.2s;
         }
-        .dashboard-footer a:hover { color: var(--primary); text-decoration: underline; }
+        .dashboard-footer a:hover { color: var(--primary); }
 
+        .hidden { display: none !important; }
+
+        /* Mobile */
         .mobile-toggle {
             display: none;
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 20px;
             cursor: pointer;
             padding: 8px;
         }
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { transform: translateX(-100%); top: 0; height: 100vh; z-index: 200; }
             .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
+            .main-content { margin-left: 0; padding: 16px; }
             .mobile-toggle { display: block; }
-            .content { padding: 20px; }
-            .header { padding: 16px 20px; }
-            .header h2 { font-size: 1.1rem; }
+            .header { padding: 0 16px; }
+            .header h1 { display: none; }
+            .card { padding: 20px; }
             .actions { flex-direction: column; }
             .actions .btn { width: 100%; }
         }
@@ -443,11 +516,36 @@
 <base target="_blank">
 </head>
 <body>
+    <div class="header">
+        <div class="header-left">
+            <button class="mobile-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-logo">
+                <i class="fas fa-broadcast-tower"></i>
+                <span>VendaLive</span>
+            </div>
+            <h1>Configurações</h1>
+        </div>
+        <div class="header-actions">
+            <a href="termo-de-uso.html" target="_blank" class="btn-header" title="Termos de Uso">
+                <i class="fas fa-file-contract"></i>
+            </a>
+            <div class="user-info-header" onclick="logout()">
+                <div class="user-avatar" id="headerAvatar">U</div>
+                <div>
+                    <div class="user-name" id="headerUserName">Usuário</div>
+                    <div class="user-email" id="headerUserEmail">...</div>
+                </div>
+            </div>
+            <button class="btn-header" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h1><i class="fas fa-broadcast-tower"></i> VendaLive</h1>
-            </div>
             <nav class="sidebar-menu">
                 <a href="dashboard.html" class="menu-link">
                     <i class="fas fa-chart-line"></i>
@@ -485,180 +583,155 @@
             <div class="sidebar-footer">
                 <p>&copy; 2026 VendaLive</p>
                 <p>
-                    <a href="termo-de-uso.html" target="_blank">Termos</a> | 
+                    <a href="termo-de-uso.html" target="_blank">Termos</a> &middot;
                     <a href="politica-privacidade.html" target="_blank">Privacidade</a>
                 </p>
             </div>
         </aside>
 
         <main class="main-content">
-            <header class="header">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="mobile-toggle" onclick="toggleSidebar()" style="color: var(--text);">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h2><i class="fas fa-cog"></i> Configurações</h2>
-                </div>
-                <div class="header-actions">
-                    <a href="termo-de-uso.html" target="_blank" class="btn-header" title="Termos de Uso">
-                        <i class="fas fa-file-contract"></i>
-                    </a>
-                    <div class="user-info-header" onclick="logout()">
-                        <div class="user-avatar" id="headerAvatar">U</div>
-                        <div style="display: flex; flex-direction: column;">
-                            <span class="user-name" id="headerUserName">Usuário</span>
-                            <span class="user-email" id="headerUserEmail">...</span>
-                        </div>
-                    </div>
-                    <button class="btn-header" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </header>
-
-            <div class="content">
-                <div class="card">
-                    <div style="display: flex; align-items: center; gap: 16px; padding: 8px;">
-                        <div class="user-avatar" style="width: 56px; height: 56px; font-size: 1.4rem;" id="userAvatarBig">U</div>
-                        <div>
-                            <h3 style="font-size: 1.1rem; margin-bottom: 4px;" id="userName">Carregando...</h3>
-                            <p style="color: var(--text-light); font-size: 0.9rem; margin: 0;" id="userEmail">...</p>
-                            <p style="color: var(--primary); font-size: 0.8rem; margin-top: 4px; font-weight: 600;" id="userPlano">...</p>
-                        </div>
+            <div class="card">
+                <div class="user-info-card">
+                    <div class="avatar" id="userAvatarBig">U</div>
+                    <div class="details">
+                        <h3 id="userName">Carregando...</h3>
+                        <p id="userEmail">...</p>
+                        <div class="plano" id="userPlano">...</div>
                     </div>
                 </div>
+            </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-user"></i>
-                        <h3>Dados Pessoais</h3>
-                    </div>
-                    <div class="info-box">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Altere seus dados cadastrais. As informações serão atualizadas imediatamente.</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="nome">Nome Completo</label>
-                        <input type="text" id="nome" placeholder="Seu nome completo">
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="seu@email.com" disabled>
-                        <small>O email não pode ser alterado diretamente. Entre em contato com o suporte.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="telefone">Telefone / WhatsApp</label>
-                        <input type="tel" id="telefone" placeholder="(47) 99999-9999">
-                    </div>
-                    <div class="form-group">
-                        <label for="cpf_cnpj">CPF ou CNPJ</label>
-                        <input type="text" id="cpf_cnpj" placeholder="000.000.000-00 ou 00.000.000/0000-00">
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-primary" onclick="salvarDados()">
-                            <i class="fas fa-save"></i> Salvar Alterações
-                        </button>
-                    </div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user"></i>
+                    <h3>Dados Pessoais</h3>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-shield-alt"></i>
-                        <h3>Segurança</h3>
-                    </div>
-                    <div class="form-group">
-                        <label for="senha_atual">Senha Atual</label>
-                        <input type="password" id="senha_atual" placeholder="Digite sua senha atual">
-                    </div>
-                    <div class="form-group">
-                        <label for="nova_senha">Nova Senha</label>
-                        <input type="password" id="nova_senha" placeholder="Mínimo 6 caracteres">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmar_senha">Confirmar Nova Senha</label>
-                        <input type="password" id="confirmar_senha" placeholder="Repita a nova senha">
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-primary" onclick="alterarSenha()">
-                            <i class="fas fa-key"></i> Alterar Senha
-                        </button>
-                    </div>
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Altere seus dados cadastrais. As informações serão atualizadas imediatamente.</span>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-sliders-h"></i>
-                        <h3>Preferências</h3>
-                    </div>
-                    <div class="form-group">
-                        <label for="idioma">Idioma</label>
-                        <select id="idioma">
-                            <option value="pt-BR">Português (Brasil)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="moeda">Moeda Padrão</label>
-                        <select id="moeda">
-                            <option value="BRL">Real Brasileiro (R$)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="notificacoes_email">Notificações por Email</label>
-                        <select id="notificacoes_email">
-                            <option value="todas">Todas as notificações</option>
-                            <option value="importantes">Apenas importantes</option>
-                            <option value="nenhuma">Nenhuma</option>
-                        </select>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-primary" onclick="salvarPreferencias()">
-                            <i class="fas fa-save"></i> Salvar Preferências
-                        </button>
-                    </div>
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" placeholder="Seu nome completo">
                 </div>
-
-                <div class="danger-zone">
-                    <div class="danger-zone-header">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Zona de Perigo</h3>
-                    </div>
-                    <p>As ações abaixo são irreversíveis. Tenha certeza do que está fazendo.</p>
-
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 8px; color: var(--danger); font-size: 1rem;">
-                            <i class="fas fa-trash-alt"></i> Excluir Conta e Dados
-                        </h4>
-                        <p>Ao excluir sua conta:</p>
-                        <ul>
-                            <li>Seus dados pessoais (nome, email, telefone, CPF/CNPJ) serão <strong>eliminados imediatamente</strong>;</li>
-                            <li>Sua conta de acesso será <strong>removida permanentemente</strong>;</li>
-                            <li>Seus dados de vendas e clientes serão mantidos por <strong>30 dias</strong> e depois eliminados;</li>
-                            <li>Registros fiscais anonimizados serão retidos por <strong>5 anos</strong> (obrigação legal);</li>
-                            <li><strong>Você perderá acesso irreversível</strong> a todos os dados da plataforma.</li>
-                        </ul>
-                        <div class="warning-box">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span><strong>Importante:</strong> Exporte seus relatórios e dados antes de prosseguir. A VendaLive <strong>não poderá recuperar</strong> dados após a exclusão definitiva.</span>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-outline-danger btn-sm" onclick="iniciarExclusao()">
-                        <i class="fas fa-trash-alt"></i> Excluir Minha Conta
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="seu@email.com" disabled>
+                    <small>O email não pode ser alterado diretamente. Entre em contato com o suporte.</small>
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone / WhatsApp</label>
+                    <input type="tel" id="telefone" placeholder="(47) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label for="cpf_cnpj">CPF ou CNPJ</label>
+                    <input type="text" id="cpf_cnpj" placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="salvarDados()">
+                        <i class="fas fa-save"></i> Salvar Alterações
                     </button>
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Segurança</h3>
+                </div>
+                <div class="form-group">
+                    <label for="senha_atual">Senha Atual</label>
+                    <input type="password" id="senha_atual" placeholder="Digite sua senha atual">
+                </div>
+                <div class="form-group">
+                    <label for="nova_senha">Nova Senha</label>
+                    <input type="password" id="nova_senha" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label for="confirmar_senha">Confirmar Nova Senha</label>
+                    <input type="password" id="confirmar_senha" placeholder="Repita a nova senha">
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="alterarSenha()">
+                        <i class="fas fa-key"></i> Alterar Senha
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-sliders-h"></i>
+                    <h3>Preferências</h3>
+                </div>
+                <div class="form-group">
+                    <label for="idioma">Idioma</label>
+                    <select id="idioma">
+                        <option value="pt-BR">Português (Brasil)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="moeda">Moeda Padrão</label>
+                    <select id="moeda">
+                        <option value="BRL">Real Brasileiro (R$)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notificacoes_email">Notificações por Email</label>
+                    <select id="notificacoes_email">
+                        <option value="todas">Todas as notificações</option>
+                        <option value="importantes">Apenas importantes</option>
+                        <option value="nenhuma">Nenhuma</option>
+                    </select>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="salvarPreferencias()">
+                        <i class="fas fa-save"></i> Salvar Preferências
+                    </button>
+                </div>
+            </div>
+
+            <div class="danger-zone">
+                <div class="danger-zone-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Zona de Perigo</h3>
+                </div>
+                <p>As ações abaixo são irreversíveis. Tenha certeza do que está fazendo.</p>
+
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 8px; color: var(--danger); font-size: 15px; font-weight: 600;">
+                        <i class="fas fa-trash-alt"></i> Excluir Conta e Dados
+                    </h4>
+                    <p>Ao excluir sua conta:</p>
+                    <ul>
+                        <li>Seus dados pessoais (nome, email, telefone, CPF/CNPJ) serão <strong>eliminados imediatamente</strong>;</li>
+                        <li>Sua conta de acesso será <strong>removida permanentemente</strong>;</li>
+                        <li>Seus dados de vendas e clientes serão mantidos por <strong>30 dias</strong> e depois eliminados;</li>
+                        <li>Registros fiscais anonimizados serão retidos por <strong>5 anos</strong> (obrigação legal);</li>
+                        <li><strong>Você perderá acesso irreversível</strong> a todos os dados da plataforma.</li>
+                    </ul>
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><strong>Importante:</strong> Exporte seus relatórios e dados antes de prosseguir. A VendaLive <strong>não poderá recuperar</strong> dados após a exclusão definitiva.</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline-danger btn-sm" onclick="iniciarExclusao()">
+                    <i class="fas fa-trash-alt"></i> Excluir Minha Conta
+                </button>
+            </div>
+
             <footer class="dashboard-footer">
                 <p>
-                    &copy; 2026 VendaLive Tecnologia | 
-                    <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | 
-                    <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a> | 
+                    &copy; 2026 VendaLive Tecnologia |
+                    <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> |
+                    <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a> |
                     <a href="#" onclick="iniciarExclusao(); return false;">Excluir Conta</a>
                 </p>
             </footer>
         </main>
     </div>
 
+    <!-- Modal Etapa 1 -->
     <div class="modal-overlay" id="modalEtapa1">
         <div class="modal">
             <div class="modal-header">
@@ -684,6 +757,7 @@
         </div>
     </div>
 
+    <!-- Modal Etapa 2 -->
     <div class="modal-overlay" id="modalEtapa2">
         <div class="modal">
             <div class="modal-header">
@@ -698,7 +772,7 @@
                     <div class="step-dot"></div>
                 </div>
                 <div class="warning-text">
-                    <i class="fas fa-skull-crossbones"></i> 
+                    <i class="fas fa-skull-crossbones"></i>
                     <strong>Atenção:</strong> Todos os seus dados pessoais serão eliminados. Dados fiscais serão anonimizados e mantidos por 5 anos conforme lei brasileira.
                 </div>
                 <div class="form-group">
@@ -715,6 +789,7 @@
         </div>
     </div>
 
+    <!-- Modal Etapa 3 -->
     <div class="modal-overlay" id="modalEtapa3">
         <div class="modal">
             <div class="modal-header">
@@ -728,7 +803,7 @@
                     <div class="step-dot active"></div>
                     <div class="step-dot active"></div>
                 </div>
-                <p style="color: var(--text-light); margin-top: 20px;">Por favor, não feche esta janela.</p>
+                <p style="color: var(--text-muted); margin-top: 20px;">Por favor, não feche esta janela.</p>
             </div>
         </div>
     </div>
@@ -844,7 +919,6 @@
                 let cliente = null;
                 let error = null;
 
-                // Tentar buscar por user_id primeiro
                 const result = await supabaseClient
                     .from('clientes_sistema')
                     .select('*')
@@ -856,7 +930,6 @@
 
                 if (error || !cliente) {
                     console.log('[CONFIG] Não encontrado por user_id, tentando por email...');
-                    // Fallback: buscar por email
                     const resultByEmail = await supabaseClient
                         .from('clientes_sistema')
                         .select('*')
@@ -1068,7 +1141,7 @@
                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     user_id: user.id,
                     cliente_id: clienteId,
                     email: user.email
