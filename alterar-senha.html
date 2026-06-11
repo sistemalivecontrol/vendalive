@@ -488,6 +488,10 @@
             const confirmPass = document.getElementById('confirmPassword').value;
             const btn = document.getElementById('btnSubmit');
 
+            if (!currentPass) {
+                showAlert('Digite sua senha atual!');
+                return;
+            }
             if (newPass !== confirmPass) {
                 showAlert('As senhas não coincidem!');
                 return;
@@ -502,10 +506,10 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = 'Alterando... <span class="loading"></span>';
+            btn.innerHTML = 'Validando... <span class="loading"></span>';
 
             try {
-                // Reautentica com senha atual para garantir que é o usuário correto
+                // 1. Pega sessão atual para obter email
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
                     showAlert('Sessão expirada. Faça login novamente.');
@@ -513,41 +517,52 @@
                     return;
                 }
 
-                // Tenta atualizar a senha
-                const { error } = await supabaseClient.auth.updateUser({ 
+                const userEmail = session.user.email;
+                console.log('[ALTERAR-SENHA] Reautenticando usuário:', userEmail);
+
+                // 2. REAUTENTICA com email + senha atual (valida a senha atual)
+                btn.innerHTML = 'Verificando senha atual... <span class="loading"></span>';
+
+                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email: userEmail,
+                    password: currentPass
+                });
+
+                if (signInError) {
+                    console.error('[ALTERAR-SENHA] Erro na reautenticação:', signInError);
+                    throw new Error('Senha atual incorreta. Verifique e tente novamente.');
+                }
+
+                console.log('[ALTERAR-SENHA] Reautenticação OK, atualizando senha...');
+                btn.innerHTML = 'Atualizando senha... <span class="loading"></span>';
+
+                // 3. ATUALIZA a senha (agora com nonce/reauth válido)
+                const { error: updateError } = await supabaseClient.auth.updateUser({ 
                     password: newPass 
                 });
 
-                if (error) {
-                    // Se der erro de nonce/reauthentication, tenta reautenticar
-                    if (error.message.includes('nonce') || error.message.includes('reauthentication') || error.message.includes('New password should be different from the old password')) {
-                        // Reautentica com email + senha atual
-                        const { error: signInError } = await supabaseClient.auth.signInWithPassword({
-                            email: session.user.email,
-                            password: currentPass
-                        });
-
-                        if (signInError) {
-                            throw new Error('Senha atual incorreta.');
-                        }
-
-                        // Tenta novamente após reautenticação
-                        const { error: retryError } = await supabaseClient.auth.updateUser({ 
-                            password: newPass 
-                        });
-
-                        if (retryError) throw retryError;
-                    } else {
-                        throw error;
-                    }
+                if (updateError) {
+                    console.error('[ALTERAR-SENHA] Erro ao atualizar:', updateError);
+                    throw new Error('Erro ao atualizar senha: ' + updateError.message);
                 }
 
-                // Sucesso!
+                console.log('[ALTERAR-SENHA] Senha alterada com sucesso!');
+
+                // 4. Sucesso!
                 document.getElementById('formAlterarSenha').style.display = 'none';
                 document.getElementById('stepSuccess').style.display = 'block';
                 showAlert('✅ Senha alterada com sucesso!', 'success');
 
+                // 5. Atualiza a sessão no localStorage para refletir a nova senha
+                const { data: { session: newSession } } = await supabaseClient.auth.getSession();
+                if (newSession) {
+                    const dadosSessao = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+                    dadosSessao.login_time = new Date().toISOString();
+                    localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                }
+
             } catch (err) {
+                console.error('[ALTERAR-SENHA] Erro:', err);
                 showAlert('Erro: ' + err.message);
                 btn.disabled = false;
                 btn.innerHTML = 'Alterar Senha';
