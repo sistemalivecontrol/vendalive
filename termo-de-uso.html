@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso - VendaLive</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2 i { font-size: 1.2rem; }
+        .card h3 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+        }
+        .card p, .card li {
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .card ul { margin-left: 24px; }
+        .card ul li { margin-bottom: 8px; }
+        .highlight-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .danger-box {
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .toc {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        .toc h3 { margin-bottom: 16px; color: var(--primary); }
+        .toc ul { list-style: none; margin: 0; }
+        .toc li { margin-bottom: 8px; }
+        .toc a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .toc a:hover { text-decoration: underline; }
+        .footer-termo {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .version-tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .card { padding: 20px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-file-contract"></i> Termos de Uso</h1>
+        <p>VendaLive - Plataforma de Gestão de Vendas</p>
+        <span class="version-tag">Versão 1.0 - Junho/2026</span>
+    </div>
+
+    <div class="container">
+        <div class="toc">
+            <h3><i class="fas fa-list"></i> Sumário</h3>
+            <ul>
+                <li><a href="#sec1">1. Aceitação dos Termos</a></li>
+                <li><a href="#sec2">2. Descrição do Serviço</a></li>
+                <li><a href="#sec3">3. Cadastro e Conta</a></li>
+                <li><a href="#sec4">4. Planos, Pagamentos e Renovação</a></li>
+                <li><a href="#sec5">5. Uso Aceitável e Proibições</a></li>
+                <li><a href="#sec6">6. Dados, Privacidade e LGPD</a></li>
+                <li><a href="#sec7">7. Propriedade Intelectual</a></li>
+                <li><a href="#sec8">8. Limitação de Responsabilidade</a></li>
+                <li><a href="#sec9">9. Rescisão e Exclusão de Conta</a></li>
+                <li><a href="#sec10">10. Modificações nos Termos</a></li>
+                <li><a href="#sec11">11. Disposições Gerais</a></li>
+            </ul>
+        </div>
+
+        <div class="card" id="sec1">
+            <h2><i class="fas fa-handshake"></i> 1. Aceitação dos Termos</h2>
+            <p>Ao acessar, criar uma conta ou utilizar qualquer funcionalidade da plataforma <strong>VendaLive</strong> ("Plataforma"), você ("Usuário", "Cliente" ou "Lojista") concorda integralmente com estes Termos de Uso, com nossa Política de Privacidade e com todas as demais diretrizes aplicáveis.</p>
+            <div class="highlight-box">
+                <strong>Importante:</strong> Se você não concordar com qualquer disposição destes termos, não deve acessar ou utilizar a Plataforma. O uso continuado após alterações constitui aceitação tácita.
+            </div>
+            <p>Estes termos representam um contrato juridicamente vinculante entre você e <strong>VendaLive Tecnologia Ltda.</strong> ("VendaLive", "nós", "nosso"), inscrita no CNPJ 00.000.000/0000-00, com sede em [Cidade/UF].</p>
+        </div>
+
+        <div class="card" id="sec2">
+            <h2><i class="fas fa-briefcase"></i> 2. Descrição do Serviço</h2>
+            <p>A VendaLive é uma plataforma SaaS (Software como Serviço) de gestão comercial, desenvolvida para lojistas, empreendedores e pequenas empresas que realizam vendas via lives, redes sociais e canais digitais.</p>
+            <h3>2.1 Funcionalidades Principais</h3>
+            <ul>
+                <li><strong>Gestão de Clientes:</strong> Cadastro, organização e histórico de compradores;</li>
+                <li><strong>Controle de Vendas:</strong> Registro, acompanhamento e relatórios de vendas;</li>
+                <li><strong>Solicitações de Entrega:</strong> Gestão de envios, rastreamento e logística;</li>
+                <li><strong>Pagamentos PIX:</strong> Geração de cobranças via Asaas, Mercado Pago e InfinitePay;</li>
+                <li><strong>Comunicação:</strong> Integração com WhatsApp (Evolution API) para notificações automáticas;</li>
+                <li><strong>Rastreamento:</strong> Consulta de status de entregas via Correios;</li>
+                <li><strong>Dashboard e Relatórios:</strong> Indicadores financeiros e operacionais.</li>
+            </ul>
+            <h3>2.2 Disponibilidade</h3>
+            <p>Nos esforçamos para manter a Plataforma disponível 24 horas por dia, 7 dias por semana, exceto por manutenções programadas, falhas de força maior ou problemas em serviços de terceiros (ex: Supabase, APIs de pagamento, serviços de hospedagem).</p>
+            <div class="warning-box">
+                <strong>SLA:</strong> Não garantimos disponibilidade ininterrupta. Nosso objetivo é manter uptime de 99%, mas não nos responsabilizamos por indisponibilidades causadas por fatores externos ao nosso controle direto.
+            </div>
+        </div>
+
+        <div class="card" id="sec3">
+            <h2><i class="fas fa-user-plus"></i> 3. Cadastro e Conta</h2>
+            <h3>3.1 Elegibilidade</h3>
+            <p>Para utilizar a Plataforma, você deve:</p>
+            <ul>
+                <li>Ser pessoa física maior de 18 anos ou pessoa jurídica regularmente constituída;</li>
+                <li>Ter capacidade legal para contratar;</li>
+                <li>Fornecer informações verdadeiras, atualizadas e completas no cadastro;</li>
+                <li>Manter seus dados cadastrais sempre atualizados.</li>
+            </ul>
+            <h3>3.2 Credenciais de Acesso</h3>
+            <p>Você é inteiramente responsável por manter a confidencialidade de sua senha e credenciais de acesso. Qualquer atividade realizada em sua conta será presumida como feita por você. Notifique-nos imediatamente em caso de uso não autorizado.</p>
+            <h3>3.3 Veracidade dos Dados</h3>
+            <p>O cadastro de informações falsas, incompletas ou desatualizadas pode resultar na suspensão ou cancelamento imediato da conta, sem direito a reembolso.</p>
+        </div>
+
+        <div class="card" id="sec4">
+            <h2><i class="fas fa-credit-card"></i> 4. Planos, Pagamentos e Renovação</h2>
+            <h3>4.1 Planos Disponíveis</h3>
+            <p>Oferecemos planos de assinatura mensal com diferentes níveis de funcionalidades. Os valores e limites de cada plano estão descritos em nossa página de planos e podem ser alterados com prévio aviso de 30 dias.</p>
+            <h3>4.2 Período de Teste</h3>
+            <p>Novos usuários podem ter acesso a um <strong>período de teste gratuito de 7 dias</strong>, sujeito a limitações de uso. Após o término, a conta será automaticamente convertida para o plano pago selecionado, ou suspensa caso não haja pagamento.</p>
+            <h3>4.3 Pagamento e Renovação</h3>
+            <ul>
+                <li>A assinatura é renovada automaticamente a cada ciclo (mensal) mediante cobrança na forma de pagamento cadastrada;</li>
+                <li>Em caso de inadimplência, a conta será suspensa após 3 dias de atraso e excluída após 30 dias sem pagamento;</li>
+                <li>Não realizamos reembolsos parciais ou proporcionais por cancelamento no meio do ciclo.</li>
+            </ul>
+            <h3>4.4 Inadimplência e Suspensão</h3>
+            <div class="danger-box">
+                <strong>Atenção:</strong> Contas inadimplentes por mais de 30 dias terão seus dados pessoais excluídos conforme previsto no Art. 9 destes termos. Dados fiscais obrigatórios serão retidos pelo prazo legal de 5 anos, anonimizados.
+            </div>
+        </div>
+
+        <div class="card" id="sec5">
+            <h2><i class="fas fa-shield-alt"></i> 5. Uso Aceitável e Proibições</h2>
+            <p>Ao utilizar a VendaLive, você concorda em:</p>
+            <ul>
+                <li>Utilizar a Plataforma apenas para fins lícitos e de acordo com estes Termos;</li>
+                <li>Não praticar spam, phishing ou envio de comunicações não solicitadas;</li>
+                <li>Não tentar acessar áreas restritas, contas de terceiros ou dados não autorizados;</li>
+                <li>Não distribuir vírus, malware ou qualquer código malicioso;</li>
+                <li>Não realizar engenharia reversa, descompilar ou tentar extrair o código-fonte;</li>
+                <li>Não utilizar a Plataforma para venda de produtos ilícitos, contrabandeados ou proibidos por lei;</li>
+                <li>Não sobrecarregar nossa infraestrutura com requisições automatizadas excessivas.</li>
+            </ul>
+            <div class="danger-box">
+                <strong>Violação:</strong> O descumprimento destas regras pode resultar em suspensão imediata, exclusão da conta e, quando aplicável, responsabilização civil e criminal.
+            </div>
+        </div>
+
+        <div class="card" id="sec6">
+            <h2><i class="fas fa-lock"></i> 6. Dados, Privacidade e LGPD</h2>
+            <h3>6.1 Coleta de Dados</h3>
+            <p>Coletamos apenas os dados necessários para o funcionamento da Plataforma: nome, email, telefone, CPF/CNPJ, dados de pagamento, endereços de entrega dos seus clientes finais e registros de transações.</p>
+            <h3>6.2 Tratamento e Segurança</h3>
+            <ul>
+                <li>Seus dados são armazenados em servidores seguros da <strong>Supabase</strong> (cloud AWS/GCP);</li>
+                <li>Utilizamos criptografia SSL/TLS para transmissão de dados;</li>
+                <li>As senhas são armazenadas de forma hash e salgada (bcrypt);</li>
+                <li>Não vendemos nem comercializamos seus dados pessoais.</li>
+            </ul>
+            <h3>6.3 Compartilhamento com Terceiros</h3>
+            <p>Podemos compartilhar dados apenas com:</p>
+            <ul>
+                <li><strong>Processadores de pagamento:</strong> Asaas, Mercado Pago, InfinitePay (para cobranças);</li>
+                <li><strong>Infraestrutura:</strong> Supabase (banco de dados e autenticação);</li>
+                <li><strong>Comunicação:</strong> Evolution API (WhatsApp), EmailJS (email);</li>
+                <li><strong>Obrigação legal:</strong> quando exigido por autoridade competente.</li>
+            </ul>
+            <h3>6.4 Seus Direitos (LGPD)</h3>
+            <p>Conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018), você tem direito a:</p>
+            <ul>
+                <li>Confirmar a existência de tratamento de seus dados;</li>
+                <li>Acessar seus dados;</li>
+                <li>Corrigir dados incompletos, inexatos ou desatualizados;</li>
+                <li>Solicitar anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+                <li>Portabilidade dos dados;</li>
+                <li>Revogar consentimento a qualquer momento.</li>
+            </ul>
+            <div class="highlight-box">
+                <strong>DPO:</strong> Para exercer seus direitos, entre em contato pelo email <strong>privacidade@vendalive.com.br</strong> ou pela seção "Privacidade" dentro da Plataforma.
+            </div>
+        </div>
+
+        <div class="card" id="sec7">
+            <h2><i class="fas fa-copyright"></i> 7. Propriedade Intelectual</h2>
+            <p>Todos os direitos de propriedade intelectual relacionados à Plataforma — incluindo código-fonte, design, logotipos, marcas, layouts, funcionalidades e documentação — são de propriedade exclusiva da VendaLive ou de seus licenciadores.</p>
+            <p><strong>Seus dados:</strong> Você mantém a propriedade de todos os dados que insere na Plataforma (dados de clientes, vendas, produtos). Concede à VendaLive uma licença limitada para processar esses dados exclusivamente para prestar os serviços contratados.</p>
+        </div>
+
+        <div class="card" id="sec8">
+            <h2><i class="fas fa-exclamation-triangle"></i> 8. Limitação de Responsabilidade</h2>
+            <p>A VendaLive se esforça para oferecer um serviço de qualidade, mas <strong>não se responsabiliza por</strong>:</p>
+            <ul>
+                <li>Indisponibilidade temporária da Plataforma por manutenção, falhas de internet ou ataque cibernético;</li>
+                <li>Perda de dados causada por falha do usuário em fazer backup ou por falha de serviços de terceiros;</li>
+                <li>Transações comerciais entre você e seus clientes finais (a VendaLive é apenas uma ferramenta de gestão);</li>
+                <li>Problemas causados por integrações de terceiros (gateways de pagamento, APIs de rastreamento, etc.);</li>
+                <li>Lucros cessantes, perda de negócios ou danos indiretos.</li>
+            </ul>
+            <div class="warning-box">
+                <strong>Backup:</strong> Recomendamos que você exporte seus dados periodicamente. A VendaLive realiza backups automáticos, mas não garante a recuperação completa em caso de desastre.
+            </div>
+        </div>
+
+        <div class="card" id="sec9">
+            <h2><i class="fas fa-trash-alt"></i> 9. Rescisão e Exclusão de Conta</h2>
+            <h3>9.1 Pelo Usuário</h3>
+            <p>Você pode solicitar a exclusão de sua conta a qualquer momento através da página de <strong>Configurações > Zona de Perigo > Excluir Conta</strong>. A exclusão seguirá o seguinte fluxo:</p>
+            <ul>
+                <li><strong>Imediato:</strong> Seus dados pessoais (nome, email, telefone, CPF/CNPJ) serão eliminados;</li>
+                <li><strong>Imediato:</strong> Sua conta de autenticação será removida do sistema;</li>
+                <li><strong>Retenção legal:</strong> Registros fiscais, comprovantes de pagamento e logs de auditoria serão mantidos por <strong>5 anos</strong>, conforme exigido pela legislação brasileira (Código Civil, Lei 5.172/1966 - CTN), porém <strong>anonimizados</strong>;</li>
+                <li><strong>30 dias:</strong> Seus dados operacionais (vendas, clientes cadastrados) serão mantidos por 30 dias em ambiente seguro e depois eliminados, a menos que você solicite eliminação imediata.</li>
+            </ul>
+            <h3>9.2 Pela VendaLive</h3>
+            <p>Podemos suspender ou excluir sua conta em caso de:</p>
+            <ul>
+                <li>Violação destes Termos de Uso;</li>
+                <li>Inadimplência por mais de 30 dias;</li>
+                <li>Requisição de autoridade competente;</li>
+                <li>Encerramento da Plataforma (com aviso prévio de 60 dias).</li>
+            </ul>
+            <h3>9.3 Efeitos da Rescisão</h3>
+            <p>Após a exclusão, você perderá acesso irreversível a todos os dados da conta. Recomendamos exportar seus relatórios antes de solicitar a exclusão. A VendaLive não será obrigada a recuperar dados após a exclusão definitiva.</p>
+        </div>
+
+        <div class="card" id="sec10">
+            <h2><i class="fas fa-edit"></i> 10. Modificações nos Termos</h2>
+            <p>Podemos alterar estes Termos a qualquer momento. Alterações significativas serão comunicadas por:</p>
+            <ul>
+                <li>Email para o endereço cadastrado;</li>
+                <li>Notificação na Plataforma;</li>
+                <li>Publicação da nova versão nesta página com data atualizada.</li>
+            </ul>
+            <p>O uso continuado da Plataforma após 15 dias da publicação das alterações constitui aceitação tácita.</p>
+        </div>
+
+        <div class="card" id="sec11">
+            <h2><i class="fas fa-gavel"></i> 11. Disposições Gerais</h2>
+            <h3>11.1 Lei Aplicável</h3>
+            <p>Estes Termos são regidos pelas leis da República Federativa do Brasil.</p>
+            <h3>11.2 Foro</h3>
+            <p>Para dirimir quaisquer controvérsias, as partes elegem o foro da comarca de [Cidade/UF], com renúncia a qualquer outro, por mais privilegiado que seja.</p>
+            <h3>11.3 Contato</h3>
+            <p>Em caso de dúvidas sobre estes Termos, entre em contato:</p>
+            <ul>
+                <li><strong>Email:</strong> suporte@vendalive.com.br</li>
+                <li><strong>WhatsApp:</strong> (47) 98918-4063</li>
+                <li><strong>Endereço:</strong> [Endereço completo da empresa]</li>
+            </ul>
+            <h3>11.4 Integridade</h3>
+            <p>Caso qualquer cláusula destes Termos seja considerada inválida ou inaplicável, as demais cláusulas permanecerão em pleno vigor.</p>
+            <div class="highlight-box">
+                <strong>Última atualização:</strong> 11 de junho de 2026.<br>
+                <strong>Versão:</strong> 1.0
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-termo">
+        <p>© 2026 VendaLive Tecnologia Ltda. Todos os direitos reservados.</p>
+        <p><a href="politica-privacidade.html" style="color: var(--primary);">Política de Privacidade</a> | <a href="/" style="color: var(--primary);">Voltar para o VendaLive</a></p>
+    </div>
+</body>
+</html>
