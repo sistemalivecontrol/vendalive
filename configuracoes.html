@@ -35,10 +35,8 @@
             line-height: 1.6;
         }
 
-        /* Layout com sidebar */
         .app-container { display: flex; min-height: 100vh; }
 
-        /* Sidebar */
         .sidebar {
             width: 260px;
             background: var(--sidebar);
@@ -92,14 +90,12 @@
         .sidebar-footer a { color: var(--sidebar-text); text-decoration: none; }
         .sidebar-footer a:hover { color: white; text-decoration: underline; }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 260px;
             min-height: 100vh;
         }
 
-        /* Header */
         .header {
             background: white;
             padding: 16px 32px;
@@ -153,7 +149,6 @@
         .user-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
         .user-email { font-size: 0.75rem; color: var(--text-light); }
 
-        /* Content Area */
         .content {
             padding: 32px;
             max-width: 800px;
@@ -408,7 +403,6 @@
         .step-dot.active { background: var(--danger); }
         .hidden { display: none !important; }
 
-        /* Footer */
         .dashboard-footer {
             margin-top: 40px;
             padding: 24px 32px;
@@ -425,7 +419,6 @@
         }
         .dashboard-footer a:hover { color: var(--primary); text-decoration: underline; }
 
-        /* Mobile */
         .mobile-toggle {
             display: none;
             background: none;
@@ -451,7 +444,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1><i class="fas fa-broadcast-tower"></i> VendaLive</h1>
@@ -491,7 +483,7 @@
                 </a>
             </nav>
             <div class="sidebar-footer">
-                <p>© 2026 VendaLive</p>
+                <p>&copy; 2026 VendaLive</p>
                 <p>
                     <a href="termo-de-uso.html" target="_blank">Termos</a> | 
                     <a href="politica-privacidade.html" target="_blank">Privacidade</a>
@@ -499,9 +491,7 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="mobile-toggle" onclick="toggleSidebar()" style="color: var(--text);">
@@ -526,9 +516,7 @@
                 </div>
             </header>
 
-            <!-- Content -->
             <div class="content">
-                <!-- Info do Usuário -->
                 <div class="card">
                     <div style="display: flex; align-items: center; gap: 16px; padding: 8px;">
                         <div class="user-avatar" style="width: 56px; height: 56px; font-size: 1.4rem;" id="userAvatarBig">U</div>
@@ -540,7 +528,6 @@
                     </div>
                 </div>
 
-                <!-- Dados Pessoais -->
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-user"></i>
@@ -574,7 +561,6 @@
                     </div>
                 </div>
 
-                <!-- Segurança -->
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-shield-alt"></i>
@@ -599,7 +585,6 @@
                     </div>
                 </div>
 
-                <!-- Preferências -->
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-sliders-h"></i>
@@ -632,7 +617,6 @@
                     </div>
                 </div>
 
-                <!-- Zona de Perigo - Excluir Conta -->
                 <div class="danger-zone">
                     <div class="danger-zone-header">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -664,10 +648,9 @@
                 </div>
             </div>
 
-            <!-- Footer -->
             <footer class="dashboard-footer">
                 <p>
-                    © 2026 VendaLive Tecnologia | 
+                    &copy; 2026 VendaLive Tecnologia | 
                     <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | 
                     <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a> | 
                     <a href="#" onclick="iniciarExclusao(); return false;">Excluir Conta</a>
@@ -676,7 +659,6 @@
         </main>
     </div>
 
-    <!-- Modal de Confirmação - Etapa 1: Senha -->
     <div class="modal-overlay" id="modalEtapa1">
         <div class="modal">
             <div class="modal-header">
@@ -702,7 +684,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação - Etapa 2: Digitar EXCLUIR -->
     <div class="modal-overlay" id="modalEtapa2">
         <div class="modal">
             <div class="modal-header">
@@ -734,7 +715,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação - Etapa 3: Processando -->
     <div class="modal-overlay" id="modalEtapa3">
         <div class="modal">
             <div class="modal-header">
@@ -757,41 +737,100 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script>
-        // ==================== SUPABASE CONFIG ====================
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         let supabaseClient = null;
         let userData = null;
         let clienteId = null;
+        let initAttempts = 0;
+        const MAX_INIT_ATTEMPTS = 30;
 
-        // ==================== INICIALIZAÇÃO ====================
-        document.addEventListener('DOMContentLoaded', async function() {
-            await initSupabase();
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[CONFIG] DOM carregado, iniciando retry...');
+            iniciarComRetry();
         });
 
-        async function initSupabase() {
-            try {
-                const { createClient } = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
-                if (!createClient) {
-                    showToast('Erro ao carregar Supabase. Recarregue a página.', 'error');
+        function iniciarComRetry() {
+            initAttempts++;
+            console.log('[CONFIG] Tentativa ' + initAttempts + ' de inicializar Supabase...');
+
+            let supabaseLib = null;
+
+            if (typeof window.supabase !== 'undefined' && window.supabase !== null) {
+                supabaseLib = window.supabase;
+                console.log('[CONFIG] window.supabase encontrado');
+            } else if (typeof supabase !== 'undefined' && supabase !== null) {
+                supabaseLib = supabase;
+                console.log('[CONFIG] global supabase encontrado');
+            }
+
+            if (!supabaseLib) {
+                if (initAttempts < MAX_INIT_ATTEMPTS) {
+                    console.log('[CONFIG] Supabase não disponível, aguardando 500ms...');
+                    setTimeout(iniciarComRetry, 500);
+                    return;
+                } else {
+                    console.error('[CONFIG] Supabase não carregou após ' + MAX_INIT_ATTEMPTS + ' tentativas');
+                    showToast('Erro ao carregar Supabase. Recarregue a página (Ctrl+F5).', 'error');
                     return;
                 }
+            }
+
+            let createClient = null;
+
+            if (supabaseLib.createClient && typeof supabaseLib.createClient === 'function') {
+                createClient = supabaseLib.createClient;
+                console.log('[CONFIG] createClient encontrado diretamente');
+            } else if (supabaseLib.supabase && supabaseLib.supabase.createClient) {
+                createClient = supabaseLib.supabase.createClient;
+                console.log('[CONFIG] createClient encontrado em supabase.supabase');
+            } else {
+                try {
+                    const keys = Object.keys(supabaseLib);
+                    console.log('[CONFIG] Keys disponíveis:', keys);
+                    if (keys.includes('createClient')) {
+                        createClient = supabaseLib.createClient;
+                    }
+                } catch (e) {
+                    console.error('[CONFIG] Erro ao inspecionar supabaseLib:', e);
+                }
+            }
+
+            if (!createClient) {
+                console.error('[CONFIG] createClient não encontrado!');
+                showToast('Erro de inicialização. Recarregue a página.', 'error');
+                return;
+            }
+
+            try {
                 supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                await verificarAutenticacao();
+                console.log('[CONFIG] Supabase client criado com sucesso!');
+                verificarAutenticacao();
             } catch (e) {
-                console.error('[CONFIG] Erro init:', e);
+                console.error('[CONFIG] Erro ao criar client:', e);
                 showToast('Erro de conexão. Tente novamente.', 'error');
             }
         }
 
         async function verificarAutenticacao() {
             try {
+                console.log('[CONFIG] Verificando autenticação...');
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error || !session) {
+
+                if (error) {
+                    console.error('[CONFIG] Erro getSession:', error);
                     window.location.href = 'login.html';
                     return;
                 }
+
+                if (!session) {
+                    console.log('[CONFIG] Sem sessão, redirecionando para login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                console.log('[CONFIG] Sessão encontrada, user:', session.user.id);
                 await carregarDadosUsuario(session.user);
             } catch (e) {
                 console.error('[CONFIG] Erro auth:', e);
@@ -801,24 +840,45 @@
 
         async function carregarDadosUsuario(user) {
             try {
-                const { data: cliente, error } = await supabaseClient
+                console.log('[CONFIG] Carregando dados do usuário...');
+                let cliente = null;
+                let error = null;
+
+                // Tentar buscar por user_id primeiro
+                const result = await supabaseClient
                     .from('clientes_sistema')
                     .select('*')
                     .eq('user_id', user.id)
                     .single();
 
+                cliente = result.data;
+                error = result.error;
+
                 if (error || !cliente) {
-                    showToast('Erro ao carregar dados do usuário', 'error');
-                    return;
+                    console.log('[CONFIG] Não encontrado por user_id, tentando por email...');
+                    // Fallback: buscar por email
+                    const resultByEmail = await supabaseClient
+                        .from('clientes_sistema')
+                        .select('*')
+                        .eq('email', user.email)
+                        .single();
+
+                    if (resultByEmail.error || !resultByEmail.data) {
+                        showToast('Erro ao carregar dados do usuário', 'error');
+                        return;
+                    }
+
+                    cliente = resultByEmail.data;
+                    console.log('[CONFIG] Cliente encontrado por email');
                 }
 
                 userData = cliente;
                 clienteId = cliente.id;
+                console.log('[CONFIG] Cliente carregado:', clienteId);
 
-                // Preencher campos
-                const nome = cliente.nome || 'Usuário';
+                const nome = userData.nome || 'Usuário';
                 const email = user.email || '';
-                const plano = cliente.plano || 'Plano não definido';
+                const plano = userData.plano || 'Plano não definido';
                 const inicial = nome.charAt(0).toUpperCase();
 
                 document.getElementById('userName').textContent = nome;
@@ -830,10 +890,12 @@
                 document.getElementById('headerUserEmail').textContent = email;
                 document.getElementById('headerAvatar').textContent = inicial;
 
-                document.getElementById('nome').value = cliente.nome || '';
+                document.getElementById('nome').value = userData.nome || '';
                 document.getElementById('email').value = email;
-                document.getElementById('telefone').value = cliente.telefone || '';
-                document.getElementById('cpf_cnpj').value = cliente.cnpj || cliente.cpf || '';
+                document.getElementById('telefone').value = userData.telefone || '';
+                document.getElementById('cpf_cnpj').value = userData.cnpj || userData.cpf || '';
+
+                console.log('[CONFIG] Dados preenchidos com sucesso!');
 
             } catch (e) {
                 console.error('[CONFIG] Erro carregar dados:', e);
@@ -841,12 +903,10 @@
             }
         }
 
-        // ==================== SIDEBAR MOBILE ====================
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // ==================== AÇÕES ====================
         async function salvarDados() {
             if (!clienteId) return;
 
@@ -932,7 +992,6 @@
             showToast('Preferências salvas!', 'success');
         }
 
-        // ==================== EXCLUSÃO DE CONTA ====================
         function iniciarExclusao() {
             document.getElementById('modalEtapa1').classList.add('active');
             document.getElementById('confirmSenha').value = '';
@@ -1031,14 +1090,12 @@
             }, 1500);
         }
 
-        // ==================== LOGOUT ====================
         async function logout() {
             await supabaseClient.auth.signOut();
             localStorage.clear();
             window.location.href = 'login.html';
         }
 
-        // ==================== TOAST ====================
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
