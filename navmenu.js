@@ -1,6 +1,6 @@
 /**
  * NAVMENU - Menu Hamburger para VendaLive
- * v2.2 - Adicionado configuracoes.html e alterar-senha.html
+ * v2.3 - Apenas configuracao.html bloqueada para DEV/ADMIN
  */
 (function() {
     'use strict';
@@ -27,7 +27,7 @@
         { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' },
         { url: 'configuracao-pagamento.html', icon: '\uD83D\uDCB3', label: 'Config. Pagamento' },
         { url: 'configuracao.html', icon: '\u2699\uFE0F', label: 'Configurações do Sistema', devOnly: true },
-        { url: 'configuracoes.html', icon: '\uD83D\uDD27', label: 'Configurações', devOnly: true },
+        { url: 'configuracoes.html', icon: '\uD83D\uDD27', label: 'Configurações' },
         { url: 'solicitacoes.html', icon: '\uD83D\uDCDD', label: 'Formulario de Entregas' },
         { url: 'alterar-senha.html', icon: '\uD83D\uDD11', label: 'Alterar Senha' }
     ];
