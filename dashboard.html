@@ -996,46 +996,20 @@
     async function verificarPixPendentes() {
       if (!clienteId) return;
       try {
-        // Busca todos os PIX com vendedor_confirmou=false
         var result = await supabaseClient
-          .from('pix_estaticos').select('id, status, vendedor_confirmou')
+          .from('pix_estaticos').select('id')
           .eq('cliente_sistema_id', clienteId)
+          .eq('status', 'aguardando_confirmacao')
           .eq('vendedor_confirmou', false);
-
-        if (result.error) {
-          console.error('[DASHBOARD] Erro ao buscar PIX pendentes:', result.error);
-          return;
-        }
-
-        var todosPendentes = result.data || [];
-        console.log('[DASHBOARD] Total PIX com vendedor_confirmou=false:', todosPendentes.length);
-        console.log('[DASHBOARD] Status dos PIX:', todosPendentes.map(function(p) { return p.status; }));
-
-        // Filtra no cliente para excluir cancelados
-        var pendentes = todosPendentes.filter(function(p) {
-          var status = (p.status || '').toString().toLowerCase();
-          var isCancelado = status.includes('cancelado') || status === 'cancelado' || status === 'cancelado_manual';
-          if (isCancelado) {
-            console.log('[DASHBOARD] PIX ID', p.id, 'excluído - status:', p.status);
-          }
-          return !isCancelado;
-        });
-
-        console.log('[DASHBOARD] PIX pendentes após filtro de cancelados:', pendentes.length);
-
+        if (result.error) return;
+        var pendentes = result.data;
         var badge = document.getElementById('pix-badge');
         var mobileBadge = document.getElementById('mobile-pix-badge');
-
         if (pendentes && pendentes.length > 0) {
           if (badge) { badge.textContent = pendentes.length; badge.style.display = 'inline-block'; }
           if (mobileBadge) { mobileBadge.textContent = pendentes.length; mobileBadge.style.display = 'inline-block'; }
-        } else {
-          if (badge) badge.style.display = 'none';
-          if (mobileBadge) mobileBadge.style.display = 'none';
         }
-      } catch (err) {
-        console.error('[DASHBOARD] Erro em verificarPixPendentes:', err);
-      }
+      } catch (err) {}
     }
 
     async function carregarMetricas() {
@@ -1052,7 +1026,12 @@
         var vendasMes = vendasResult.data || [];
 
         var total = vendasMes.reduce(function(s, v) { return s + (v.total || 0); }, 0);
-        var pendentes = vendasMes.filter(function(v) { return v.status_pagamento !== 'pago'; }).length;
+
+        // Conta apenas vendas pendentes (exclui pagos e cancelados)
+        var pendentes = vendasMes.filter(function(v) { 
+          var status = (v.status_pagamento || '').toString().toLowerCase();
+          return status !== 'pago' && !status.includes('cancelado'); 
+        }).length;
 
         document.getElementById('metric-mes').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
         document.getElementById('metric-vendas').textContent = vendasMes.length;
