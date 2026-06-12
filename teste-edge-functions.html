@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendaLive - Teste Edge Functions</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0B193F;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #5b9bd5;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        .test-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .test-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .test-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pending { background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.5); }
+        .status-loading { background: rgba(91, 155, 213, 0.2); color: #5b9bd5; }
+        .status-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #5b9bd5;
+            color: #fff;
+        }
+        .btn:hover { background: #4a8bc4; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .result-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .result-box.error { border-left: 3px solid #ef4444; }
+        .result-box.success { border-left: 3px solid #22c55e; }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .summary {
+            background: rgba(91, 155, 213, 0.1);
+            border: 1px solid rgba(91, 155, 213, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+        .summary h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #5b9bd5;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Edge Functions</h1>
+        <p class="subtitle">Verifique se todas as Edge Functions estão acessíveis e com CORS correto</p>
+
+        <!-- Teste 1: CORS Preflight -->
+        <div class="test-card" id="test-cors">
+            <div class="test-header">
+                <span class="test-title">1. CORS Preflight (OPTIONS)</span>
+                <span class="test-status status-pending" id="status-cors">Pendente</span>
+            </div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
+                Verifica se o servidor aceita o header 'apikey' no preflight CORS
+            </p>
+            <button class="btn" id="btn-cors" onclick="testarCORS()">Testar CORS</button>
+            <div class="result-box" id="result-cors" style="display:none;"></div>
+        </div>
+
+        <!-- Teste 2: asaas-criar-cliente -->
+        <div class="test-card" id="test-cliente">
+            <div class="test-header">
+                <span class="test-title">2. asaas-criar-cliente</span>
+                <span class="test-status status-pending" id="status-cliente">Pendente</span>
+            </div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
+                Testa criação de cliente no Asaas (não salva no banco, apenas valida conexão)
+            </p>
+            <button class="btn" id="btn-cliente" onclick="testarCriarCliente()">Testar Criar Cliente</button>
+            <div class="result-box" id="result-cliente" style="display:none;"></div>
+        </div>
+
+        <!-- Teste 3: asaas-criar-cobranca -->
+        <div class="test-card" id="test-cobranca">
+            <div class="test-header">
+                <span class="test-title">3. asaas-criar-cobranca</span>
+                <span class="test-status status-pending" id="status-cobranca">Pendente</span>
+            </div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
+                Testa criação de cobrança PIX (requer cliente Asaas existente)
+            </p>
+            <button class="btn" id="btn-cobranca" onclick="testarCriarCobranca()">Testar Criar Cobrança</button>
+            <div class="result-box" id="result-cobranca" style="display:none;"></div>
+        </div>
+
+        <!-- Teste 4: asaas-webhook -->
+        <div class="test-card" id="test-webhook">
+            <div class="test-header">
+                <span class="test-title">4. asaas-webhook</span>
+                <span class="test-status status-pending" id="status-webhook">Pendente</span>
+            </div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
+                Testa se o webhook responde corretamente (simula payload do Asaas)
+            </p>
+            <button class="btn" id="btn-webhook" onclick="testarWebhook()">Testar Webhook</button>
+            <div class="result-box" id="result-webhook" style="display:none;"></div>
+        </div>
+
+        <!-- Teste 5: Conexão Supabase -->
+        <div class="test-card" id="test-supabase">
+            <div class="test-header">
+                <span class="test-title">5. Conexão Supabase</span>
+                <span class="test-status status-pending" id="status-supabase">Pendente</span>
+            </div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
+                Verifica se consegue ler da tabela clientes_sistema
+            </p>
+            <button class="btn" id="btn-supabase" onclick="testarSupabase()">Testar Supabase</button>
+            <div class="result-box" id="result-supabase" style="display:none;"></div>
+        </div>
+
+        <!-- Resumo -->
+        <div class="summary" id="summary" style="display:none;">
+            <h3>📊 Resumo dos Testes</h3>
+            <div id="summary-content"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 32px;">
+            <button class="btn" onclick="rodarTodosTestes()" style="padding: 14px 32px; font-size: 16px;">
+                🚀 Rodar Todos os Testes
+            </button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        const EDGE_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
+
+        let supabaseClient = null;
+        let testResults = {};
+
+        async function initSupabase() {
+            let tentativas = 0;
+            while (tentativas < 20) {
+                if (window.supabase && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    return true;
+                }
+                tentativas++;
+                await new Promise(r => setTimeout(r, 300));
+            }
+            return false;
+        }
+
+        function setStatus(id, status, text) {
+            const el = document.getElementById('status-' + id);
+            el.className = 'test-status status-' + status;
+            el.textContent = text;
+        }
+
+        function showResult(id, content, isError) {
+            const box = document.getElementById('result-' + id);
+            box.style.display = 'block';
+            box.className = 'result-box ' + (isError ? 'error' : 'success');
+            box.textContent = content;
+        }
+
+        function setLoading(id, loading) {
+            const btn = document.getElementById('btn-' + id);
+            btn.disabled = loading;
+            btn.innerHTML = loading ? '<span class="loading"></span> Testando...' : 'Testar ' + getTestName(id);
+        }
+
+        function getTestName(id) {
+            const names = {
+                'cors': 'CORS',
+                'cliente': 'Criar Cliente',
+                'cobranca': 'Criar Cobrança',
+                'webhook': 'Webhook',
+                'supabase': 'Supabase'
+            };
+            return names[id] || id;
+        }
+
+        // ============================================
+        // TESTE 1: CORS Preflight
+        // ============================================
+        async function testarCORS() {
+            setLoading('cors', true);
+            setStatus('cors', 'loading', 'Testando...');
+
+            try {
+                const response = await fetch(EDGE_BASE + '/asaas-criar-cliente', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'https://vendalive.com.br',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'apikey, authorization, content-type'
+                    }
+                });
+
+                const headers = {
+                    'allow-origin': response.headers.get('access-control-allow-origin'),
+                    'allow-headers': response.headers.get('access-control-allow-headers'),
+                    'allow-methods': response.headers.get('access-control-allow-methods'),
+                };
+
+                const hasApikey = headers['allow-headers'] && headers['allow-headers'].includes('apikey');
+                const hasOrigin = headers['allow-origin'] === '*' || headers['allow-origin']?.includes('vendalive');
+
+                let result = `Status: ${response.status} ${response.statusText}
+`;
+                result += `Access-Control-Allow-Origin: ${headers['allow-origin'] || 'NÃO ENVIADO'}
+`;
+                result += `Access-Control-Allow-Headers: ${headers['allow-headers'] || 'NÃO ENVIADO'}
+`;
+                result += `Access-Control-Allow-Methods: ${headers['allow-methods'] || 'NÃO ENVIADO'}
+
+`;
+
+                if (hasApikey && hasOrigin) {
+                    result += '✅ CORS OK! Header apikey permitido.';
+                    setStatus('cors', 'success', 'OK');
+                    testResults.cors = true;
+                } else {
+                    result += '❌ CORS FALHOU!
+';
+                    if (!hasApikey) result += '   - Header "apikey" NÃO está em Access-Control-Allow-Headers
+';
+                    if (!hasOrigin) result += '   - Origin não permitida
+';
+                    setStatus('cors', 'error', 'Falhou');
+                    testResults.cors = false;
+                }
+
+                showResult('cors', result, !hasApikey || !hasOrigin);
+
+            } catch (error) {
+                showResult('cors', `❌ ERRO: ${error.message}
+
+Possíveis causas:
+- Edge Function não está deployada
+- URL incorreta
+- Problema de rede`, true);
+                setStatus('cors', 'error', 'Erro');
+                testResults.cors = false;
+            }
+
+            setLoading('cors', false);
+        }
+
+        // ============================================
+        // TESTE 2: asaas-criar-cliente
+        // ============================================
+        async function testarCriarCliente() {
+            setLoading('cliente', true);
+            setStatus('cliente', 'loading', 'Testando...');
+
+            try {
+                const response = await fetch(EDGE_BASE + '/asaas-criar-cliente', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        nome: 'Teste CORS',
+                        email: 'teste@vendalive.com.br',
+                        cpfCnpj: '00000000000',
+                        phone: '0000000000',
+                        cliente_sistema_id: '00000000-0000-0000-0000-000000000000'
+                    })
+                });
+
+                const text = await response.text();
+                let result = `Status: ${response.status} ${response.statusText}
+`;
+                result += `Headers CORS na resposta:
+`;
+                result += `  Access-Control-Allow-Origin: ${response.headers.get('access-control-allow-origin') || 'NÃO ENVIADO'}
+
+`;
+
+                try {
+                    const json = JSON.parse(text);
+                    result += 'Resposta JSON:
+' + JSON.stringify(json, null, 2);
+
+                    if (response.ok || json.error) {
+                        // Se retornou erro do Asaas (CPF inválido), mas CORS funcionou
+                        if (json.error && json.error.includes('Asaas')) {
+                            setStatus('cliente', 'success', 'CORS OK (Asaas recusou CPF teste)');
+                            testResults.cliente = true;
+                        } else if (response.ok) {
+                            setStatus('cliente', 'success', 'OK');
+                            testResults.cliente = true;
+                        } else {
+                            setStatus('cliente', 'error', 'Erro');
+                            testResults.cliente = false;
+                        }
+                    }
+                } catch (e) {
+                    result += 'Resposta (não JSON):
+' + text.substring(0, 500);
+                    setStatus('cliente', 'error', 'Erro');
+                    testResults.cliente = false;
+                }
+
+                showResult('cliente', result, !testResults.cliente);
+
+            } catch (error) {
+                showResult('cliente', `❌ ERRO: ${error.message}
+
+Possíveis causas:
+- CORS bloqueado (ver Teste 1)
+- Edge Function não deployada
+- Variáveis de ambiente faltando`, true);
+                setStatus('cliente', 'error', 'Erro');
+                testResults.cliente = false;
+            }
+
+            setLoading('cliente', false);
+        }
+
+        // ============================================
+        // TESTE 3: asaas-criar-cobranca
+        // ============================================
+        async function testarCriarCobranca() {
+            setLoading('cobranca', true);
+            setStatus('cobranca', 'loading', 'Testando...');
+
+            try {
+                const response = await fetch(EDGE_BASE + '/asaas-criar-cobranca', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        customer_id: 'cus_teste_123',
+                        valor: 1.00,
+                        descricao: 'Teste CORS',
+                        billingType: 'PIX',
+                        cliente_sistema_id: '00000000-0000-0000-0000-000000000000'
+                    })
+                });
+
+                const text = await response.text();
+                let result = `Status: ${response.status} ${response.statusText}
+`;
+                result += `Headers CORS na resposta:
+`;
+                result += `  Access-Control-Allow-Origin: ${response.headers.get('access-control-allow-origin') || 'NÃO ENVIADO'}
+
+`;
+
+                try {
+                    const json = JSON.parse(text);
+                    result += 'Resposta JSON:
+' + JSON.stringify(json, null, 2);
+
+                    if (response.ok || json.error) {
+                        if (json.error && (json.error.includes('Asaas') || json.error.includes('customer'))) {
+                            setStatus('cobranca', 'success', 'CORS OK (Asaas recusou cliente teste)');
+                            testResults.cobranca = true;
+                        } else if (response.ok) {
+                            setStatus('cobranca', 'success', 'OK');
+                            testResults.cobranca = true;
+                        } else {
+                            setStatus('cobranca', 'error', 'Erro');
+                            testResults.cobranca = false;
+                        }
+                    }
+                } catch (e) {
+                    result += 'Resposta (não JSON):
+' + text.substring(0, 500);
+                    setStatus('cobranca', 'error', 'Erro');
+                    testResults.cobranca = false;
+                }
+
+                showResult('cobranca', result, !testResults.cobranca);
+
+            } catch (error) {
+                showResult('cobranca', `❌ ERRO: ${error.message}
+
+Possíveis causas:
+- CORS bloqueado (ver Teste 1)
+- Edge Function não deployada
+- Variáveis de ambiente faltando`, true);
+                setStatus('cobranca', 'error', 'Erro');
+                testResults.cobranca = false;
+            }
+
+            setLoading('cobranca', false);
+        }
+
+        // ============================================
+        // TESTE 4: asaas-webhook
+        // ============================================
+        async function testarWebhook() {
+            setLoading('webhook', true);
+            setStatus('webhook', 'loading', 'Testando...');
+
+            try {
+                // Simular payload do Asaas
+                const payload = {
+                    event: "PAYMENT_RECEIVED",
+                    payment: {
+                        id: "pay_teste_123",
+                        customer: "cus_teste_456",
+                        status: "RECEIVED",
+                        billingType: "PIX",
+                        value: 80.00,
+                        externalReference: "00000000-0000-0000-0000-000000000000",
+                        paymentDate: new Date().toISOString()
+                    }
+                };
+
+                const response = await fetch(EDGE_BASE + '/asaas-webhook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'User-Agent': 'Asaas_Prod/3.0'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const text = await response.text();
+                let result = `Status: ${response.status} ${response.statusText}
+`;
+                result += `Headers CORS na resposta:
+`;
+                result += `  Access-Control-Allow-Origin: ${response.headers.get('access-control-allow-origin') || 'NÃO ENVIADO'}
+
+`;
+
+                try {
+                    const json = JSON.parse(text);
+                    result += 'Resposta JSON:
+' + JSON.stringify(json, null, 2);
+
+                    if (response.ok || json.error) {
+                        if (json.error && json.error.includes('não encontrado')) {
+                            setStatus('webhook', 'success', 'CORS OK (cliente teste não existe)');
+                            testResults.webhook = true;
+                        } else if (response.ok) {
+                            setStatus('webhook', 'success', 'OK');
+                            testResults.webhook = true;
+                        } else {
+                            setStatus('webhook', 'error', 'Erro');
+                            testResults.webhook = false;
+                        }
+                    }
+                } catch (e) {
+                    result += 'Resposta (não JSON):
+' + text.substring(0, 500);
+                    setStatus('webhook', 'error', 'Erro');
+                    testResults.webhook = false;
+                }
+
+                showResult('webhook', result, !testResults.webhook);
+
+            } catch (error) {
+                showResult('webhook', `❌ ERRO: ${error.message}
+
+Possíveis causas:
+- CORS bloqueado (ver Teste 1)
+- Edge Function não deployada
+- Variáveis de ambiente faltando`, true);
+                setStatus('webhook', 'error', 'Erro');
+                testResults.webhook = false;
+            }
+
+            setLoading('webhook', false);
+        }
+
+        // ============================================
+        // TESTE 5: Conexão Supabase
+        // ============================================
+        async function testarSupabase() {
+            setLoading('supabase', true);
+            setStatus('supabase', 'loading', 'Testando...');
+
+            try {
+                await initSupabase();
+
+                if (!supabaseClient) {
+                    throw new Error('Supabase não inicializou');
+                }
+
+                // Testar leitura da tabela clientes_sistema
+                const { data, error, count } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('*', { count: 'exact', head: true });
+
+                let result = '';
+
+                if (error) {
+                    result = `❌ ERRO ao ler tabela:
+${JSON.stringify(error, null, 2)}`;
+                    setStatus('supabase', 'error', 'Erro');
+                    testResults.supabase = false;
+                    showResult('supabase', result, true);
+                } else {
+                    result = `✅ Conexão OK!
+`;
+                    result += `Tabela clientes_sistema acessível
+`;
+                    result += `Total de registros: ${count || 'N/A'}
+`;
+                    setStatus('supabase', 'success', 'OK');
+                    testResults.supabase = true;
+                    showResult('supabase', result, false);
+                }
+
+            } catch (error) {
+                showResult('supabase', `❌ ERRO: ${error.message}
+
+Possíveis causas:
+- Supabase CDN não carregou
+- Problema de rede
+- Tabela não existe`, true);
+                setStatus('supabase', 'error', 'Erro');
+                testResults.supabase = false;
+            }
+
+            setLoading('supabase', false);
+        }
+
+        // ============================================
+        // RODAR TODOS OS TESTES
+        // ============================================
+        async function rodarTodosTestes() {
+            testResults = {};
+            document.getElementById('summary').style.display = 'none';
+
+            await testarCORS();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testarCriarCliente();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testarCriarCobranca();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testarWebhook();
+            await new Promise(r => setTimeout(r, 500));
+
+            await testarSupabase();
+
+            // Mostrar resumo
+            mostrarResumo();
+        }
+
+        function mostrarResumo() {
+            const summary = document.getElementById('summary');
+            const content = document.getElementById('summary-content');
+
+            let html = '';
+            const tests = ['cors', 'cliente', 'cobranca', 'webhook', 'supabase'];
+            const names = {
+                'cors': 'CORS Preflight',
+                'cliente': 'asaas-criar-cliente',
+                'cobranca': 'asaas-criar-cobranca',
+                'webhook': 'asaas-webhook',
+                'supabase': 'Conexão Supabase'
+            };
+
+            let ok = 0;
+            let total = 0;
+
+            tests.forEach(test => {
+                const result = testResults[test];
+                const status = result === true ? '✅ OK' : (result === false ? '❌ Falhou' : '⏳ Não testado');
+                const color = result === true ? '#22c55e' : (result === false ? '#ef4444' : 'rgba(255,255,255,0.5)');
+
+                html += `<div class="summary-item">
+                    <span>${names[test]}</span>
+                    <span style="color: ${color}">${status}</span>
+                </div>`;
+
+                if (result === true) ok++;
+                if (result !== undefined) total++;
+            });
+
+            html += `<div class="summary-item" style="border-top: 2px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 12px; font-weight: 700;">
+                <span>Total</span>
+                <span style="color: ${ok === total ? '#22c55e' : '#eab308'}">${ok}/${total} passaram</span>
+            </div>`;
+
+            if (ok === total && total > 0) {
+                html += `<div style="margin-top: 16px; padding: 12px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; color: #22c55e; text-align: center; font-weight: 600;">
+                    🎉 Todos os testes passaram! O sistema está pronto para uso.
+                </div>`;
+            } else if (total > 0) {
+                html += `<div style="margin-top: 16px; padding: 12px; background: rgba(234, 179, 8, 0.1); border-radius: 8px; color: #eab308; text-align: center; font-weight: 600;">
+                    ⚠️ Alguns testes falharam. Verifique os detalhes acima e corrija antes de prosseguir.
+                </div>`;
+            }
+
+            content.innerHTML = html;
+            summary.style.display = 'block';
+        }
+
+        // Inicializar Supabase ao carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initSupabase();
+        });
+    </script>
+</body>
+</html>
