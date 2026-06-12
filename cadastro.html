@@ -30,7 +30,7 @@
             inset: 0;
             background:
                 radial-gradient(ellipse at 50% 0%, rgba(91, 155, 213, 0.12) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(11, 25, 63, 0.9) 0%, transparent 50%);
+                radial-gradient(ellipse at % 80%, rgba(11, 25, 63, 0.9) 0%, transparent 50%);
             z-index: 0;
             pointer-events: none;
         }
@@ -450,7 +450,7 @@
                         </div>
                     </div>
 
-                    <div class="plano-card" data-plano="Basic" data-valor="80.00" onclick="selecionarPlano(this)">
+                    <div class="plano-card" data-plano="Basic" data-valor="10.00" onclick="selecionarPlano(this)">
                         <div class="plano-info">
                             <h3>Plano Basic</h3>
                             <p>Ideal para começar a vender</p>
@@ -599,7 +599,7 @@
                     document.querySelectorAll('.plano-card').forEach(function(el) { el.classList.remove('selected'); });
                     planoBasic.classList.add('selected');
                     planoSelecionado = 'Basic';
-                    valorPlano = 80.00;
+                    valorPlano = 10.00;
                     isPlanoTeste = false;
                     document.getElementById('btn-texto').textContent = 'Atualizar Plano e Pagar';
                     console.log('[CADASTRO] Plano Basic selecionado automaticamente');
@@ -742,7 +742,7 @@
                         if (planoBasic) {
                             planoBasic.classList.add('selected');
                             planoSelecionado = 'Basic';
-                            valorPlano = 80.00;
+                            valorPlano = 10.00;
                             isPlanoTeste = false;
                             document.getElementById('btn-texto').textContent = 'Criar Conta e Pagar';
                         }
