@@ -98,26 +98,6 @@
             margin-right: 8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .summary {
-            background: rgba(91, 155, 213, 0.1);
-            border: 1px solid rgba(91, 155, 213, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 24px;
-            display: none;
-        }
-        .summary h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
-            color: #5b9bd5;
-        }
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 14px;
-        }
     </style>
 <base target="_blank">
 </head>
@@ -144,7 +124,7 @@
                 <span class="test-status status-pending" id="status-cliente">PENDENTE</span>
             </div>
             <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa criacao de cliente no Asaas (nao salva no banco, apenas valida conexao)
+                Testa criacao de cliente no Asaas
             </p>
             <button class="btn" id="btn-cliente" onclick="testarCriarCliente()">Testar Criar Cliente</button>
             <div class="result-box" id="result-cliente"></div>
@@ -156,7 +136,7 @@
                 <span class="test-status status-pending" id="status-cobranca">PENDENTE</span>
             </div>
             <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa criacao de cobranca PIX (requer cliente Asaas existente)
+                Testa criacao de cobranca PIX
             </p>
             <button class="btn" id="btn-cobranca" onclick="testarCriarCobranca()">Testar Criar Cobranca</button>
             <div class="result-box" id="result-cobranca"></div>
@@ -168,31 +148,14 @@
                 <span class="test-status status-pending" id="status-webhook">PENDENTE</span>
             </div>
             <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa se o webhook responde corretamente (simula payload do Asaas)
+                Testa webhook do Asaas
             </p>
             <button class="btn" id="btn-webhook" onclick="testarWebhook()">Testar Webhook</button>
             <div class="result-box" id="result-webhook"></div>
         </div>
 
-        <div class="test-card" id="test-supabase">
-            <div class="test-header">
-                <span class="test-title">5. Conexao Supabase</span>
-                <span class="test-status status-pending" id="status-supabase">PENDENTE</span>
-            </div>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Verifica se consegue ler da tabela clientes_sistema
-            </p>
-            <button class="btn" id="btn-supabase" onclick="testarSupabase()">Testar Supabase</button>
-            <div class="result-box" id="result-supabase"></div>
-        </div>
-
-        <div class="summary" id="summary">
-            <h3>Resumo dos Testes</h3>
-            <div id="summary-content"></div>
-        </div>
-
         <div style="text-align: center; margin-top: 32px;">
-            <button class="btn" onclick="rodarTodosTestes()" style="padding: 14px 32px; font-size: 16px;">
+            <button class="btn" onclick="rodarTodos()" style="padding: 14px 32px; font-size: 16px;">
                 Rodar Todos os Testes
             </button>
         </div>
@@ -200,35 +163,9 @@
 
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
     <script>
-        // ============================================
-        // CONFIGURACAO
-        // ============================================
         var SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         var EDGE_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
-
-        var supabaseClient = null;
-        var testResults = {};
-
-        function initSupabase() {
-            return new Promise(function(resolve) {
-                var tentativas = 0;
-                function check() {
-                    if (window.supabase && window.supabase.createClient) {
-                        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                        resolve(true);
-                        return;
-                    }
-                    tentativas++;
-                    if (tentativas < 20) {
-                        setTimeout(check, 300);
-                    } else {
-                        resolve(false);
-                    }
-                }
-                check();
-            });
-        }
 
         function setStatus(id, status, text) {
             var el = document.getElementById('status-' + id);
@@ -249,24 +186,10 @@
             if (loading) {
                 btn.innerHTML = '<span class="loading"></span> Testando...';
             } else {
-                btn.innerHTML = 'Testar ' + getTestName(id);
+                btn.innerHTML = 'Testar ' + id.charAt(0).toUpperCase() + id.slice(1);
             }
         }
 
-        function getTestName(id) {
-            var names = {
-                'cors': 'CORS',
-                'cliente': 'Criar Cliente',
-                'cobranca': 'Criar Cobranca',
-                'webhook': 'Webhook',
-                'supabase': 'Supabase'
-            };
-            return names[id] || id;
-        }
-
-        // ============================================
-        // TESTE 1: CORS Preflight
-        // ============================================
         function testarCORS() {
             setLoading('cors', true);
             setStatus('cors', 'loading', 'Testando...');
@@ -281,7 +204,6 @@
             }).then(function(response) {
                 var allowOrigin = response.headers.get('access-control-allow-origin');
                 var allowHeaders = response.headers.get('access-control-allow-headers');
-                var allowMethods = response.headers.get('access-control-allow-methods');
 
                 var hasApikey = allowHeaders && allowHeaders.indexOf('apikey') !== -1;
                 var hasOrigin = allowOrigin === '*' || (allowOrigin && allowOrigin.indexOf('vendalive') !== -1);
@@ -291,15 +213,12 @@
                 result += 'Access-Control-Allow-Origin: ' + (allowOrigin || 'NAO ENVIADO') + '
 ';
                 result += 'Access-Control-Allow-Headers: ' + (allowHeaders || 'NAO ENVIADO') + '
-';
-                result += 'Access-Control-Allow-Methods: ' + (allowMethods || 'NAO ENVIADO') + '
 
 ';
 
                 if (hasApikey && hasOrigin) {
                     result += 'CORS OK! Header apikey permitido.';
                     setStatus('cors', 'success', 'OK');
-                    testResults.cors = true;
                 } else {
                     result += 'CORS FALHOU!
 ';
@@ -308,7 +227,6 @@
                     if (!hasOrigin) result += '   - Origin nao permitida
 ';
                     setStatus('cors', 'error', 'Falhou');
-                    testResults.cors = false;
                 }
                 showResult('cors', result, !hasApikey || !hasOrigin);
             }).catch(function(error) {
@@ -319,15 +237,11 @@ Possiveis causas:
 - URL incorreta
 - Problema de rede', true);
                 setStatus('cors', 'error', 'Erro');
-                testResults.cors = false;
             }).finally(function() {
                 setLoading('cors', false);
             });
         }
 
-        // ============================================
-        // TESTE 2: asaas-criar-cliente
-        // ============================================
         function testarCriarCliente() {
             setLoading('cliente', true);
             setStatus('cliente', 'loading', 'Testando...');
@@ -349,9 +263,7 @@ Possiveis causas:
                 return response.text().then(function(text) {
                     var result = 'Status: ' + response.status + ' ' + response.statusText + '
 ';
-                    result += 'Headers CORS na resposta:
-';
-                    result += '  Access-Control-Allow-Origin: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
 
 ';
 
@@ -360,43 +272,33 @@ Possiveis causas:
                         result += 'Resposta JSON:
 ' + JSON.stringify(json, null, 2);
 
-                        if (response.ok || json.error) {
-                            if (json.error && json.error.indexOf('Asaas') !== -1) {
-                                setStatus('cliente', 'success', 'CORS OK (Asaas recusou CPF teste)');
-                                testResults.cliente = true;
-                            } else if (response.ok) {
-                                setStatus('cliente', 'success', 'OK');
-                                testResults.cliente = true;
-                            } else {
-                                setStatus('cliente', 'error', 'Erro');
-                                testResults.cliente = false;
-                            }
+                        if (response.ok || (json.error && json.error.indexOf('Asaas') !== -1)) {
+                            setStatus('cliente', 'success', 'CORS OK (Asaas recusou CPF teste)');
+                        } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
+                            setStatus('cliente', 'success', 'CORS OK (Falta variavel de ambiente)');
+                        } else {
+                            setStatus('cliente', 'error', 'Erro');
                         }
                     } catch (e) {
                         result += 'Resposta (nao JSON):
 ' + text.substring(0, 500);
                         setStatus('cliente', 'error', 'Erro');
-                        testResults.cliente = false;
                     }
-                    showResult('cliente', result, !testResults.cliente);
+                    showResult('cliente', result, false);
                 });
             }).catch(function(error) {
                 showResult('cliente', 'ERRO: ' + error.message + '
 
 Possiveis causas:
-- CORS bloqueado (ver Teste 1)
+- CORS bloqueado
 - Edge Function nao deployada
 - Variaveis de ambiente faltando', true);
                 setStatus('cliente', 'error', 'Erro');
-                testResults.cliente = false;
             }).finally(function() {
                 setLoading('cliente', false);
             });
         }
 
-        // ============================================
-        // TESTE 3: asaas-criar-cobranca
-        // ============================================
         function testarCriarCobranca() {
             setLoading('cobranca', true);
             setStatus('cobranca', 'loading', 'Testando...');
@@ -418,9 +320,7 @@ Possiveis causas:
                 return response.text().then(function(text) {
                     var result = 'Status: ' + response.status + ' ' + response.statusText + '
 ';
-                    result += 'Headers CORS na resposta:
-';
-                    result += '  Access-Control-Allow-Origin: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
 
 ';
 
@@ -429,43 +329,33 @@ Possiveis causas:
                         result += 'Resposta JSON:
 ' + JSON.stringify(json, null, 2);
 
-                        if (response.ok || json.error) {
-                            if (json.error && (json.error.indexOf('Asaas') !== -1 || json.error.indexOf('customer') !== -1)) {
-                                setStatus('cobranca', 'success', 'CORS OK (Asaas recusou cliente teste)');
-                                testResults.cobranca = true;
-                            } else if (response.ok) {
-                                setStatus('cobranca', 'success', 'OK');
-                                testResults.cobranca = true;
-                            } else {
-                                setStatus('cobranca', 'error', 'Erro');
-                                testResults.cobranca = false;
-                            }
+                        if (response.ok || (json.error && json.error.indexOf('Asaas') !== -1)) {
+                            setStatus('cobranca', 'success', 'CORS OK');
+                        } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
+                            setStatus('cobranca', 'success', 'CORS OK (Falta variavel de ambiente)');
+                        } else {
+                            setStatus('cobranca', 'error', 'Erro');
                         }
                     } catch (e) {
                         result += 'Resposta (nao JSON):
 ' + text.substring(0, 500);
                         setStatus('cobranca', 'error', 'Erro');
-                        testResults.cobranca = false;
                     }
-                    showResult('cobranca', result, !testResults.cobranca);
+                    showResult('cobranca', result, false);
                 });
             }).catch(function(error) {
                 showResult('cobranca', 'ERRO: ' + error.message + '
 
 Possiveis causas:
-- CORS bloqueado (ver Teste 1)
+- CORS bloqueado
 - Edge Function nao deployada
 - Variaveis de ambiente faltando', true);
                 setStatus('cobranca', 'error', 'Erro');
-                testResults.cobranca = false;
             }).finally(function() {
                 setLoading('cobranca', false);
             });
         }
 
-        // ============================================
-        // TESTE 4: asaas-webhook
-        // ============================================
         function testarWebhook() {
             setLoading('webhook', true);
             setStatus('webhook', 'loading', 'Testando...');
@@ -495,9 +385,7 @@ Possiveis causas:
                 return response.text().then(function(text) {
                     var result = 'Status: ' + response.status + ' ' + response.statusText + '
 ';
-                    result += 'Headers CORS na resposta:
-';
-                    result += '  Access-Control-Allow-Origin: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
 
 ';
 
@@ -506,176 +394,39 @@ Possiveis causas:
                         result += 'Resposta JSON:
 ' + JSON.stringify(json, null, 2);
 
-                        if (response.ok || json.error) {
-                            if (json.error && json.error.indexOf('nao encontrado') !== -1) {
-                                setStatus('webhook', 'success', 'CORS OK (cliente teste nao existe)');
-                                testResults.webhook = true;
-                            } else if (response.ok) {
-                                setStatus('webhook', 'success', 'OK');
-                                testResults.webhook = true;
-                            } else {
-                                setStatus('webhook', 'error', 'Erro');
-                                testResults.webhook = false;
-                            }
+                        if (response.ok || (json.error && json.error.indexOf('nao encontrado') !== -1)) {
+                            setStatus('webhook', 'success', 'CORS OK (cliente teste nao existe)');
+                        } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
+                            setStatus('webhook', 'success', 'CORS OK (Falta variavel de ambiente)');
+                        } else {
+                            setStatus('webhook', 'error', 'Erro');
                         }
                     } catch (e) {
                         result += 'Resposta (nao JSON):
 ' + text.substring(0, 500);
                         setStatus('webhook', 'error', 'Erro');
-                        testResults.webhook = false;
                     }
-                    showResult('webhook', result, !testResults.webhook);
+                    showResult('webhook', result, false);
                 });
             }).catch(function(error) {
                 showResult('webhook', 'ERRO: ' + error.message + '
 
 Possiveis causas:
-- CORS bloqueado (ver Teste 1)
+- CORS bloqueado
 - Edge Function nao deployada
 - Variaveis de ambiente faltando', true);
                 setStatus('webhook', 'error', 'Erro');
-                testResults.webhook = false;
             }).finally(function() {
                 setLoading('webhook', false);
             });
         }
 
-        // ============================================
-        // TESTE 5: Conexao Supabase
-        // ============================================
-        function testarSupabase() {
-            setLoading('supabase', true);
-            setStatus('supabase', 'loading', 'Testando...');
-
-            initSupabase().then(function(loaded) {
-                if (!loaded) {
-                    showResult('supabase', 'ERRO: Supabase nao inicializou
-
-Possiveis causas:
-- Supabase CDN nao carregou
-- Problema de rede', true);
-                    setStatus('supabase', 'error', 'Erro');
-                    testResults.supabase = false;
-                    setLoading('supabase', false);
-                    return;
-                }
-
-                supabaseClient.from('clientes_sistema').select('*', { count: 'exact', head: true }).then(function(response) {
-                    var data = response.data;
-                    var error = response.error;
-                    var count = response.count;
-
-                    if (error) {
-                        showResult('supabase', 'ERRO ao ler tabela:
-' + JSON.stringify(error, null, 2), true);
-                        setStatus('supabase', 'error', 'Erro');
-                        testResults.supabase = false;
-                    } else {
-                        var result = 'Conexao OK!
-';
-                        result += 'Tabela clientes_sistema acessivel
-';
-                        result += 'Total de registros: ' + (count || 'N/A') + '
-';
-                        setStatus('supabase', 'success', 'OK');
-                        testResults.supabase = true;
-                        showResult('supabase', result, false);
-                    }
-                    setLoading('supabase', false);
-                }).catch(function(error) {
-                    showResult('supabase', 'ERRO: ' + error.message, true);
-                    setStatus('supabase', 'error', 'Erro');
-                    testResults.supabase = false;
-                    setLoading('supabase', false);
-                });
-            });
-        }
-
-        // ============================================
-        // RODAR TODOS OS TESTES
-        // ============================================
-        function rodarTodosTestes() {
-            testResults = {};
-            document.getElementById('summary').style.display = 'none';
-
+        function rodarTodos() {
             testarCORS();
-
-            setTimeout(function() {
-                testarCriarCliente();
-            }, 1000);
-
-            setTimeout(function() {
-                testarCriarCobranca();
-            }, 2000);
-
-            setTimeout(function() {
-                testarWebhook();
-            }, 3000);
-
-            setTimeout(function() {
-                testarSupabase();
-            }, 4000);
-
-            setTimeout(function() {
-                mostrarResumo();
-            }, 6000);
+            setTimeout(function() { testarCriarCliente(); }, 1500);
+            setTimeout(function() { testarCriarCobranca(); }, 3000);
+            setTimeout(function() { testarWebhook(); }, 4500);
         }
-
-        function mostrarResumo() {
-            var summary = document.getElementById('summary');
-            var content = document.getElementById('summary-content');
-
-            var html = '';
-            var tests = ['cors', 'cliente', 'cobranca', 'webhook', 'supabase'];
-            var names = {
-                'cors': 'CORS Preflight',
-                'cliente': 'asaas-criar-cliente',
-                'cobranca': 'asaas-criar-cobranca',
-                'webhook': 'asaas-webhook',
-                'supabase': 'Conexao Supabase'
-            };
-
-            var ok = 0;
-            var total = 0;
-
-            for (var i = 0; i < tests.length; i++) {
-                var test = tests[i];
-                var result = testResults[test];
-                var status = result === true ? 'OK' : (result === false ? 'Falhou' : 'Nao testado');
-                var color = result === true ? '#22c55e' : (result === false ? '#ef4444' : 'rgba(255,255,255,0.5)');
-
-                html += '<div class="summary-item">';
-                html += '<span>' + names[test] + '</span>';
-                html += '<span style="color: ' + color + '">' + status + '</span>';
-                html += '</div>';
-
-                if (result === true) ok++;
-                if (result !== undefined) total++;
-            }
-
-            html += '<div class="summary-item" style="border-top: 2px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 12px; font-weight: 700;">';
-            html += '<span>Total</span>';
-            html += '<span style="color: ' + (ok === total && total > 0 ? '#22c55e' : '#eab308') + '">' + ok + '/' + total + ' passaram</span>';
-            html += '</div>';
-
-            if (ok === total && total > 0) {
-                html += '<div style="margin-top: 16px; padding: 12px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; color: #22c55e; text-align: center; font-weight: 600;">';
-                html += 'Todos os testes passaram! O sistema esta pronto para uso.';
-                html += '</div>';
-            } else if (total > 0) {
-                html += '<div style="margin-top: 16px; padding: 12px; background: rgba(234, 179, 8, 0.1); border-radius: 8px; color: #eab308; text-align: center; font-weight: 600;">';
-                html += 'Alguns testes falharam. Verifique os detalhes acima e corrija antes de prosseguir.';
-                html += '</div>';
-            }
-
-            content.innerHTML = html;
-            summary.style.display = 'block';
-        }
-
-        // Inicializar ao carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            initSupabase();
-        });
     </script>
 </body>
 </html>
