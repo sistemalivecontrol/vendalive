@@ -7,17 +7,15 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Alterar Senha - VendaLive</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: #f0f4f8;
-            min-height: 100vh;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; }
 
         /* ===== HEADER ===== */
         .header {
@@ -45,12 +43,7 @@
             align-items: center;
             font-size: 12px;
         }
-        .header-info span {
-            color: rgba(255,255,255,0.7);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .header-info span { color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
         .btn-header {
             background: rgba(0, 102, 255, 0.15);
             border: 1px solid rgba(0, 102, 255, 0.3);
@@ -69,182 +62,229 @@
         }
         .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
 
-        /* ===== MAIN CONTENT ===== */
-        .main-content {
-            max-width: 480px;
-            margin: 40px auto;
-            padding: 0 16px;
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: -8px;
+        }
+        .mobile-menu-btn svg { width: 24px; height: 24px; }
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            backdrop-filter: blur(4px);
+        }
+        .mobile-menu-overlay.active { display: block; }
+        .mobile-menu {
+            position: fixed;
+            top: 0; left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: #0a1628;
+            z-index: 201;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 16px;
+        }
+        .mobile-menu.active { left: 0; }
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .mobile-menu-header span { font-size: 16px; font-weight: 700; color: white; }
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 12px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .mobile-menu-item:hover, .mobile-menu-item.active {
+            background: rgba(0, 102, 255, 0.2);
+            color: white;
+        }
+        .mobile-menu-item .icon { font-size: 20px; width: 24px; text-align: center; }
+
+        /* ===== GRID LAYOUT ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        .grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+        }
+
+        /* ===== SIDEBAR MENU ===== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .menu-item {
+            background: white;
+            padding: 13px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            border: 1px solid transparent;
+        }
+        .menu-item:hover {
+            background: #0B193F;
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+        }
+        .menu-item.active {
+            background: #0B193F;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+        }
+        .menu-item .icon { font-size: 18px; width: 22px; text-align: center; }
+
+        /* ===== CONTENT ===== */
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
         }
         .card {
             background: white;
             border-radius: 16px;
-            padding: 32px;
+            padding: 28px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             border: 1px solid rgba(0,0,0,0.04);
         }
-        .card-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        .card-header .icon-circle {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%);
+        .card h2 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #0f172a;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 28px;
-        }
-        .card-header h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-        .card-header p {
-            color: #64748b;
-            font-size: 14px;
+            gap: 8px;
         }
 
-        .user-info {
-            background: #f8f9ff;
-            border: 1px solid #e0e0ff;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
+        .user-info-card {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            padding: 8px;
+            margin-bottom: 24px;
         }
-        .user-info .avatar {
-            width: 48px;
-            height: 48px;
+        .user-info-card .avatar {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%);
+            background: linear-gradient(135deg, #0B193F, #1a3a6e);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
-            flex-shrink: 0;
         }
-        .user-info .details h3 {
-            font-size: 15px;
-            color: #0f172a;
-            font-weight: 600;
-        }
-        .user-info .details p {
-            font-size: 13px;
-            color: #64748b;
-        }
+        .user-info-card .details h3 { font-size: 16px; color: #0f172a; margin-bottom: 2px; }
+        .user-info-card .details p { color: #64748b; font-size: 14px; margin: 0; }
 
         .form-group { margin-bottom: 20px; }
-        label {
+        .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #334155;
             font-weight: 600;
+            margin-bottom: 8px;
+            color: #0f172a;
             font-size: 13px;
         }
-        .input-wrapper {
-            position: relative;
-        }
-        .input-wrapper svg {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: #94a3b8;
-            pointer-events: none;
-        }
-        input {
+        .form-group input {
             width: 100%;
-            padding: 14px 16px 14px 44px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 15px;
             color: #0f172a;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
-        input::placeholder { color: #94a3b8; }
-        input:focus {
+        .form-group input::placeholder { color: #94a3b8; }
+        .form-group input:focus {
             outline: none;
             border-color: #0B193F;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(11, 25, 63, 0.08);
+            box-shadow: 0 0 0 3px rgba(11, 25, 63, 0.1);
         }
-        input[type="password"] { padding-right: 16px; }
-
-        .divider {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 24px 0;
-        }
-        .divider-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .divider-label::before,
-        .divider-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #e2e8f0;
-        }
-        .divider-label span {
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
             font-size: 12px;
-            font-weight: 600;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
         .btn {
-            width: 100%;
-            padding: 14px;
-            background: #0B193F;
-            color: white;
+            padding: 12px 24px;
             border: none;
-            border-radius: 12px;
-            font-size: 15px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
-        .btn:hover {
-            background: #152B5C;
+        .btn-primary {
+            background: #0B193F;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: #152a52;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(11, 25, 63, 0.25);
-        }
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            box-shadow: 0 8px 25px rgba(11, 25, 63, 0.3);
         }
         .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
-            margin-top: 12px;
+            background: #f5f5f5;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
         }
-        .btn-secondary:hover {
-            background: #e2e8f0;
-            box-shadow: none;
-            transform: translateY(-1px);
+        .btn-secondary:hover { background: #e0e0e0; }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .alert {
@@ -265,28 +305,14 @@
             color: #dc2626;
             border: 1px solid #fecaca;
         }
-        .alert-info {
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-        }
 
-        .success-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
+        .success-state {
+            text-align: center;
+            padding: 40px 20px;
         }
-        .success-title {
-            color: #059669;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .success-text {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
+        .success-state .icon { font-size: 56px; margin-bottom: 16px; }
+        .success-state h3 { color: #059669; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .success-state p { color: #64748b; font-size: 14px; margin-bottom: 24px; }
 
         .loading {
             display: inline-block;
@@ -302,29 +328,113 @@
         .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
         .icon-svg-sm { width: 14px; height: 14px; }
 
-        @media (max-width: 640px) {
-            .main-content { margin: 20px auto; }
-            .card { padding: 24px; border-radius: 12px; }
-            .header { padding: 0 12px; height: 52px; }
-            .header-logo span { font-size: 14px; }
-            .header h1 { display: none; }
+        /* Footer */
+        .dashboard-footer {
+            margin-top: 40px;
+            padding: 20px 16px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .dashboard-footer a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .dashboard-footer a:hover {
+            color: #0B193F;
+            text-decoration: underline;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .sidebar { display: none; }
+            .mobile-menu-btn { display: block; }
+            .header { padding: 0 12px; }
             .header-info span { display: none; }
             .header-info span:first-child { display: flex; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 12px; }
+            .header { height: 52px; }
+            .header-logo span { font-size: 14px; }
+            .header h1 { display: none; }
+            .card { padding: 20px; border-radius: 12px; }
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; }
         }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <span>Menu</span>
+            <button class="mobile-menu-close" onclick="fecharMenu()">&times;</button>
+        </div>
+        <a href="live.html" class="mobile-menu-item" onclick="return goToMobile('live.html')">
+            <span class="icon">&#127909;</span><span>Lives de Vendas</span>
+        </a>
+        <a href="coblive.html" class="mobile-menu-item" onclick="return goToMobile('coblive.html')">
+            <span class="icon">&#128176;</span><span>Cobrança de Lives</span>
+        </a>
+        <a href="pix.automatizado.html" class="mobile-menu-item" onclick="return goToMobile('pix.automatizado.html')">
+            <span class="icon">&#128179;</span><span>Pix Automação</span>
+        </a>
+        <a href="pix.manual.html" class="mobile-menu-item" onclick="return goToMobile('pix.manual.html')">
+            <span class="icon">&#9989;</span><span>Pix Manual</span>
+        </a>
+        <a href="vendas.html" class="mobile-menu-item" onclick="return goToMobile('vendas.html')">
+            <span class="icon">&#128722;</span><span>Vendas</span>
+        </a>
+        <a href="clientes.html" class="mobile-menu-item" onclick="return goToMobile('clientes.html')">
+            <span class="icon">&#128101;</span><span>Clientes</span>
+        </a>
+        <a href="enderecos.html" class="mobile-menu-item" onclick="return goToMobile('enderecos.html')">
+            <span class="icon">&#128205;</span><span>Endereços</span>
+        </a>
+        <a href="rastreamento.html" class="mobile-menu-item" onclick="return goToMobile('rastreamento.html')">
+            <span class="icon">&#128230;</span><span>Solicitações de Entregas</span>
+        </a>
+        <a href="whatsapp-monitor.html" class="mobile-menu-item" onclick="return goToMobile('whatsapp-monitor.html')">
+            <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
+        </a>
+        <a href="configuracao-pagamento.html" class="mobile-menu-item" onclick="return goToMobile('configuracao-pagamento.html')">
+            <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+        </a>
+        <a href="configuracoes.html" class="mobile-menu-item" onclick="return goToMobile('configuracoes.html')">
+            <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+        </a>
+        <a href="alterar-senha.html" class="mobile-menu-item active" onclick="return goToMobile('alterar-senha.html')">
+            <span class="icon">&#128274;</span><span>Alterar Senha</span>
+        </a>
+        <a href="solicitacoes.html" id="mobile-link-solicitacoes" class="mobile-menu-item">
+            <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
+        </a>
+    </div>
+
+    <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <a href="dashboard.html" class="header-logo" target="_self">
+            <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <a href="dashboard.html" class="header-logo" style="text-decoration:none;">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
                     <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
                     <path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
                     <circle cx="72" cy="25" r="22" fill="#ffffff"/>
-                    <text x="72" y="32" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
+                    <text x="72" y="32" text-anchor="middle" fill="#0B193F" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
                 </svg>
                 <span>Venda<span style="color:#5b9bd5;">Live</span></span>
             </a>
@@ -339,107 +449,164 @@
                 </svg>
                 Carregando...
             </span>
-            <a href="dashboard.html" class="btn-header" target="_self">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15 18l-6-6 6-6"/>
+            <a href="configuracoes.html" class="btn-header" title="Configurações">
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                Dashboard
+                Config
             </a>
+            <button class="btn-header" onclick="logout()">Sair</button>
         </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div class="card">
-            <div id="alertContainer"></div>
-
-            <div class="card-header">
-                <div class="icon-circle">🔐</div>
-                <h2>Alterar Senha</h2>
-                <p>Atualize sua senha de acesso ao VendaLive</p>
-            </div>
-
-            <div class="user-info" id="userInfo" style="display: none;">
-                <div class="avatar" id="userAvatar">U</div>
-                <div class="details">
-                    <h3 id="userName">Usuário</h3>
-                    <p id="userEmail">email@exemplo.com</p>
-                </div>
-            </div>
-
-            <form id="formAlterarSenha">
-                <div class="form-group">
-                    <label for="currentPassword">Senha Atual</label>
-                    <div class="input-wrapper">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <input type="password" id="currentPassword" required 
-                               placeholder="Digite sua senha atual">
-                    </div>
-                </div>
-
-                <div class="divider-label">
-                    <span>Nova Senha</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="newPassword">Nova Senha</label>
-                    <div class="input-wrapper">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <input type="password" id="newPassword" required 
-                               placeholder="Mínimo 8 caracteres" minlength="8">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword">Confirmar Nova Senha</label>
-                    <div class="input-wrapper">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <input type="password" id="confirmPassword" required 
-                               placeholder="Repita a nova senha">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn" id="btnSubmit">
-                    Alterar Senha
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-                        <path d="M15 18l-6-6 6-6"/>
-                    </svg>
-                    Voltar para Dashboard
-                </button>
-            </form>
-
-            <!-- Estado de Sucesso -->
-            <div id="stepSuccess" style="display: none; text-align: center;">
-                <div class="success-icon">✅</div>
-                <div class="success-title">Senha Alterada!</div>
-                <p class="success-text">
-                    Sua senha foi atualizada com sucesso.<br>
-                    Use a nova senha no próximo login.
-                </p>
-                <a href="dashboard.html" class="btn" style="text-decoration: none;">
-                    Ir para Dashboard
+    <div class="container">
+        <div class="grid">
+            <!-- Sidebar Menu -->
+            <div class="sidebar">
+                <a href="live.html" class="menu-item" onclick="return goTo('live.html')">
+                    <span class="icon">&#127909;</span><span>Lives de Vendas</span>
+                </a>
+                <a href="coblive.html" class="menu-item" onclick="return goTo('coblive.html')">
+                    <span class="icon">&#128176;</span><span>Cobrança de Lives</span>
+                </a>
+                <a href="pix.automatizado.html" class="menu-item" onclick="return goTo('pix.automatizado.html')">
+                    <span class="icon">&#128179;</span><span>Pix Automação</span>
+                </a>
+                <a href="pix.manual.html" class="menu-item" onclick="return goTo('pix.manual.html')">
+                    <span class="icon">&#9989;</span><span>Pix Manual</span>
+                </a>
+                <a href="vendas.html" class="menu-item" onclick="return goTo('vendas.html')">
+                    <span class="icon">&#128722;</span><span>Vendas</span>
+                </a>
+                <a href="clientes.html" class="menu-item" onclick="return goTo('clientes.html')">
+                    <span class="icon">&#128101;</span><span>Clientes</span>
+                </a>
+                <a href="enderecos.html" class="menu-item" onclick="return goTo('enderecos.html')">
+                    <span class="icon">&#128205;</span><span>Endereços</span>
+                </a>
+                <a href="rastreamento.html" class="menu-item" onclick="return goTo('rastreamento.html')">
+                    <span class="icon">&#128230;</span><span>Solicitações de Entregas</span>
+                </a>
+                <a href="whatsapp-monitor.html" class="menu-item" onclick="return goTo('whatsapp-monitor.html')">
+                    <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
+                </a>
+                <a href="configuracao-pagamento.html" class="menu-item" onclick="return goTo('configuracao-pagamento.html')">
+                    <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+                </a>
+                <a href="configuracoes.html" class="menu-item" onclick="return goTo('configuracoes.html')">
+                    <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+                </a>
+                <a href="alterar-senha.html" class="menu-item active" onclick="return goTo('alterar-senha.html')">
+                    <span class="icon">&#128274;</span><span>Alterar Senha</span>
+                </a>
+                <a href="solicitacoes.html" id="link-solicitacoes" class="menu-item">
+                    <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
                 </a>
             </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- User Info Card -->
+                <div class="card">
+                    <div class="user-info-card">
+                        <div class="avatar" id="userAvatar">U</div>
+                        <div class="details">
+                            <h3 id="userName">Carregando...</h3>
+                            <p id="userEmail">...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
+
+                <!-- Form Card -->
+                <div class="card" id="formCard">
+                    <h2><i class="fas fa-shield-alt"></i> Segurança</h2>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Atualize sua senha de acesso ao VendaLive</p>
+
+                    <form id="formAlterarSenha">
+                        <div class="form-group">
+                            <label for="currentPassword">Senha Atual</label>
+                            <input type="password" id="currentPassword" required 
+                                   placeholder="Digite sua senha atual">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newPassword">Nova Senha</label>
+                            <input type="password" id="newPassword" required 
+                                   placeholder="Mínimo 8 caracteres" minlength="8">
+                            <small>A senha deve ter pelo menos 8 caracteres</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirmar Nova Senha</label>
+                            <input type="password" id="confirmPassword" required 
+                                   placeholder="Repita a nova senha">
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                <i class="fas fa-key"></i> Alterar Senha
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                                <i class="fas fa-arrow-left"></i> Voltar para Dashboard
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Success State -->
+                <div class="card hidden" id="successCard">
+                    <div class="success-state">
+                        <div class="icon">&#9989;</div>
+                        <h3>Senha Alterada!</h3>
+                        <p>Sua senha foi atualizada com sucesso.<br>Use a nova senha no próximo login.</p>
+                        <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none;">
+                            <i class="fas fa-home"></i> Ir para Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <p>
+            &copy; 2026 VendaLive |
+            <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> |
+            <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a>
+        </p>
+    </footer>
+
     <script>
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         let supabaseClient = null;
+
+        // ===== MOBILE MENU =====
+        function abrirMenu() {
+            document.getElementById('mobileMenu').classList.add('active');
+            document.getElementById('mobileMenuOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function fecharMenu() {
+            document.getElementById('mobileMenu').classList.remove('active');
+            document.getElementById('mobileMenuOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function goToMobile(url) {
+            fecharMenu();
+            setTimeout(function() { window.location.href = url; }, 300);
+            return false;
+        }
+        function goTo(url) {
+            window.location.href = url;
+            return false;
+        }
 
         function showAlert(message, type = 'error') {
             const container = document.getElementById('alertContainer');
@@ -466,17 +633,14 @@
             }
 
             const user = session.user;
-            document.getElementById('userInfo').style.display = 'flex';
-            document.getElementById('userName').textContent = user.user_metadata?.nome || user.email.split('@')[0];
+            const nome = user.user_metadata?.nome || user.email.split('@')[0];
+
+            document.getElementById('userName').textContent = nome;
             document.getElementById('userEmail').textContent = user.email;
             document.getElementById('userAvatar').textContent = (user.email[0] || 'U').toUpperCase();
-            document.getElementById('info-usuario').innerHTML = `
-                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                ${user.user_metadata?.nome || user.email}
-            `;
+
+            // Update header (same as dashboard/configuracoes)
+            document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + nome;
         }
 
         document.getElementById('formAlterarSenha').addEventListener('submit', async (e) => {
@@ -509,7 +673,6 @@
             btn.innerHTML = 'Validando... <span class="loading"></span>';
 
             try {
-                // 1. Pega sessão atual para obter email
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
                     showAlert('Sessão expirada. Faça login novamente.');
@@ -520,7 +683,6 @@
                 const userEmail = session.user.email;
                 console.log('[ALTERAR-SENHA] Reautenticando usuário:', userEmail);
 
-                // 2. REAUTENTICA com email + senha atual (valida a senha atual)
                 btn.innerHTML = 'Verificando senha atual... <span class="loading"></span>';
 
                 const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
@@ -536,7 +698,6 @@
                 console.log('[ALTERAR-SENHA] Reautenticação OK, atualizando senha...');
                 btn.innerHTML = 'Atualizando senha... <span class="loading"></span>';
 
-                // 3. ATUALIZA a senha (agora com nonce/reauth válido)
                 const { error: updateError } = await supabaseClient.auth.updateUser({ 
                     password: newPass 
                 });
@@ -548,12 +709,11 @@
 
                 console.log('[ALTERAR-SENHA] Senha alterada com sucesso!');
 
-                // 4. Sucesso!
-                document.getElementById('formAlterarSenha').style.display = 'none';
-                document.getElementById('stepSuccess').style.display = 'block';
-                showAlert('✅ Senha alterada com sucesso!', 'success');
+                // Show success
+                document.getElementById('formCard').classList.add('hidden');
+                document.getElementById('successCard').classList.remove('hidden');
+                showAlert('&#9989; Senha alterada com sucesso!', 'success');
 
-                // 5. Atualiza a sessão no localStorage para refletir a nova senha
                 const { data: { session: newSession } } = await supabaseClient.auth.getSession();
                 if (newSession) {
                     const dadosSessao = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
@@ -565,9 +725,16 @@
                 console.error('[ALTERAR-SENHA] Erro:', err);
                 showAlert('Erro: ' + err.message);
                 btn.disabled = false;
-                btn.innerHTML = 'Alterar Senha';
+                btn.innerHTML = '<i class="fas fa-key"></i> Alterar Senha';
             }
         });
+
+        async function logout() {
+            try { await supabaseClient.auth.signOut(); } catch (err) {}
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
 
         window.addEventListener('load', init);
     </script>
