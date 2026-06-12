@@ -1,17 +1,19 @@
 /**
  * NAVMENU - Menu Hamburger para VendaLive
- * v2.3 - Apenas configuracao.html bloqueada para DEV/ADMIN
+ * v2.4 - Apenas 'dev' tem acesso a Configurações do Sistema
  */
 (function() {
     'use strict';
     if (window.__NAVMENU_INITIALIZED) return;
     window.__NAVMENU_INITIALIZED = true;
 
-    // ===== VERIFICAR SE USUÁRIO É DEV/ADMIN =====
-    function isDevOrAdmin() {
+    // ===== VERIFICAR SE USUÁRIO É DEV =====
+    // Apenas 'dev' tem acesso a Configurações do Sistema
+    // 'admin', 'vendedor', 'usuario', 'basic' etc. NÃO têm acesso
+    function isDev() {
         var usuario = window.authUsuario || window.sessaoUsuario || {};
         var nivel = (usuario.nivel_acesso || usuario.nivel || '').toLowerCase().trim();
-        return nivel === 'dev' || nivel === 'admin' || nivel === 'desenvolvedor';
+        return nivel === 'dev' || nivel === 'desenvolvedor';
     }
 
     var MENU_ITEMS = [
@@ -84,13 +86,13 @@
         var links = document.getElementById('navMenuLinks');
         if (!links) return;
 
-        var ehDev = isDevOrAdmin();
+        var ehDev = isDev();
         links.innerHTML = '';
 
         for (var i = 0; i < MENU_ITEMS.length; i++) {
             var item = MENU_ITEMS[i];
 
-            // Se é item dev-only e usuário não é dev/admin, pula
+            // Se é item dev-only e usuário não é dev, pula
             if (item.devOnly && !ehDev) continue;
 
             var active = isCurrent(item.url) ? ' active' : '';
