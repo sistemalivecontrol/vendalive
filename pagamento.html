@@ -42,7 +42,6 @@
             text-align: center;
         }
 
-        /* Header com logo */
         .header {
             text-align: center;
             margin-bottom: 32px;
@@ -67,7 +66,6 @@
             font-size: 14px;
         }
 
-        /* Card principal */
         .card {
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(20px);
@@ -83,27 +81,23 @@
             text-align: center;
             margin-bottom: 20px;
         }
-
         .plano-nome {
             font-size: 18px;
             font-weight: 600;
             color: #fff;
             margin-bottom: 8px;
         }
-
         .plano-preco {
             font-size: 36px;
             font-weight: 700;
             color: #5b9bd5;
             margin-bottom: 4px;
         }
-
         .plano-preco span {
             font-size: 16px;
             font-weight: 400;
             color: rgba(255,255,255,0.5);
         }
-
         .plano-vencimento {
             font-size: 13px;
             color: rgba(255,255,255,0.5);
@@ -132,17 +126,14 @@
             transition: all 0.3s ease;
             margin-bottom: 12px;
         }
-
         .metodo-pagamento:hover {
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(91, 155, 213, 0.3);
         }
-
         .metodo-pagamento.selected {
             border-color: #5b9bd5;
             background: rgba(91, 155, 213, 0.1);
         }
-
         .metodo-icon {
             width: 48px;
             height: 48px;
@@ -154,23 +145,17 @@
             font-size: 24px;
             flex-shrink: 0;
         }
-
-        .metodo-info {
-            flex: 1;
-        }
-
+        .metodo-info { flex: 1; }
         .metodo-titulo {
             font-size: 15px;
             font-weight: 600;
             color: #fff;
             margin-bottom: 4px;
         }
-
         .metodo-desc {
             font-size: 12px;
             color: rgba(255,255,255,0.5);
         }
-
         .metodo-arrow {
             font-size: 20px;
             color: rgba(255,255,255,0.5);
@@ -190,31 +175,26 @@
             justify-content: center;
             gap: 8px;
         }
-
         .btn-primary {
             background: #5b9bd5;
             color: #fff;
             box-shadow: 0 4px 16px rgba(91, 155, 213, 0.3);
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 24px rgba(91, 155, 213, 0.4);
         }
-
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-
         .btn-secondary {
             background: transparent;
             color: rgba(255,255,255,0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             margin-top: 12px;
         }
-
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.05);
             color: #fff;
@@ -229,7 +209,6 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -241,28 +220,24 @@
             margin-top: 16px;
             font-size: 14px;
         }
-
         .status-box.success {
             display: block;
             background: rgba(34, 197, 94, 0.1);
             border: 1px solid rgba(34, 197, 94, 0.3);
             color: #22c55e;
         }
-
         .status-box.error {
             display: block;
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #ef4444;
         }
-
         .status-box.warning {
             display: block;
             background: rgba(234, 179, 8, 0.1);
             border: 1px solid rgba(234, 179, 8, 0.3);
             color: #eab308;
         }
-
         .status-box.info {
             display: block;
             background: rgba(91, 155, 213, 0.1);
@@ -273,7 +248,6 @@
         .dados-cliente {
             margin-bottom: 20px;
         }
-
         .dados-cliente h3 {
             font-size: 14px;
             color: rgba(255,255,255,0.5);
@@ -281,7 +255,6 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .dado-item {
             display: flex;
             justify-content: space-between;
@@ -289,11 +262,9 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 14px;
         }
-
         .dado-label {
             color: rgba(255,255,255,0.5);
         }
-
         .dado-valor {
             color: #fff;
             font-weight: 500;
@@ -310,16 +281,13 @@
             color: rgba(255,255,255,0.5);
             text-align: center;
         }
-
         .polling-status.active {
             display: block;
         }
-
         .polling-dots::after {
             content: '';
             animation: dots 1.5s steps(4, end) infinite;
         }
-
         @keyframes dots {
             0% { content: ''; }
             25% { content: '.'; }
@@ -338,17 +306,14 @@
             margin-bottom: 16px;
             text-align: center;
         }
-
         .erro-box h3 {
             font-size: 18px;
             margin-bottom: 8px;
         }
-
         .erro-box p {
             font-size: 14px;
             margin-bottom: 16px;
         }
-
         .warning-icon {
             font-size: 48px;
             margin-bottom: 12px;
@@ -365,7 +330,6 @@
             font-size: 14px;
             line-height: 1.5;
         }
-
         .nova-aba-msg strong {
             display: block;
             margin-bottom: 8px;
@@ -384,34 +348,49 @@
             text-align: left;
             word-break: break-all;
         }
+
+        .email-status {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .email-status.sent {
+            display: block;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+        .email-status.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
     <div class="container">
-        <!-- Header com logo -->
         <div class="header">
             <img src="./img/logo-livecontrol.png" alt="VendaLive" class="logo-img">
             <h1>Venda<span>Live</span></h1>
             <p>Ative sua conta para começar a usar</p>
         </div>
 
-        <!-- Card Principal -->
         <div class="card" id="card-principal">
-            <!-- Plano -->
             <div class="plano-header">
                 <div class="plano-nome" id="plano-nome">Plano Basic</div>
                 <div class="plano-preco" id="plano-preco">R$ 80,00<span>/mês</span></div>
                 <div class="plano-vencimento" id="plano-vencimento">Vencimento: 16/06/2026</div>
             </div>
 
-            <!-- Info -->
             <div class="info-box">
                 Escolha como deseja pagar sua mensalidade. Após o pagamento, sua conta será ativada automaticamente.
             </div>
 
-            <!-- Dados do Cliente (preenchidos via JS) -->
             <div class="dados-cliente" id="dados-cliente">
                 <h3>Dados do Cadastro</h3>
                 <div class="dado-item">
@@ -432,14 +411,12 @@
                 </div>
             </div>
 
-            <!-- Mensagem Nova Aba (inicialmente oculta) -->
             <div class="nova-aba-msg hidden" id="nova-aba-msg">
                 <strong>✅ Página de pagamento aberta!</strong>
                 Uma nova aba foi aberta para você realizar o pagamento.<br>
                 <strong>Não feche esta aba!</strong> Assim que o pagamento for confirmado, você será redirecionado automaticamente.
             </div>
 
-            <!-- Métodos de Pagamento -->
             <div id="metodos-pagamento">
                 <div class="metodo-pagamento" id="metodo-cartao" onclick="selecionarMetodo('cartao')">
                     <div class="metodo-icon">💳</div>
@@ -449,7 +426,6 @@
                     </div>
                     <div class="metodo-arrow">›</div>
                 </div>
-
                 <div class="metodo-pagamento" id="metodo-pix" onclick="selecionarMetodo('pix')">
                     <div class="metodo-icon">⚡</div>
                     <div class="metodo-info">
@@ -458,7 +434,6 @@
                     </div>
                     <div class="metodo-arrow">›</div>
                 </div>
-
                 <div class="metodo-pagamento" id="metodo-boleto" onclick="selecionarMetodo('boleto')">
                     <div class="metodo-icon">📄</div>
                     <div class="metodo-info">
@@ -469,30 +444,25 @@
                 </div>
             </div>
 
-            <!-- Status -->
             <div class="status-box" id="status-box"></div>
+            <div class="email-status" id="email-status"></div>
 
-            <!-- Polling Status -->
             <div class="polling-status" id="polling-status">
                 <span class="loading"></span>
                 Aguardando confirmação do pagamento<span class="polling-dots"></span>
                 <br><small>Tentativa <span id="polling-tentativa">1</span>/30</small>
             </div>
 
-            <!-- Debug Info -->
             <div class="debug-info hidden" id="debug-info"></div>
 
-            <!-- Botões -->
             <button class="btn btn-primary" id="btn-pagar" onclick="processarPagamento()" disabled>
                 <span id="btn-texto">Selecione um método de pagamento</span>
             </button>
-
             <button class="btn btn-secondary" id="btn-voltar" onclick="voltarCadastro()">
                 ← Voltar para Cadastro
             </button>
         </div>
 
-        <!-- Card de Erro (inicialmente oculto) -->
         <div class="card hidden" id="card-erro">
             <div class="erro-box">
                 <div class="warning-icon">⚠️</div>
@@ -507,14 +477,18 @@
             </div>
         </div>
 
-        <!-- Card de Sucesso (inicialmente oculto) -->
         <div class="card hidden" id="card-sucesso">
             <div style="text-align: center; padding: 20px;">
                 <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
                 <h2 style="font-size: 24px; margin-bottom: 12px; color: #22c55e;">Conta Ativada!</h2>
-                <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">
+                <p style="color: rgba(255,255,255,0.5); margin-bottom: 16px;">
                     Seu pagamento foi confirmado e sua conta está ativa.
-                    <br>Você será redirecionado para o dashboard em <span id="contador">5</span> segundos...
+                </p>
+                <div id="email-info" style="background: rgba(91,155,213,0.1); border: 1px solid rgba(91,155,213,0.3); border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #b8c5d6;">
+                    <span id="email-status-text">📧 Enviando e-mail com dados de acesso...</span>
+                </div>
+                <p style="color: rgba(255,255,255,0.5); margin-bottom: 24px;">
+                    Você será redirecionado para o dashboard em <span id="contador">5</span> segundos...
                 </p>
                 <button class="btn btn-primary" onclick="irParaDashboard()">
                     Acessar Dashboard →
@@ -540,30 +514,79 @@
         let dadosCadastro = null;
         let clienteId = null;
         let pollingInterval = null;
+        let emailEnviado = false;
 
         // ============================================
         // FUNÇÃO: Fazer fetch autenticado nas Edge Functions
-        // CORREÇÃO: Sempre enviar Authorization Bearer com anon key
         // ============================================
         async function fetchEdgeFunction(functionName, body) {
             const url = EDGE_FUNCTION_BASE + '/' + functionName;
-
-            // CORREÇÃO CRÍTICA: Edge Functions exigem Authorization Bearer
-            // O apikey sozinho não é suficiente!
             const headers = {
                 'Content-Type': 'application/json',
                 'apikey': SUPABASE_ANON_KEY,
                 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
             };
-
-            console.log('[FETCH] Chamando:', functionName, 'URL:', url);
-            console.log('[FETCH] Headers:', JSON.stringify(headers));
-
+            console.log('[FETCH] Chamando:', functionName);
             return fetch(url, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body)
             });
+        }
+
+        // ============================================
+        // ENVIAR EMAIL DE BOAS-VINDAS VIA EDGE FUNCTION
+        // ============================================
+        async function enviarEmailBoasVindas() {
+            if (emailEnviado) {
+                console.log('[EMAIL] E-mail já enviado, ignorando...');
+                return;
+            }
+
+            if (!dadosCadastro || !dadosCadastro.email) {
+                console.error('[EMAIL] Dados do cadastro não disponíveis para enviar e-mail');
+                document.getElementById('email-status-text').textContent = '⚠️ Dados do cadastro não disponíveis';
+                document.getElementById('email-info').style.borderColor = '#eab308';
+                document.getElementById('email-info').style.background = 'rgba(234, 179, 8, 0.1)';
+                return;
+            }
+
+            try {
+                console.log('[EMAIL] Enviando e-mail de boas-vindas para:', dadosCadastro.email);
+
+                const response = await fetchEdgeFunction('enviar-email-boas-vindas', {
+                    cliente_id: dadosCadastro.cliente_id,
+                    nome: dadosCadastro.nome || 'Cliente',
+                    email: dadosCadastro.email,
+                    senha: dadosCadastro.senha || '******',
+                    plano: dadosCadastro.plano || 'Basic',
+                    valor: 'R$ ' + (dadosCadastro.valor || '80,00'),
+                    data_ativacao: new Date().toLocaleDateString('pt-BR'),
+                    data_expiracao: new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('pt-BR'),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[EMAIL] Erro na resposta:', errorText);
+                    throw new Error('Erro ao enviar e-mail: ' + response.status);
+                }
+
+                const result = await response.json();
+                console.log('[EMAIL] ✅ E-mail enviado com sucesso:', result);
+                emailEnviado = true;
+
+                document.getElementById('email-status-text').textContent = '✅ E-mail com dados de acesso enviado!';
+                document.getElementById('email-info').style.borderColor = '#22c55e';
+                document.getElementById('email-info').style.background = 'rgba(34, 197, 94, 0.1)';
+                document.getElementById('email-info').style.color = '#22c55e';
+
+            } catch (error) {
+                console.error('[EMAIL] ❌ Erro ao enviar e-mail:', error);
+                document.getElementById('email-status-text').textContent = '⚠️ Erro ao enviar e-mail: ' + error.message;
+                document.getElementById('email-info').style.borderColor = '#ef4444';
+                document.getElementById('email-info').style.background = 'rgba(239, 68, 68, 0.1)';
+                document.getElementById('email-info').style.color = '#ef4444';
+            }
         }
 
         // ============================================
@@ -583,13 +606,11 @@
                 return;
             }
 
-            // Limpar pagamento pendente antigo se for novo cadastro
             const novoCadastro = sessionStorage.getItem('cadastro_pendente');
             if (novoCadastro) {
                 try {
                     const dadosNovo = JSON.parse(novoCadastro);
                     const pagamentoPendente = sessionStorage.getItem('pagamento_pendente');
-
                     if (pagamentoPendente) {
                         const dadosPendente = JSON.parse(pagamentoPendente);
                         if (dadosPendente.cliente_id !== dadosNovo.cliente_id) {
@@ -606,10 +627,7 @@
                 }
             }
 
-            // Carregar dados do cadastro
             await carregarDadosCadastro();
-
-            // Verificar se já existe pagamento pendente
             await verificarPagamentoPendente();
         });
 
@@ -617,13 +635,11 @@
             let tentativas = 0;
             while (tentativas < maxTentativas) {
                 if (window.supabase && typeof window.supabase === 'object' && window.supabase.createClient) {
-                    console.log('[PAGAMENTO] Supabase disponível após', tentativas, 'tentativas');
                     return true;
                 }
                 tentativas++;
                 await new Promise(r => setTimeout(r, 300));
             }
-            console.error('[PAGAMENTO] Supabase não carregou');
             return false;
         }
 
@@ -632,20 +648,17 @@
         // ============================================
         async function carregarDadosCadastro() {
             const dados = sessionStorage.getItem('cadastro_pendente');
-
             if (dados) {
                 try {
                     dadosCadastro = JSON.parse(dados);
                     console.log('[PAGAMENTO] Dados do cadastro:', dadosCadastro);
                     clienteId = dadosCadastro.cliente_id;
 
-                    // Preencher dados na tela
                     document.getElementById('dc-nome').textContent = dadosCadastro.nome || '-';
                     document.getElementById('dc-email').textContent = dadosCadastro.email || '-';
                     document.getElementById('dc-cnpj').textContent = dadosCadastro.cnpj || dadosCadastro.cpf || '-';
                     document.getElementById('dc-asaas-id').textContent = dadosCadastro.asaas_customer_id || 'Não criado';
 
-                    // Atualizar plano
                     if (dadosCadastro.plano) {
                         document.getElementById('plano-nome').textContent = 'Plano ' + dadosCadastro.plano;
                     }
@@ -654,22 +667,18 @@
                             'R$ ' + parseFloat(dadosCadastro.valor).toFixed(2).replace('.', ',') + '<span>/mês</span>';
                     }
 
-                    // Calcular vencimento (hoje + 7 dias)
                     const hoje = new Date();
                     hoje.setDate(hoje.getDate() + 7);
                     document.getElementById('plano-vencimento').textContent = 
                         'Vencimento: ' + hoje.toLocaleDateString('pt-BR');
 
-                    // Verificar no banco se asaas_customer_id já foi salvo
                     if (clienteId) {
                         await verificarAsaasCustomerIdNoBanco();
                     }
-
                 } catch (e) {
                     console.error('[PAGAMENTO] Erro ao parsear dados:', e);
                 }
             } else {
-                console.warn('[PAGAMENTO] Nenhum dado de cadastro no sessionStorage');
                 const params = new URLSearchParams(window.location.search);
                 const clienteIdUrl = params.get('cliente_id');
                 if (clienteIdUrl) {
@@ -679,38 +688,23 @@
             }
         }
 
-        // Verificar asaas_customer_id no banco
         async function verificarAsaasCustomerIdNoBanco() {
             if (!clienteId || !supabaseClient) return;
-
             try {
-                console.log('[PAGAMENTO] Verificando asaas_customer_id no banco para:', clienteId);
                 const { data, error } = await supabaseClient
                     .from('clientes_sistema')
                     .select('asaas_customer_id, ativo, status_pagamento')
                     .eq('id', clienteId)
                     .single();
-
-                if (error) {
-                    console.error('[PAGAMENTO] Erro ao buscar no banco:', error);
-                    return;
-                }
-
+                if (error) return;
                 if (data) {
-                    console.log('[PAGAMENTO] Dados do banco:', data);
-
                     document.getElementById('dc-asaas-id').textContent = data.asaas_customer_id || 'Não criado';
-
                     if (data.asaas_customer_id) {
                         dadosCadastro.asaas_customer_id = data.asaas_customer_id;
                         sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosCadastro));
-                        console.log('[PAGAMENTO] ✅ asaas_customer_id atualizado dos dados:', data.asaas_customer_id);
                     }
-
                     if (data.ativo === true) {
-                        console.log('[PAGAMENTO] Cliente já está ativo!');
                         mostrarSucesso();
-                        return;
                     }
                 }
             } catch (e) {
@@ -725,65 +719,43 @@
                     .select('*')
                     .eq('id', id)
                     .single();
-
                 if (error) throw error;
-
                 if (data) {
                     document.getElementById('dc-nome').textContent = data.nome || '-';
                     document.getElementById('dc-email').textContent = data.email || '-';
                     document.getElementById('dc-cnpj').textContent = data.cnpj || data.cpf_cnpj || '-';
                     document.getElementById('dc-asaas-id').textContent = data.asaas_customer_id || 'Não criado';
-
-                    if (data.ativo) {
-                        mostrarSucesso();
-                    }
+                    if (data.ativo) mostrarSucesso();
                 }
             } catch (e) {
                 console.error('[PAGAMENTO] Erro ao buscar cliente:', e);
             }
         }
 
-        // ============================================
-        // VERIFICAR PAGAMENTO PENDENTE
-        // ============================================
         async function verificarPagamentoPendente() {
             const pendente = sessionStorage.getItem('pagamento_pendente');
             if (pendente) {
                 try {
                     const dados = JSON.parse(pendente);
                     console.log('[PAGAMENTO] Pagamento pendente encontrado:', dados);
-
                     clienteId = dados.cliente_id;
-
                     mostrarStatus('info', 'Aguardando confirmação do pagamento anterior...');
                     document.getElementById('metodos-pagamento').classList.add('hidden');
                     document.getElementById('btn-pagar').classList.add('hidden');
                     document.getElementById('nova-aba-msg').classList.remove('hidden');
-
                     iniciarPolling(clienteId);
-
                 } catch (e) {
                     console.error('[PAGAMENTO] Erro ao verificar pendente:', e);
                 }
             }
         }
 
-        // ============================================
-        // SELECIONAR MÉTODO DE PAGAMENTO
-        // ============================================
         function selecionarMetodo(metodo) {
-            console.log('[PAGAMENTO] Método selecionado:', metodo);
-
-            document.querySelectorAll('.metodo-pagamento').forEach(el => {
-                el.classList.remove('selected');
-            });
-
+            document.querySelectorAll('.metodo-pagamento').forEach(el => el.classList.remove('selected'));
             document.getElementById('metodo-' + metodo).classList.add('selected');
             metodoSelecionado = metodo;
-
             const btn = document.getElementById('btn-pagar');
             btn.disabled = false;
-
             const textos = {
                 'cartao': 'Pagar com Cartão de Crédito',
                 'pix': 'Gerar QR Code PIX',
@@ -792,22 +764,13 @@
             document.getElementById('btn-texto').textContent = textos[metodo];
         }
 
-        // ============================================
-        // PROCESSAR PAGAMENTO
-        // ============================================
         async function processarPagamento() {
             if (!metodoSelecionado) {
                 mostrarStatus('warning', 'Selecione um método de pagamento');
                 return;
             }
-
-            if (!dadosCadastro) {
+            if (!dadosCadastro || !dadosCadastro.cliente_id) {
                 mostrarErro('Dados do cadastro não encontrados. Volte ao cadastro.');
-                return;
-            }
-
-            if (!dadosCadastro.cliente_id) {
-                mostrarErro('ID do cliente não encontrado. Volte ao cadastro.');
                 return;
             }
 
@@ -816,26 +779,12 @@
             document.getElementById('btn-texto').innerHTML = '<span class="loading"></span> Processando...';
 
             try {
-                console.log('[PAGAMENTO] Iniciando processamento:', metodoSelecionado);
-                console.log('[PAGAMENTO] Dados cadastro:', dadosCadastro);
-
-                // 1. Criar cliente no Asaas (se ainda não tiver)
                 if (!dadosCadastro.asaas_customer_id) {
-                    console.log('[PAGAMENTO] Criando cliente no Asaas...');
                     await criarClienteAsaas();
-                } else {
-                    console.log('[PAGAMENTO] Cliente Asaas já existe:', dadosCadastro.asaas_customer_id);
                 }
-
-                // 2. Criar assinatura/cobrança
-                if (metodoSelecionado === 'cartao') {
-                    await criarAssinaturaCartao();
-                } else if (metodoSelecionado === 'pix') {
-                    await criarCobrancaPix();
-                } else if (metodoSelecionado === 'boleto') {
-                    await criarCobrancaBoleto();
-                }
-
+                if (metodoSelecionado === 'cartao') await criarAssinaturaCartao();
+                else if (metodoSelecionado === 'pix') await criarCobrancaPix();
+                else if (metodoSelecionado === 'boleto') await criarCobrancaBoleto();
             } catch (error) {
                 console.error('[PAGAMENTO] Erro:', error);
                 mostrarErro('Erro ao processar: ' + (error.message || 'Erro desconhecido'));
@@ -844,13 +793,7 @@
             }
         }
 
-        // ============================================
-        // CRIAR CLIENTE NO ASAAS
-        // ============================================
         async function criarClienteAsaas() {
-            console.log('[PAGAMENTO] Criando cliente no Asaas...');
-            console.log('[PAGAMENTO] cliente_sistema_id:', dadosCadastro.cliente_id);
-
             const response = await fetchEdgeFunction('asaas-criar-cliente', {
                 nome: dadosCadastro.nome,
                 email: dadosCadastro.email,
@@ -859,108 +802,56 @@
                 mobilePhone: dadosCadastro.telefone,
                 cliente_sistema_id: dadosCadastro.cliente_id
             });
-
-            console.log('[PAGAMENTO] Response status:', response.status);
-
             if (!response.ok) {
                 const text = await response.text();
-                console.error('[PAGAMENTO] Erro response:', text);
                 let errorData;
-                try {
-                    errorData = JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Erro ao criar cliente no Asaas: ' + response.status + ' - ' + text.substring(0, 200));
-                }
-                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
+                try { errorData = JSON.parse(text); } catch (e) {}
+                throw new Error(errorData?.error || 'Erro ao criar cliente no Asaas');
             }
-
             const result = await response.json();
-            console.log('[PAGAMENTO] Resultado criação cliente:', result);
-
             dadosCadastro.asaas_customer_id = result.customer_id || result.asaas_customer_id;
-
             if (dadosCadastro.cliente_id && dadosCadastro.asaas_customer_id) {
-                try {
-                    console.log('[PAGAMENTO] Salvando asaas_customer_id no banco...');
-                    const { data, error } = await supabaseClient
-                        .from('clientes_sistema')
-                        .update({ 
-                            asaas_customer_id: dadosCadastro.asaas_customer_id,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', dadosCadastro.cliente_id)
-                        .select();
-
-                    if (error) {
-                        console.error('[PAGAMENTO] Erro ao salvar no banco:', error);
-                    } else {
-                        console.log('[PAGAMENTO] ✅ asaas_customer_id salvo no banco:', data);
-                    }
-                } catch (e) {
-                    console.error('[PAGAMENTO] Erro ao atualizar banco:', e);
-                }
+                await supabaseClient.from('clientes_sistema').update({ 
+                    asaas_customer_id: dadosCadastro.asaas_customer_id,
+                    updated_at: new Date().toISOString()
+                }).eq('id', dadosCadastro.cliente_id);
             }
-
             document.getElementById('dc-asaas-id').textContent = dadosCadastro.asaas_customer_id;
             sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosCadastro));
-
-            console.log('[PAGAMENTO] Cliente Asaas criado:', dadosCadastro.asaas_customer_id);
         }
 
-        // ============================================
-        // CRIAR PAYMENT LINK PARA CARTÃO
-        // ============================================
         async function criarAssinaturaCartao() {
-            console.log('[PAGAMENTO] Criando payment link para cartao...');
-
             const response = await fetchEdgeFunction('asaas-criar-payment-link', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 plano: dadosCadastro.plano || 'Basic',
                 cliente_sistema_id: dadosCadastro.cliente_id
             });
-
             if (!response.ok) {
                 const text = await response.text();
                 let errorData;
-                try {
-                    errorData = JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Erro ao criar payment link: ' + response.status);
-                }
-                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
+                try { errorData = JSON.parse(text); } catch (e) {}
+                throw new Error(errorData?.error || 'Erro ao criar payment link');
             }
-
             const result = await response.json();
-            console.log('[PAGAMENTO] Payment link criado:', result);
-
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_payment_link_id: result.payment_link_id,
                 metodo: 'cartao',
                 criado_em: new Date().toISOString()
             }));
-
             if (result.url) {
-                console.log('[PAGAMENTO] Abrindo payment link em nova aba:', result.url);
                 window.open(result.url, '_blank');
-
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
-
                 iniciarPolling(dadosCadastro.cliente_id);
             } else {
                 throw new Error('URL do payment link nao retornada');
             }
         }
 
-        // ============================================
-        // CRIAR COBRANÇA PIX
-        // ============================================
         async function criarCobrancaPix() {
-            console.log('[PAGAMENTO] Criando cobrança PIX...');
-
             const response = await fetchEdgeFunction('asaas-criar-cobranca', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
@@ -968,21 +859,13 @@
                 billingType: 'PIX',
                 cliente_sistema_id: dadosCadastro.cliente_id
             });
-
             if (!response.ok) {
                 const text = await response.text();
                 let errorData;
-                try {
-                    errorData = JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Erro ao criar cobrança PIX: ' + response.status);
-                }
-                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
+                try { errorData = JSON.parse(text); } catch (e) {}
+                throw new Error(errorData?.error || 'Erro ao criar cobrança PIX');
             }
-
             const result = await response.json();
-            console.log('[PAGAMENTO] Cobrança PIX criada:', result);
-
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_payment_id: result.payment_id,
@@ -992,16 +875,11 @@
                 invoice_url: result.invoice_url,
                 criado_em: new Date().toISOString()
             }));
-
             if (result.invoice_url || result.payment_link) {
-                const url = result.invoice_url || result.payment_link;
-                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
-                window.open(url, '_blank');
-
+                window.open(result.invoice_url || result.payment_link, '_blank');
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
-
                 iniciarPolling(dadosCadastro.cliente_id);
             } else if (result.qr_code_base64) {
                 mostrarQrCodePix(result);
@@ -1010,12 +888,7 @@
             }
         }
 
-        // ============================================
-        // CRIAR COBRANÇA BOLETO
-        // ============================================
         async function criarCobrancaBoleto() {
-            console.log('[PAGAMENTO] Criando cobrança Boleto...');
-
             const response = await fetchEdgeFunction('asaas-criar-cobranca', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
@@ -1023,21 +896,13 @@
                 billingType: 'BOLETO',
                 cliente_sistema_id: dadosCadastro.cliente_id
             });
-
             if (!response.ok) {
                 const text = await response.text();
                 let errorData;
-                try {
-                    errorData = JSON.parse(text);
-                } catch (e) {
-                    throw new Error('Erro ao criar boleto: ' + response.status);
-                }
-                throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
+                try { errorData = JSON.parse(text); } catch (e) {}
+                throw new Error(errorData?.error || 'Erro ao criar boleto');
             }
-
             const result = await response.json();
-            console.log('[PAGAMENTO] Boleto criado:', result);
-
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_payment_id: result.payment_id,
@@ -1045,30 +910,21 @@
                 invoice_url: result.invoice_url,
                 criado_em: new Date().toISOString()
             }));
-
             if (result.invoice_url || result.payment_link) {
-                const url = result.invoice_url || result.payment_link;
-                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
-                window.open(url, '_blank');
-
+                window.open(result.invoice_url || result.payment_link, '_blank');
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
-
                 iniciarPolling(dadosCadastro.cliente_id);
             } else {
                 mostrarErro('Erro ao gerar boleto. Tente novamente.');
             }
         }
 
-        // ============================================
-        // MOSTRAR QR CODE PIX
-        // ============================================
         function mostrarQrCodePix(dados) {
             document.getElementById('metodos-pagamento').classList.add('hidden');
             document.getElementById('btn-pagar').classList.add('hidden');
             document.getElementById('btn-voltar').classList.add('hidden');
-
             const container = document.getElementById('card-principal');
             const qrDiv = document.createElement('div');
             qrDiv.innerHTML = `
@@ -1086,7 +942,6 @@
                 </div>
             `;
             container.appendChild(qrDiv);
-
             iniciarPolling(dadosCadastro.cliente_id);
         }
 
@@ -1101,9 +956,8 @@
         // ============================================
         function iniciarPolling(clienteId, maxTentativas = 30) {
             console.log('[POLLING] Iniciando verificação para cliente:', clienteId);
-
             let tentativas = 0;
-            const intervalo = 5000; // 5 segundos
+            const intervalo = 5000;
 
             document.getElementById('polling-status').classList.add('active');
             document.getElementById('metodos-pagamento').classList.add('hidden');
@@ -1117,7 +971,7 @@
                 try {
                     const { data: cliente, error } = await supabaseClient
                         .from('clientes_sistema')
-                        .select('id, ativo, status_pagamento, data_ultimo_pagamento, asaas_customer_id, data_expiracao, nome')
+                        .select('id, ativo, status_pagamento, data_ultimo_pagamento, asaas_customer_id, data_expiracao, nome, email')
                         .eq('id', clienteId)
                         .single();
 
@@ -1133,13 +987,20 @@
 
                     const debugEl = document.getElementById('debug-info');
                     debugEl.classList.remove('hidden');
-                    debugEl.textContent = `Debug: ativo=${cliente.ativo}, status=${cliente.status_pagamento}, asaas_id=${cliente.asaas_customer_id || 'null'}`;
+                    debugEl.textContent = `Debug: ativo=${cliente.ativo}, status=${cliente.status_pagamento}`;
 
-                    const isAtivo = cliente.ativo === true || cliente.status_pagamento === 'ativo' || cliente.status_pagamento === 'RECEIVED';
+                    const isAtivo = cliente.ativo === true || 
+                                    cliente.status_pagamento === 'ativo' || 
+                                    cliente.status_pagamento === 'RECEIVED';
 
                     if (isAtivo) {
-                        console.log('[POLLING] ✅ Cliente ativado! ativo=' + cliente.ativo + ', status=' + cliente.status_pagamento);
+                        console.log('[POLLING] ✅ Cliente ativado!');
                         clearTimeout(pollingInterval);
+
+                        // Atualizar dadosCadastro com email do banco (se não tiver)
+                        if (!dadosCadastro.email && cliente.email) {
+                            dadosCadastro.email = cliente.email;
+                        }
 
                         sessionStorage.removeItem('pagamento_pendente');
                         sessionStorage.removeItem('cadastro_pendente');
@@ -1151,20 +1012,15 @@
                     if (tentativas < maxTentativas) {
                         pollingInterval = setTimeout(verificar, intervalo);
                     } else {
-                        console.log('[POLLING] ⏰ Máximo de tentativas atingido');
                         document.getElementById('polling-status').innerHTML = `
                             <span style="color: #eab308;">⚠️</span> Não recebemos a confirmação automática.<br>
                             <small>Se você já pagou, <a href="#" onclick="location.reload()" style="color: #5b9bd5;">clique aqui para verificar</a></small>
                         `;
-
                         document.getElementById('btn-pagar').classList.remove('hidden');
                         document.getElementById('btn-pagar').disabled = false;
                         document.getElementById('btn-texto').textContent = 'Verificar Pagamento';
-                        document.getElementById('btn-pagar').onclick = function() {
-                            location.reload();
-                        };
+                        document.getElementById('btn-pagar').onclick = function() { location.reload(); };
                     }
-
                 } catch (err) {
                     console.error('[POLLING] Erro inesperado:', err);
                     if (tentativas < maxTentativas) {
@@ -1172,26 +1028,16 @@
                     }
                 }
             };
-
             verificar();
         }
 
-        // ============================================
-        // MOSTRAR STATUS
-        // ============================================
         function mostrarStatus(tipo, mensagem) {
             const box = document.getElementById('status-box');
             box.className = 'status-box ' + tipo;
             box.textContent = mensagem;
-
-            setTimeout(() => {
-                box.className = 'status-box';
-            }, 5000);
+            setTimeout(() => { box.className = 'status-box'; }, 5000);
         }
 
-        // ============================================
-        // MOSTRAR ERRO
-        // ============================================
         function mostrarErro(mensagem) {
             console.error('[PAGAMENTO] Erro:', mensagem);
             document.getElementById('card-principal').classList.add('hidden');
@@ -1200,13 +1046,16 @@
         }
 
         // ============================================
-        // MOSTRAR SUCESSO
+        // MOSTRAR SUCESSO + ENVIAR EMAIL + REDIRECIONAR
         // ============================================
         function mostrarSucesso() {
             console.log('[PAGAMENTO] Sucesso! Redirecionando...');
             document.getElementById('card-principal').classList.add('hidden');
             document.getElementById('card-erro').classList.add('hidden');
             document.getElementById('card-sucesso').classList.remove('hidden');
+
+            // Enviar e-mail de boas-vindas via Edge Function
+            enviarEmailBoasVindas();
 
             let segundos = 5;
             const contador = document.getElementById('contador');
@@ -1221,9 +1070,6 @@
             }, 1000);
         }
 
-        // ============================================
-        // NAVEGAÇÃO
-        // ============================================
         function irParaDashboard() {
             window.location.href = 'dashboard.html';
         }
@@ -1240,9 +1086,7 @@
             document.getElementById('btn-pagar').disabled = false;
             document.getElementById('btn-texto').textContent = 'Selecione um método de pagamento';
             metodoSelecionado = null;
-            document.querySelectorAll('.metodo-pagamento').forEach(el => {
-                el.classList.remove('selected');
-            });
+            document.querySelectorAll('.metodo-pagamento').forEach(el => el.classList.remove('selected'));
         }
     </script>
 </body>
