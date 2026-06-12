@@ -3,196 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendaLive - Teste Edge Functions</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Teste Edge Functions</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: #0B193F;
-            min-height: 100vh;
-            padding: 40px 20px;
-            color: #fff;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #5b9bd5;
-        }
-        .subtitle {
-            color: rgba(255,255,255,0.5);
-            font-size: 14px;
-            margin-bottom: 32px;
-        }
-        .test-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-        }
-        .test-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .test-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .test-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .status-pending { background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.5); }
-        .status-loading { background: rgba(91, 155, 213, 0.2); color: #5b9bd5; }
-        .status-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .status-error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #5b9bd5;
-            color: #fff;
-        }
+        body { font-family: Arial, sans-serif; background: #0B193F; color: #fff; padding: 20px; }
+        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .btn { padding: 10px 20px; background: #5b9bd5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
         .btn:hover { background: #4a8bc4; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .result-box {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-            max-height: 200px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-            display: none;
-        }
-        .result-box.error { border-left: 3px solid #ef4444; display: block; }
-        .result-box.success { border-left: 3px solid #22c55e; display: block; }
-        .loading {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn:disabled { opacity: 0.5; }
+        .result { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; margin-top: 10px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; display: none; }
+        .result.show { display: block; }
+        .status { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .pending { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+        .loading { background: rgba(91,155,213,0.2); color: #5b9bd5; }
+        .success { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .error { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h1 { color: #5b9bd5; font-size: 22px; }
+        h3 { font-size: 16px; margin: 0; }
+        p { color: rgba(255,255,255,0.5); font-size: 13px; margin: 5px 0 15px; }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <div class="container">
-        <h1>Teste Edge Functions</h1>
-        <p class="subtitle">Verifique se todas as Edge Functions estao acessiveis e com CORS correto</p>
+    <h1>Teste Edge Functions</h1>
+    <p style="margin-bottom: 30px;">Verifique se as Edge Functions estao acessiveis</p>
 
-        <div class="test-card" id="test-cors">
-            <div class="test-header">
-                <span class="test-title">1. CORS Preflight (OPTIONS)</span>
-                <span class="test-status status-pending" id="status-cors">PENDENTE</span>
-            </div>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Verifica se o servidor aceita o header 'apikey' no preflight CORS
-            </p>
-            <button class="btn" id="btn-cors" onclick="testarCORS()">Testar CORS</button>
-            <div class="result-box" id="result-cors"></div>
+    <div class="card">
+        <div class="header">
+            <h3>1. CORS Preflight</h3>
+            <span class="status pending" id="s1">PENDENTE</span>
         </div>
-
-        <div class="test-card" id="test-cliente">
-            <div class="test-header">
-                <span class="test-title">2. asaas-criar-cliente</span>
-                <span class="test-status status-pending" id="status-cliente">PENDENTE</span>
-            </div>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa criacao de cliente no Asaas
-            </p>
-            <button class="btn" id="btn-cliente" onclick="testarCriarCliente()">Testar Criar Cliente</button>
-            <div class="result-box" id="result-cliente"></div>
-        </div>
-
-        <div class="test-card" id="test-cobranca">
-            <div class="test-header">
-                <span class="test-title">3. asaas-criar-cobranca</span>
-                <span class="test-status status-pending" id="status-cobranca">PENDENTE</span>
-            </div>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa criacao de cobranca PIX
-            </p>
-            <button class="btn" id="btn-cobranca" onclick="testarCriarCobranca()">Testar Criar Cobranca</button>
-            <div class="result-box" id="result-cobranca"></div>
-        </div>
-
-        <div class="test-card" id="test-webhook">
-            <div class="test-header">
-                <span class="test-title">4. asaas-webhook</span>
-                <span class="test-status status-pending" id="status-webhook">PENDENTE</span>
-            </div>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Testa webhook do Asaas
-            </p>
-            <button class="btn" id="btn-webhook" onclick="testarWebhook()">Testar Webhook</button>
-            <div class="result-box" id="result-webhook"></div>
-        </div>
-
-        <div style="text-align: center; margin-top: 32px;">
-            <button class="btn" onclick="rodarTodos()" style="padding: 14px 32px; font-size: 16px;">
-                Rodar Todos os Testes
-            </button>
-        </div>
+        <p>Verifica se o servidor aceita o header apikey</p>
+        <button class="btn" id="b1" onclick="test1()">Testar CORS</button>
+        <div class="result" id="r1"></div>
     </div>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    <div class="card">
+        <div class="header">
+            <h3>2. asaas-criar-cliente</h3>
+            <span class="status pending" id="s2">PENDENTE</span>
+        </div>
+        <p>Testa criacao de cliente no Asaas</p>
+        <button class="btn" id="b2" onclick="test2()">Testar Criar Cliente</button>
+        <div class="result" id="r2"></div>
+    </div>
+
+    <div class="card">
+        <div class="header">
+            <h3>3. asaas-criar-cobranca</h3>
+            <span class="status pending" id="s3">PENDENTE</span>
+        </div>
+        <p>Testa criacao de cobranca PIX</p>
+        <button class="btn" id="b3" onclick="test3()">Testar Criar Cobranca</button>
+        <div class="result" id="r3"></div>
+    </div>
+
+    <div class="card">
+        <div class="header">
+            <h3>4. asaas-webhook</h3>
+            <span class="status pending" id="s4">PENDENTE</span>
+        </div>
+        <p>Testa webhook do Asaas</p>
+        <button class="btn" id="b4" onclick="test4()">Testar Webhook</button>
+        <div class="result" id="r4"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button class="btn" onclick="runAll()" style="padding: 14px 32px; font-size: 16px;">Rodar Todos</button>
+    </div>
+
     <script>
         var SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         var EDGE_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
 
-        function setStatus(id, status, text) {
-            var el = document.getElementById('status-' + id);
-            el.className = 'test-status status-' + status;
+        function setStatus(id, type, text) {
+            var el = document.getElementById('s' + id);
+            el.className = 'status ' + type;
             el.textContent = text;
         }
 
-        function showResult(id, content, isError) {
-            var box = document.getElementById('result-' + id);
-            box.style.display = 'block';
-            box.className = 'result-box ' + (isError ? 'error' : 'success');
-            box.textContent = content;
+        function showResult(id, text) {
+            var el = document.getElementById('r' + id);
+            el.textContent = text;
+            el.className = 'result show';
         }
 
         function setLoading(id, loading) {
-            var btn = document.getElementById('btn-' + id);
+            var btn = document.getElementById('b' + id);
             btn.disabled = loading;
-            if (loading) {
-                btn.innerHTML = '<span class="loading"></span> Testando...';
-            } else {
-                btn.innerHTML = 'Testar ' + id.charAt(0).toUpperCase() + id.slice(1);
-            }
+            btn.textContent = loading ? 'Testando...' : 'Testar';
         }
 
-        function testarCORS() {
-            setLoading('cors', true);
-            setStatus('cors', 'loading', 'Testando...');
+        function test1() {
+            setLoading(1, true);
+            setStatus(1, 'loading', 'Testando...');
 
             fetch(EDGE_BASE + '/asaas-criar-cliente', {
                 method: 'OPTIONS',
@@ -204,47 +109,35 @@
             }).then(function(response) {
                 var allowOrigin = response.headers.get('access-control-allow-origin');
                 var allowHeaders = response.headers.get('access-control-allow-headers');
-
                 var hasApikey = allowHeaders && allowHeaders.indexOf('apikey') !== -1;
-                var hasOrigin = allowOrigin === '*' || (allowOrigin && allowOrigin.indexOf('vendalive') !== -1);
 
-                var result = 'Status: ' + response.status + ' ' + response.statusText + '
+                var result = 'Status: ' + response.status + '
 ';
-                result += 'Access-Control-Allow-Origin: ' + (allowOrigin || 'NAO ENVIADO') + '
+                result += 'Allow-Origin: ' + (allowOrigin || 'NAO ENVIADO') + '
 ';
-                result += 'Access-Control-Allow-Headers: ' + (allowHeaders || 'NAO ENVIADO') + '
+                result += 'Allow-Headers: ' + (allowHeaders || 'NAO ENVIADO') + '
 
 ';
 
-                if (hasApikey && hasOrigin) {
-                    result += 'CORS OK! Header apikey permitido.';
-                    setStatus('cors', 'success', 'OK');
+                if (hasApikey) {
+                    result += 'CORS OK! apikey permitido.';
+                    setStatus(1, 'success', 'OK');
                 } else {
-                    result += 'CORS FALHOU!
-';
-                    if (!hasApikey) result += '   - Header "apikey" NAO esta em Access-Control-Allow-Headers
-';
-                    if (!hasOrigin) result += '   - Origin nao permitida
-';
-                    setStatus('cors', 'error', 'Falhou');
+                    result += 'CORS FALHOU! apikey nao permitido.';
+                    setStatus(1, 'error', 'Falhou');
                 }
-                showResult('cors', result, !hasApikey || !hasOrigin);
+                showResult(1, result);
             }).catch(function(error) {
-                showResult('cors', 'ERRO: ' + error.message + '
-
-Possiveis causas:
-- Edge Function nao esta deployada
-- URL incorreta
-- Problema de rede', true);
-                setStatus('cors', 'error', 'Erro');
+                showResult(1, 'ERRO: ' + error.message);
+                setStatus(1, 'error', 'Erro');
             }).finally(function() {
-                setLoading('cors', false);
+                setLoading(1, false);
             });
         }
 
-        function testarCriarCliente() {
-            setLoading('cliente', true);
-            setStatus('cliente', 'loading', 'Testando...');
+        function test2() {
+            setLoading(2, true);
+            setStatus(2, 'loading', 'Testando...');
 
             fetch(EDGE_BASE + '/asaas-criar-cliente', {
                 method: 'POST',
@@ -253,55 +146,46 @@ Possiveis causas:
                     'apikey': SUPABASE_ANON_KEY
                 },
                 body: JSON.stringify({
-                    nome: 'Teste CORS',
-                    email: 'teste@vendalive.com.br',
+                    nome: 'Teste',
+                    email: 'teste@teste.com',
                     cpfCnpj: '00000000000',
                     phone: '0000000000',
                     cliente_sistema_id: '00000000-0000-0000-0000-000000000000'
                 })
             }).then(function(response) {
                 return response.text().then(function(text) {
-                    var result = 'Status: ' + response.status + ' ' + response.statusText + '
+                    var result = 'Status: ' + response.status + '
 ';
-                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS: ' + (response.headers.get('access-control-allow-origin') || 'NAO') + '
 
 ';
 
                     try {
                         var json = JSON.parse(text);
-                        result += 'Resposta JSON:
-' + JSON.stringify(json, null, 2);
+                        result += 'JSON: ' + JSON.stringify(json, null, 2);
 
-                        if (response.ok || (json.error && json.error.indexOf('Asaas') !== -1)) {
-                            setStatus('cliente', 'success', 'CORS OK (Asaas recusou CPF teste)');
-                        } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
-                            setStatus('cliente', 'success', 'CORS OK (Falta variavel de ambiente)');
+                        if (response.ok || (json.error && (json.error.indexOf('Asaas') !== -1 || json.error.indexOf('Configuracao') !== -1))) {
+                            setStatus(2, 'success', 'CORS OK');
                         } else {
-                            setStatus('cliente', 'error', 'Erro');
+                            setStatus(2, 'error', 'Erro');
                         }
                     } catch (e) {
-                        result += 'Resposta (nao JSON):
-' + text.substring(0, 500);
-                        setStatus('cliente', 'error', 'Erro');
+                        result += 'Texto: ' + text.substring(0, 500);
+                        setStatus(2, 'error', 'Erro');
                     }
-                    showResult('cliente', result, false);
+                    showResult(2, result);
                 });
             }).catch(function(error) {
-                showResult('cliente', 'ERRO: ' + error.message + '
-
-Possiveis causas:
-- CORS bloqueado
-- Edge Function nao deployada
-- Variaveis de ambiente faltando', true);
-                setStatus('cliente', 'error', 'Erro');
+                showResult(2, 'ERRO: ' + error.message);
+                setStatus(2, 'error', 'Erro');
             }).finally(function() {
-                setLoading('cliente', false);
+                setLoading(2, false);
             });
         }
 
-        function testarCriarCobranca() {
-            setLoading('cobranca', true);
-            setStatus('cobranca', 'loading', 'Testando...');
+        function test3() {
+            setLoading(3, true);
+            setStatus(3, 'loading', 'Testando...');
 
             fetch(EDGE_BASE + '/asaas-criar-cobranca', {
                 method: 'POST',
@@ -310,61 +194,52 @@ Possiveis causas:
                     'apikey': SUPABASE_ANON_KEY
                 },
                 body: JSON.stringify({
-                    customer_id: 'cus_teste_123',
+                    customer_id: 'cus_teste',
                     valor: 1.00,
-                    descricao: 'Teste CORS',
+                    descricao: 'Teste',
                     billingType: 'PIX',
                     cliente_sistema_id: '00000000-0000-0000-0000-000000000000'
                 })
             }).then(function(response) {
                 return response.text().then(function(text) {
-                    var result = 'Status: ' + response.status + ' ' + response.statusText + '
+                    var result = 'Status: ' + response.status + '
 ';
-                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS: ' + (response.headers.get('access-control-allow-origin') || 'NAO') + '
 
 ';
 
                     try {
                         var json = JSON.parse(text);
-                        result += 'Resposta JSON:
-' + JSON.stringify(json, null, 2);
+                        result += 'JSON: ' + JSON.stringify(json, null, 2);
 
-                        if (response.ok || (json.error && json.error.indexOf('Asaas') !== -1)) {
-                            setStatus('cobranca', 'success', 'CORS OK');
-                        } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
-                            setStatus('cobranca', 'success', 'CORS OK (Falta variavel de ambiente)');
+                        if (response.ok || (json.error && (json.error.indexOf('Asaas') !== -1 || json.error.indexOf('Configuracao') !== -1))) {
+                            setStatus(3, 'success', 'CORS OK');
                         } else {
-                            setStatus('cobranca', 'error', 'Erro');
+                            setStatus(3, 'error', 'Erro');
                         }
                     } catch (e) {
-                        result += 'Resposta (nao JSON):
-' + text.substring(0, 500);
-                        setStatus('cobranca', 'error', 'Erro');
+                        result += 'Texto: ' + text.substring(0, 500);
+                        setStatus(3, 'error', 'Erro');
                     }
-                    showResult('cobranca', result, false);
+                    showResult(3, result);
                 });
             }).catch(function(error) {
-                showResult('cobranca', 'ERRO: ' + error.message + '
-
-Possiveis causas:
-- CORS bloqueado
-- Edge Function nao deployada
-- Variaveis de ambiente faltando', true);
-                setStatus('cobranca', 'error', 'Erro');
+                showResult(3, 'ERRO: ' + error.message);
+                setStatus(3, 'error', 'Erro');
             }).finally(function() {
-                setLoading('cobranca', false);
+                setLoading(3, false);
             });
         }
 
-        function testarWebhook() {
-            setLoading('webhook', true);
-            setStatus('webhook', 'loading', 'Testando...');
+        function test4() {
+            setLoading(4, true);
+            setStatus(4, 'loading', 'Testando...');
 
             var payload = {
                 event: "PAYMENT_RECEIVED",
                 payment: {
-                    id: "pay_teste_123",
-                    customer: "cus_teste_456",
+                    id: "pay_teste",
+                    customer: "cus_teste",
                     status: "RECEIVED",
                     billingType: "PIX",
                     value: 80.00,
@@ -383,49 +258,42 @@ Possiveis causas:
                 body: JSON.stringify(payload)
             }).then(function(response) {
                 return response.text().then(function(text) {
-                    var result = 'Status: ' + response.status + ' ' + response.statusText + '
+                    var result = 'Status: ' + response.status + '
 ';
-                    result += 'CORS Header: ' + (response.headers.get('access-control-allow-origin') || 'NAO ENVIADO') + '
+                    result += 'CORS: ' + (response.headers.get('access-control-allow-origin') || 'NAO') + '
 
 ';
 
                     try {
                         var json = JSON.parse(text);
-                        result += 'Resposta JSON:
-' + JSON.stringify(json, null, 2);
+                        result += 'JSON: ' + JSON.stringify(json, null, 2);
 
                         if (response.ok || (json.error && json.error.indexOf('nao encontrado') !== -1)) {
-                            setStatus('webhook', 'success', 'CORS OK (cliente teste nao existe)');
+                            setStatus(4, 'success', 'CORS OK');
                         } else if (json.error && json.error.indexOf('Configuracao') !== -1) {
-                            setStatus('webhook', 'success', 'CORS OK (Falta variavel de ambiente)');
+                            setStatus(4, 'success', 'CORS OK (Falta env)');
                         } else {
-                            setStatus('webhook', 'error', 'Erro');
+                            setStatus(4, 'error', 'Erro');
                         }
                     } catch (e) {
-                        result += 'Resposta (nao JSON):
-' + text.substring(0, 500);
-                        setStatus('webhook', 'error', 'Erro');
+                        result += 'Texto: ' + text.substring(0, 500);
+                        setStatus(4, 'error', 'Erro');
                     }
-                    showResult('webhook', result, false);
+                    showResult(4, result);
                 });
             }).catch(function(error) {
-                showResult('webhook', 'ERRO: ' + error.message + '
-
-Possiveis causas:
-- CORS bloqueado
-- Edge Function nao deployada
-- Variaveis de ambiente faltando', true);
-                setStatus('webhook', 'error', 'Erro');
+                showResult(4, 'ERRO: ' + error.message);
+                setStatus(4, 'error', 'Erro');
             }).finally(function() {
-                setLoading('webhook', false);
+                setLoading(4, false);
             });
         }
 
-        function rodarTodos() {
-            testarCORS();
-            setTimeout(function() { testarCriarCliente(); }, 1500);
-            setTimeout(function() { testarCriarCobranca(); }, 3000);
-            setTimeout(function() { testarWebhook(); }, 4500);
+        function runAll() {
+            test1();
+            setTimeout(function() { test2(); }, 1500);
+            setTimeout(function() { test3(); }, 3000);
+            setTimeout(function() { test4(); }, 4500);
         }
     </script>
 </body>
