@@ -1032,6 +1032,7 @@
         var inicioMes = new Date();
         inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
 
+        // === Métricas de Vendas (vendas_pg) ===
         var vendasResult = await supabaseClient
           .from('vendas_pg').select('total, status_pagamento')
           .eq('cliente_id', clienteId)
@@ -1041,26 +1042,12 @@
           return;
         }
         var vendasMes = vendasResult.data || [];
-        console.log('[DASHBOARD-METRICAS] Total vendas do mês:', vendasMes.length);
-        console.log('[DASHBOARD-METRICAS] Status dos pagamentos:', vendasMes.map(function(v) { return v.status_pagamento; }));
 
         var total = vendasMes.reduce(function(s, v) { return s + (v.total || 0); }, 0);
-
-        // Conta apenas vendas pendentes (exclui pagos e cancelados)
-        var pendentes = vendasMes.filter(function(v) { 
-          var status = (v.status_pagamento || '').toString().toLowerCase();
-          var isPendente = status !== 'pago' && !status.includes('cancelado');
-          if (!isPendente) {
-            console.log('[DASHBOARD-METRICAS] Excluído - status:', v.status_pagamento);
-          }
-          return isPendente;
-        }).length;
-
-        console.log('[DASHBOARD-METRICAS] Pendentes calculados:', pendentes);
+        var totalVendas = vendasMes.length;
 
         document.getElementById('metric-mes').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
-        document.getElementById('metric-vendas').textContent = vendasMes.length;
-        document.getElementById('metric-pendentes').textContent = pendentes;
+        document.getElementById('metric-vendas').textContent = totalVendas;
 
         var cliResult = await supabaseClient
           .from('vendas_pg').select('comprador')
@@ -1070,8 +1057,37 @@
           var unicos = [...new Set(compradores)];
           document.getElementById('metric-clientes').textContent = unicos.length;
         }
+
+        // === PIX Pendentes (pix_estaticos) - exclui cancelados ===
+        var pixResult = await supabaseClient
+          .from('pix_estaticos').select('id, status')
+          .eq('cliente_sistema_id', clienteId)
+          .eq('vendedor_confirmou', false);
+
+        if (pixResult.error) {
+          console.error('[DASHBOARD-METRICAS] Erro pixResult:', pixResult.error);
+          document.getElementById('metric-pendentes').textContent = '0';
+          return;
+        }
+
+        var todosPix = pixResult.data || [];
+        console.log('[DASHBOARD-METRICAS] Total PIX vendedor_confirmou=false:', todosPix.length);
+        console.log('[DASHBOARD-METRICAS] Status PIX:', todosPix.map(function(p) { return p.status; }));
+
+        var pendentes = todosPix.filter(function(p) {
+          var status = (p.status || '').toString().toLowerCase();
+          var isCancelado = status.includes('cancelado') || status === 'cancelado' || status === 'cancelado_manual';
+          if (isCancelado) {
+            console.log('[DASHBOARD-METRICAS] PIX excluído - status:', p.status);
+          }
+          return !isCancelado;
+        }).length;
+
+        console.log('[DASHBOARD-METRICAS] PIX pendentes (excluídos cancelados):', pendentes);
+        document.getElementById('metric-pendentes').textContent = pendentes;
+
       } catch (err) {
-        console.error('[DASHBOARD-METRICAS] Erro:', err);
+        console.error('[DASHBOARD-METRICAS] Erro geral:', err);
       }
     }
 
