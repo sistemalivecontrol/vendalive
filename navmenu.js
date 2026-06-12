@@ -1,10 +1,18 @@
 /**
  * NAVMENU - Menu Hamburger para VendaLive
+ * v2.1 - Link "Configurações do Sistema" visível apenas para DEV/ADMIN
  */
 (function() {
     'use strict';
     if (window.__NAVMENU_INITIALIZED) return;
     window.__NAVMENU_INITIALIZED = true;
+
+    // ===== VERIFICAR SE USUÁRIO É DEV/ADMIN =====
+    function isDevOrAdmin() {
+        var usuario = window.authUsuario || window.sessaoUsuario || {};
+        var nivel = (usuario.nivel_acesso || usuario.nivel || '').toLowerCase().trim();
+        return nivel === 'dev' || nivel === 'admin' || nivel === 'desenvolvedor';
+    }
 
     var MENU_ITEMS = [
         { url: 'dashboard.html', icon: '\uD83D\uDCCA', label: 'Dashboard' },
@@ -18,7 +26,7 @@
         { url: 'rastreamento.html', icon: '\uD83D\uDCE6', label: 'Solicitacoes de Entregas' },
         { url: 'whatsapp-monitor.html', icon: '\uD83D\uDCF1', label: 'Monitor WhatsApp' },
         { url: 'configuracao-pagamento.html', icon: '\uD83D\uDCB3', label: 'Config. Pagamento' },
-        { url: 'configuracao.html', icon: '\u2699\uFE0F', label: 'Configurações do Sistema' },
+        { url: 'configuracao.html', icon: '\u2699\uFE0F', label: 'Configurações do Sistema', devOnly: true },
         { url: 'solicitacoes.html', icon: '\uD83D\uDCDD', label: 'Formulario de Entregas' }
     ];
 
@@ -58,16 +66,40 @@
 
         var links = document.createElement('div');
         links.className = 'nav-menu-links';
+        links.id = 'navMenuLinks';
+
+        panel.appendChild(links);
+
+        var footer = document.createElement('div');
+        footer.className = 'nav-menu-footer';
+        footer.innerHTML = '<div class="nav-menu-separator"></div><a href="dashboard.html" class="nav-menu-item" onclick="event.preventDefault();goTo(\'dashboard.html\');"><span class="nav-icon">\uD83C\uDFE0</span><span class="nav-label">Dashboard</span></a><button class="nav-menu-item" onclick="doLogout()"><span class="nav-icon">\uD83D\uDEAA</span><span class="nav-label">Sair</span></button>';
+        panel.appendChild(footer);
+
+        return panel;
+    }
+
+    function renderizarLinks() {
+        var links = document.getElementById('navMenuLinks');
+        if (!links) return;
+
+        var ehDev = isDevOrAdmin();
+        links.innerHTML = '';
 
         for (var i = 0; i < MENU_ITEMS.length; i++) {
             var item = MENU_ITEMS[i];
+
+            // Se é item dev-only e usuário não é dev/admin, pula
+            if (item.devOnly && !ehDev) continue;
+
             var active = isCurrent(item.url) ? ' active' : '';
             var badge = item.badgeId ? '<span class="nav-menu-badge" id="' + item.badgeId + '" style="display:none;">0</span>' : '';
+            var devClass = (item.devOnly && ehDev) ? ' nav-menu-dev' : '';
+            var devBadge = (item.devOnly && ehDev) ? '<span class="nav-menu-dev-badge">DEV</span>' : '';
 
             var a = document.createElement('a');
             a.href = item.url;
-            a.className = 'nav-menu-item' + active;
-            a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + escapeHtml(item.label) + '</span>' + badge;
+            a.className = 'nav-menu-item' + active + devClass;
+            a.innerHTML = '<span class="nav-icon">' + item.icon + '</span><span class="nav-label">' + escapeHtml(item.label) + '</span>' + devBadge + badge;
 
             if (active) {
                 a.onclick = function(e) { e.preventDefault(); closeMenu(); };
@@ -78,15 +110,6 @@
             }
             links.appendChild(a);
         }
-
-        panel.appendChild(links);
-
-        var footer = document.createElement('div');
-        footer.className = 'nav-menu-footer';
-        footer.innerHTML = '<div class="nav-menu-separator"></div><a href="dashboard.html" class="nav-menu-item" onclick="event.preventDefault();goTo(\'dashboard.html\');"><span class="nav-icon">\uD83C\uDFE0</span><span class="nav-label">Dashboard</span></a><button class="nav-menu-item" onclick="doLogout()"><span class="nav-icon">\uD83D\uDEAA</span><span class="nav-label">Sair</span></button>';
-        panel.appendChild(footer);
-
-        return panel;
     }
 
     function createButton() {
@@ -338,6 +361,31 @@
     border-radius: 0 3px 3px 0;
 }
 
+/* ===== ITEM DEV (DESTAQUE ESPECIAL) ===== */
+.nav-menu-dev {
+    background: rgba(255, 193, 7, 0.08) !important;
+    border-left: 3px solid #ffc107 !important;
+    border-radius: 12px 0 0 12px !important;
+}
+.nav-menu-dev:hover {
+    background: rgba(255, 193, 7, 0.15) !important;
+    border-left-color: #ffc107 !important;
+}
+.nav-menu-dev .nav-label {
+    color: #ffc107;
+    font-weight: 600;
+}
+.nav-menu-dev-badge {
+    font-size: 0.65rem;
+    background: #ffc107;
+    color: #0a1628;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
 /* Badge de contador */
 .nav-menu-badge {
     background: #ef4444;
@@ -419,7 +467,6 @@
 }
 
 /* ----- Responsivo: mostrar botao hamburger em todas as telas ----- */
-/* O botao e sempre visivel para facilitar navegacao */
 .nav-menu-btn {
     display: inline-flex !important;
 }
@@ -449,6 +496,20 @@ body.nav-menu-open {
         window.navMenuClose = closeMenu;
         window.navMenuGoTo = function(e, url) { if (e) e.preventDefault(); goTo(url); };
         window.navMenuLogout = doLogout;
+
+        // Renderizar links com controle de permissão
+        renderizarLinks();
+
+        // Re-renderizar quando authUsuario for carregado (caso ainda não esteja)
+        var checkAuth = setInterval(function() {
+            if (window.authUsuario || window.sessaoUsuario) {
+                renderizarLinks();
+                clearInterval(checkAuth);
+            }
+        }, 300);
+
+        // Timeout de segurança
+        setTimeout(function() { clearInterval(checkAuth); }, 10000);
     }
 
     if (document.readyState === 'loading') {
