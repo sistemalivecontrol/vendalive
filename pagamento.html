@@ -79,16 +79,6 @@
             margin-bottom: 16px;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            text-align: left;
-        }
-
         .plano-header {
             text-align: center;
             margin-bottom: 20px;
@@ -381,8 +371,20 @@
             margin-bottom: 8px;
             font-size: 16px;
         }
+
+        .debug-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            font-family: monospace;
+            text-align: left;
+            word-break: break-all;
+        }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -422,6 +424,10 @@
                 <div class="dado-item">
                     <span class="dado-label">CPF/CNPJ:</span>
                     <span class="dado-valor" id="dc-cnpj">-</span>
+                </div>
+                <div class="dado-item">
+                    <span class="dado-label">Asaas ID:</span>
+                    <span class="dado-valor" id="dc-asaas-id">-</span>
                 </div>
             </div>
 
@@ -471,6 +477,9 @@
                 Aguardando confirmação do pagamento<span class="polling-dots"></span>
                 <br><small>Tentativa <span id="polling-tentativa">1</span>/30</small>
             </div>
+
+            <!-- Debug Info -->
+            <div class="debug-info hidden" id="debug-info"></div>
 
             <!-- Botões -->
             <button class="btn btn-primary" id="btn-pagar" onclick="processarPagamento()" disabled>
@@ -523,7 +532,6 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-        // URL ABSOLUTA das Edge Functions
         const EDGE_FUNCTION_BASE = 'https://aqrvozmxlcgrllclceke.supabase.co/functions/v1';
 
         let supabaseClient = null;
@@ -538,7 +546,6 @@
         async function fetchEdgeFunction(functionName, body) {
             const url = EDGE_FUNCTION_BASE + '/' + functionName;
 
-            // Obter token de autenticação do usuário logado
             const { data: { session } } = await supabaseClient.auth.getSession();
             const token = session?.access_token;
 
@@ -551,8 +558,7 @@
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            console.log('[FETCH] Chamando Edge Function:', url);
-            console.log('[FETCH] Headers:', Object.keys(headers));
+            console.log('[FETCH] Chamando:', functionName, 'URL:', url);
 
             return fetch(url, {
                 method: 'POST',
@@ -567,10 +573,8 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('[PAGAMENTO] Inicializando...');
 
-            // Aguardar Supabase carregar
             await aguardarSupabase();
 
-            // Inicializar cliente Supabase
             if (window.supabase && window.supabase.createClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('[PAGAMENTO] Supabase inicializado');
@@ -580,7 +584,7 @@
                 return;
             }
 
-            // CORREÇÃO: Verificar se há novo cadastro e limpar pagamento pendente antigo
+            // Limpar pagamento pendente antigo se for novo cadastro
             const novoCadastro = sessionStorage.getItem('cadastro_pendente');
             if (novoCadastro) {
                 try {
@@ -589,15 +593,9 @@
 
                     if (pagamentoPendente) {
                         const dadosPendente = JSON.parse(pagamentoPendente);
-
-                        // Se o cliente_id do pagamento pendente é diferente do novo cadastro,
-                        // significa que é um pagamento antigo - limpar!
                         if (dadosPendente.cliente_id !== dadosNovo.cliente_id) {
-                            console.log('[PAGAMENTO] Limpando pagamento pendente antigo:', dadosPendente.cliente_id);
-                            console.log('[PAGAMENTO] Novo cadastro:', dadosNovo.cliente_id);
+                            console.log('[PAGAMENTO] Limpando pagamento pendente antigo');
                             sessionStorage.removeItem('pagamento_pendente');
-
-                            // Parar polling se estiver rodando
                             if (pollingInterval) {
                                 clearTimeout(pollingInterval);
                                 pollingInterval = null;
@@ -610,44 +608,45 @@
             }
 
             // Carregar dados do cadastro
-            carregarDadosCadastro();
+            await carregarDadosCadastro();
 
-            // Verificar se já existe pagamento pendente (após limpar se necessário)
-            verificarPagamentoPendente();
+            // Verificar se já existe pagamento pendente
+            await verificarPagamentoPendente();
         });
 
         async function aguardarSupabase(maxTentativas = 20) {
             let tentativas = 0;
             while (tentativas < maxTentativas) {
-                if (window.supabase && typeof window.supabase === 'object') {
+                if (window.supabase && typeof window.supabase === 'object' && window.supabase.createClient) {
                     console.log('[PAGAMENTO] Supabase disponível após', tentativas, 'tentativas');
                     return true;
                 }
                 tentativas++;
                 await new Promise(r => setTimeout(r, 300));
             }
-            console.error('[PAGAMENTO] Supabase não carregou após', maxTentativas, 'tentativas');
+            console.error('[PAGAMENTO] Supabase não carregou');
             return false;
         }
 
         // ============================================
         // CARREGAR DADOS DO CADASTRO
         // ============================================
-        function carregarDadosCadastro() {
-            // Buscar dados do sessionStorage (enviados do cadastro.html)
+        async function carregarDadosCadastro() {
             const dados = sessionStorage.getItem('cadastro_pendente');
 
             if (dados) {
                 try {
                     dadosCadastro = JSON.parse(dados);
                     console.log('[PAGAMENTO] Dados do cadastro:', dadosCadastro);
+                    clienteId = dadosCadastro.cliente_id;
 
                     // Preencher dados na tela
                     document.getElementById('dc-nome').textContent = dadosCadastro.nome || '-';
                     document.getElementById('dc-email').textContent = dadosCadastro.email || '-';
                     document.getElementById('dc-cnpj').textContent = dadosCadastro.cnpj || dadosCadastro.cpf || '-';
+                    document.getElementById('dc-asaas-id').textContent = dadosCadastro.asaas_customer_id || 'Não criado';
 
-                    // Atualizar plano se houver
+                    // Atualizar plano
                     if (dadosCadastro.plano) {
                         document.getElementById('plano-nome').textContent = 'Plano ' + dadosCadastro.plano;
                     }
@@ -662,18 +661,64 @@
                     document.getElementById('plano-vencimento').textContent = 
                         'Vencimento: ' + hoje.toLocaleDateString('pt-BR');
 
+                    // ===== NOVO: Verificar no banco se asaas_customer_id já foi salvo =====
+                    if (clienteId) {
+                        await verificarAsaasCustomerIdNoBanco();
+                    }
+
                 } catch (e) {
                     console.error('[PAGAMENTO] Erro ao parsear dados:', e);
                 }
             } else {
-                console.warn('[PAGAMENTO] Nenhum dado de cadastro encontrado no sessionStorage');
-                // Tentar buscar na URL
+                console.warn('[PAGAMENTO] Nenhum dado de cadastro no sessionStorage');
                 const params = new URLSearchParams(window.location.search);
                 const clienteIdUrl = params.get('cliente_id');
                 if (clienteIdUrl) {
                     clienteId = clienteIdUrl;
-                    buscarClienteNoBanco(clienteId);
+                    await buscarClienteNoBanco(clienteId);
                 }
+            }
+        }
+
+        // ===== NOVO: Verificar asaas_customer_id no banco =====
+        async function verificarAsaasCustomerIdNoBanco() {
+            if (!clienteId || !supabaseClient) return;
+
+            try {
+                console.log('[PAGAMENTO] Verificando asaas_customer_id no banco para:', clienteId);
+                const { data, error } = await supabaseClient
+                    .from('clientes_sistema')
+                    .select('asaas_customer_id, ativo, status_pagamento')
+                    .eq('id', clienteId)
+                    .single();
+
+                if (error) {
+                    console.error('[PAGAMENTO] Erro ao buscar no banco:', error);
+                    return;
+                }
+
+                if (data) {
+                    console.log('[PAGAMENTO] Dados do banco:', data);
+
+                    // Atualizar na tela
+                    document.getElementById('dc-asaas-id').textContent = data.asaas_customer_id || 'Não criado';
+
+                    // Atualizar dadosCadastro
+                    if (data.asaas_customer_id) {
+                        dadosCadastro.asaas_customer_id = data.asaas_customer_id;
+                        sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosCadastro));
+                        console.log('[PAGAMENTO] ✅ asaas_customer_id atualizado dos dados:', data.asaas_customer_id);
+                    }
+
+                    // Se já está ativo, mostrar sucesso
+                    if (data.ativo === true) {
+                        console.log('[PAGAMENTO] Cliente já está ativo!');
+                        mostrarSucesso();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('[PAGAMENTO] Erro ao verificar banco:', e);
             }
         }
 
@@ -691,8 +736,8 @@
                     document.getElementById('dc-nome').textContent = data.nome || '-';
                     document.getElementById('dc-email').textContent = data.email || '-';
                     document.getElementById('dc-cnpj').textContent = data.cnpj || data.cpf_cnpj || '-';
+                    document.getElementById('dc-asaas-id').textContent = data.asaas_customer_id || 'Não criado';
 
-                    // Verificar se já está ativo
                     if (data.ativo) {
                         mostrarSucesso();
                     }
@@ -714,15 +759,11 @@
 
                     clienteId = dados.cliente_id;
 
-                    // Mostrar status de aguardando
                     mostrarStatus('info', 'Aguardando confirmação do pagamento anterior...');
-
-                    // Esconder métodos de pagamento e botão
                     document.getElementById('metodos-pagamento').classList.add('hidden');
                     document.getElementById('btn-pagar').classList.add('hidden');
                     document.getElementById('nova-aba-msg').classList.remove('hidden');
 
-                    // Iniciar polling
                     iniciarPolling(clienteId);
 
                 } catch (e) {
@@ -737,16 +778,13 @@
         function selecionarMetodo(metodo) {
             console.log('[PAGAMENTO] Método selecionado:', metodo);
 
-            // Remover seleção anterior
             document.querySelectorAll('.metodo-pagamento').forEach(el => {
                 el.classList.remove('selected');
             });
 
-            // Adicionar seleção
             document.getElementById('metodo-' + metodo).classList.add('selected');
             metodoSelecionado = metodo;
 
-            // Ativar botão
             const btn = document.getElementById('btn-pagar');
             btn.disabled = false;
 
@@ -772,16 +810,25 @@
                 return;
             }
 
+            if (!dadosCadastro.cliente_id) {
+                mostrarErro('ID do cliente não encontrado. Volte ao cadastro.');
+                return;
+            }
+
             const btn = document.getElementById('btn-pagar');
             btn.disabled = true;
             document.getElementById('btn-texto').innerHTML = '<span class="loading"></span> Processando...';
 
             try {
                 console.log('[PAGAMENTO] Iniciando processamento:', metodoSelecionado);
+                console.log('[PAGAMENTO] Dados cadastro:', dadosCadastro);
 
                 // 1. Criar cliente no Asaas (se ainda não tiver)
                 if (!dadosCadastro.asaas_customer_id) {
+                    console.log('[PAGAMENTO] Criando cliente no Asaas...');
                     await criarClienteAsaas();
+                } else {
+                    console.log('[PAGAMENTO] Cliente Asaas já existe:', dadosCadastro.asaas_customer_id);
                 }
 
                 // 2. Criar assinatura/cobrança
@@ -795,7 +842,7 @@
 
             } catch (error) {
                 console.error('[PAGAMENTO] Erro:', error);
-                mostrarErro('Erro ao processar: ' + error.message);
+                mostrarErro('Erro ao processar: ' + (error.message || 'Erro desconhecido'));
                 btn.disabled = false;
                 document.getElementById('btn-texto').textContent = 'Tentar Novamente';
             }
@@ -806,13 +853,15 @@
         // ============================================
         async function criarClienteAsaas() {
             console.log('[PAGAMENTO] Criando cliente no Asaas...');
+            console.log('[PAGAMENTO] cliente_sistema_id:', dadosCadastro.cliente_id);
 
             const response = await fetchEdgeFunction('asaas-criar-cliente', {
                 nome: dadosCadastro.nome,
                 email: dadosCadastro.email,
                 cpfCnpj: dadosCadastro.cnpj || dadosCadastro.cpf,
                 phone: dadosCadastro.telefone,
-                mobilePhone: dadosCadastro.telefone
+                mobilePhone: dadosCadastro.telefone,
+                cliente_sistema_id: dadosCadastro.cliente_id  // NOVO: enviar nosso ID
             });
 
             console.log('[PAGAMENTO] Response status:', response.status);
@@ -830,12 +879,41 @@
             }
 
             const result = await response.json();
-            dadosCadastro.asaas_customer_id = result.customer_id;
+            console.log('[PAGAMENTO] Resultado criação cliente:', result);
+
+            // ===== NOVO: Salvar asaas_customer_id =====
+            dadosCadastro.asaas_customer_id = result.customer_id || result.asaas_customer_id;
+
+            // Atualizar no banco também (via Supabase direto, sem Edge Function)
+            if (dadosCadastro.cliente_id && dadosCadastro.asaas_customer_id) {
+                try {
+                    console.log('[PAGAMENTO] Salvando asaas_customer_id no banco...');
+                    const { data, error } = await supabaseClient
+                        .from('clientes_sistema')
+                        .update({ 
+                            asaas_customer_id: dadosCadastro.asaas_customer_id,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', dadosCadastro.cliente_id)
+                        .select();
+
+                    if (error) {
+                        console.error('[PAGAMENTO] Erro ao salvar no banco:', error);
+                    } else {
+                        console.log('[PAGAMENTO] ✅ asaas_customer_id salvo no banco:', data);
+                    }
+                } catch (e) {
+                    console.error('[PAGAMENTO] Erro ao atualizar banco:', e);
+                }
+            }
+
+            // Atualizar na tela
+            document.getElementById('dc-asaas-id').textContent = dadosCadastro.asaas_customer_id;
 
             // Salvar no sessionStorage
             sessionStorage.setItem('cadastro_pendente', JSON.stringify(dadosCadastro));
 
-            console.log('[PAGAMENTO] Cliente Asaas criado:', result.customer_id);
+            console.log('[PAGAMENTO] Cliente Asaas criado:', dadosCadastro.asaas_customer_id);
         }
 
         // ============================================
@@ -848,7 +926,7 @@
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 plano: dadosCadastro.plano || 'Basic',
-                cliente_sistema_id: dadosCadastro.cliente_id,
+                cliente_sistema_id: dadosCadastro.cliente_id,  // NOVO
                 billingType: 'CREDIT_CARD'
             });
 
@@ -866,7 +944,6 @@
             const result = await response.json();
             console.log('[PAGAMENTO] Assinatura criada:', result);
 
-            // Salvar dados do pagamento pendente
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_subscription_id: result.subscription_id,
@@ -874,21 +951,17 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // ABRIR PÁGINA DO ASAAS EM NOVA ABA
             if (result.invoice_url || result.payment_link) {
                 const url = result.invoice_url || result.payment_link;
                 console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
                 window.open(url, '_blank');
 
-                // Mostrar mensagem na aba atual
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
 
-                // Iniciar polling na aba atual
                 iniciarPolling(dadosCadastro.cliente_id);
             } else {
-                console.log('[PAGAMENTO] Sem URL de pagamento, iniciando polling');
                 iniciarPolling(dadosCadastro.cliente_id);
             }
         }
@@ -904,7 +977,7 @@
                 valor: dadosCadastro.valor || 80.00,
                 descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
                 billingType: 'PIX',
-                cliente_sistema_id: dadosCadastro.cliente_id
+                cliente_sistema_id: dadosCadastro.cliente_id  // NOVO: enviar externalReference
             });
 
             if (!response.ok) {
@@ -921,7 +994,6 @@
             const result = await response.json();
             console.log('[PAGAMENTO] Cobrança PIX criada:', result);
 
-            // Salvar pagamento pendente
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_payment_id: result.payment_id,
@@ -932,21 +1004,17 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // ABRIR PÁGINA DO ASAAS EM NOVA ABA (se tiver URL)
             if (result.invoice_url || result.payment_link) {
                 const url = result.invoice_url || result.payment_link;
                 console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
                 window.open(url, '_blank');
 
-                // Mostrar mensagem na aba atual
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
 
-                // Iniciar polling na aba atual
                 iniciarPolling(dadosCadastro.cliente_id);
             } else if (result.qr_code_base64) {
-                // Mostrar QR code na tela
                 mostrarQrCodePix(result);
             } else {
                 iniciarPolling(dadosCadastro.cliente_id);
@@ -964,7 +1032,7 @@
                 valor: dadosCadastro.valor || 80.00,
                 descricao: 'Plano ' + (dadosCadastro.plano || 'Basic') + ' - VendaLive',
                 billingType: 'BOLETO',
-                cliente_sistema_id: dadosCadastro.cliente_id
+                cliente_sistema_id: dadosCadastro.cliente_id  // NOVO
             });
 
             if (!response.ok) {
@@ -981,7 +1049,6 @@
             const result = await response.json();
             console.log('[PAGAMENTO] Boleto criado:', result);
 
-            // Salvar pagamento pendente
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
                 asaas_payment_id: result.payment_id,
@@ -990,18 +1057,15 @@
                 criado_em: new Date().toISOString()
             }));
 
-            // ABRIR PÁGINA DO ASAAS EM NOVA ABA (se tiver URL)
             if (result.invoice_url || result.payment_link) {
                 const url = result.invoice_url || result.payment_link;
                 console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
                 window.open(url, '_blank');
 
-                // Mostrar mensagem na aba atual
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
                 document.getElementById('nova-aba-msg').classList.remove('hidden');
 
-                // Iniciar polling na aba atual
                 iniciarPolling(dadosCadastro.cliente_id);
             } else {
                 mostrarErro('Erro ao gerar boleto. Tente novamente.');
@@ -1034,7 +1098,6 @@
             `;
             container.appendChild(qrDiv);
 
-            // Iniciar polling
             iniciarPolling(dadosCadastro.cliente_id);
         }
 
@@ -1063,9 +1126,10 @@
                 console.log(`[POLLING] Tentativa ${tentativas}/${maxTentativas}`);
 
                 try {
+                    // ===== MELHORADO: Buscar mais campos =====
                     const { data: cliente, error } = await supabaseClient
                         .from('clientes_sistema')
-                        .select('ativo, status_pagamento, data_ultimo_pagamento, asaas_customer_id')
+                        .select('id, ativo, status_pagamento, data_ultimo_pagamento, asaas_customer_id, data_expiracao, nome')
                         .eq('id', clienteId)
                         .single();
 
@@ -1079,21 +1143,25 @@
 
                     console.log('[POLLING] Status do cliente:', cliente);
 
-                    // Se o cliente foi ativado
-                    if (cliente && cliente.ativo === true && cliente.status_pagamento === 'ativo') {
-                        console.log('[POLLING] ✅ Cliente ativado!');
+                    // Mostrar debug info
+                    const debugEl = document.getElementById('debug-info');
+                    debugEl.classList.remove('hidden');
+                    debugEl.textContent = `Debug: ativo=${cliente.ativo}, status=${cliente.status_pagamento}, asaas_id=${cliente.asaas_customer_id || 'null'}`;
+
+                    // ===== MELHORADO: Verificar se ativo OU status_pagamento === 'ativo' =====
+                    const isAtivo = cliente.ativo === true || cliente.status_pagamento === 'ativo' || cliente.status_pagamento === 'RECEIVED';
+
+                    if (isAtivo) {
+                        console.log('[POLLING] ✅ Cliente ativado! ativo=' + cliente.ativo + ', status=' + cliente.status_pagamento);
                         clearTimeout(pollingInterval);
 
-                        // Limpar pendente
                         sessionStorage.removeItem('pagamento_pendente');
                         sessionStorage.removeItem('cadastro_pendente');
 
-                        // Mostrar sucesso
                         mostrarSucesso();
                         return;
                     }
 
-                    // Se ainda não ativou e tem mais tentativas
                     if (tentativas < maxTentativas) {
                         pollingInterval = setTimeout(verificar, intervalo);
                     } else {
@@ -1103,7 +1171,6 @@
                             <small>Se você já pagou, <a href="#" onclick="location.reload()" style="color: #5b9bd5;">clique aqui para verificar</a></small>
                         `;
 
-                        // Mostrar botão de verificar
                         document.getElementById('btn-pagar').classList.remove('hidden');
                         document.getElementById('btn-pagar').disabled = false;
                         document.getElementById('btn-texto').textContent = 'Verificar Pagamento';
@@ -1120,7 +1187,6 @@
                 }
             };
 
-            // Iniciar primeira verificação
             verificar();
         }
 
@@ -1156,7 +1222,6 @@
             document.getElementById('card-erro').classList.add('hidden');
             document.getElementById('card-sucesso').classList.remove('hidden');
 
-            // Contador regressivo
             let segundos = 5;
             const contador = document.getElementById('contador');
 
@@ -1178,7 +1243,6 @@
         }
 
         function voltarCadastro() {
-            // Limpar dados pendentes
             sessionStorage.removeItem('pagamento_pendente');
             sessionStorage.removeItem('cadastro_pendente');
             window.location.href = 'cadastro.html';
