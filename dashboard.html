@@ -716,6 +716,20 @@
   </footer>
 
   <script>
+// Cache buster - force reload if version mismatch
+(function() {
+  var expectedVersion = 'v2026-06-12-11';
+  var currentVersion = localStorage.getItem('dashboard_version');
+  if (currentVersion !== expectedVersion) {
+    localStorage.setItem('dashboard_version', expectedVersion);
+    var url = new URL(window.location.href);
+    url.searchParams.set('v', expectedVersion);
+    window.location.replace(url.toString());
+  }
+})();
+</script>
+<script>
+    // VERSION: 2026-06-12-v11 - PIX Pendentes fix
     const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -1022,16 +1036,27 @@
           .from('vendas_pg').select('total, status_pagamento')
           .eq('cliente_id', clienteId)
           .gte('data_venda', inicioMes.toISOString());
-        if (vendasResult.error) return;
+        if (vendasResult.error) {
+          console.error('[DASHBOARD-METRICAS] Erro vendasResult:', vendasResult.error);
+          return;
+        }
         var vendasMes = vendasResult.data || [];
+        console.log('[DASHBOARD-METRICAS] Total vendas do mês:', vendasMes.length);
+        console.log('[DASHBOARD-METRICAS] Status dos pagamentos:', vendasMes.map(function(v) { return v.status_pagamento; }));
 
         var total = vendasMes.reduce(function(s, v) { return s + (v.total || 0); }, 0);
 
         // Conta apenas vendas pendentes (exclui pagos e cancelados)
         var pendentes = vendasMes.filter(function(v) { 
           var status = (v.status_pagamento || '').toString().toLowerCase();
-          return status !== 'pago' && !status.includes('cancelado'); 
+          var isPendente = status !== 'pago' && !status.includes('cancelado');
+          if (!isPendente) {
+            console.log('[DASHBOARD-METRICAS] Excluído - status:', v.status_pagamento);
+          }
+          return isPendente;
         }).length;
+
+        console.log('[DASHBOARD-METRICAS] Pendentes calculados:', pendentes);
 
         document.getElementById('metric-mes').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
         document.getElementById('metric-vendas').textContent = vendasMes.length;
@@ -1045,7 +1070,9 @@
           var unicos = [...new Set(compradores)];
           document.getElementById('metric-clientes').textContent = unicos.length;
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error('[DASHBOARD-METRICAS] Erro:', err);
+      }
     }
 
     async function carregarVendasRecentes() {
