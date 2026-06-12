@@ -386,6 +386,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -917,17 +918,16 @@
         }
 
         // ============================================
-        // CRIAR ASSINATURA CARTÃO
+        // CRIAR PAYMENT LINK PARA CARTÃO
         // ============================================
         async function criarAssinaturaCartao() {
-            console.log('[PAGAMENTO] Criando assinatura com cartão...');
+            console.log('[PAGAMENTO] Criando payment link para cartao...');
 
-            const response = await fetchEdgeFunction('asaas-criar-assinatura', {
+            const response = await fetchEdgeFunction('asaas-criar-payment-link', {
                 customer_id: dadosCadastro.asaas_customer_id,
                 valor: dadosCadastro.valor || 80.00,
                 plano: dadosCadastro.plano || 'Basic',
-                cliente_sistema_id: dadosCadastro.cliente_id,  // NOVO
-                billingType: 'CREDIT_CARD'
+                cliente_sistema_id: dadosCadastro.cliente_id
             });
 
             if (!response.ok) {
@@ -936,25 +936,24 @@
                 try {
                     errorData = JSON.parse(text);
                 } catch (e) {
-                    throw new Error('Erro ao criar assinatura: ' + response.status);
+                    throw new Error('Erro ao criar payment link: ' + response.status);
                 }
                 throw new Error(errorData.error || `Erro Asaas: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('[PAGAMENTO] Assinatura criada:', result);
+            console.log('[PAGAMENTO] Payment link criado:', result);
 
             sessionStorage.setItem('pagamento_pendente', JSON.stringify({
                 cliente_id: dadosCadastro.cliente_id,
-                asaas_subscription_id: result.subscription_id,
+                asaas_payment_link_id: result.payment_link_id,
                 metodo: 'cartao',
                 criado_em: new Date().toISOString()
             }));
 
-            if (result.invoice_url || result.payment_link) {
-                const url = result.invoice_url || result.payment_link;
-                console.log('[PAGAMENTO] Abrindo página de pagamento em nova aba:', url);
-                window.open(url, '_blank');
+            if (result.url) {
+                console.log('[PAGAMENTO] Abrindo payment link em nova aba:', result.url);
+                window.open(result.url, '_blank');
 
                 document.getElementById('metodos-pagamento').classList.add('hidden');
                 document.getElementById('btn-pagar').classList.add('hidden');
@@ -962,7 +961,7 @@
 
                 iniciarPolling(dadosCadastro.cliente_id);
             } else {
-                iniciarPolling(dadosCadastro.cliente_id);
+                throw new Error('URL do payment link nao retornada');
             }
         }
 
