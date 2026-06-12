@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - VendaLive</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1076/1076329.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -943,6 +944,8 @@
 
                     cliente = resultByEmail.data;
                     console.log('[CONFIG] Cliente encontrado por email');
+                } else {
+                    console.log('[CONFIG] Cliente encontrado por user_id');
                 }
 
                 userData = cliente;
