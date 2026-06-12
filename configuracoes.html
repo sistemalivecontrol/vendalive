@@ -43,21 +43,8 @@
             gap: 12px;
             align-items: center;
             font-size: 12px;
-            white-space: nowrap;
         }
-        .header-info span { 
-            color: rgba(255,255,255,0.7); 
-            display: flex; 
-            align-items: center; 
-            gap: 4px;
-            white-space: nowrap;
-        }
-        .header-info span span {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
-        }
+        .header-info span { color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
         .btn-header {
             background: rgba(0, 102, 255, 0.15);
             border: 1px solid rgba(0, 102, 255, 0.3);
@@ -606,19 +593,19 @@
             <h1>Configurações</h1>
         </div>
         <div class="header-info">
-            <span id="info-usuario" style="display:flex;align-items:center;gap:4px;white-space:nowrap;">
+            <span id="info-usuario">
                 <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span id="header-user-name" style="white-space:nowrap;">Carregando...</span>
+                Carregando...
             </span>
-            <span id="info-cliente" style="display:flex;align-items:center;gap:4px;white-space:nowrap;">
+            <span id="info-cliente">
                 <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
-                <span id="header-cliente-name" style="white-space:nowrap;">---</span>
+                ---
             </span>
             <a href="configuracoes.html" class="btn-header" title="Configurações">
                 <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1067,11 +1054,9 @@
                 document.getElementById('userPlano').textContent = plano;
                 document.getElementById('userAvatarBig').textContent = inicial;
 
-                // Update header info - just the name (like dashboard)
-                const headerUserName = document.getElementById('header-user-name');
-                if (headerUserName) headerUserName.textContent = nome || email;
-                const headerClienteName = document.getElementById('header-cliente-name');
-                if (headerClienteName) headerClienteName.textContent = plano || '---';
+                // Update header info (same as dashboard)
+                document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + (nome || email);
+                document.getElementById('info-cliente').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> ' + (plano || '---');
 
                 document.getElementById('nome').value = userData.nome || '';
                 document.getElementById('email').value = email;
@@ -1116,9 +1101,8 @@
                 document.getElementById('userName').textContent = nome;
                 document.getElementById('userAvatarBig').textContent = nome.charAt(0).toUpperCase();
 
-                // Update header
-                const headerUserName = document.getElementById('header-user-name');
-                if (headerUserName) headerUserName.textContent = nome;
+                // Update header (same as dashboard)
+                document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + nome;
             } catch (e) {
                 console.error('[CONFIG] Erro salvar:', e);
                 showToast('Erro ao salvar dados: ' + e.message, 'error');
