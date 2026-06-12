@@ -479,6 +479,7 @@
     }
   </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
@@ -956,8 +957,8 @@
         if (!session) { window.location.href = 'login.html'; return; }
 
         var userResult = await supabaseClient
-          .from('usuarios_pg').select('*').eq('auth_id', session.user.id).single();
-        var usuario = userResult.data;
+          .from('usuarios_pg').select('*').eq('auth_id', session.user.id).limit(1);
+        var usuario = userResult.data && userResult.data.length > 0 ? userResult.data[0] : null;
         var userError = userResult.error;
 
         if (userError) { mostrarErro('Erro ao carregar usuario: ' + userError.message); return; }
