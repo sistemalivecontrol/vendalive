@@ -880,6 +880,10 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         var valorFreteAtual = 0;
         var estadoAtual = '';
         var cidadeAtual = '';
+        // ✅ NOVO FLUXO: Variáveis para solicitação criada antes do PIX
+        var solicitacaoIdAtual = null;
+        var numeroSolicitacaoAtual = null;
+        var dadosSolicitacaoCache = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             verificarOrigemAcesso();
