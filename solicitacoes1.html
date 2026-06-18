@@ -1514,7 +1514,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         // ============================================
 
         async function criarSolicitacaoPendente() {
-            console.log('[SOLICITACAO-PENDENTE] Criando solicitação com status pendente_pagamento...');
+            console.log('[SOLICITACAO-PENDENTE] Criando solicitação com status pendente...');
             if (!supabaseConectado) { throw new Error('Sistema não conectado'); }
             if (!clienteIdSistema) { throw new Error('Cliente não identificado'); }
 
@@ -1668,7 +1668,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             const numeroSolicitacao = await gerarNumeroSolicitacao();
             numeroSolicitacaoAtual = numeroSolicitacao;
 
-            // 4. Criar solicitação com status pendente_pagamento
+            // 4. Criar solicitação com status pendente
             const dadosSolicitacao = {
                 cliente_id: clienteIdSistema,
                 cliente_pg_id: clientePgId,
@@ -1676,7 +1676,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 numero_solicitacao: numeroSolicitacao,
                 regiao: regiao,
                 observacoes: observacoes,
-                status: 'pendente_pagamento',
+                status: 'pendente',
                 valor_frete: valorFreteAtual || 0
             };
 
@@ -1746,10 +1746,10 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 console.log('[ATUALIZAR-PAGO] Atualizando solicitação', solicitacaoIdAtual, 'para pago...');
                 const { error } = await supabaseClient
                     .from('solicitacoes_pg')
-                    .update({ status: 'pago', pago_em: new Date().toISOString() })
+                    .update({ status: 'pendente' })
                     .eq('id', solicitacaoIdAtual);
                 if (error) console.error('[ATUALIZAR-PAGO] Erro:', error);
-                else console.log('[ATUALIZAR-PAGO] ✅ Solicitação atualizada para PAGO!');
+                else console.log('[ATUALIZAR-PAGO] ✅ Solicitação atualizada!');
             } catch (e) {
                 console.error('[ATUALIZAR-PAGO] Exceção:', e);
             }
