@@ -2300,8 +2300,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                         bairro: dadosSolicitacao.bairro,
                         cidade: dadosSolicitacao.cidade,
                         cep: dadosSolicitacao.cep,
-                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
-                        reply_to: 'marcobet@gmail.com'
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação'
                     };
                     console.log('[EMAIL] Template params cliente:', templateParamsCliente);
                     const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
@@ -2327,8 +2326,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
                     email_cliente: dadosSolicitacao.email || 'Não informado',
                     whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
-                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
-                    reply_to: 'marcobet@gmail.com'
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado'
                 };
                 console.log('[EMAIL] Template params admin:', templateParamsAdmin);
                 const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
