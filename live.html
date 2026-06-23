@@ -333,6 +333,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -1911,7 +1912,7 @@ function criarLinhaComDados(venda) {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
+        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" onkeydown="if(event.key===\'Enter\'||event.key===\'\'){event.preventDefault();this.click();}" tabindex="0" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
         '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
@@ -1942,7 +1943,7 @@ function adicionarLinha() {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
+        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" onkeydown="if(event.key===\'Enter\'||event.key===\'\'){event.preventDefault();this.click();}" tabindex="0" style="background: #dc3545;" title="Salvar">💾</button>' +
         '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
@@ -1961,12 +1962,8 @@ function navegarCampos(event, linhaId, campoAtual) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
             if (next) { next.focus(); next.select(); }
         } else {
-            const btnSalvar = document.getElementById('btn-save-' + linhaId);
-            if (btnSalvar) {
-                btnSalvar.focus();
-                btnSalvar.style.transform = 'scale(1.1)';
-                setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
-            }
+            // No último campo (fila), Enter salva diretamente
+            salvarVenda(linhaId);
         }
     }
 }
@@ -2005,12 +2002,8 @@ function navegarCamposComSugestoes(event, linhaId, campoAtual) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
             if (next) { next.focus(); next.select(); }
         } else {
-            const btnSalvar = document.getElementById('btn-save-' + linhaId);
-            if (btnSalvar) {
-                btnSalvar.focus();
-                btnSalvar.style.transform = 'scale(1.1)';
-                setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
-            }
+            // No último campo (fila), Enter salva diretamente
+            salvarVenda(linhaId);
         }
         return;
     }
