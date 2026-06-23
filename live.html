@@ -1912,7 +1912,7 @@ function criarLinhaComDados(venda) {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" onkeydown="if(event.key===\'Enter\'||event.key===\'\'){event.preventDefault();this.click();}" tabindex="0" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
+        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
         '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
@@ -1943,7 +1943,7 @@ function adicionarLinha() {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" onkeydown="if(event.key===\'Enter\'||event.key===\'\'){event.preventDefault();this.click();}" tabindex="0" style="background: #dc3545;" title="Salvar">💾</button>' +
+        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
         '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
@@ -1962,8 +1962,12 @@ function navegarCampos(event, linhaId, campoAtual) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
             if (next) { next.focus(); next.select(); }
         } else {
-            // No último campo (fila), Enter salva diretamente
-            salvarVenda(linhaId);
+            const btnSalvar = document.getElementById('btn-save-' + linhaId);
+            if (btnSalvar) {
+                btnSalvar.focus();
+                btnSalvar.style.transform = 'scale(1.1)';
+                setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
+            }
         }
     }
 }
@@ -2002,8 +2006,12 @@ function navegarCamposComSugestoes(event, linhaId, campoAtual) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
             if (next) { next.focus(); next.select(); }
         } else {
-            // No último campo (fila), Enter salva diretamente
-            salvarVenda(linhaId);
+            const btnSalvar = document.getElementById('btn-save-' + linhaId);
+            if (btnSalvar) {
+                btnSalvar.focus();
+                btnSalvar.style.transform = 'scale(1.1)';
+                setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
+            }
         }
         return;
     }
@@ -2118,8 +2126,66 @@ function abrirCadastroCliente(nome, linhaId, tipoCampo) {
     }, 100);
 }function fecharClienteDialog() {
     document.getElementById('clienteDialog').classList.remove('active');
+    // Restaurar foco no input que estava sendo preenchido
+    if (inputAtualCadastro) {
+        const input = document.getElementById(inputAtualCadastro.tipoCampo + '-' + inputAtualCadastro.linhaId);
+        if (input) {
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 50);
+        }
+    }
     inputAtualCadastro = null;
 }
+
+
+// ===== LISTENER GLOBAL DE ENTER PARA SALVAR =====
+// Quando o usuário aperta Enter e não está em um input,
+// verifica se há uma linha com dados preenchidos e salva
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        const activeElement = document.activeElement;
+
+        // Se está em um input de texto, deixa o comportamento normal
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+            return;
+        }
+
+        // Se está em um botão, deixa o comportamento normal
+        if (activeElement && activeElement.tagName === 'BUTTON') {
+            return;
+        }
+
+        // Se está no modal de cliente, não faz nada
+        if (document.getElementById('clienteDialog').classList.contains('active')) {
+            return;
+        }
+
+        // Procura a última linha que foi modificada (tem botão vermelho)
+        const botoesNaoSalvos = document.querySelectorAll('.btn-save');
+        for (const btn of botoesNaoSalvos) {
+            // Se o botão não tem a classe 'saved' e não está desabilitado
+            if (!btn.classList.contains('saved') && !btn.disabled) {
+                const linhaId = btn.id.replace('btn-save-', '');
+                const valorInput = document.getElementById('valor-' + linhaId);
+                const codigoInput = document.getElementById('codigo-' + linhaId);
+                const compradorInput = document.getElementById('comprador-' + linhaId);
+
+                // Verifica se a linha tem dados preenchidos
+                const temValor = valorInput && valorInput.value && parseFloat(valorInput.value.replace(/\./g, '').replace(',', '.')) > 0;
+                const temCodigo = codigoInput && codigoInput.value.trim();
+                const temComprador = compradorInput && compradorInput.value.trim();
+
+                if (temValor && temCodigo && temComprador) {
+                    event.preventDefault();
+                    salvarVenda(parseInt(linhaId));
+                    return;
+                }
+            }
+        }
+    }
+});
 
 function mascaraCPF(input) {
     let value = input.value.replace(/\D/g, '');
@@ -2178,6 +2244,7 @@ function finalizarCadastroCliente(cliente) {
         if (input) {
             input.value = cliente.nome;
             input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
             marcarLinhaComoNaoSalva(input);
         }
     }
