@@ -1908,15 +1908,15 @@ function criarLinhaComDados(venda) {
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="comprador-' + venda.linha_id + '" value="' + (venda.comprador || '') + '" oninput="filtrarSugestoes(this, \'comprador\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + venda.linha_id + ', \'comprador\')" autocomplete="off" placeholder="Nome ou Instagram" ' + disabled + '>' +
-        '<div class="suggestions" id="sugestoes-comprador-' + venda.linha_id + '"></div> +
-        '<button type="button" class="colar-btn" onclick="colarCampo(\'comprador\', ' + venda.linha_id + ')" title="Colar do clipboard" ' + disabled + '>📋</button>'' +
+        '<div class="suggestions" id="sugestoes-comprador-' + venda.linha_id + '"></div>' +
+        '<button type="button" class="colar-btn" onclick="colarCampo(\'comprador\', ' + venda.linha_id + ')" title="Colar do clipboard" ' + disabled + '>📋</button>' +
         '</div>' +
         '</td>' +
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="fila-' + venda.linha_id + '" value="' + (venda.fila || '') + '" oninput="filtrarSugestoes(this, \'fila\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + venda.linha_id + ', \'fila\')" autocomplete="off" placeholder="Nome ou Instagram" ' + disabled + '>' +
-        '<div class="suggestions" id="sugestoes-fila-' + venda.linha_id + '"></div> +
-        '<button type="button" class="colar-btn" onclick="colarCampo(\'fila\', ' + venda.linha_id + ')" title="Colar do clipboard" ' + disabled + '>📋</button>'' +
+        '<div class="suggestions" id="sugestoes-fila-' + venda.linha_id + '"></div>' +
+        '<button type="button" class="colar-btn" onclick="colarCampo(\'fila\', ' + venda.linha_id + ')" title="Colar do clipboard" ' + disabled + '>📋</button>' +
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
@@ -1941,15 +1941,15 @@ function adicionarLinha() {
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="comprador-' + linhaCount + '" oninput="filtrarSugestoes(this, \'comprador\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + linhaCount + ', \'comprador\')" autocomplete="off" placeholder="Nome ou Instagram">' +
-        '<div class="suggestions" id="sugestoes-comprador-' + linhaCount + '"></div> +
-        '<button type="button" class="colar-btn" onclick="colarCampo(\'comprador\', ' + linhaCount + ')" title="Colar do clipboard">📋</button>'' +
+        '<div class="suggestions" id="sugestoes-comprador-' + linhaCount + '"></div>' +
+        '<button type="button" class="colar-btn" onclick="colarCampo(\'comprador\', ' + linhaCount + ')" title="Colar do clipboard">📋</button>' +
         '</div>' +
         '</td>' +
         '<td>' +
         '<div class="autocomplete-container">' +
         '<input type="text" id="fila-' + linhaCount + '" oninput="filtrarSugestoes(this, \'fila\'); marcarLinhaComoNaoSalva(this)" onkeydown="navegarCamposComSugestoes(event, ' + linhaCount + ', \'fila\')" autocomplete="off" placeholder="Nome ou Instagram">' +
-        '<div class="suggestions" id="sugestoes-fila-' + linhaCount + '"></div> +
-        '<button type="button" class="colar-btn" onclick="colarCampo(\'fila\', ' + linhaCount + ')" title="Colar do clipboard">📋</button>'' +
+        '<div class="suggestions" id="sugestoes-fila-' + linhaCount + '"></div>' +
+        '<button type="button" class="colar-btn" onclick="colarCampo(\'fila\', ' + linhaCount + ')" title="Colar do clipboard">📋</button>' +
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
