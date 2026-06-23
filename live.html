@@ -125,6 +125,10 @@
         .btn-save.saving { background: #ffc107; color: #212529; }
         .btn-save.saved { background: #28a745 !important; animation: pulseSave 0.5s ease; }
         .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
+.colar-btn { background: #17a2b8; color: white; border: none; border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; min-width: 32px; margin-left: 4px; }
+        .colar-btn:hover { background: #138496; }
+        .colar-btn:active { transform: scale(0.95); }
+        .colar-btn:disabled { background: #adb5bd; cursor: not-allowed; }
         .btn-limpar:hover { background: #5a6268; transform: scale(1.05); }
         .btn-limpar:disabled { background: #adb5bd; cursor: not-allowed; transform: none; }
         @keyframes pulseSave { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
@@ -329,6 +333,7 @@
         .backup-modal-box h3 { color: #0B193F; margin-bottom: 15px; }
         .backup-modal-box .btn { margin: 5px; }
 </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -2124,7 +2129,31 @@ function abrirCadastroCliente(nome, linhaId, tipoCampo) {
         document.getElementById('clienteNome').focus();
         document.getElementById('clienteNome').select();
     }, 100);
-}function fecharClienteDialog() {
+}async function colarCampo(campo, linhaId) {
+    const input = document.getElementById(campo + '-' + linhaId);
+    if (!input) return;
+    try {
+        const texto = await navigator.clipboard.readText();
+        if (texto && texto.trim()) {
+            input.value = texto.trim();
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
+            marcarLinhaComoNaoSalva(input);
+            // Dispara filtro de sugestões se for comprador/fila
+            if (campo === 'comprador' || campo === 'fila') {
+                filtrarSugestoes(input, campo);
+            }
+            showStatus('Colado: ' + texto.trim(), 'success');
+        } else {
+            showStatus('Clipboard vazio', 'info');
+        }
+    } catch (err) {
+        console.error('Erro ao colar:', err);
+        showStatus('Erro ao colar. Use Ctrl+V', 'error');
+    }
+}
+
+function fecharClienteDialog() {
     document.getElementById('clienteDialog').classList.remove('active');
     // Restaurar foco no input que estava sendo preenchido
     if (inputAtualCadastro) {
