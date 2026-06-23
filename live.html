@@ -125,7 +125,7 @@
         .btn-save.saving { background: #ffc107; color: #212529; }
         .btn-save.saved { background: #28a745 !important; animation: pulseSave 0.5s ease; }
         .btn-limpar { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; transition: all 0.2s ease; }
-.colar-btn { background: #17a2b8; color: white; border: none; border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; min-width: 32px; margin-left: 4px; }
+        .colar-btn { background: #17a2b8; color: white; border: none; border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; min-width: 32px; margin-left: 4px; }
         .colar-btn:hover { background: #138496; }
         .colar-btn:active { transform: scale(0.95); }
         .colar-btn:disabled { background: #adb5bd; cursor: not-allowed; }
@@ -2139,7 +2139,6 @@ function abrirCadastroCliente(nome, linhaId, tipoCampo) {
             input.dispatchEvent(new Event('input'));
             input.dispatchEvent(new Event('change'));
             marcarLinhaComoNaoSalva(input);
-            // Dispara filtro de sugestões se for comprador/fila
             if (campo === 'comprador' || campo === 'fila') {
                 filtrarSugestoes(input, campo);
             }
