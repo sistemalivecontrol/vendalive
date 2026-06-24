@@ -1506,22 +1506,95 @@ function fecharConfirmExcluirLive() {
 
 async function executarExcluirLive() {
     if (!liveParaExcluir) return;
+    const codigoExcluido = liveParaExcluir;
     fecharConfirmExcluirLive();
-    showStatus('Excluindo live e todos os itens...', 'info');
+    showStatus('Excluindo live ' + codigoExcluido + '...', 'info');
     try {
-        const { error: errorVendas } = await window.supabaseClient.from('vendas_live').delete().eq('cliente_id', currentClienteId).eq('codigo_live', liveParaExcluir);
+        // 1. Excluir vendas da live
+        const { error: errorVendas } = await window.supabaseClient.from('vendas_live').delete().eq('cliente_id', currentClienteId).eq('codigo_live', codigoExcluido);
         if (errorVendas) { if (errorVendas.status === 401) { await limparSessaoERedirecionar(); return; } throw errorVendas; }
-        const { error: errorLive } = await window.supabaseClient.from('lives_pg').delete().eq('cliente_id', currentClienteId).eq('codigo', liveParaExcluir);
+
+        // 2. Excluir a live
+        const { error: errorLive } = await window.supabaseClient.from('lives_pg').delete().eq('cliente_id', currentClienteId).eq('codigo', codigoExcluido);
         if (errorLive) { if (errorLive.status === 401) { await limparSessaoERedirecionar(); return; } throw errorLive; }
-        showStatus('Live ' + liveParaExcluir + ' e todos os itens foram excluidos!', 'success');
-        livesNaDataSelecionada = livesNaDataSelecionada.filter(l => l.codigo !== liveParaExcluir);
-        if (liveSelecionada && liveSelecionada.codigo === liveParaExcluir) {
+
+        // 3. ATUALIZAR INTERFACE IMEDIATAMENTE (antes de consultar o banco novamente)
+        livesNaDataSelecionada = livesNaDataSelecionada.filter(l => l.codigo !== codigoExcluido);
+        if (liveSelecionada && liveSelecionada.codigo === codigoExcluido) {
             liveSelecionada = livesNaDataSelecionada.length > 0 ? livesNaDataSelecionada[0] : null;
         }
-        liveParaExcluir = null;
-        await verificarLivesNaData();
+
+        // 4. Atualizar a lista de lives na tela imediatamente
+        const listaLivesDiv = document.getElementById('listaLives');
+        const livesDiv = document.getElementById('livesDisponiveis');
+        const btnIniciar = document.getElementById('btnIniciarCadastro');
+
+        if (livesNaDataSelecionada.length === 0) {
+            listaLivesDiv.innerHTML = '<p style="color: #6c757d; text-align: center; font-size: 11px; margin: 3px 0;">Nenhuma live nesta data. Crie uma nova!</p>';
+            btnIniciar.style.display = 'none';
+            liveSelecionada = null;
+        } else {
+            // Re-renderizar a lista com as lives restantes
+            let html = '';
+            livesNaDataSelecionada.forEach((live, index) => {
+                const statusClass = live.status === 'ativa' ? 'ativa' : 'finalizada';
+                const statusText = live.status === 'ativa' ? 'ATIVA' : 'FINALIZADA';
+                const selected = index === 0 ? 'selected' : '';
+                const checkedAttr = index === 0 ? 'checked' : '';
+                html += [
+                    '<div class="live-option-compact ', selected, '" onclick="selecionarLive(', "'", live.codigo, "'", ')" data-codigo="', live.codigo, '">',
+                    '<input type="radio" name="liveSelecionada" value="', live.codigo, '" ', checkedAttr, ' onchange="selecionarLive(', "'", live.codigo, "'", ')">',
+                    '<div class="live-option-info-compact">',
+                    '<span class="live-option-code-compact">', live.codigo, '</span>',
+                    '<span class="live-option-date-compact">', new Date(live.created_at).toLocaleString('pt-BR'), '</span>',
+                    '</div>',
+                    '<span class="live-option-status-compact ', statusClass, '">', statusText, '</span>',
+                    '<button type="button" class="btn-excluir-live" onclick="event.stopPropagation(); event.preventDefault(); confirmarExcluirLive(event, ', "'", live.codigo, "'", '); return false;" title="Excluir live">🗑️</button>',
+                    '</div>'
+                ].join('');
+            });
+            listaLivesDiv.innerHTML = html;
+            btnIniciar.style.display = 'inline-block';
+            // Selecionar a primeira live restante
+            if (liveSelecionada === null && livesNaDataSelecionada.length > 0) {
+                liveSelecionada = livesNaDataSelecionada[0];
+            }
+        }
+
+        // 5. Remover a linha da grid DOM imediatamente (sem esperar consulta ao banco)
+        const gridContainer = document.getElementById('gridUltimasLives');
+        if (gridContainer) {
+            const rows = gridContainer.querySelectorAll('.lives-grid-row');
+            rows.forEach(row => {
+                const codigoCell = row.querySelector('.lives-grid-cell.codigo');
+                if (codigoCell && codigoCell.textContent.trim() === codigoExcluido) {
+                    row.remove();
+                }
+            });
+            // Se não sobrou nenhuma linha de dados (só header e total), mostrar mensagem vazia
+            const dataRows = gridContainer.querySelectorAll('.lives-grid-row');
+            if (dataRows.length === 0) {
+                gridContainer.innerHTML = '<div class="lives-grid-empty">Nenhuma live cadastrada ainda.<br>Crie sua primeira live!</div>';
+            }
+        }
+
+        // 6. Atualizar a grid de últimas lives via banco (sincronização)
         await atualizarGridLivesAposMudanca();
+
+        // 7. Limpar backup local
         pararBackupLocal();
+        const chaveBackup = 'live_backup_' + currentClienteId + '_' + codigoExcluido;
+        localStorage.removeItem(chaveBackup);
+
+        showStatus('Live ' + codigoExcluido + ' excluida com sucesso!', 'success');
+        liveParaExcluir = null;
+
+        // 8. Aguardar um pouco e verificar no banco (para sincronização)
+        setTimeout(async () => {
+            await verificarLivesNaData();
+            await atualizarGridLivesAposMudanca();
+        }, 1500);
+
     } catch (error) {
         showStatus('Erro ao excluir: ' + error.message, 'error');
         console.error('Erro completo:', error);
