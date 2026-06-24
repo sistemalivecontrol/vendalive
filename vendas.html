@@ -177,6 +177,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -257,6 +258,7 @@
                         <div class="form-grid">
                             <div class="form-group"><label class="required">Comprador</label><input type="text" id="comprador" placeholder="Nome completo do comprador" required></div>
                             <div class="form-group"><label class="required">Canal de Venda</label><select id="canalVenda" required><option value="live">📱 Live Instagram</option><option value="whatsapp">💬 WhatsApp</option><option value="loja_fisica">🏪 Loja Física</option><option value="site">🌐 Site</option><option value="outro">📦 Outro</option></select></div>
+                            <div class="form-group"><label class="required">Data da Venda</label><input type="datetime-local" id="dataVenda" required></div>
                         </div>
                     </div>
                     <div class="form-section">
@@ -454,6 +456,14 @@
             document.getElementById('statusEntrega').value = venda.status_entrega || 'nao_enviado';
             document.getElementById('codigoLive').value = venda.codigo_live || '';
             document.getElementById('observacoes').value = venda.observacoes || '';
+            // Preencher data da venda no editar
+            if (venda.data_venda) {
+                const data = new Date(venda.data_venda);
+                data.setMinutes(data.getMinutes() - data.getTimezoneOffset());
+                document.getElementById('dataVenda').value = data.toISOString().slice(0, 16);
+            } else {
+                document.getElementById('dataVenda').value = '';
+            }
             document.getElementById('itensContainer').innerHTML = '';
             contadorItens = 0;
             const itens = Array.isArray(venda.itens) ? venda.itens : JSON.parse(venda.itens || '[]');
@@ -496,6 +506,10 @@
             document.getElementById('formVenda').reset();
             contadorItens = 0;
             document.getElementById('itensContainer').innerHTML = '';
+            // Setar data atual no campo datetime-local
+            const agora = new Date();
+            agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+            document.getElementById('dataVenda').value = agora.toISOString().slice(0, 16);
             adicionarItem();
             atualizarTotalModal();
             document.getElementById('modalVenda').classList.add('active');
@@ -563,7 +577,9 @@
                     if (result.error) throw result.error;
                     mostrarToast('✅ Venda atualizada com sucesso!', 'success');
                 } else {
-                    vendaData.data_venda = new Date().toISOString();
+                    const dataVendaInput = document.getElementById('dataVenda').value;
+                if (!dataVendaInput) { mostrarToast('Data da venda é obrigatória!', 'error'); document.getElementById('dataVenda').focus(); return; }
+                vendaData.data_venda = new Date(dataVendaInput).toISOString();
                     vendaData.origem = 'sistema';
                     vendaData.criado_em = new Date().toISOString();
                     result = await supabase.from('vendas_pg').insert([vendaData]).select();
