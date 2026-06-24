@@ -401,6 +401,12 @@
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
 
+            // Helper: converte YYYY-MM-DD para Date no timezone local sem shift
+            function parseDataLocal(str) {
+                const [y, m, d] = str.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            }
+
             let vendasVisiveis = todasVendas;
             if (dataInicio || dataFim) {
                 vendasVisiveis = todasVendas.filter(v => {
@@ -408,12 +414,12 @@
                     const dataVenda = new Date(v.data_venda);
                     dataVenda.setHours(0,0,0,0);
                     if (dataInicio) {
-                        const inicio = new Date(dataInicio);
+                        const inicio = parseDataLocal(dataInicio);
                         inicio.setHours(0,0,0,0);
                         if (dataVenda < inicio) return false;
                     }
                     if (dataFim) {
-                        const fim = new Date(dataFim);
+                        const fim = parseDataLocal(dataFim);
                         fim.setHours(23,59,59,999);
                         if (dataVenda > fim) return false;
                     }
@@ -620,6 +626,13 @@
             const entregaFiltro = document.getElementById('filtroEntrega').value;
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
+
+            // Helper: converte YYYY-MM-DD para Date no timezone local sem shift
+            function parseDataLocal(str) {
+                const [y, m, d] = str.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            }
+
             let filtradas = todasVendas.filter(venda => {
                 const matchSearch = !searchTerm || (venda.comprador && venda.comprador.toLowerCase().includes(searchTerm)) || (venda.codigo_live && venda.codigo_live.toLowerCase().includes(searchTerm));
                 const matchStatus = !statusFiltro || venda.status_pagamento === statusFiltro;
@@ -629,12 +642,12 @@
                     const dataVenda = new Date(venda.data_venda);
                     dataVenda.setHours(0,0,0,0);
                     if (dataInicio) {
-                        const inicio = new Date(dataInicio);
+                        const inicio = parseDataLocal(dataInicio);
                         inicio.setHours(0,0,0,0);
                         if (dataVenda < inicio) matchData = false;
                     }
                     if (dataFim) {
-                        const fim = new Date(dataFim);
+                        const fim = parseDataLocal(dataFim);
                         fim.setHours(23,59,59,999);
                         if (dataVenda > fim) matchData = false;
                     }
