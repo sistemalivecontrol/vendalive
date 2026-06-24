@@ -209,6 +209,8 @@
                     <button onclick="buscarVendas()" style="display:inline-flex;align-items:center;gap:6px;background:#0B193F;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.3s">🔍 Buscar</button>
                 </div>
                 <div class="filters">
+                    <input type="date" id="filtroDataInicio" onchange="filtrarVendas()" style="padding:10px 15px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;cursor:pointer;" title="Data Início">
+                    <input type="date" id="filtroDataFim" onchange="filtrarVendas()" style="padding:10px 15px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;cursor:pointer;" title="Data Fim">
                     <select id="filtroStatus" onchange="filtrarVendas()">
                         <option value="">Todos os Status</option>
                         <option value="pendente">Pendente</option>
@@ -222,6 +224,7 @@
                         <option value="entregue">Entregue</option>
                     </select>
                     <button onclick="abrirModal()" style="display:inline-flex;align-items:center;gap:8px;background:#0B193F;color:#fff;border:none;padding:14px 28px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all 0.3s">➕ Nova Venda</button>
+                    <button class="btn-gerar-relatorio" id="btnRelatorio" style="display:inline-flex;align-items:center;gap:8px;background:#0B193F;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s">📊 Relatório</button>
                 </div>
             </div>
 
@@ -236,11 +239,7 @@
                 </table>
             </div>
 
-            <div style="margin-top: 30px; text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px;">
-                <h3 style="color: #0B193F; margin-bottom: 15px;">📈 Relatório de Vendas</h3>
-                <p style="color: #666; margin-bottom: 15px;">Gere relatórios detalhados com filtros por data e comprador</p>
-                <button class="btn-gerar-relatorio" id="btnRelatorio">📊 Abrir Relatório</button>
-            </div>
+            
         </div>
     </div>
 
@@ -399,16 +398,36 @@
         }
 
         function atualizarEstatisticas() {
-            const total = todasVendas.length;
-            const pendentes = todasVendas.filter(v => v.status_pagamento === 'pendente').length;
-            const hoje = new Date();
-            const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-            const vendasMes = todasVendas.filter(v => new Date(v.data_venda) >= inicioMes);
-            const valorTotalMes = vendasMes.reduce((acc, v) => acc + parseFloat(v.total || 0), 0);
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
+
+            let vendasVisiveis = todasVendas;
+            if (dataInicio || dataFim) {
+                vendasVisiveis = todasVendas.filter(v => {
+                    if (!v.data_venda) return false;
+                    const dataVenda = new Date(v.data_venda);
+                    dataVenda.setHours(0,0,0,0);
+                    if (dataInicio) {
+                        const inicio = new Date(dataInicio);
+                        inicio.setHours(0,0,0,0);
+                        if (dataVenda < inicio) return false;
+                    }
+                    if (dataFim) {
+                        const fim = new Date(dataFim);
+                        fim.setHours(23,59,59,999);
+                        if (dataVenda > fim) return false;
+                    }
+                    return true;
+                });
+            }
+
+            const total = vendasVisiveis.length;
+            const pendentes = vendasVisiveis.filter(v => v.status_pagamento === 'pendente').length;
+            const valorTotal = vendasVisiveis.reduce((acc, v) => acc + parseFloat(v.total || 0), 0);
 
             document.getElementById('totalVendas').textContent = total;
-            document.getElementById('vendasMes').textContent = vendasMes.length;
-            document.getElementById('valorTotal').textContent = formatarMoeda(valorTotalMes);
+            document.getElementById('vendasMes').textContent = total;
+            document.getElementById('valorTotal').textContent = formatarMoeda(valorTotal);
             document.getElementById('vendasPendentes').textContent = pendentes;
         }
 
@@ -599,13 +618,31 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFiltro = document.getElementById('filtroStatus').value;
             const entregaFiltro = document.getElementById('filtroEntrega').value;
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
             let filtradas = todasVendas.filter(venda => {
                 const matchSearch = !searchTerm || (venda.comprador && venda.comprador.toLowerCase().includes(searchTerm)) || (venda.codigo_live && venda.codigo_live.toLowerCase().includes(searchTerm));
                 const matchStatus = !statusFiltro || venda.status_pagamento === statusFiltro;
                 const matchEntrega = !entregaFiltro || venda.status_entrega === entregaFiltro;
-                return matchSearch && matchStatus && matchEntrega;
+                let matchData = true;
+                if (venda.data_venda) {
+                    const dataVenda = new Date(venda.data_venda);
+                    dataVenda.setHours(0,0,0,0);
+                    if (dataInicio) {
+                        const inicio = new Date(dataInicio);
+                        inicio.setHours(0,0,0,0);
+                        if (dataVenda < inicio) matchData = false;
+                    }
+                    if (dataFim) {
+                        const fim = new Date(dataFim);
+                        fim.setHours(23,59,59,999);
+                        if (dataVenda > fim) matchData = false;
+                    }
+                }
+                return matchSearch && matchStatus && matchEntrega && matchData;
             });
             renderizarTabela(filtradas);
+            atualizarEstatisticas();
         }
 
         function buscarVendas() { filtrarVendas(); }
