@@ -481,6 +481,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
@@ -718,7 +719,7 @@
   <script>
 // Cache buster - force reload if version mismatch
 (function() {
-  var expectedVersion = 'v2026-06-12-11';
+  var expectedVersion = 'v2026-06-24-01-pago-fix';
   var currentVersion = localStorage.getItem('dashboard_version');
   if (currentVersion !== expectedVersion) {
     localStorage.setItem('dashboard_version', expectedVersion);
@@ -729,7 +730,7 @@
 })();
 </script>
 <script>
-    // VERSION: 2026-06-12-v11 - PIX Pendentes fix
+    // VERSION: 2026-06-24-v01 - Filtro status_pagamento=pago no total e grafico
     const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -1031,17 +1032,21 @@
       try {
         var inicioMes = new Date();
         inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+        console.log('[DASHBOARD-METRICAS] Inicio do mes:', inicioMes.toISOString());
 
         // === Métricas de Vendas (vendas_pg) ===
         var vendasResult = await supabaseClient
           .from('vendas_pg').select('total, status_pagamento')
           .eq('cliente_id', clienteId)
+          .eq('status_pagamento', 'pago')
           .gte('data_venda', inicioMes.toISOString());
         if (vendasResult.error) {
           console.error('[DASHBOARD-METRICAS] Erro vendasResult:', vendasResult.error);
           return;
         }
         var vendasMes = vendasResult.data || [];
+        console.log('[DASHBOARD-METRICAS] Vendas encontradas (status=pago):', vendasMes.length);
+        console.log('[DASHBOARD-METRICAS] Detalhes:', vendasMes.map(function(v) { return {total: v.total, status: v.status_pagamento}; }));
 
         var total = vendasMes.reduce(function(s, v) { return s + (v.total || 0); }, 0);
         var totalVendas = vendasMes.length;
@@ -1051,7 +1056,9 @@
 
         var cliResult = await supabaseClient
           .from('vendas_pg').select('comprador')
-          .eq('cliente_id', clienteId).gte('data_venda', inicioMes.toISOString());
+          .eq('cliente_id', clienteId)
+          .eq('status_pagamento', 'pago')
+          .gte('data_venda', inicioMes.toISOString());
         if (!cliResult.error) {
           var compradores = (cliResult.data || []).map(function(c) { return c.comprador; }).filter(Boolean);
           var unicos = [...new Set(compradores)];
@@ -1204,6 +1211,7 @@
         var result = await supabaseClient
           .from('vendas_pg').select('data_venda, total')
           .eq('cliente_id', clienteId)
+          .eq('status_pagamento', 'pago')
           .gte('data_venda', inicioPeriodo.toISOString())
           .order('data_venda', { ascending: true });
         if (result.error) return;
