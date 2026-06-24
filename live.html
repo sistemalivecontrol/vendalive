@@ -565,6 +565,10 @@ let ultimoTextoReconhecido = '';
 let temporizadorPausa = null;
 let comandoDetectado = false;
 let ultimaLinhaGravacao = 1;
+
+// ===== ARRAY DE LIVES EXCLUÍDAS NESSA SESSÃO =====
+// Evita que lives excluídas reapareçam por cache do Supabase
+let livesExcluidasSession = [];
 // ==========================================
 
 function inicializarReconhecimentoVoz() {
@@ -1299,12 +1303,14 @@ async function carregarGridUltimasLives() {
             .order('created_at', { ascending: false })
             .limit(15);
         if (error) throw error;
-        if (!lives || lives.length === 0) {
+        // Filtrar lives excluídas nesta sessão
+        const livesFiltradas = (lives || []).filter(l => !livesExcluidasSession.includes(l.codigo));
+        if (!livesFiltradas || livesFiltradas.length === 0) {
             container.innerHTML = '<div class="lives-grid-empty">Nenhuma live cadastrada ainda.<br>Crie sua primeira live!</div>';
             return;
         }
         const livesComTotais = await Promise.all(
-            lives.map(async function(live) {
+            livesFiltradas.map(async function(live) {
                 const { data: vendasLive, error: vendasError } = await window.supabaseClient
                     .from('vendas_live')
                     .select('valor, comprador')
@@ -1441,7 +1447,7 @@ async function verificarLivesNaData() {
             .eq('data_live', dataInput)
             .order('created_at', { ascending: false });
         if (error) { if (error.status === 401) { await limparSessaoERedirecionar(); return; } throw error; }
-        livesNaDataSelecionada = lives || [];
+        livesNaDataSelecionada = (lives || []).filter(l => !livesExcluidasSession.includes(l.codigo));
         const listaLivesDiv = document.getElementById('listaLives');
         livesDiv.style.display = 'block';
         if (livesNaDataSelecionada.length > 0) {
@@ -1507,6 +1513,10 @@ function fecharConfirmExcluirLive() {
 async function executarExcluirLive() {
     if (!liveParaExcluir) return;
     const codigoExcluido = liveParaExcluir;
+    // Adicionar ao array de lives excluídas nesta sessão
+    if (!livesExcluidasSession.includes(codigoExcluido)) {
+        livesExcluidasSession.push(codigoExcluido);
+    }
     fecharConfirmExcluirLive();
     showStatus('Excluindo live ' + codigoExcluido + '...', 'info');
     try {
