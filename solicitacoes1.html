@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- v2026-06-25-1725-WHATSAPP-FIX -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1521,6 +1525,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         // ============================================
 
         async function criarSolicitacaoPendente() {
+            console.log('[SOLICITACAO-PENDENTE] ========== INICIANDO ==========');
             console.log('[SOLICITACAO-PENDENTE] Criando solicitação com status pendente...');
             if (!supabaseConectado) { throw new Error('Sistema não conectado'); }
             if (!clienteIdSistema) { throw new Error('Cliente não identificado'); }
@@ -1565,6 +1570,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
 
+                console.log('[SOLICITACAO-PENDENTE] clienteExistente:', clienteExistente ? 'SIM' : 'NAO', 'id:', clienteExistente?.id);
                 if (clienteExistente) {
                     console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
                     console.log('[SOLICITACAO-PENDENTE] WhatsApp do banco:', JSON.stringify(clienteExistente.whatsapp), '| WhatsApp do form:', JSON.stringify(whatsapp));
