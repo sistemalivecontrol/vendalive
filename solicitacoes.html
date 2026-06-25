@@ -186,6 +186,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -2026,27 +2027,38 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval);
 
-                    // ✅ NOVO FLUXO: Atualizar solicitação (mantém status 'pendente', mas agora está paga)
-                    await atualizarSolicitacaoParaPago();
+                    // ✅ Atualizar solicitação no banco
+                    try {
+                        await atualizarSolicitacaoParaPago();
+                    } catch (err) {
+                        console.error('[POLLING] Erro ao atualizar solicitação:', err);
+                    }
 
+                    // Esconder botão Gerar PIX
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) {
                         btnGerar.style.display = 'none';
                         console.log('[POLLING] Botão Gerar PIX escondido');
                     }
 
+                    // Atualizar status visual para "Pago"
                     const statusEl = document.getElementById('statusPagamento');
                     statusEl.className = 'status-pagamento pago';
                     statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
                     statusEl.style.display = 'inline-flex';
 
-                    // ✅ NOVO FLUXO: Enviar confirmações (email + WhatsApp)
+                    // ✅ Enviar confirmações (email + WhatsApp) em background
                     if (dadosSolicitacaoCache) {
-                        enviarConfirmacoesPagamento(dadosSolicitacaoCache);
+                        console.log('[POLLING] Enviando confirmações...');
+                        enviarConfirmacoesPagamento(dadosSolicitacaoCache).catch(err => {
+                            console.error('[POLLING] Erro ao enviar confirmações:', err);
+                        });
                     }
 
-                    // Mostrar mensagem de sucesso na página
+                    // ✅ Mostrar mensagem de sucesso na página (sempre, independente de erros)
+                    console.log('[POLLING] Mostrando tela de sucesso em 2 segundos...');
                     setTimeout(function() {
+                        console.log('[POLLING] Exibindo tela de sucesso!');
                         document.getElementById('deliveryForm').style.display = 'none';
                         document.getElementById('successMsg').classList.add('show');
                         document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
