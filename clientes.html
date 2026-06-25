@@ -492,6 +492,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -743,6 +744,21 @@
             }
         }
 
+        function formatarData(dataStr) {
+            if (!dataStr) return '';
+            try {
+                const data = new Date(dataStr);
+                if (isNaN(data.getTime())) return '';
+                return data.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (e) {
+                return '';
+            }
+        }
+
         function renderizarClientes(clientes) {
             const container = document.getElementById('listaClientes');
             if (clientes.length === 0) {
@@ -752,6 +768,7 @@
             container.innerHTML = clientes.map(cliente => {
                 const enderecos = cliente.enderecos_pg || [];
                 const enderecoPrincipal = enderecos.find(e => e.ativo) || enderecos[0];
+                const dataCadastro = formatarData(cliente.criado_em);
                 return `<div class="cliente-item" data-id="${cliente.id}">
                     <div class="cliente-header" onclick="toggleDetalhes('${cliente.id}')">
                         <div class="cliente-info">
@@ -761,6 +778,7 @@
                                 ${cliente.whatsapp ? `<span>📱 ${escapeHtml(cliente.whatsapp)}</span>` : ''}
                                 ${enderecoPrincipal ? `<span>📍 ${escapeHtml(enderecoPrincipal.cidade)}/${escapeHtml(enderecoPrincipal.estado)}</span>` : ''}
                                 <span>🏠 ${enderecos.length} endereço(s)</span>
+                                ${dataCadastro ? `<span>📅 Cadastrado em: ${dataCadastro}</span>` : ''}
                             </div>
                         </div>
                         <div class="cliente-actions">
@@ -969,8 +987,6 @@
             try {
                 let result;
                 if (id) {
-                    // UPDATE: não alterar cliente_pg_id em update, apenas nos dados básicos
-                    // Mas precisamos manter cliente_pg_id para consistência
                     console.log('[CLIENTES] UPDATE endereco id:', id, 'dados:', dados);
                     result = await supabaseClient.from('enderecos_pg').update(dados).eq('id', id).eq('cliente_id', clienteSistemaId).select();
                 } else {
