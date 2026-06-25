@@ -1568,12 +1568,19 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     clientePgId = clienteExistente.id;
                     clienteIdAtual = clientePgId;
                     const dadosAtualizacao = {};
-                    if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                    if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
-                    if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
-                    if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                    // ✅ CORREÇÃO: Sempre atualizar os dados do cliente, mesmo que o valor seja vazio
+                    // O campo WhatsApp é obrigatório no formulário, então sempre deve ser atualizado
+                    if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                    if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                    if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
+                    if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
                     if (Object.keys(dadosAtualizacao).length > 0) {
-                        await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                        console.log('[SOLICITACAO-PENDENTE] Atualizando cliente existente:', clientePgId, 'com:', dadosAtualizacao);
+                        const { error: erroUpdate } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                        if (erroUpdate) console.error('[SOLICITACAO-PENDENTE] Erro ao atualizar cliente:', erroUpdate);
+                        else console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso!');
+                    } else {
+                        console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração nos dados do cliente necessária');
                     }
                 } else {
                     console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
@@ -2041,6 +2048,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
                     statusEl.style.display = 'inline-flex';
 
+                    // ✅ NOVO FLUXO: Enviar confirmações (email + WhatsApp)
+                    if (dadosSolicitacaoCache) {
+                        enviarConfirmacoesPagamento(dadosSolicitacaoCache);
+                    }
+
                     // Mostrar mensagem de sucesso na página
                     setTimeout(function() {
                         document.getElementById('deliveryForm').style.display = 'none';
@@ -2300,7 +2312,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                         bairro: dadosSolicitacao.bairro,
                         cidade: dadosSolicitacao.cidade,
                         cep: dadosSolicitacao.cep,
-                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação'
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
                     };
                     console.log('[EMAIL] Template params cliente:', templateParamsCliente);
                     const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
@@ -2326,7 +2339,8 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
                     email_cliente: dadosSolicitacao.email || 'Não informado',
                     whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
-                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado'
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
                 };
                 console.log('[EMAIL] Template params admin:', templateParamsAdmin);
                 const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
