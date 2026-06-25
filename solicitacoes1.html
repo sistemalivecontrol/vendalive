@@ -1552,76 +1552,82 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             // 1. Criar ou atualizar cliente
             let clientePgId = clienteIdAtual;
-            if (!clientePgId) {
-                console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
-                const { data: clienteExistente, error: erroBusca } = await supabaseClient
-                    .from('clientes_pg')
-                    .select('id, nome, whatsapp, email, instagram')
-                    .eq('cpf', cpf)
-                    .eq('cliente_id', clienteIdSistema)
-                    .limit(1)
-                    .maybeSingle();
+            let clienteExistente = null;
 
-                if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+            // ✅ CORREÇÃO CRÍTICA: Sempre buscar e atualizar o cliente, mesmo que clienteIdAtual já exista
+            // O cliente pode ter sido carregado pelo CPF, mas os dados do formulário podem ser diferentes
+            console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf, '| clienteIdAtual atual:', clienteIdAtual);
 
-                if (clienteExistente) {
-                    console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
-                    clientePgId = clienteExistente.id;
-                    clienteIdAtual = clientePgId;
-                    const dadosAtualizacao = {};
-                    // ✅ CORREÇÃO: Sempre atualizar os dados do cliente, mesmo que o valor seja vazio
-                    // O campo WhatsApp é obrigatório no formulário, então sempre deve ser atualizado
-                    if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                    if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
-                    if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
-                    if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
+            const { data: clienteBuscado, error: erroBusca } = await supabaseClient
+                .from('clientes_pg')
+                .select('id, nome, whatsapp, email, instagram')
+                .eq('cpf', cpf)
+                .eq('cliente_id', clienteIdSistema)
+                .limit(1)
+                .maybeSingle();
 
-                    console.log('[SOLICITACAO-PENDENTE] Dados do formulário - nome:', nome, '| whatsapp:', whatsapp, '| email:', email, '| instagram:', instagram);
-                    console.log('[SOLICITACAO-PENDENTE] Dados do banco - nome:', clienteExistente.nome, '| whatsapp:', clienteExistente.whatsapp, '| email:', clienteExistente.email, '| instagram:', clienteExistente.instagram);
+            if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
 
-                    if (Object.keys(dadosAtualizacao).length > 0) {
-                        console.log('[SOLICITACAO-PENDENTE] Atualizando cliente existente ID:', clientePgId, 'com:', JSON.stringify(dadosAtualizacao));
+            if (clienteBuscado) {
+                console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteBuscado.id);
+                clientePgId = clienteBuscado.id;
+                clienteIdAtual = clientePgId;
+                clienteExistente = clienteBuscado;
 
-                        // ✅ CORREÇÃO: Usar .select() para confirmar que a linha foi atualizada
-                        const { data: updatedData, error: erroUpdate } = await supabaseClient
+                // ✅ CORREÇÃO: Sempre atualizar os dados do cliente com os valores do formulário
+                const dadosAtualizacao = {};
+                if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
+                if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
+
+                console.log('[SOLICITACAO-PENDENTE] Dados do formulário - nome:', nome, '| whatsapp:', whatsapp, '| email:', email, '| instagram:', instagram);
+                console.log('[SOLICITACAO-PENDENTE] Dados do banco - nome:', clienteExistente.nome, '| whatsapp:', clienteExistente.whatsapp, '| email:', clienteExistente.email, '| instagram:', clienteExistente.instagram);
+
+                if (Object.keys(dadosAtualizacao).length > 0) {
+                    console.log('[SOLICITACAO-PENDENTE] Atualizando cliente existente ID:', clientePgId, 'com:', JSON.stringify(dadosAtualizacao));
+
+                    // ✅ CORREÇÃO: Usar .select() para confirmar que a linha foi atualizada
+                    const { data: updatedData, error: erroUpdate } = await supabaseClient
+                        .from('clientes_pg')
+                        .update(dadosAtualizacao)
+                        .eq('id', clientePgId)
+                        .select();
+
+                    if (erroUpdate) {
+                        console.error('[SOLICITACAO-PENDENTE] ❌ Erro ao atualizar cliente:', erroUpdate);
+                        alert('Erro ao atualizar dados do cliente: ' + erroUpdate.message);
+                    } else if (!updatedData || updatedData.length === 0) {
+                        console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas afetadas!');
+                        console.error('[SOLICITACAO-PENDENTE] Possíveis causas: RLS bloqueando, ID não existe, ou dados iguais');
+                        // Tentar novamente com upsert como fallback
+                        console.log('[SOLICITACAO-PENDENTE] Tentando fallback com upsert...');
+                        const { data: upsertData, error: upsertError } = await supabaseClient
                             .from('clientes_pg')
-                            .update(dadosAtualizacao)
-                            .eq('id', clientePgId)
+                            .upsert({
+                                id: clientePgId,
+                                cliente_id: clienteIdSistema,
+                                cpf: cpf,
+                                nome: nome,
+                                whatsapp: whatsapp,
+                                email: email || null,
+                                instagram: instagram || null
+                            })
                             .select();
-
-                        if (erroUpdate) {
-                            console.error('[SOLICITACAO-PENDENTE] ❌ Erro ao atualizar cliente:', erroUpdate);
-                            alert('Erro ao atualizar dados do cliente: ' + erroUpdate.message);
-                        } else if (!updatedData || updatedData.length === 0) {
-                            console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas afetadas!');
-                            console.error('[SOLICITACAO-PENDENTE] Possíveis causas: RLS bloqueando, ID não existe, ou dados iguais');
-                            // Tentar novamente com upsert como fallback
-                            console.log('[SOLICITACAO-PENDENTE] Tentando fallback com upsert...');
-                            const { data: upsertData, error: upsertError } = await supabaseClient
-                                .from('clientes_pg')
-                                .upsert({
-                                    id: clientePgId,
-                                    cliente_id: clienteIdSistema,
-                                    cpf: cpf,
-                                    nome: nome,
-                                    whatsapp: whatsapp,
-                                    email: email || null,
-                                    instagram: instagram || null
-                                })
-                                .select();
-                            if (upsertError) {
-                                console.error('[SOLICITACAO-PENDENTE] ❌ Upsert também falhou:', upsertError);
-                            } else {
-                                console.log('[SOLICITACAO-PENDENTE] ✅ Upsert funcionou! Dados:', upsertData);
-                            }
+                        if (upsertError) {
+                            console.error('[SOLICITACAO-PENDENTE] ❌ Upsert também falhou:', upsertError);
                         } else {
-                            console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso! Dados retornados:', updatedData);
+                            console.log('[SOLICITACAO-PENDENTE] ✅ Upsert funcionou! Dados:', upsertData);
                         }
                     } else {
-                        console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração nos dados do cliente necessária (valores idênticos)');
+                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso! Dados retornados:', updatedData);
                     }
                 } else {
-                    console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
+                    console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração nos dados do cliente necessária (valores idênticos)');
+                }
+            } else if (!clientePgId) {
+                // Só cria novo cliente se não encontrou no banco E não tem clienteIdAtual
+                console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
                     const { data: novoCliente, error: erroCliente } = await supabaseClient
                         .from('clientes_pg')
                         .insert([{
