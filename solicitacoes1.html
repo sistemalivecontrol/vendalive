@@ -1567,15 +1567,34 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                 if (clienteExistente) {
                     console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
+                    console.log('[SOLICITACAO-PENDENTE] WhatsApp do banco:', JSON.stringify(clienteExistente.whatsapp), '| WhatsApp do form:', JSON.stringify(whatsapp));
                     clientePgId = clienteExistente.id;
                     clienteIdAtual = clientePgId;
                     const dadosAtualizacao = {};
                     if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                    if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                    // ✅ CORREÇÃO: Sempre atualizar WhatsApp se fornecido (pode ter sido alterado)
+                    if (whatsapp && whatsapp.trim()) {
+                        const whatsappBanco = clienteExistente.whatsapp || '';
+                        const whatsappForm = whatsapp.trim();
+                        if (whatsappForm !== whatsappBanco) {
+                            dadosAtualizacao.whatsapp = whatsappForm;
+                            console.log('[SOLICITACAO-PENDENTE] WhatsApp diferente, atualizando:', whatsappBanco, '->', whatsappForm);
+                        } else {
+                            console.log('[SOLICITACAO-PENDENTE] WhatsApp igual ao do banco, pulando atualização');
+                        }
+                    }
                     if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
                     if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
                     if (Object.keys(dadosAtualizacao).length > 0) {
-                        await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                        console.log('[SOLICITACAO-PENDENTE] Atualizando cliente:', dadosAtualizacao);
+                        const { error: updateError } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                        if (updateError) {
+                            console.error('[SOLICITACAO-PENDENTE] Erro ao atualizar cliente:', updateError);
+                        } else {
+                            console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso');
+                        }
+                    } else {
+                        console.log('[SOLICITACAO-PENDENTE] Nenhum dado alterado, pulando update do cliente');
                     }
                 } else {
                     console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
