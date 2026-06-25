@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Solicitação de Entrega</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; position: relative; }
+        h1 { color: #FF6B8A; font-size: 1.8rem; margin-bottom: 10px; }
+        .btn-config { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; padding: 10px 20px; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: none; align-items: center; gap: 8px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255, 107, 138, 0.3); }
+        .btn-config.visible { display: flex; }
+        .btn-config:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 138, 0.4); }
+        @media (max-width: 600px) { .btn-config { position: relative; margin: 0 auto 20px; width: fit-content; } }
+        .cliente-badge { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 25px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #1565C0; }
+        .cliente-badge.erro { background: #FFEBEE; border-color: #EF5350; color: #C62828; }
+        .cliente-badge.interno { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-color: #4CAF50; color: #2E7D32; }
+        .info-envio-unificado { background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border: 3px solid #FF9800; border-radius: 15px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2); }
+        .info-envio-unificado h2 { color: #E65100; font-size: 1.3rem; margin-bottom: 15px; font-weight: 700; }
+        .info-envio-unificado .data-atual { font-size: 1.1rem; color: #424242; margin-bottom: 15px; font-weight: 600; }
+        .info-envio-unificado .envio-info { font-size: 1rem; color: #2E7D32; margin-bottom: 10px; line-height: 1.6; }
+        .info-envio-unificado .prazo-info { font-size: 0.95rem; color: #BF360C; margin-bottom: 0; font-weight: 600; }
+        .emoji-grande { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .confirmacao-container { background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; text-align: center; }
+        .confirmacao-container.ativo { border-color: #A8E6CF; background: #F0FFF4; }
+        .checkbox-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+        .checkbox-wrapper input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #FF6B8A; }
+        .checkbox-wrapper label { margin: 0; cursor: pointer; font-size: 1rem; color: #2D3436; font-weight: 600; }
+        .form-box.desabilitado { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+        .form-box.desabilitado::after { content: "👆 Marque a caixa acima para começar"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #FF6B8A; color: white; padding: 15px 25px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.2); white-space: nowrap; z-index: 10; }
+        .form-box { position: relative; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 40px rgba(255, 139, 167, 0.15); }
+        .loading-spinner { display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .dados-carregados { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border: 2px solid #4CAF50; border-radius: 10px; padding: 15px; margin-top: 10px; display: none; animation: slideDown 0.3s ease; }
+        .dados-carregados.show { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dados-carregados p { margin: 0; color: #2E7D32; font-size: 0.9rem; }
+        .dados-carregados strong { color: #1B5E20; }
+        .limpar-dados { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 0.8rem; margin-top: 8px; padding: 0 !important; width: auto !important; text-align: left; }
+        .limpar-dados:hover { color: #FF6B8A; background: none !important; box-shadow: none !important; transform: none !important; }
+        .frete-calculado-box { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 3px solid #2196F3; border-radius: 15px; padding: 25px; margin-bottom: 25px; text-align: center; display: none; box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2); }
+        .frete-calculado-box.mostrar { display: block; animation: slideDown 0.3s ease; }
+        .frete-calculado-box h3 { color: #1565C0; font-size: 1.1rem; margin-bottom: 10px; }
+        .frete-valor { font-size: 2.2rem; font-weight: bold; color: #2196F3; margin: 10px 0; }
+        .frete-descricao { font-size: 0.95rem; color: #546E7A; margin-bottom: 5px; }
+        .frete-cidade-info { font-size: 0.85rem; color: #78909C; margin-top: 5px; }
+        .frete-cidade-info strong { color: #1565C0; }
+        .outros-estados-box { background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border: 3px solid #FF9800; border-radius: 15px; padding: 25px; margin-bottom: 25px; text-align: center; display: none; box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2); }
+        .outros-estados-box.mostrar { display: block; animation: slideDown 0.3s ease; }
+        .outros-estados-box .emoji-grande { font-size: 2.5rem; margin-bottom: 10px; }
+        .outros-estados-box h3 { color: #E65100; font-size: 1.2rem; margin-bottom: 12px; }
+        .outros-estados-box p { color: #424242; font-size: 1rem; line-height: 1.6; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #2D3436; }
+        .required::after { content: " *"; color: #FF6B8A; }
+        input, select, textarea { width: 100%; padding: 14px 18px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; transition: all 0.3s; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #FF8BA7; box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1); }
+        textarea { resize: vertical; min-height: 100px; }
+        .hint { font-size: 0.8rem; color: #636E72; margin-top: 5px; font-weight: 400; }
+        .endereco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .endereco-grid { grid-template-columns: 1fr; } }
+        .aviso { background: #FFF3E0; border-left: 4px solid #FFD93D; padding: 12px; margin-top: 10px; border-radius: 0 8px 8px 0; font-size: 0.9rem; display: none; }
+        .aviso.show { display: block; }
+        button { width: 100%; padding: 18px; background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 107, 138, 0.4); }
+        .success { display: none; text-align: center; padding: 40px; }
+        .success.show { display: block !important; }
+        .check-icon { width: 80px; height: 80px; background: #A8E6CF; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .erro-conexao { background: #ffebee; border: 2px solid #f44336; color: #c62828; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .erro-conexao.show { display: block; }
+        .endereco-alterado { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 5px; font-size: 0.85rem; color: #E65100; display: none; }
+        .endereco-alterado.show { display: block; }
+        .numero-solicitacao { background: linear-gradient(135deg, #FF6B8A, #FF8BA7); color: white; padding: 15px 25px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; margin: 20px 0; display: inline-block; box-shadow: 0 4px 15px rgba(255, 107, 138, 0.4); }
+        .numero-solicitacao-label { color: #636E72; font-size: 0.9rem; margin-bottom: 5px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
+        .modal-overlay.ativo { display: flex; }
+        .modal-config { background: white; border-radius: 20px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .config-header { background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; padding: 25px 30px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .config-header h2 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+        .config-header p { font-size: 0.9rem; opacity: 0.9; margin-top: 5px; }
+        .btn-fechar { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.3s; }
+        .btn-fechar:hover { background: rgba(255,255,255,0.2); }
+        .config-body { padding: 30px; }
+        .config-section { margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #E0E0E0; }
+        .config-section:last-child { border-bottom: none; margin-bottom: 0; }
+        .config-section h3 { color: #FF6B8A; font-size: 1.2rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .config-field { margin-bottom: 15px; }
+        .config-field label { display: block; font-weight: 600; margin-bottom: 8px; color: #2D3436; font-size: 0.9rem; }
+        .config-field input, .config-field select, .config-field textarea { width: 100%; padding: 12px 15px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 0.95rem; transition: all 0.3s; }
+        .config-field input:focus, .config-field select:focus, .config-field textarea:focus { outline: none; border-color: #FF8BA7; box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1); }
+        .config-field textarea { min-height: 80px; resize: vertical; font-family: monospace; font-size: 0.85rem; }
+        .config-field small { display: block; margin-top: 5px; color: #636E72; font-size: 0.8rem; }
+        .config-preview { background: #FFF5F7; border: 2px solid #FF8BA7; border-radius: 12px; padding: 20px; margin-top: 15px; }
+        .config-preview h4 { color: #FF6B8A; margin-bottom: 10px; font-size: 0.95rem; }
+        .config-preview-content { background: white; padding: 15px; border-radius: 8px; font-size: 0.9rem; line-height: 1.6; }
+        .config-footer { padding: 20px 30px; background: #F8F9FA; border-radius: 0 0 20px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn-reset { background: #FFEBEE; color: #C62828; border: 2px solid #EF5350; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-reset:hover { background: #EF5350; color: white; }
+        .btn-salvar { background: linear-gradient(135deg, #FF8BA7, #FF6B8A); color: white; border: none; padding: 14px 40px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 107, 138, 0.4); }
+        .btn-cancelar { background: #E0E0E0; color: #2D3436; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-cancelar:hover { background: #D0D0D0; }
+        .preco-input { display: flex; align-items: center; gap: 10px; }
+        .preco-input span { color: #636E72; font-weight: 600; }
+        .link-compartilhavel-box { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #2196F3; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .link-compartilhavel-box h4 { color: #1565C0; margin-bottom: 15px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .link-display { background: white; border: 2px solid #90CAF9; border-radius: 8px; padding: 12px 15px; font-family: monospace; font-size: 0.85rem; color: #424242; word-break: break-all; margin-bottom: 12px; line-height: 1.5; }
+        .link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-copiar-link { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-copiar-link:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4); }
+        .btn-copiar-link.copiado { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .btn-abrir-link { background: white; color: #2196F3; border: 2px solid #2196F3; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-abrir-link:hover { background: #E3F2FD; }
+        .link-info { margin-top: 12px; padding: 10px; background: rgba(255,255,255,0.6); border-radius: 8px; font-size: 0.85rem; color: #546E7A; }
+        .link-info strong { color: #1565C0; }
+        .cliente-id-display { display: inline-block; background: #FF6B8A; color: white; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
+        .link-nao-disponivel { background: #FFEBEE; border: 2px dashed #EF5350; border-radius: 12px; padding: 20px; text-align: center; color: #C62828; margin-bottom: 25px; }
+        .link-nao-disponivel p { margin: 0; font-size: 0.9rem; }
+        .empresa-header { text-align: center; margin-bottom: 15px; }
+        .empresa-nome { font-size: 1.6rem; font-weight: bold; color: #FF6B8A; text-align: center; margin-bottom: 10px; }
+        .pagamento-area { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); border: 2px solid #0095d9; border-radius: 15px; padding: 20px 15px; margin: 15px 0; text-align: center; display: none; }
+        .pagamento-area.mostrar { display: block; }
+        .pagamento-area h3 { color: #1565C0; margin-bottom: 12px; font-size: 1.1rem; }
+        .pagamento-area p { color: #666; margin-bottom: 12px; font-size: 0.9rem; line-height: 1.4; }
+        .btn-gerar-pix { background: linear-gradient(135deg, #0095d9 0%, #007bb8 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; width: auto; max-width: 100%; }
+        .btn-gerar-pix:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 149, 217, 0.4); }
+        .btn-gerar-pix:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        .btn-gerar-pix.bloqueado { background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important; cursor: not-allowed !important; opacity: 0.7; }
+        .btn-gerar-pix.bloqueado:hover { transform: none !important; box-shadow: none !important; }
+        .pix-container { background: white; border: 2px dashed #0095d9; border-radius: 12px; padding: 15px 12px; margin: 12px 0; text-align: center; display: none; }
+        .pix-container.mostrar { display: block; }
+        .pix-valor { font-size: 1.6em; font-weight: bold; color: #0095d9; margin: 8px 0; }
+        .pix-descricao { font-size: 0.9rem; color: #666; margin-bottom: 12px; }
+        .pix-qr-container { background: #f8f9fa; border-radius: 10px; padding: 12px; margin: 10px auto; display: inline-block; max-width: 100%; }
+        .pix-qr-container img { max-width: 200px; width: 100%; border-radius: 8px; display: block; margin: 0 auto; }
+        .pix-copia-cola { background: #f5f5f5; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 0.7rem; word-break: break-all; color: #333; text-align: left; border: 1px solid #e0e0e0; max-height: 100px; overflow-y: auto; line-height: 1.4; }
+        .btn-copiar-codigo { background: #0B193F; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; width: auto; max-width: 100%; }
+        .btn-copiar-codigo:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .btn-copiar-codigo.copiado { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .pix-instrucoes { background: #FFF8E1; border: 1px solid #FFB74D; border-radius: 10px; padding: 12px 15px; margin: 12px 0; font-size: 0.85rem; color: #E65100; text-align: left; }
+        .pix-instrucoes strong { display: block; margin-bottom: 8px; font-size: 0.95rem; }
+        .pix-instrucoes ol { margin: 0; padding-left: 18px; }
+        .pix-instrucoes li { margin-bottom: 6px; line-height: 1.4; }
+        .status-pagamento { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-top: 12px; max-width: 100%; flex-wrap: wrap; justify-content: center; }
+        .status-pagamento.pendente { background: #FFF3E0; color: #E65100; }
+        .status-pagamento.pago { background: #E8F5E9; color: #2E7D32; }
+        .status-pagamento.erro { background: #FFEBEE; color: #C62828; }
+        @media (max-width: 480px) {
+            .pagamento-area { padding: 15px 10px; margin: 10px 0; }
+            .pagamento-area h3 { font-size: 1rem; }
+            .pagamento-area p { font-size: 0.85rem; }
+            .btn-gerar-pix { padding: 12px 16px; font-size: 0.95rem; width: 100%; justify-content: center; }
+            .pix-container { padding: 12px 8px; }
+            .pix-valor { font-size: 1.4em; }
+            .pix-qr-container { padding: 8px; }
+            .pix-qr-container img { max-width: 180px; }
+            .pix-copia-cola { font-size: 0.65rem; padding: 8px 10px; max-height: 80px; }
+            .btn-copiar-codigo { width: 100%; justify-content: center; padding: 10px 16px; font-size: 0.9rem; }
+            .pix-instrucoes { padding: 10px 12px; font-size: 0.8rem; }
+            .pix-instrucoes li { margin-bottom: 4px; }
+            .status-pagamento { font-size: 0.85rem; padding: 8px 12px; }
+        }
+        .btn-enviar-bloqueado { background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important; cursor: not-allowed !important; opacity: 0.7; }
+        .btn-enviar-bloqueado:hover { transform: none !important; box-shadow: none !important; }
+        .aviso-campos-obrigatorios { background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.85rem; color: #E65100; display: none; }
+        .aviso-campos-obrigatorios.mostrar { display: block; }
+        .spinner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner-overlay.ativo { display: flex; }
+        .spinner-box { background: white; padding: 40px; border-radius: 16px; text-align: center; }
+        .spinner-box .loading { display: inline-block; width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .redirecionando-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #FFF5F7 0%, #F0FFF4 100%); z-index: 9998; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
+        .redirecionando-overlay.ativo { display: flex; }
+        .redirecionando-box { background: white; padding: 50px 40px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); max-width: 400px; width: 100%; }
+        .redirecionando-box .loading { display: inline-block; width: 60px; height: 60px; border: 6px solid #f3f3f3; border-top: 6px solid #FF6B8A; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 25px; }
+        .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
+        .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
+    </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner-box">
+            <div class="loading"></div>
+            <p style="font-size:1.1rem; color:#333; font-weight:600;">Processando...</p>
+        </div>
+    </div>
+    <div class="redirecionando-overlay" id="redirecionandoOverlay">
+        <div class="redirecionando-box">
+            <div class="loading"></div>
+            <h2>✅ Pagamento Confirmado!</h2>
+            <p>Enviando sua solicitação e redirecionando para a página de confirmação...</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="empresa-header" id="empresaHeader">
+                <div class="empresa-nome" id="empresaNome">Carregando...</div>
+            </div>
+            <h1>Solicitação de Entrega</h1>
+            <div class="cliente-badge" id="clienteBadge">
+                <span>🏪</span>
+                <span id="clienteBadgeText">Identificando loja...</span>
+            </div>
+            <button class="btn-config" id="btnConfig" onclick="abrirConfiguracoes()">⚙️ Configurações</button>
+        </div>
+        <div id="erroConexao" class="erro-conexao">⚠️ Erro ao conectar com o banco de dados. Verifique sua conexão ou tente recarregar a página.</div>
+        <div id="infoEnvioUnificado" class="info-envio-unificado">
+            <span class="emoji-grande">⏰</span>
+            <h2>Carregando...</h2>
+            <p class="data-atual">Aguarde um momento</p>
+        </div>
+        <div class="confirmacao-container" id="confirmacaoBox">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="confirmarPrazo">
+                <label for="confirmarPrazo">✅ Li e entendi o prazo para solicitações semanais acima</label>
+            </div>
+        </div>
+        <div class="form-box desabilitado" id="formBox">
+            <form id="deliveryForm">
+                <!-- 1. CPF -->
+                <div class="form-group">
+                    <label class="required">CPF</label>
+                    <input type="text" name="cpf" id="cpf" required placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                    <div class="dados-carregados" id="dadosCarregados">
+                        <p>✅ <strong>Dados encontrados!</strong> Formulário preenchido automaticamente.</p>
+                        <button type="button" class="limpar-dados" id="btnLimparDados">🗑️ Limpar e preencher novo cadastro</button>
+                    </div>
+                    <p class="hint">💡 Digite seu CPF completo. Se já tiver cadastro, seus dados serão carregados automaticamente!</p>
+                </div>
+                <!-- 2. Nome Completo -->
+                <div class="form-group">
+                    <label class="required">Nome completo</label>
+                    <input type="text" name="nome" id="nome" required placeholder="Digite seu nome completo">
+                </div>
+                <!-- 3. WhatsApp -->
+                <div class="form-group">
+                    <label class="required">WhatsApp</label>
+                    <input type="tel" name="whatsapp" id="whatsapp" required placeholder="(48) 99999-9999">
+                </div>
+                <!-- 4. E-mail -->
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" id="email" placeholder="seu.email@exemplo.com">
+                    <p class="hint">💡 Se informar o e-mail, uma cópia da solicitação será enviada automaticamente</p>
+                </div>
+                <!-- 5. Instagram -->
+                <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="text" name="instagram" id="instagram" placeholder="@maria.silva">
+                    <p class="hint">💡 Isto irá facilitar a localização da sua sacolinha</p>
+                </div>
+                <!-- 6. Rua / Avenida -->
+                <div class="form-group">
+                    <label class="required">Rua / Avenida</label>
+                    <input type="text" name="rua" id="rua" required placeholder="Nome da rua ou avenida">
+                    <div class="endereco-alterado" id="avisoEnderecoAlterado">📝 Endereço modificado - será cadastrado um novo endereço para esta entrega</div>
+                </div>
+                <!-- 7. Nº e Complemento -->
+                <div class="endereco-grid">
+                    <div class="form-group">
+                        <label class="required">Nº</label>
+                        <input type="text" name="numero" id="numero" required placeholder="Número">
+                    </div>
+                    <div class="form-group">
+                        <label>Complemento</label>
+                        <input type="text" name="complemento" id="complemento" placeholder="Apto, bloco...">
+                    </div>
+                </div>
+                <!-- 8. Bairro -->
+                <div class="form-group">
+                    <label class="required">Bairro</label>
+                    <input type="text" name="bairro" id="bairro" required placeholder="Bairro">
+                </div>
+                <!-- 9. CEP -->
+                <div class="form-group">
+                    <label class="required">CEP</label>
+                    <input type="text" name="cep" id="cepEndereco" required placeholder="00000-000" maxlength="9">
+                </div>
+                <!-- 10. Estado -->
+                <div class="form-group">
+                    <label class="required">Estado</label>
+                    <select name="estado" id="estado" required>
+                        <option value="">Selecione o estado...</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                </div>
+                <!-- 11. Cidade (SC = dropdown, outros = input) -->
+                <div class="form-group" id="cidadeContainer">
+                    <label class="required">Cidade</label>
+                    <input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">
+                </div>
+                <!-- 12. Observações -->
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes" id="observacoes" placeholder="Informações adicionais..."></textarea>
+                </div>
+                <!-- Card de Frete Calculado (acima do PIX) -->
+                <div class="frete-calculado-box" id="freteCalculadoBox">
+                    <span class="emoji-grande">🚚</span>
+                    <h3>Frete Calculado Automaticamente</h3>
+                    <div class="frete-valor" id="freteValor">R$ 0,00</div>
+                    <div class="frete-descricao" id="freteDescricao">Aguardando preenchimento do endereço...</div>
+                    <div class="frete-cidade-info" id="freteCidadeInfo"></div>
+                </div>
+                <!-- Card Outros Estados -->
+                <div class="outros-estados-box" id="outrosEstadosBox">
+                    <span class="emoji-grande">📦</span>
+                    <h3>🌎 Envio para Outros Estados</h3>
+                    <p>Iremos pesar seu pacote e retornaremos com os menores valores de frete encontrados nas melhores plataformas de envio.<br><br><strong>💬 O orçamento será enviado via Direct do Instagram.</strong></p>
+                </div>
+                <!-- Área de PIX (aparece automaticamente para SC) -->
+                <div class="pagamento-area" id="pagamentoArea">
+                    <h3>💳 Pagamento do Frete via PIX</h3>
+                    <p>Para finalizar sua solicitação, realize o pagamento do frete via PIX.</p>
+                    <button type="button" id="btnGerarPix" class="btn-gerar-pix bloqueado" onclick="gerarPixMercadoPago()" disabled>🔒 Preencha todos os dados obrigatórios para gerar o PIX</button>
+                    <div class="aviso-campos-obrigatorios" id="avisoCamposObrigatorios">⚠️ Preencha todos os campos obrigatórios acima para gerar o PIX</div>
+                    <div id="pixContainer" class="pix-container">
+                        <div class="pix-valor" id="pixValor">R$ 0,00</div>
+                        <div class="pix-descricao" id="pixDescricao">Frete</div>
+                        <div class="pix-qr-container">
+                            <img id="pixQrCodeImg" src="" alt="QR Code PIX">
+                        </div>
+                        <div class="pix-copia-cola" id="pixCopiaCola">Copia e cola será gerado aqui...</div>
+                        <button type="button" class="btn-copiar-codigo" id="btnCopiarCodigo" onclick="copiarCodigoPix()">📋 Copiar Código PIX</button>
+                        <div class="pix-instrucoes">
+                            <strong>📲 Como pagar:</strong>
+                            <ol>
+                                <li>Abra o app do seu banco</li>
+                                <li>Escolha a opção "PIX" → "Copia e Cola" ou escaneie o QR Code</li>
+                                <li>Cole o código acima e confirme o pagamento</li>
+                                <li>Aguarde a confirmação automática abaixo ⬇️</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div id="statusPagamento" class="status-pagamento pendente" style="display:none;">⏳ Aguardando confirmação do pagamento...</div>
+                </div>
+                <button type="submit" id="btnEnviar" style="margin-top: 20px;">🔒 Preencha todos os dados para continuar</button>
+            </form>
+            <div class="success" id="successMsg">
+                <div class="check-icon">✓</div>
+                <h2 style="color: #FF6B8A; margin-bottom: 10px;">Solicitação Enviada!</h2>
+                <div class="numero-solicitacao-label">Número da sua solicitação:</div>
+                <div class="numero-solicitacao" id="numeroSolicitacaoDisplay">-</div>
+                <p style="color: #636E72; margin-bottom: 15px;">Guarde este número para referência futura.</p>
+                <p style="background: #E8F5E9; padding: 15px; border-radius: 10px; color: #2E7D32; margin-bottom: 15px;">✅ Uma cópia da solicitação foi enviada para seu e-mail!</p>
+                <p style="margin-top: 15px;">
+                    <a href="https://www.instagram.com/pingodegentelojaebrecho/" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #833AB4, #FD1D1D, #F77737); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(131, 58, 180, 0.3);">📱 Abrir Instagram @pingodegentelojaebrecho</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalConfiguracoes">
+        <div class="modal-config">
+            <div class="config-header">
+                <div>
+                    <h2>⚙️ Configurações</h2>
+                    <p>Personalize as informações de envio e pagamento</p>
+                </div>
+                <button class="btn-fechar" onclick="fecharConfiguracoes()">×</button>
+            </div>
+            <div class="config-body">
+                <div class="config-section" id="secaoLinkCompartilhavel">
+                    <h3>🔗 Link para Clientes</h3>
+                    <p style="color: #636E72; font-size: 0.9rem; margin-bottom: 15px;">Compartilhe este link com seus clientes para que eles possam solicitar entregas diretamente.</p>
+                    <div id="linkCompartilhavelContainer"></div>
+                </div>
+                <div class="config-section">
+                    <h3>📦 Informações de Envio</h3>
+                    <div class="config-grid">
+                        <div class="config-field">
+                            <label>Título da Seção</label>
+                            <input type="text" id="configTituloEnvio" placeholder="Próximo Envio">
+                        </div>
+                        <div class="config-field">
+                            <label>Emoji</label>
+                            <input type="text" id="configEmojiEnvio" placeholder="⏰" maxlength="5">
+                        </div>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Envio Próxima Semana</label>
+                        <textarea id="configTextoProximaSemana" placeholder="Sua sacola será enviada entre Quinta e Sexta-feira da próxima semana"></textarea>
+                        <small>Variáveis: {{data_inicio}} e {{data_fim}}</small>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Envio Esta Semana</label>
+                        <textarea id="configTextoEstaSemana" placeholder="Sua sacola será enviada entre Quinta e Sexta-feira desta semana"></textarea>
+                        <small>Variáveis: {{data_inicio}} e {{data_fim}}</small>
+                    </div>
+                    <div class="config-field">
+                        <label>Texto - Prazo de Solicitação</label>
+                        <textarea id="configTextoPrazo" placeholder="Solicitações abertas até Quarta-feira {{data}} às 17:00h"></textarea>
+                        <small>Variável: {{data}}</small>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>💰 Preços de Entrega</h3>
+                    <div class="config-grid">
+                        <div class="config-field">
+                            <label>Grande Florianópolis (R$)</label>
+                            <div class="preco-input">
+                                <span>R$</span>
+                                <input type="number" id="configPrecoFloripa" step="0.01" min="0" placeholder="15.00">
+                            </div>
+                        </div>
+                        <div class="config-field">
+                            <label>Santa Catarina (R$)</label>
+                            <div class="preco-input">
+                                <span>R$</span>
+                                <input type="number" id="configPrecoSC" step="0.01" min="0" placeholder="21.99">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="config-footer">
+                <button class="btn-reset" onclick="restaurarPadrao()">🔄 Restaurar Padrão</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-cancelar" onclick="fecharConfiguracoes()">Cancelar</button>
+                    <button class="btn-salvar" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+        // ============================================
+        // EVOLUTION API - ENVIO DE WHATSAPP (V2 ROBUSTO)
+        // ============================================
+        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
+        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
+        const EVOLUTION_INSTANCE = 'pingodegente';
+
+        // ✅ CORREÇÃO: Função helper para verificar se a instância está online
+        async function verificarInstanciaEvolution() {
+            try {
+                const response = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': EVOLUTION_API_KEY
+                    }
+                });
+                const data = await response.json();
+                console.log('[WA-STATUS] Estado da instância:', data);
+                return data && (data.state === 'open' || data.state === 'connected');
+            } catch (e) {
+                console.warn('[WA-STATUS] Não foi possível verificar estado da instância:', e.message);
+                return true; // Assume online para não bloquear
+            }
+        }
+
+        // ✅ CORREÇÃO: Função para enviar mensagem WhatsApp com retry e melhor tratamento de erro
+        async function enviarWhatsApp(numero, texto, opcoes) {
+            opcoes = opcoes || {};
+
+            // 1. Normalizar número
+            let numeroLimpo = String(numero || '').replace(/\D/g, '');
+            if (!numeroLimpo) {
+                console.error('[WA] ❌ Número vazio ou inválido');
+                return { sucesso: false, erro: 'Número vazio ou inválido', log_id: null };
+            }
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+
+            console.log('[WA] 📤 Enviando para:', numeroLimpo);
+            console.log('[WA] 📄 Texto (primeiros 100 chars):', texto.substring(0, 100));
+
+            // 2. Gravar log inicial (pendente) - NÃO BLOQUEANTE
+            let logId = null;
+            try {
+                logId = await gravarLogWhatsApp({
+                    numero: numeroLimpo,
+                    destinatario: opcoes.destinatario || null,
+                    mensagem: texto,
+                    status: 'pendente',
+                    origem: opcoes.origem || 'solicitacao-entrega',
+                    tipo_envio: opcoes.tipo_envio || 'notificacao',
+                    referencia_id: opcoes.referencia_id || null,
+                    referencia_tipo: opcoes.referencia_tipo || null,
+                    codigo_rastreio: opcoes.codigo_rastreio || null,
+                    valor: opcoes.valor || null,
+                    metadata: opcoes.metadata || {}
+                });
+            } catch (logErr) {
+                console.warn('[WA] ⚠️ Erro ao gravar log inicial (não crítico):', logErr.message);
+            }
+
+            // 3. Tentar enviar com retry (até 2 tentativas)
+            let ultimoErro = null;
+            for (let tentativa = 1; tentativa <= 2; tentativa++) {
+                try {
+                    console.log(`[WA] Tentativa ${tentativa}/2...`);
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout // 15s timeout
+
+                    // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
+                    // Endpoint: /message/sendText/{instance}
+                    const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': EVOLUTION_API_KEY
+                        },
+                        body: JSON.stringify({
+                            number: numeroLimpo,
+                            text: texto,
+                            options: {
+                                delay: 1200,
+                                presence: 'composing'
+                            }
+                        }),
+                        signal: controller.signal,
+                        keepalive: true // ✅ MANTÉM REQUISIÇÃO ATIVA MESMO SE PÁGINA NAVEGAR
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    // ✅ CORREÇÃO: Verificar status HTTP antes de parsear JSON
+                    const responseText = await response.text();
+                    let data = null;
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (parseErr) {
+                        console.warn('[WA] ⚠️ Resposta não é JSON:', responseText.substring(0, 200));
+                        data = { raw: responseText };
+                    }
+
+                    console.log(`[WA] Resposta HTTP ${response.status}:`, data);
+
+                    if (response.ok) {
+                        // Sucesso!
+                        console.log('✅ [WA] Mensagem enviada com sucesso!');
+
+                        // Atualizar log
+                        if (logId) {
+                            atualizarLogWhatsApp(logId, {
+                                status: 'enviado',
+                                status_envio: 'enviado',
+                                resposta_api: data,
+                                evolution_message_id: (data && data.key && data.key.id) ? data.key.id : null
+                            }).catch(e => console.warn('[WA] Erro ao atualizar log:', e));
+                        }
+
+                        return { sucesso: true, dados: data, log_id: logId };
+                    } else {
+                        // Erro HTTP
+                        const erroMsg = (data && data.message) ? data.message : `HTTP ${response.status}`;
+                        console.error(`[WA] ❌ Erro HTTP ${response.status}:`, erroMsg);
+                        ultimoErro = new Error(erroMsg);
+
+                        // Se for erro de instância desconectada, não tenta de novo
+                        if (response.status === 404 || response.status === 401) {
+                            break;
+                        }
+
+                        // Aguarda antes de retry
+                        if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
+                    }
+                } catch (erro) {
+                    ultimoErro = erro;
+                    console.error(`[WA] ❌ Erro na tentativa ${tentativa}:`, erro.name, erro.message);
+
+                    if (erro.name === 'AbortError') {
+                        console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
+                    }
+
+                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
+                }
+            }
+
+            // Todas as tentativas falharam
+            console.error('[WA] ❌ Todas as tentativas falharam. Último erro:', ultimoErro ? ultimoErro.message : 'Erro desconhecido');
+
+            if (logId) {
+                atualizarLogWhatsApp(logId, {
+                    status: 'erro',
+                    status_envio: 'erro',
+                    erro_envio: ultimoErro ? ultimoErro.message : 'Erro desconhecido após retries'
+                }).catch(e => console.warn('[WA] Erro ao atualizar log de erro:', e));
+            }
+
+            return { sucesso: false, erro: ultimoErro ? ultimoErro.message : 'Erro desconhecido', log_id: logId };
+        }
+
+        // Função para gravar log no Supabase
+        async function gravarLogWhatsApp(dados) {
+            if (!supabaseClient || !clienteIdSistema) {
+                console.warn('[LOG-WA] Supabase não disponível, log não gravado');
+                return null;
+            }
+            try {
+                const payload = {
+                    cliente_sistema_id: clienteIdSistema,
+                    numero: dados.numero || '',
+                    numero_destino: dados.numero || '',
+                    destinatario: dados.destinatario || null,
+                    nome_destino: dados.destinatario || null,
+                    mensagem: dados.mensagem || null,
+                    status: dados.status || 'pendente',
+                    status_envio: dados.status_envio || dados.status || 'pendente',
+                    origem: dados.origem || 'solicitacao-entrega',
+                    tipo_envio: dados.tipo_envio || 'notificacao',
+                    referencia_id: dados.referencia_id || null,
+                    referencia_tipo: dados.referencia_tipo || null,
+                    codigo_rastreio: dados.codigo_rastreio || null,
+                    valor: dados.valor || null,
+                    metadata: dados.metadata || {},
+                    enviado_em: new Date().toISOString(),
+                    criado_em: new Date().toISOString(),
+                    atualizado_em: new Date().toISOString()
+                };
+
+                const { data, error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .insert([payload])
+                    .select('id')
+                    .single();
+
+                if (error) {
+                    console.error('[LOG-WA] Erro ao gravar log:', error);
+                    return null;
+                }
+
+                console.log('[LOG-WA] Log gravado, ID:', data.id);
+                return data.id;
+            } catch (e) {
+                console.error('[LOG-WA] Exceção ao gravar log:', e);
+                return null;
+            }
+        }
+
+        // Função para atualizar log existente
+        async function atualizarLogWhatsApp(logId, dados) {
+            if (!supabaseClient || !logId) return;
+            try {
+                const updateData = {
+                    atualizado_em: new Date().toISOString()
+                };
+                if (dados.status) updateData.status = dados.status;
+                if (dados.status_envio) updateData.status_envio = dados.status_envio;
+                if (dados.resposta_api) updateData.resposta_api = dados.resposta_api;
+                if (dados.erro_envio) updateData.erro_envio = dados.erro_envio;
+                if (dados.evolution_message_id) updateData.evolution_message_id = dados.evolution_message_id;
+                if (dados.enviado_em) updateData.enviado_em = dados.enviado_em;
+
+                const { error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .update(updateData)
+                    .eq('id', logId);
+
+                if (error) {
+                    console.error('[LOG-WA] Erro ao atualizar log:', error);
+                } else {
+                    console.log('[LOG-WA] Log atualizado, ID:', logId);
+                }
+            } catch (e) {
+                console.error('[LOG-WA] Exceção ao atualizar log:', e);
+            }
+        }
+
+        // ✅ CORREÇÃO: Mensagem 1 - Solicitação Recebida (com verificação de número)
+        async function enviarConfirmacaoSolicitacao(dados) {
+            // Verificar se tem WhatsApp
+            if (!dados.whatsapp || !dados.whatsapp.trim()) {
+                console.warn('[WA-CONF] ⚠️ Sem WhatsApp do cliente, pulando envio de confirmação');
+                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
+            }
+
+            const texto = `Olá *${dados.nome}*! 👋
+
+🚚 *Solicitação de Entrega Recebida!*
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+⏳ Agora é só aguardar o recebimento do número do rastreamento!
+
+_Pingo de Gente - LiveControl_`;
+
+            console.log('[WA-CONF] Enviando confirmação de solicitação para:', dados.whatsapp);
+            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_solicitacao',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: dados.valorFrete || null,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    regiao: dados.regiao || null
+                }
+            });
+
+            console.log('[WA-CONF] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
+            return resultado;
+        }
+
+        // ✅ CORREÇÃO: Mensagem 2 - Pagamento Confirmado (com verificação de número)
+        async function enviarConfirmacaoPagamento(dados) {
+            // Verificar se tem WhatsApp
+            if (!dados.whatsapp || !dados.whatsapp.trim()) {
+                console.warn('[WA-PAY] ⚠️ Sem WhatsApp do cliente, pulando envio de confirmação de pagamento');
+                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
+            }
+
+            const texto = `Olá *${dados.nome}*! 🎉
+
+✅ *Pagamento Confirmado!*
+
+🚚 Sua entrega foi liberada e será processada em breve.
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor Pago:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+Acompanhe o status pelo nosso sistema.
+
+_Pingo de Gente - LiveControl_`;
+
+            console.log('[WA-PAY] Enviando confirmação de pagamento para:', dados.whatsapp);
+            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_pagamento',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: dados.valorFrete || null,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    regiao: dados.regiao || null,
+                    pagamento_confirmado: true
+                }
+            });
+
+            console.log('[WA-PAY] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
+            return resultado;
+        }
+const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
+        emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+
+        // ✅ CORREÇÃO: Função alternativa de envio de e-mail via Supabase Edge Function
+        // Caso o EmailJS não entregue (vai para spam), usamos o Supabase
+        async function enviarEmailViaSupabase(dadosEmail) {
+            console.log('[EMAIL-SUPABASE] Tentando enviar via Supabase...');
+            try {
+                const response = await fetch(SUPABASE_URL + '/functions/v1/enviar-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        para: dadosEmail.para,
+                        assunto: dadosEmail.assunto,
+                        corpo: dadosEmail.corpo,
+                        html: dadosEmail.html || false
+                    })
+                });
+                const result = await response.json();
+                console.log('[EMAIL-SUPABASE] Resultado:', result);
+                return result;
+            } catch (error) {
+                console.error('[EMAIL-SUPABASE] Erro:', error);
+                return null;
+            }
+        }
+
+        const CIDADES_GRANDE_FLORIPA = [
+            'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
+            'PALHOCA', 'SANTO AMARO DA IMPERATRIZ', 'SAO JOSE'
+        ];
+
+        const TODAS_CIDADES_SC = [
+            "Abdon Batista", "Abelardo Luz", "Agrolandia", "Agronomica", "Agua Doce", "Aguas de Chapeco",
+            "Aguas Frias", "Aguas Mornas", "Alfredo Wagner", "Alto Bela Vista", "Anchieta", "Angelina",
+            "Anita Garibaldi", "Anitapolis", "Antonio Carlos", "Apiuna", "Arabuta", "Araquari", "Ararangua",
+            "Armazem", "Arroio Trinta", "Atalanta", "Aurora", "Balneario Arroio do Silva", "Balneario Barra do Sul",
+            "Balneario Camboriu", "Balneario Gaivota", "Balneario Picarras", "Balneario Rincao", "Bandeirante",
+            "Barra Bonita", "Barra Velha", "Bela Vista do Toldo", "Belmonte", "Benedito Novo", "Biguacu",
+            "Blumenau", "Bocaina do Sul", "Bombinhas", "Bom Jardim da Serra", "Bom Jesus", "Bom Jesus do Oeste",
+            "Bom Retiro", "Botuvera", "Braco do Norte", "Braco do Trombudo", "Brunopolis", "Brusque",
+            "Cacador", "Caibi", "Calmon", "Camboriu", "Campo Alegre", "Campo Belo do Sul", "Campo Ere",
+            "Campos Novos", "Canelinha", "Canoinhas", "Capao Alto", "Capinzal", "Capivari de Baixo",
+            "Catanduvas", "Caxambu do Sul", "Celso Ramos", "Cerro Negro", "Chapadao do Lageado", "Chapeco",
+            "Cocal do Sul", "Concordia", "Cordilheira Alta", "Coronel Freitas", "Coronel Martins", "Correia Pinto",
+            "Criciuma", "Cunha Pora", "Cunhatai", "Curitibanos", "Descanso", "Dionisio Cerqueira", "Dona Emma",
+            "Doutor Pedrinho", "Entre Rios", "Ermo", "Erval Velho", "Faxinal dos Guedes", "Flor do Sertao",
+            "Florianopolis", "Formosa do Sul", "Forquilhinha", "Fraiburgo", "Frei Rogerio", "Galvao", "Garopaba",
+            "Garuva", "Gaspar", "Governador Celso Ramos", "Grao-Para", "Gravatal", "Guabiruba", "Guaraciaba",
+            "Guaramirim", "Guatambu", "Herval d'Oeste", "Ibiam", "Ibicare", "Ibirama", "Icara", "Ilhota",
+            "Imarui", "Imbituba", "Imbuia", "Indaial", "Iomere", "Ipira", "Ipora do Oeste", "Ipuacu",
+            "Ipumirim", "Iraceminha", "Irani", "Irati", "Irineopolis", "Ita", "Itaiopolis", "Itajai",
+            "Itapema", "Itapiranga", "Itapoa", "Ituporanga", "Jabora", "Jacinto Machado", "Jaguaruna",
+            "Jaragua do Sul", "Jardinopolis", "Joacaba", "Joinville", "Jose Boiteux", "Jupia", "Lacerdopolis",
+            "Lages", "Laguna", "Lajeado Grande", "Laurentino", "Lauro Muller", "Lebon Regis", "Leoberto Leal",
+            "Lindoia do Sul", "Lontras", "Luiz Alves", "Luzerna", "Macieira", "Mafra", "Major Gercino",
+            "Major Vieira", "Maracaja", "Maravilha", "Marema", "Massaranduba", "Matos Costa", "Meleiro",
+            "Mirim Doce", "Modelo", "Mondai", "Monte Carlo", "Monte Castelo", "Morro da Fumaca", "Morro Grande",
+            "Navegantes", "Nova Erechim", "Nova Itaberaba", "Nova Trento", "Nova Veneza", "Novo Horizonte",
+            "Orleans", "Otacilio Costa", "Ouro", "Ouro Verde", "Paial", "Painel", "Palhoca", "Palma Sola",
+            "Palmeira", "Palmitos", "Papanduva", "Paraiso", "Passo de Torres", "Passos Maia", "Paulo Lopes",
+            "Pedras Grandes", "Penha", "Peritiba", "Pescaria Brava", "Petrolandia", "Pinhalzinho",
+            "Pinheiro Preto", "Piratuba", "Planalto Alegre", "Pomerode", "Ponte Alta", "Ponte Alta do Norte",
+            "Ponte Serrada", "Porto Belo", "Porto Uniao", "Pouso Redondo", "Praia Grande",
+            "Presidente Castelo Branco", "Presidente Getulio", "Presidente Nereu", "Princesa", "Quilombo",
+            "Rancho Queimado", "Rio das Antas", "Rio do Campo", "Rio do Oeste", "Rio dos Cedros", "Rio do Sul",
+            "Rio Fortuna", "Rio Negrinho", "Rio Rufino", "Riqueza", "Rodeio", "Romelandia", "Salete",
+            "Saltinho", "Salto Veloso", "Sangao", "Santa Cecilia", "Santa Helena", "Santa Rosa de Lima",
+            "Santa Rosa do Sul", "Santa Terezinha", "Santa Terezinha do Progresso", "Santiago do Sul",
+            "Santo Amaro da Imperatriz", "Sao Bento do Sul", "Sao Bernardino", "Sao Bonifacio", "Sao Carlos",
+            "Sao Cristovao do Sul", "Sao Domingos", "Sao Francisco do Sul", "Sao Joao Batista",
+            "Sao Joao do Itaperiu", "Sao Joao do Oeste", "Sao Joao do Sul", "Sao Joaquim", "Sao Jose",
+            "Sao Jose do Cedro", "Sao Jose do Cerrito", "Sao Lourenco do Oeste", "Sao Ludgero",
+            "Sao Martinho", "Sao Miguel da Boa Vista", "Sao Miguel do Oeste", "Sao Pedro de Alcantara",
+            "Saudades", "Schroeder", "Seara", "Serra Alta", "Sideropolis", "Sombrio", "Sul Brasil", "Taio",
+            "Tangara", "Tigrinhos", "Tijucas", "Timbe do Sul", "Timbo", "Timbo Grande", "Tres Barras",
+            "Treviso", "Treze de Maio", "Treze Tilias", "Trombudo Central", "Tubarao", "Tunapolis", "Turvo",
+            "Uniao do Oeste", "Urubici", "Urupema", "Urussanga", "Vargeao", "Vargem", "Vargem Bonita",
+            "Vidal Ramos", "Videira", "Vitor Meireles", "Witmarsum", "Xanxere", "Xavantina", "Xaxim", "Zortea"
+        ];
+
+        var supabaseClient = null, supabaseConectado = false, clienteIdSistema = null, modoAcesso = 'publico', nomeEmpresa = '';
+        const STORAGE_CONFIG = 'solicitacao_config';
+        const CONFIG_PADRAO = {
+            envio: { titulo: 'Próximo Envio', emoji: '⏰', textoProximaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira da próxima semana</strong>', textoEstaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira desta semana</strong>', textoPrazo: 'Solicitações abertas até <strong>Quarta-feira {{data}} às 17:00h</strong>' },
+            precos: { floripa: 15.00, sc: 21.99 }
+        };
+        let configAtual = { ...CONFIG_PADRAO };
+        var pagamentoConfirmado = false, cobrancaId = null, pollingInterval = null;
+        var pixQrCode = null, pixCopiaCola = null, mpPaymentId = null;
+        var regiaoSelecionadaAtual = '', alertaExibido = false, regiaoPendente = null;
+        var dadosClienteCarregados = false, clienteIdAtual = null, enderecoIdAtual = null, enderecoFoiAlterado = false;
+        let cpfTimeout = null, ultimoCPFBuscado = '', buscaEmAndamento = false;
+        var enderecoOriginal = {};
+        let acessoInterno = false;
+        var valorFreteAtual = 0;
+        var estadoAtual = '';
+        var cidadeAtual = '';
+        // ✅ NOVO FLUXO: Variáveis para solicitação criada antes do PIX
+        var solicitacaoIdAtual = null;
+        var numeroSolicitacaoAtual = null;
+        var dadosSolicitacaoCache = null;
+        // ✅ NOVO FLUXO: Variáveis para solicitação criada antes do PIX
+        var solicitacaoIdAtual = null;
+        var numeroSolicitacaoAtual = null;
+        var dadosSolicitacaoCache = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarOrigemAcesso();
+            carregarConfiguracoes();
+            inicializarSupabase();
+            configurarEventos();
+            atualizarInfoEnvio();
+            aplicarConfiguracoesNaPagina();
+            verificarDadosSalvos();
+            verificarCamposObrigatoriosPIX();
+        });
+
+        function atualizarCampoCidade(estado) {
+            const cidadeContainer = document.getElementById('cidadeContainer');
+            const cidadeAtualValor = document.getElementById('cidade') ? document.getElementById('cidade').value : '';
+
+            if (estado === 'SC') {
+                let optionsHtml = '<option value="">Selecione a cidade...</option>';
+                TODAS_CIDADES_SC.forEach(function(cidade) {
+                    optionsHtml += '<option value="' + cidade + '">' + cidade + '</option>';
+                });
+
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<select name="cidade" id="cidade" required>' + optionsHtml + '</select>';
+            } else {
+                cidadeContainer.innerHTML = 
+                    '<label class="required">Cidade</label>' +
+                    '<input type="text" name="cidade" id="cidade" required placeholder="Digite sua cidade">';
+            }
+
+            if (cidadeAtualValor) {
+                const novoCampo = document.getElementById('cidade');
+                if (novoCampo) {
+                    if (novoCampo.tagName === 'SELECT') {
+                        const optionExists = Array.from(novoCampo.options).some(opt => opt.value === cidadeAtualValor);
+                        if (optionExists) novoCampo.value = cidadeAtualValor;
+                    } else {
+                        novoCampo.value = cidadeAtualValor;
+                    }
+                }
+            }
+
+            const novoCampoCidade = document.getElementById('cidade');
+            if (novoCampoCidade) {
+                if (novoCampoCidade.tagName === 'SELECT') {
+                    novoCampoCidade.addEventListener('change', function() {
+                        calcularFrete();
+                    });
+                } else {
+                    novoCampoCidade.addEventListener('input', function() {
+                        clearTimeout(window.cidadeTimeout);
+                        window.cidadeTimeout = setTimeout(function() {
+                            calcularFrete();
+                        }, 500);
+                    });
+                    novoCampoCidade.addEventListener('blur', function() {
+                        calcularFrete();
+                    });
+                }
+            }
+        }
+
+        function calcularFrete() {
+            const estado = document.getElementById('estado').value;
+            const cidadeCampo = document.getElementById('cidade');
+            const cidade = cidadeCampo ? cidadeCampo.value.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+
+            estadoAtual = estado;
+            cidadeAtual = cidade;
+
+            const freteBox = document.getElementById('freteCalculadoBox');
+            const outrosEstadosBox = document.getElementById('outrosEstadosBox');
+            const pagamentoArea = document.getElementById('pagamentoArea');
+            const freteValor = document.getElementById('freteValor');
+            const freteDescricao = document.getElementById('freteDescricao');
+            const freteCidadeInfo = document.getElementById('freteCidadeInfo');
+
+            freteBox.classList.remove('mostrar');
+            outrosEstadosBox.classList.remove('mostrar');
+            pagamentoArea.classList.remove('mostrar');
+            // ✅ CORREÇÃO: Só resetar pagamento se não estiver confirmado
+            // Se pagamento já foi confirmado, manter cobrancaId para vinculação no INSERT
+            if (!pagamentoConfirmado) {
+                resetarPagamento();
+            } else {
+                console.log('[FRETE] Pagamento já confirmado, mantendo cobrancaId:', cobrancaId);
+            }
+
+            if (!estado || !cidade) {
+                freteDescricao.textContent = 'Aguardando preenchimento do estado e cidade...';
+                freteValor.textContent = 'R$ 0,00';
+                freteCidadeInfo.textContent = '';
+                freteBox.classList.add('mostrar');
+                regiaoSelecionadaAtual = '';
+                valorFreteAtual = 0;
+                atualizarBotaoEnviar();
+                return;
+            }
+
+            if (estado !== 'SC') {
+                regiaoSelecionadaAtual = 'outros';
+                valorFreteAtual = 0;
+                pagamentoConfirmado = true;
+
+                freteValor.textContent = 'A Consultar';
+                freteDescricao.textContent = 'Aguarde, iremos pesar e medir o seu pacote e escolher o menor valor para sua cidade !!';
+                freteCidadeInfo.innerHTML = '<strong>Estado:</strong> ' + estado + ' | <strong>Cidade:</strong> ' + cidade;
+                freteBox.classList.add('mostrar');
+                outrosEstadosBox.classList.add('mostrar');
+
+                console.log('[FRETE] Outros Estados - Orçamento via Direct');
+            } else {
+                const cidadeNormalizada = cidade.toUpperCase().replace(/\s+/g, ' ').trim();
+                const isGrandeFloripa = CIDADES_GRANDE_FLORIPA.includes(cidadeNormalizada);
+
+                if (isGrandeFloripa) {
+                    regiaoSelecionadaAtual = 'floripa';
+                    valorFreteAtual = configAtual.precos.floripa;
+
+                    freteValor.textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
+                    freteDescricao.textContent = 'Grande Florianópolis - Valor fixo';
+                    freteCidadeInfo.innerHTML = '<strong>Cidade:</strong> ' + cidade + ' | <strong>Região:</strong> Grande Florianópolis';
+                    freteBox.classList.add('mostrar');
+                    pagamentoArea.classList.add('mostrar');
+
+                    console.log('[FRETE] Grande Florianópolis - R$', valorFreteAtual);
+                } else {
+                    regiaoSelecionadaAtual = 'sc';
+                    valorFreteAtual = configAtual.precos.sc;
+
+                    freteValor.textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
+                    freteDescricao.textContent = 'Santa Catarina - Valor fixo';
+                    freteCidadeInfo.innerHTML = '<strong>Cidade:</strong> ' + cidade + ' | <strong>Região:</strong> Santa Catarina (fora da Grande Florianópolis)';
+                    freteBox.classList.add('mostrar');
+                    pagamentoArea.classList.add('mostrar');
+
+                    console.log('[FRETE] Santa Catarina (demais) - R$', valorFreteAtual);
+                }
+            }
+
+            verificarCamposObrigatoriosPIX();
+            atualizarBotaoEnviar();
+            salvarDadosFormulario();
+        }
+
+        function verificarCamposObrigatoriosPIX() {
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
+            const cep = document.getElementById('cepEndereco').value.trim();
+
+            const todosPreenchidos = nome && cpf.length === 11 && whatsapp && rua && numero && bairro && cidade && estado && cep;
+
+            const btnGerarPix = document.getElementById('btnGerarPix');
+            const avisoCampos = document.getElementById('avisoCamposObrigatorios');
+
+            const precisaPix = estado === 'SC';
+
+            if (precisaPix && todosPreenchidos) {
+                btnGerarPix.disabled = false;
+                btnGerarPix.classList.remove('bloqueado');
+                btnGerarPix.innerHTML = '📱 Gerar QR Code PIX';
+                avisoCampos.classList.remove('mostrar');
+            } else if (precisaPix) {
+                btnGerarPix.disabled = true;
+                btnGerarPix.classList.add('bloqueado');
+                btnGerarPix.innerHTML = '🔒 Preencha todos os dados obrigatórios para gerar o PIX';
+                avisoCampos.classList.add('mostrar');
+            } else {
+                btnGerarPix.disabled = true;
+                btnGerarPix.classList.add('bloqueado');
+                btnGerarPix.innerHTML = '📦 Orçamento será enviado via Direct';
+                avisoCampos.classList.remove('mostrar');
+            }
+
+            return todosPreenchidos;
+        }
+
+        function salvarDadosFormulario() {
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const nome = document.getElementById('nome').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const instagram = document.getElementById('instagram').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const complemento = document.getElementById('complemento').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
+            const cep = document.getElementById('cepEndereco').value.trim();
+            const observacoes = document.getElementById('observacoes').value.trim();
+
+            const dados = {
+                cpf: cpf, nome: nome, whatsapp: whatsapp, email: email, instagram: instagram,
+                rua: rua, numero: numero, complemento: complemento, bairro: bairro,
+                cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
+                regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
+                clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual,
+                cobrancaId: cobrancaId  // ✅ CORREÇÃO: Incluir cobrancaId nos dados salvos
+            };
+
+            sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
+            sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
+            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage
+            if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+            }
+            // ✅ NOVO FLUXO: Salvar solicitacaoId no sessionStorage
+            if (solicitacaoIdAtual) {
+                sessionStorage.setItem('solicitacao_id_atual', solicitacaoIdAtual);
+                sessionStorage.setItem('solicitacao_numero_atual', numeroSolicitacaoAtual);
+            }
+            console.log('[FORM] Dados salvos. cobrancaId:', cobrancaId, '| solicitacaoId:', solicitacaoIdAtual);
+        }
+
+        function verificarDadosSalvos() {
+            // ✅ NOVO FLUXO: Restaurar solicitacaoId do sessionStorage
+            const savedSolicitacaoId = sessionStorage.getItem('solicitacao_id_atual');
+            const savedNumero = sessionStorage.getItem('solicitacao_numero_atual');
+            if (savedSolicitacaoId) {
+                solicitacaoIdAtual = savedSolicitacaoId;
+                numeroSolicitacaoAtual = savedNumero;
+                console.log('[FORM] Solicitação anterior restaurada:', savedNumero);
+            }
+
+            const numeroSolicitacaoSalvo = sessionStorage.getItem('solicitacao_numero');
+            if (numeroSolicitacaoSalvo) {
+                console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                // ✅ CORREÇÃO: NÃO limpar cobranca_id aqui! Manter para próxima solicitação
+                // sessionStorage.removeItem('solicitacao_cobranca_id'); ← REMOVIDO!
+                sessionStorage.removeItem('solicitacao_numero');
+                sessionStorage.removeItem('solicitacao_nome');
+                sessionStorage.removeItem('solicitacao_regiao');
+                sessionStorage.removeItem('solicitacao_valor');
+                sessionStorage.removeItem('solicitacao_payment_id');
+                limparDados();
+                const infoDiv = document.getElementById('infoEnvioUnificado');
+                infoDiv.innerHTML = '<span class="emoji-grande">👋</span><h2>Bem-vindo de volta!</h2><p class="data-atual">Sua última solicitação foi enviada com sucesso.</p><p class="envio-info">Preencha o formulário abaixo para uma nova solicitação.</p>';
+                return;
+            }
+
+            const dadosSalvos = sessionStorage.getItem('solicitacao_dados');
+            if (dadosSalvos) {
+                try {
+                    const dados = JSON.parse(dadosSalvos);
+                    console.log('[FORM] Dados salvos encontrados, restaurando formulário...');
+                    if (dados.cpf) document.getElementById('cpf').value = dados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    if (dados.nome) document.getElementById('nome').value = dados.nome;
+                    if (dados.whatsapp) document.getElementById('whatsapp').value = dados.whatsapp;
+                    if (dados.email) document.getElementById('email').value = dados.email;
+                    if (dados.instagram) document.getElementById('instagram').value = dados.instagram;
+                    if (dados.rua) document.getElementById('rua').value = dados.rua;
+                    if (dados.numero) document.getElementById('numero').value = dados.numero;
+                    if (dados.complemento) document.getElementById('complemento').value = dados.complemento;
+                    if (dados.bairro) document.getElementById('bairro').value = dados.bairro;
+                    if (dados.cep) document.getElementById('cepEndereco').value = dados.cep;
+                    if (dados.observacoes) document.getElementById('observacoes').value = dados.observacoes;
+
+                    if (dados.estado) {
+                        document.getElementById('estado').value = dados.estado;
+                        atualizarCampoCidade(dados.estado);
+                        if (dados.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === dados.cidade);
+                                    if (optionExists) campoCidade.value = dados.cidade;
+                                } else {
+                                    campoCidade.value = dados.cidade;
+                                }
+                            }
+                        }
+                    }
+
+                    if (dados.estado && dados.cidade) {
+                        setTimeout(function() { calcularFrete(); }, 100);
+                    }
+
+                    document.getElementById('confirmarPrazo').checked = true;
+                    document.getElementById('formBox').classList.remove('desabilitado');
+                    document.getElementById('confirmacaoBox').classList.add('ativo');
+                    clienteIdAtual = dados.clientePgId || null;
+                    enderecoIdAtual = dados.enderecoId || null;
+                    dadosClienteCarregados = true;
+                    if (dados.cpf && dados.cpf.length === 11) {
+                        setTimeout(function() { buscarPorCPFAutomatico(dados.cpf); }, 500);
+                    }
+                    atualizarBotaoEnviar();
+                    verificarCamposObrigatoriosPIX();
+                    console.log('[FORM] Formulário restaurado com sucesso');
+                } catch (e) {
+                    console.error('[FORM] Erro ao restaurar dados salvos:', e);
+                }
+            }
+        }
+
+        async function verificarOrigemAcesso() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteIdDaURL = urlParams.get('cliente');
+            const cobrancaIdDaURL = urlParams.get('cobranca_id');
+            const referrer = document.referrer || '';
+            const referrerEhDashboard = referrer.includes('dashboard') || referrer.includes('gerenciamento') || referrer.includes('live.html');
+            const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
+            acessoInterno = referrerEhDashboard || sessionFlag;
+
+            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage SEMPRE (independentemente da URL)
+            const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+            if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                cobrancaId = savedCobrancaId;
+                console.log('[ORIGEM] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+            }
+
+            // Se veio com cobranca_id na URL, sobrescreve o do sessionStorage
+            if (cobrancaIdDaURL) {
+                cobrancaId = cobrancaIdDaURL;
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+                console.log('[ORIGEM] ✅ cobrancaId da URL:', cobrancaId);
+            }
+
+            if (clienteIdDaURL) {
+                modoAcesso = 'publico';
+                clienteIdSistema = clienteIdDaURL;
+                console.log('🔗 Modo PÚBLICO - Cliente ID da URL:', clienteIdSistema);
+                atualizarBadgeCliente('publico', clienteIdSistema);
+                setTimeout(function() { carregarNomeEmpresa(); }, 500);
+                return;
+            }
+
+            if (acessoInterno) {
+                modoAcesso = 'interno';
+                document.getElementById('btnConfig').classList.add('visible');
+                console.log('✅ Modo INTERNO - Buscando cliente_id do usuário logado...');
+                try {
+                    if (typeof window.supabase !== 'undefined') {
+                        const tempClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        const { data: { session } } = await tempClient.auth.getSession();
+                        if (session) {
+                            const { data: usuario, error } = await tempClient.from('usuarios_pg').select('cliente_id, clientes_sistema(nome)').eq('auth_id', session.user.id).single();
+                            if (usuario && usuario.cliente_id) {
+                                clienteIdSistema = usuario.cliente_id;
+                                const nomeCliente = usuario.clientes_sistema?.nome || 'Sua Loja';
+                                console.log('✅ Cliente ID do usuário logado:', clienteIdSistema);
+                                atualizarBadgeCliente('interno', clienteIdSistema, nomeCliente);
+                                setTimeout(function() { carregarNomeEmpresa(); }, 500);
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) { console.error('Erro ao buscar usuário logado:', e); }
+            }
+
+            console.error('❌ Nenhum cliente_id encontrado!');
+            atualizarBadgeCliente('erro', null, 'Erro: Identifique a loja na URL (ex: ?cliente=UUID)');
+        }
+
+        function atualizarBadgeCliente(tipo, clienteId, nomeCliente) {
+            const badge = document.getElementById('clienteBadge');
+            const badgeText = document.getElementById('clienteBadgeText');
+            badge.classList.remove('erro', 'interno');
+            if (tipo === 'erro') {
+                badge.classList.add('erro');
+                badgeText.innerHTML = nomeCliente || 'Erro de configuração';
+            } else if (tipo === 'interno') {
+                badge.classList.add('interno');
+                badgeText.innerHTML = '<strong>' + (nomeCliente || 'Modo Interno') + '</strong><br><small>ID: ' + (clienteId?.substring(0, 8)) + '...</small>';
+            } else {
+                badgeText.innerHTML = '<strong>Link da Loja</strong><br><small>ID: ' + (clienteId?.substring(0, 8)) + '...</small>';
+            }
+        }
+
+        async function carregarNomeEmpresa() {
+            if (!clienteIdSistema || !supabaseClient) return;
+            try {
+                const { data: empresa, error } = await supabaseClient.from('clientes_sistema').select('nome').eq('id', clienteIdSistema).single();
+                if (error) { console.error('Erro ao buscar nome da empresa:', error); return; }
+                if (empresa && empresa.nome) {
+                    nomeEmpresa = empresa.nome;
+                    const empresaNomeEl = document.getElementById('empresaNome');
+                    if (empresaNomeEl) empresaNomeEl.textContent = nomeEmpresa;
+                    const pageTitleEl = document.getElementById('pageTitle');
+                    if (pageTitleEl) pageTitleEl.textContent = 'Solicitação de Entrega - ' + nomeEmpresa;
+                    console.log('✅ Nome da empresa carregado:', nomeEmpresa);
+                }
+            } catch (e) { console.error('Erro ao carregar nome da empresa:', e); }
+        }
+
+        function marcarAcessoDashboard() { sessionStorage.setItem('acesso_dashboard', 'true'); }
+
+        function carregarConfiguracoes() {
+            const salvo = localStorage.getItem(STORAGE_CONFIG);
+            if (salvo) {
+                try {
+                    configAtual = JSON.parse(salvo);
+                    configAtual = { ...CONFIG_PADRAO, ...configAtual };
+                    if (configAtual.envio) configAtual.envio = { ...CONFIG_PADRAO.envio, ...configAtual.envio };
+                    if (configAtual.precos) configAtual.precos = { ...CONFIG_PADRAO.precos, ...configAtual.precos };
+                } catch (e) { configAtual = { ...CONFIG_PADRAO }; }
+            }
+        }
+
+        function salvarConfiguracoesLocal() { localStorage.setItem(STORAGE_CONFIG, JSON.stringify(configAtual)); }
+
+        function aplicarConfiguracoesNaPagina() {}
+
+        function gerarLinkCompartilhavel() {
+            if (!clienteIdSistema) return null;
+            const urlBase = window.location.origin + window.location.pathname;
+            return urlBase + '?cliente=' + clienteIdSistema;
+        }
+
+        function renderizarLinkCompartilhavel() {
+            const container = document.getElementById('linkCompartilhavelContainer');
+            const link = gerarLinkCompartilhavel();
+            if (!link) {
+                container.innerHTML = '<div class="link-nao-disponivel"><p>⚠️ <strong>Link não disponível</strong></p><p style="margin-top: 8px;">Não foi possível identificar o cliente. Faça login novamente.</p></div>';
+                return;
+            }
+            const clienteIdCurto = clienteIdSistema.substring(0, 8) + '...';
+            container.innerHTML = '<div class="link-compartilhavel-box"><h4>🔗 Link Público para Clientes</h4><div class="link-display" id="linkCompartilhavel">' + link + '</div><div class="link-actions"><button class="btn-copiar-link" id="btnCopiarLink" onclick="copiarLinkCompartilhavel()">📋 Copiar Link</button><button class="btn-abrir-link" onclick="abrirLinkCompartilhavel()">🔗 Abrir Link</button></div><div class="link-info"><strong>📍 Como usar:</strong><br>• Copie este link e envie para seus clientes via WhatsApp, Instagram ou e-mail<br>• Quando o cliente acessar, o formulário já estará vinculado à sua loja<br>• <strong>Seu ID:</strong> <span class="cliente-id-display">' + clienteIdCurto + '</span></div></div>';
+        }
+
+        function copiarLinkCompartilhavel() {
+            const link = document.getElementById('linkCompartilhavel').textContent;
+            const btn = document.getElementById('btnCopiarLink');
+            navigator.clipboard.writeText(link).then(function() {
+                btn.innerHTML = '✓ Copiado!'; btn.classList.add('copiado');
+                setTimeout(function() { btn.innerHTML = '📋 Copiar Link'; btn.classList.remove('copiado'); }, 2000);
+            }).catch(function() {
+                const textArea = document.createElement('textarea'); textArea.value = link;
+                document.body.appendChild(textArea); textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+                btn.innerHTML = '✓ Copiado!'; btn.classList.add('copiado');
+                setTimeout(function() { btn.innerHTML = '📋 Copiar Link'; btn.classList.remove('copiado'); }, 2000);
+            });
+        }
+
+        function abrirLinkCompartilhavel() {
+            const link = gerarLinkCompartilhavel();
+            if (link) window.open(link, '_blank');
+        }
+
+        function abrirConfiguracoes() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado às configurações.'); return; }
+            renderizarLinkCompartilhavel();
+            document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
+            document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
+            document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<[^>]*>/g, '');
+            document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<[^>]*>/g, '');
+            document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<[^>]*>/g, '');
+            document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
+            document.getElementById('configPrecoSC').value = configAtual.precos.sc;
+            document.getElementById('modalConfiguracoes').classList.add('ativo');
+        }
+
+        function fecharConfiguracoes() { document.getElementById('modalConfiguracoes').classList.remove('ativo'); }
+
+        function salvarConfiguracoes() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado.'); return; }
+            const titulo = document.getElementById('configTituloEnvio').value.trim();
+            if (!titulo) { alert('⚠️ O título da seção de envio é obrigatório!'); return; }
+            configAtual = {
+                envio: { titulo: titulo, emoji: document.getElementById('configEmojiEnvio').value || '⏰', textoProximaSemana: document.getElementById('configTextoProximaSemana').value || CONFIG_PADRAO.envio.textoProximaSemana, textoEstaSemana: document.getElementById('configTextoEstaSemana').value || CONFIG_PADRAO.envio.textoEstaSemana, textoPrazo: document.getElementById('configTextoPrazo').value || CONFIG_PADRAO.envio.textoPrazo },
+                precos: { floripa: parseFloat(document.getElementById('configPrecoFloripa').value) || 15.00, sc: parseFloat(document.getElementById('configPrecoSC').value) || 21.99 }
+            };
+            salvarConfiguracoesLocal();
+            atualizarInfoEnvio();
+            fecharConfiguracoes();
+        }
+
+        function restaurarPadrao() {
+            if (!acessoInterno) { alert('⚠️ Acesso não autorizado.'); return; }
+            if (confirm('Tem certeza que deseja restaurar todas as configurações para o padrão?')) {
+                configAtual = { ...CONFIG_PADRAO };
+                document.getElementById('configTituloEnvio').value = configAtual.envio.titulo;
+                document.getElementById('configEmojiEnvio').value = configAtual.envio.emoji;
+                document.getElementById('configTextoProximaSemana').value = configAtual.envio.textoProximaSemana.replace(/<[^>]*>/g, '');
+                document.getElementById('configTextoEstaSemana').value = configAtual.envio.textoEstaSemana.replace(/<[^>]*>/g, '');
+                document.getElementById('configTextoPrazo').value = configAtual.envio.textoPrazo.replace(/<[^>]*>/g, '');
+                document.getElementById('configPrecoFloripa').value = configAtual.precos.floripa;
+                document.getElementById('configPrecoSC').value = configAtual.precos.sc;
+            }
+        }
+
+        function inicializarSupabase() {
+            try {
+                if (typeof window.supabase === 'undefined') { mostrarErroConexao(); return; }
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseConectado = true;
+                console.log('✅ Supabase conectado. Modo:', modoAcesso, '| Cliente ID:', clienteIdSistema);
+            } catch (e) { console.error('Erro Supabase:', e); mostrarErroConexao(); }
+        }
+
+        function mostrarErroConexao() { document.getElementById('erroConexao').classList.add('show'); }
+
+        function formatarData(data) {
+            const dia = data.getDate().toString().padStart(2, '0');
+            const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+            return dia + '/' + mes + '/' + data.getFullYear();
+        }
+
+        function obterNomeDiaSemana(dia) {
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return dias[dia];
+        }
+
+        function atualizarInfoEnvio() {
+            const agora = new Date();
+            const diaSemana = agora.getDay();
+            const hora = agora.getHours();
+            const minutos = agora.getMinutes();
+            const horaAtualEmMinutos = (hora * 60) + minutos;
+            const limiteQuarta = (17 * 60);
+            const infoDiv = document.getElementById('infoEnvioUnificado');
+            const dataAtualStr = formatarData(agora);
+            const nomeDiaAtual = obterNomeDiaSemana(diaSemana);
+
+            let html = '<span class="emoji-grande">' + configAtual.envio.emoji + '</span>';
+            html += '<h2>' + configAtual.envio.titulo + '</h2>';
+            html += '<p class="data-atual">Hoje é ' + nomeDiaAtual + ' dia ' + dataAtualStr + '.</p>';
+
+            if (diaSemana === 3 && horaAtualEmMinutos < limiteQuarta) {
+                const quintaEnvio = new Date(agora); quintaEnvio.setDate(agora.getDate() + 1);
+                const sextaEnvio = new Date(agora); sextaEnvio.setDate(agora.getDate() + 2);
+                let textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
+                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', dataAtualStr);
+                html += '<p class="prazo-info">' + textoPrazo + '</p>';
+            } else {
+                let diasAteQuarta = (3 - diaSemana + 7) % 7;
+                if (diasAteQuarta === 0) diasAteQuarta = 7;
+                const proximaQuarta = new Date(agora); proximaQuarta.setDate(agora.getDate() + diasAteQuarta);
+                const quintaEnvio = new Date(proximaQuarta); quintaEnvio.setDate(proximaQuarta.getDate() + 1);
+                const sextaEnvio = new Date(proximaQuarta); sextaEnvio.setDate(proximaQuarta.getDate() + 2);
+                let textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
+                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaQuarta));
+                html += '<p class="prazo-info">' + textoPrazo + '</p>';
+            }
+            infoDiv.innerHTML = html;
+        }
+
+        function configurarEventos() {
+            document.getElementById('confirmarPrazo').addEventListener('change', function() {
+                const formBox = document.getElementById('formBox');
+                const confirmacaoBox = document.getElementById('confirmacaoBox');
+                if (this.checked) {
+                    formBox.classList.remove('desabilitado');
+                    confirmacaoBox.classList.add('ativo');
+                    document.getElementById('freteCalculadoBox').classList.add('mostrar');
+                    if (regiaoPendente) { aplicarSelecaoRegiao(regiaoPendente); regiaoPendente = null; }
+                } else {
+                    formBox.classList.add('desabilitado');
+                    confirmacaoBox.classList.remove('ativo');
+                    document.getElementById('freteCalculadoBox').classList.remove('mostrar');
+                    document.getElementById('outrosEstadosBox').classList.remove('mostrar');
+                    document.getElementById('pagamentoArea').classList.remove('mostrar');
+                    regiaoSelecionadaAtual = ''; regiaoPendente = null;
+                    resetarPagamento();
+                    atualizarBotaoEnviar();
+                }
+            });
+
+            document.getElementById('estado').addEventListener('change', function() {
+                atualizarCampoCidade(this.value);
+                calcularFrete();
+            });
+
+            configurarBuscaAutomaticaCPF();
+            configurarMonitoramentoEndereco();
+            document.getElementById('btnLimparDados').addEventListener('click', limparDados);
+            document.getElementById('cepEndereco').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) value = value.substring(0, 5) + '-' + value.substring(5, 8);
+                e.target.value = value;
+            });
+            document.getElementById('deliveryForm').addEventListener('submit', enviarFormulario);
+            document.getElementById('modalConfiguracoes').addEventListener('click', function(e) {
+                if (e.target === this) fecharConfiguracoes();
+            });
+
+            const camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'rua', 'numero', 'bairro', 'cepEndereco', 'estado'];
+            camposObrigatorios.forEach(function(id) {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    campo.addEventListener('input', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                    campo.addEventListener('change', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                    campo.addEventListener('blur', function() {
+                        verificarCamposObrigatoriosPIX();
+                        atualizarBotaoEnviar();
+                    });
+                }
+            });
+        }
+
+        function resetarPagamento() {
+            pagamentoConfirmado = false;
+            // ✅ NOVO FLUXO: NÃO limpar solicitacaoIdAtual - manter para rastreabilidade
+            mpPaymentId = null;
+            pixQrCode = null;
+            pixCopiaCola = null;
+            if (pollingInterval) clearInterval(pollingInterval);
+            document.getElementById('pixContainer').classList.remove('mostrar');
+            document.getElementById('statusPagamento').style.display = 'none';
+            document.getElementById('pixQrCodeImg').src = '';
+            document.getElementById('pixCopiaCola').textContent = 'Copia e cola será gerado aqui...';
+            document.getElementById('btnCopiarCodigo').classList.remove('copiado');
+            document.getElementById('btnCopiarCodigo').innerHTML = '📋 Copiar Código PIX';
+            verificarCamposObrigatoriosPIX();
+        }
+
+        
+        // ============================================
+        // ✅ NOVO FLUXO: Funções para criar solicitação antes do PIX
+        // ============================================
+
+        async function criarSolicitacaoPendente() {
+            console.log('[SOLICITACAO-PENDENTE] Criando solicitação com status pendente...');
+            if (!supabaseConectado) { throw new Error('Sistema não conectado'); }
+            if (!clienteIdSistema) { throw new Error('Cliente não identificado'); }
+
+            const formData = new FormData(document.getElementById('deliveryForm'));
+            const cpf = formData.get('cpf').replace(/\D/g, '');
+            const nome = formData.get('nome');
+            const whatsapp = formData.get('whatsapp');
+            const email = formData.get('email');
+            const instagram = formData.get('instagram');
+            const rua = formData.get('rua');
+            const numero = formData.get('numero');
+            const complemento = formData.get('complemento');
+            const bairro = formData.get('bairro');
+            const cidadeForm = formData.get('cidade');
+            const estadoForm = formData.get('estado');
+            const cep = formData.get('cep');
+            const observacoes = formData.get('observacoes');
+
+            let regiao = 'Outros Estados';
+            if (estadoForm === 'SC') {
+                const cidadeNorm = cidadeForm.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+                if (CIDADES_GRANDE_FLORIPA.includes(cidadeNorm)) {
+                    regiao = 'Grande Florianópolis';
+                } else {
+                    regiao = 'Santa Catarina';
+                }
+            }
+
+            // 1. Criar ou atualizar cliente
+            let clientePgId = clienteIdAtual;
+            let clienteExistente = null;
+
+            // ✅ CORREÇÃO: Sempre buscar e atualizar o cliente
+            console.log('[SOLICITACAO-PENDENTE] Buscando cliente com CPF:', cpf);
+            const { data: clienteBuscado, error: erroBusca } = await supabaseClient
+                .from('clientes_pg')
+                .select('id, nome, whatsapp, email, instagram')
+                .eq('cpf', cpf)
+                .eq('cliente_id', clienteIdSistema)
+                .limit(1)
+                .maybeSingle();
+
+            if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+
+            if (clienteBuscado) {
+                console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteBuscado.id);
+                clientePgId = clienteBuscado.id;
+                clienteIdAtual = clientePgId;
+                clienteExistente = clienteBuscado;
+
+                // ✅ Sempre atualizar dados do cliente
+                const dadosAtualizacao = {};
+                if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
+                if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
+
+                if (Object.keys(dadosAtualizacao).length > 0) {
+                    console.log('[SOLICITACAO-PENDENTE] Atualizando cliente:', clientePgId, dadosAtualizacao);
+                    await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                }
+            } else if (!clientePgId) {
+                console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
+                const { data: clienteExistente, error: erroBusca } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, whatsapp, email, instagram')
+                    .eq('cpf', cpf)
+                    .eq('cliente_id', clienteIdSistema)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+
+                if (clienteExistente) {
+                    console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
+                    clientePgId = clienteExistente.id;
+                    clienteIdAtual = clientePgId;
+                    const dadosAtualizacao = {};
+                    if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                    if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                    if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
+                    if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                    if (Object.keys(dadosAtualizacao).length > 0) {
+                        await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                    }
+                } else {
+                    console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
+                    const { data: novoCliente, error: erroCliente } = await supabaseClient
+                        .from('clientes_pg')
+                        .insert([{
+                            cliente_id: clienteIdSistema,
+                            cpf: cpf,
+                            nome: nome,
+                            whatsapp: whatsapp,
+                            email: email,
+                            instagram: instagram
+                        }])
+                        .select()
+                        .single();
+
+                    if (erroCliente) {
+                        if (erroCliente.code === '23505') {
+                            const { data: clienteDuplicado } = await supabaseClient
+                                .from('clientes_pg')
+                                .select('id')
+                                .eq('cpf', cpf)
+                                .eq('cliente_id', clienteIdSistema)
+                                .limit(1)
+                                .maybeSingle();
+                            if (clienteDuplicado) {
+                                clientePgId = clienteDuplicado.id;
+                                clienteIdAtual = clientePgId;
+                            } else {
+                                throw new Error('Não foi possível encontrar o cliente após erro de duplicidade');
+                            }
+                        } else {
+                            throw erroCliente;
+                        }
+                    } else {
+                        clientePgId = novoCliente.id;
+                        clienteIdAtual = clientePgId;
+                    }
+                }
+            }
+
+            // 2. Criar ou buscar endereço
+            let enderecoPgId = enderecoIdAtual;
+            if (!enderecoPgId || enderecoFoiAlterado) {
+                if (!enderecoFoiAlterado && clientePgId) {
+                    const { data: enderecoExistente } = await supabaseClient
+                        .from('enderecos_pg')
+                        .select('id, rua, numero, complemento, bairro, cidade, estado, cep')
+                        .eq('cliente_pg_id', clientePgId)
+                        .eq('cliente_id', clienteIdSistema)
+                        .eq('ativo', true)
+                        .order('criado_em', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (enderecoExistente) {
+                        const enderecoIgual = 
+                            enderecoExistente.rua === rua &&
+                            enderecoExistente.numero === numero &&
+                            enderecoExistente.complemento === (complemento || '') &&
+                            enderecoExistente.bairro === bairro &&
+                            enderecoExistente.cidade === cidadeForm &&
+                            enderecoExistente.estado === estadoForm &&
+                            enderecoExistente.cep === cep;
+
+                        if (enderecoIgual) {
+                            enderecoPgId = enderecoExistente.id;
+                            enderecoIdAtual = enderecoPgId;
+                        }
+                    }
+                }
+
+                if (!enderecoPgId) {
+                    const { data: novoEndereco, error: erroEndereco } = await supabaseClient
+                        .from('enderecos_pg')
+                        .insert([{
+                            cliente_id: clienteIdSistema,
+                            cliente_pg_id: clientePgId,
+                            rua: rua,
+                            numero: numero,
+                            complemento: complemento,
+                            bairro: bairro,
+                            cidade: cidadeForm,
+                            estado: estadoForm,
+                            cep: cep,
+                            ativo: true
+                        }])
+                        .select()
+                        .single();
+
+                    if (erroEndereco) throw erroEndereco;
+                    enderecoPgId = novoEndereco.id;
+                    enderecoIdAtual = enderecoPgId;
+                }
+            }
+
+            // 3. Gerar número da solicitação
+            const numeroSolicitacao = await gerarNumeroSolicitacao();
+            numeroSolicitacaoAtual = numeroSolicitacao;
+
+            // 4. Criar solicitação com status pendente
+            const dadosSolicitacao = {
+                cliente_id: clienteIdSistema,
+                cliente_pg_id: clientePgId,
+                endereco_id: enderecoPgId,
+                numero_solicitacao: numeroSolicitacao,
+                regiao: regiao,
+                observacoes: observacoes,
+                status: 'pendente',
+                valor_frete: valorFreteAtual || 0
+            };
+
+            console.log('[SOLICITACAO-PENDENTE] Inserindo solicitação:', dadosSolicitacao);
+
+            const { data: solicitacao, error: erroSolicitacao } = await supabaseClient
+                .from('solicitacoes_pg')
+                .insert([dadosSolicitacao])
+                .select()
+                .single();
+
+            if (erroSolicitacao) throw erroSolicitacao;
+
+            solicitacaoIdAtual = solicitacao.id;
+            console.log('[SOLICITACAO-PENDENTE] ✅ Solicitação criada! ID:', solicitacaoIdAtual, '| Número:', numeroSolicitacao);
+
+            sessionStorage.setItem('solicitacao_id_atual', solicitacaoIdAtual);
+            sessionStorage.setItem('solicitacao_numero_atual', numeroSolicitacao);
+
+            dadosSolicitacaoCache = {
+                solicitacaoId: solicitacaoIdAtual,
+                numeroSolicitacao: numeroSolicitacao,
+                clientePgId: clientePgId,
+                enderecoPgId: enderecoPgId,
+                regiao: regiao,
+                nome: nome,
+                whatsapp: whatsapp,
+                email: email,
+                instagram: instagram,
+                rua: rua,
+                numero: numero,
+                complemento: complemento,
+                bairro: bairro,
+                cidade: cidadeForm,
+                estado: estadoForm,
+                cep: cep,
+                observacoes: observacoes
+            };
+
+            return dadosSolicitacaoCache;
+        }
+
+        async function vincularCobrancaSolicitacao(cobrancaIdVincular) {
+            if (!solicitacaoIdAtual || !cobrancaIdVincular) {
+                console.warn('[VINCULAR] Sem solicitacaoId ou cobrancaId');
+                return;
+            }
+            try {
+                console.log('[VINCULAR] Vinculando cobranca_id', cobrancaIdVincular, 'à solicitação', solicitacaoIdAtual);
+                const { error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .update({ cobranca_id: cobrancaIdVincular })
+                    .eq('id', solicitacaoIdAtual);
+                if (error) console.error('[VINCULAR] Erro:', error);
+                else console.log('[VINCULAR] ✅ Cobrança vinculada!');
+            } catch (e) {
+                console.error('[VINCULAR] Exceção:', e);
+            }
+        }
+
+        async function atualizarSolicitacaoParaPago() {
+            if (!solicitacaoIdAtual) {
+                console.warn('[ATUALIZAR-PAGO] Sem solicitacaoId');
+                return;
+            }
+            try {
+                console.log('[ATUALIZAR-PAGO] Atualizando solicitação', solicitacaoIdAtual, 'para pago...');
+                const { error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .update({ status: 'pendente' })
+                    .eq('id', solicitacaoIdAtual);
+                if (error) console.error('[ATUALIZAR-PAGO] Erro:', error);
+                else console.log('[ATUALIZAR-PAGO] ✅ Solicitação atualizada!');
+            } catch (e) {
+                console.error('[ATUALIZAR-PAGO] Exceção:', e);
+            }
+        }
+
+        async function enviarConfirmacoesPagamento(dados) {
+            console.log('[CONFIRMACOES] Enviando confirmações...');
+            try {
+                await enviarEmailConfirmacao({
+                    email: dados.email,
+                    numeroSolicitacao: dados.numeroSolicitacao,
+                    nome: dados.nome,
+                    dataSolicitacao: formatarData(new Date()),
+                    regiao: dados.regiao,
+                    rua: dados.rua,
+                    numero: dados.numero,
+                    complemento: dados.complemento,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    cep: dados.cep,
+                    observacoes: dados.observacoes,
+                    whatsapp: dados.whatsapp,
+                    instagram: dados.instagram
+                });
+                console.log('[CONFIRMACOES] ✅ E-mail enviado');
+            } catch (e) {
+                console.warn('[CONFIRMACOES] ⚠️ E-mail falhou:', e.message);
+            }
+            if (dados.whatsapp && dados.whatsapp.trim()) {
+                setTimeout(async () => {
+                    try {
+                        await enviarConfirmacaoPagamento({
+                            nome: dados.nome,
+                            numeroSolicitacao: dados.numeroSolicitacao,
+                            bairro: dados.bairro,
+                            cidade: dados.cidade,
+                            valorFrete: valorFreteAtual,
+                            whatsapp: dados.whatsapp,
+                            solicitacaoId: dados.solicitacaoId,
+                            regiao: dados.regiao
+                        });
+                    } catch (err) {
+                        console.warn('[CONFIRMACOES] ⚠️ WhatsApp falhou:', err.message);
+                    }
+                }, 100);
+            }
+        }
+
+        
+        async function gerarPixMercadoPago() {
+            const btn = document.getElementById('btnGerarPix');
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const telefone = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            // ✅ NOVO FLUXO: Verificar se já existe solicitação criada e paga
+            if (solicitacaoIdAtual && pagamentoConfirmado) {
+                console.log('[PIX] ✅ Solicitação já criada e paga:', solicitacaoIdAtual);
+                alert('✅ Pagamento já confirmado!\n\nSolicitação #' + numeroSolicitacaoAtual + ' já foi liberada.');
+                return;
+            }
+
+            if (!verificarCamposObrigatoriosPIX()) {
+                alert('⚠️ Preencha todos os campos obrigatórios antes de gerar o PIX.');
+                return;
+            }
+
+            salvarDadosFormulario();
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;"></span> Processando...';
+            document.getElementById('spinnerOverlay').classList.add('ativo');
+
+            try {
+                // ✅ NOVO FLUXO: Criar solicitação ANTES de gerar PIX
+                if (!solicitacaoIdAtual) {
+                    console.log('[PIX] Criando solicitação pendente antes do PIX...');
+                    await criarSolicitacaoPendente();
+                }
+
+                const descricaoRegiao = regiaoSelecionadaAtual === 'floripa' ? 'Frete - Grande Florianopolis' : 'Frete - Santa Catarina';
+
+                const payload = {
+                    cliente_sistema_id: clienteIdSistema,
+                    comprador_nome: nome,
+                    comprador_email: email || null,
+                    comprador_telefone: telefone || null,
+                    comprador_cpf: cpf || null,
+                    valor: valorFreteAtual,
+                    descricao: descricaoRegiao
+                };
+
+                console.log('[PIX-MP] Enviando para mercadopago-pix-direto:', payload);
+
+                const response = await fetch(SUPABASE_URL + '/functions/v1/mercadopago-pix-direto', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log('[PIX-MP] Resposta:', data);
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Erro ao gerar PIX');
+                }
+
+                cobrancaId = data.cobranca_id;
+                const pix = data.pix;
+                mpPaymentId = pix.id || data.payment_id;
+                pixQrCode = pix.qr_code_base64;
+                pixCopiaCola = pix.qr_code;
+
+                // ✅ Vincular cobrança à solicitação já criada
+                await vincularCobrancaSolicitacao(cobrancaId);
+
+                document.getElementById('pixValor').textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
+                document.getElementById('pixDescricao').textContent = descricaoRegiao;
+
+                const qrImg = document.getElementById('pixQrCodeImg');
+                if (pix.qr_code_base64) {
+                    qrImg.src = 'data:image/png;base64,' + pix.qr_code_base64;
+                    qrImg.style.display = 'block';
+                } else if (pix.qr_code) {
+                    qrImg.src = 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chld=L|0&chl=' + encodeURIComponent(pix.qr_code);
+                    qrImg.style.display = 'block';
+                } else {
+                    qrImg.style.display = 'none';
+                }
+
+                document.getElementById('pixCopiaCola').textContent = pix.qr_code || 'Código não disponível';
+                document.getElementById('pixContainer').classList.add('mostrar');
+                btn.style.display = 'none';
+
+                const statusEl = document.getElementById('statusPagamento');
+                statusEl.className = 'status-pagamento pendente';
+                statusEl.innerHTML = '⏳ Aguardando pagamento...<br><small>Solicitação #' + numeroSolicitacaoAtual + ' criada</small>';
+                statusEl.style.display = 'inline-flex';
+
+                sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
+                sessionStorage.setItem('solicitacao_payment_id', mpPaymentId);
+
+                iniciarVerificacaoPagamento();
+
+            } catch (error) {
+                console.error('[PIX-MP] Erro:', error);
+                btn.disabled = false;
+                btn.innerHTML = '📱 Gerar QR Code PIX';
+                alert('Erro: ' + error.message);
+            } finally {
+                document.getElementById('spinnerOverlay').classList.remove('ativo');
+            }
+        }
+
+        function copiarCodigoPix() {
+            if (!pixCopiaCola) return;
+            navigator.clipboard.writeText(pixCopiaCola).then(function() {
+                const btn = document.getElementById('btnCopiarCodigo');
+                btn.innerHTML = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(function() {
+                    btn.innerHTML = '📋 Copiar Código PIX';
+                    btn.classList.remove('copiado');
+                }, 2000);
+            }).catch(function() {
+                const textarea = document.createElement('textarea');
+                textarea.value = pixCopiaCola;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Código PIX copiado!');
+            });
+        }
+
+        function redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete) {
+            console.log('[REDIRECT] Redirecionando para pix-sucesso.html...');
+
+            sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
+            sessionStorage.setItem('pix_sucesso_nome', nome);
+            sessionStorage.setItem('pix_sucesso_regiao', regiao);
+            sessionStorage.setItem('pix_sucesso_valor', valorFrete.toFixed(2).replace('.', ','));
+
+            sessionStorage.removeItem('solicitacao_dados');
+            sessionStorage.removeItem('solicitacao_cliente_id');
+            sessionStorage.removeItem('solicitacao_cobranca_id');
+
+            const pathnameAtual = window.location.pathname;
+            const diretorio = pathnameAtual.substring(0, pathnameAtual.lastIndexOf('/') + 1);
+            const urlSucesso = window.location.origin + diretorio + 'pix-sucesso.html' + '?cliente=' + clienteIdSistema;
+
+            console.log('[REDIRECT] URL:', urlSucesso);
+            window.location.href = urlSucesso;
+        }
+
+        async function enviarSolicitacaoAutomatica() {
+            console.log('[AUTO] ==========================================');
+            console.log('[AUTO] Pagamento confirmado - mostrando sucesso...');
+            console.log('[AUTO] ==========================================');
+
+            // ✅ NOVO FLUXO: A solicitação já foi criada antes do PIX
+            // Apenas mostrar a tela de sucesso
+            document.getElementById('redirecionandoOverlay').classList.add('ativo');
+
+            // Enviar confirmações em background
+            if (dadosSolicitacaoCache) {
+                enviarConfirmacoesPagamento(dadosSolicitacaoCache);
+            }
+
+            setTimeout(function() {
+                document.getElementById('redirecionandoOverlay').classList.remove('ativo');
+                document.getElementById('deliveryForm').style.display = 'none';
+                document.getElementById('successMsg').classList.add('show');
+                document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
+            }, 3000);
+        }
+
+        function iniciarVerificacaoPagamento() {
+            console.log('[POLLING] Iniciando verificação de pagamento...');
+            console.log('[POLLING] cobrancaId:', cobrancaId);
+            console.log('[POLLING] mpPaymentId:', mpPaymentId);
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(async function() {
+                await verificarStatusPagamento();
+            }, 3000);
+            verificarStatusPagamento();
+        }
+
+        async function verificarStatusPagamento() {
+            if (pagamentoConfirmado) return;
+
+            let idBusca = cobrancaId;
+            let campoBusca = 'id';
+
+            if (!idBusca && mpPaymentId) {
+                idBusca = mpPaymentId;
+                campoBusca = 'mp_payment_id';
+            }
+
+            if (!idBusca) {
+                console.log('[POLLING] Sem ID para verificar');
+                return;
+            }
+
+            try {
+                console.log('[POLLING] Verificando', campoBusca, ':', idBusca);
+
+                let query = supabaseClient.from('cobrancas_pix').select('status, status_mp');
+                if (campoBusca === 'id') {
+                    query = query.eq('id', idBusca);
+                } else {
+                    query = query.eq('mp_payment_id', idBusca);
+                }
+
+                const { data: cobranca, error } = await query.single();
+
+                if (error) {
+                    console.log('[POLLING] Erro na query:', error);
+                    return;
+                }
+
+                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
+
+                if (cobranca && (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited')) {
+                    console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO! Status:', cobranca.status, '| MP:', cobranca.status_mp);
+                    pagamentoConfirmado = true;
+                    clearInterval(pollingInterval);
+
+                    // ✅ NOVO FLUXO: Atualizar solicitação (mantém status 'pendente', mas agora está paga)
+                    await atualizarSolicitacaoParaPago();
+
+                    const btnGerar = document.getElementById('btnGerarPix');
+                    if (btnGerar) {
+                        btnGerar.style.display = 'none';
+                        console.log('[POLLING] Botão Gerar PIX escondido');
+                    }
+
+                    const statusEl = document.getElementById('statusPagamento');
+                    statusEl.className = 'status-pagamento pago';
+                    statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
+                    statusEl.style.display = 'inline-flex';
+
+                    // ✅ NOVO FLUXO: Enviar confirmações (email + WhatsApp)
+                    if (dadosSolicitacaoCache) {
+                        enviarConfirmacoesPagamento(dadosSolicitacaoCache);
+                    }
+
+                    // Mostrar mensagem de sucesso na página
+                    setTimeout(function() {
+                        document.getElementById('deliveryForm').style.display = 'none';
+                        document.getElementById('successMsg').classList.add('show');
+                        document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
+                    }, 2000);
+                }
+            } catch (e) {
+                console.error('[POLLING] Erro:', e);
+            }
+        }
+
+        function atualizarBotaoEnviar() {
+            const btn = document.getElementById('btnEnviar');
+
+            const nome = document.getElementById('nome').value.trim();
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estado = document.getElementById('estado').value;
+            const cep = document.getElementById('cepEndereco').value.trim();
+
+            if (!estado || !cidade) {
+                btn.innerHTML = '🔒 Selecione o estado e informe a cidade';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+                return;
+            }
+
+            if (!nome || !cpf || cpf.length !== 11 || !whatsapp || !rua || !numero || !bairro || !cep) {
+                btn.innerHTML = '🔒 Preencha todos os dados obrigatórios';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+                return;
+            }
+
+            if (estado !== 'SC') {
+                btn.innerHTML = '📦 ENVIAR SOLICITACAO';
+                btn.classList.remove('btn-enviar-bloqueado');
+                btn.disabled = false;
+            } else if (solicitacaoIdAtual && pagamentoConfirmado) {
+                // ✅ Já tem solicitação e pagamento confirmado
+                btn.innerHTML = '✅ SOLICITAÇÃO LIBERADA - Ver detalhes';
+                btn.classList.remove('btn-enviar-bloqueado');
+                btn.disabled = false;
+            } else if (solicitacaoIdAtual && !pagamentoConfirmado) {
+                // ✅ Solicitação criada, aguardando pagamento
+                btn.innerHTML = '⏳ Aguardando pagamento do PIX...';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+            } else {
+                // Ainda não criou solicitação
+                btn.innerHTML = '🔒 Clique em "Gerar QR Code PIX" acima';
+                btn.classList.add('btn-enviar-bloqueado');
+                btn.disabled = true;
+            }
+        }
+
+        async function buscarPorCPFAutomatico(cpfDigitado) {
+            if (!supabaseConectado || !clienteIdSistema) { console.error('❌ Supabase não conectado ou cliente_id não definido'); return; }
+            const cpfSomenteNumeros = cpfDigitado.replace(/\D/g, '');
+            if (cpfSomenteNumeros.length !== 11) return;
+            if (cpfSomenteNumeros === ultimoCPFBuscado || buscaEmAndamento) return;
+
+            ultimoCPFBuscado = cpfSomenteNumeros;
+            buscaEmAndamento = true;
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('dadosCarregados').classList.remove('show');
+
+            try {
+                console.log('🔍 Buscando CPF:', cpfSomenteNumeros, 'no cliente:', clienteIdSistema);
+                let { data: cliente, error } = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfSomenteNumeros).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
+                if (!cliente) {
+                    const cpfFormatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    let result = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfFormatado).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
+                    cliente = result.data;
+                }
+
+                if (cliente) {
+                    console.log('✅ Cliente encontrado:', cliente.nome);
+                    const { data: endereco } = await supabaseClient.from('enderecos_pg').select('*').eq('cliente_pg_id', cliente.id).eq('cliente_id', clienteIdSistema).eq('ativo', true).order('criado_em', { ascending: false }).limit(1).maybeSingle();
+                    document.getElementById('nome').value = cliente.nome || '';
+                    document.getElementById('whatsapp').value = cliente.whatsapp || '';
+                    document.getElementById('instagram').value = cliente.instagram || '';
+                    document.getElementById('email').value = cliente.email || '';
+                    clienteIdAtual = cliente.id;
+                    if (endereco) {
+                        document.getElementById('rua').value = endereco.rua || '';
+                        document.getElementById('numero').value = endereco.numero || '';
+                        document.getElementById('complemento').value = endereco.complemento || '';
+                        document.getElementById('bairro').value = endereco.bairro || '';
+                        document.getElementById('cepEndereco').value = endereco.cep || '';
+                        if (endereco.estado) {
+                            document.getElementById('estado').value = endereco.estado;
+                            atualizarCampoCidade(endereco.estado);
+                        }
+                        if (endereco.cidade) {
+                            const campoCidade = document.getElementById('cidade');
+                            if (campoCidade) {
+                                if (campoCidade.tagName === 'SELECT') {
+                                    const optionExists = Array.from(campoCidade.options).some(opt => opt.value === endereco.cidade);
+                                    if (optionExists) campoCidade.value = endereco.cidade;
+                                } else {
+                                    campoCidade.value = endereco.cidade;
+                                }
+                            }
+                        }
+                        enderecoIdAtual = endereco.id;
+                        enderecoOriginal = { id: endereco.id, rua: endereco.rua || '', numero: endereco.numero || '', complemento: endereco.complemento || '', bairro: endereco.bairro || '', cidade: endereco.cidade || '', estado: endereco.estado || '', cep: endereco.cep || '' };
+                    }
+                    dadosClienteCarregados = true;
+                    enderecoFoiAlterado = false;
+                    document.getElementById('dadosCarregados').classList.add('show');
+                    document.getElementById('avisoEnderecoAlterado').classList.remove('show');
+                    ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'bairro', 'cepEndereco'].forEach(function(id) {
+                        const campo = document.getElementById(id);
+                        if (campo && campo.value) { campo.style.backgroundColor = '#E8F5E9'; campo.style.borderColor = '#4CAF50'; setTimeout(function() { campo.style.backgroundColor = ''; campo.style.borderColor = ''; }, 2000); }
+                    });
+                    if (document.getElementById('estado').value && document.getElementById('cidade') && document.getElementById('cidade').value) {
+                        setTimeout(function() { calcularFrete(); }, 100);
+                    }
+                    verificarCamposObrigatoriosPIX();
+                } else {
+                    console.log('ℹ️ Cliente não encontrado, será criado novo cadastro');
+                    if (dadosClienteCarregados) { limparCamposExcetoCPF(); dadosClienteCarregados = false; document.getElementById('dadosCarregados').classList.remove('show'); clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; }
+                }
+            } catch (error) { console.error('Erro na busca:', error); }
+            finally { document.getElementById('loadingSpinner').style.display = 'none'; buscaEmAndamento = false; atualizarBotaoEnviar(); verificarCamposObrigatoriosPIX(); }
+        }
+
+        function configurarBuscaAutomaticaCPF() {
+            const cpfInput = document.getElementById('cpf');
+            cpfInput.addEventListener('input', function(e) {
+                if (cpfTimeout) clearTimeout(cpfTimeout);
+                const valor = e.target.value;
+                const cpfSomenteNumeros = valor.replace(/\D/g, '');
+                if (cpfSomenteNumeros.length === 0) { ultimoCPFBuscado = ''; return; }
+                if (cpfSomenteNumeros.length < 11) {
+                    let formatado = cpfSomenteNumeros;
+                    if (cpfSomenteNumeros.length > 9) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+                    else if (cpfSomenteNumeros.length > 6) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+                    else if (cpfSomenteNumeros.length > 3) formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+                    e.target.value = formatado; return;
+                }
+                let formatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                e.target.value = formatado;
+                cpfTimeout = setTimeout(function() { buscarPorCPFAutomatico(formatado); }, 500);
+            });
+            cpfInput.addEventListener('blur', function(e) {
+                const valor = e.target.value;
+                const cpfSomenteNumeros = valor.replace(/\D/g, '');
+                if (cpfSomenteNumeros.length === 11 && cpfSomenteNumeros !== ultimoCPFBuscado) buscarPorCPFAutomatico(valor);
+            });
+            cpfInput.addEventListener('keypress', function(e) { if (!/[0-9]/.test(String.fromCharCode(e.which))) e.preventDefault(); });
+        }
+
+        function configurarMonitoramentoEndereco() {
+            ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cepEndereco'].forEach(function(campoId) {
+                const campo = document.getElementById(campoId);
+                if (campo) { campo.addEventListener('input', verificarAlteracaoEndereco); campo.addEventListener('change', verificarAlteracaoEndereco); }
+            });
+        }
+
+        function verificarAlteracaoEndereco() {
+            if (!dadosClienteCarregados) return;
+            const camposEndereco = ['rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cepEndereco'];
+            let algumCampoAlterado = false;
+            camposEndereco.forEach(function(campoId) {
+                const campo = document.getElementById(campoId);
+                if (!campo) return;
+                const campoNome = campoId === 'cepEndereco' ? 'cep' : campoId;
+                const valorAtual = campo.value || '';
+                const valorOriginal = enderecoOriginal[campoNome] || '';
+                if (valorAtual !== valorOriginal) algumCampoAlterado = true;
+            });
+            const aviso = document.getElementById('avisoEnderecoAlterado');
+            if (algumCampoAlterado) {
+                if (!enderecoFoiAlterado) { enderecoFoiAlterado = true; enderecoIdAtual = null; }
+                if (aviso) aviso.classList.add('show');
+            } else {
+                if (enderecoFoiAlterado) { enderecoFoiAlterado = false; enderecoIdAtual = enderecoOriginal.id; }
+                if (aviso) aviso.classList.remove('show');
+            }
+        }
+
+        function limparCamposExcetoCPF() {
+            ['nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'estado', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+            clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
+        }
+
+        function limparDados() {
+            if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                if (cpfTimeout) clearTimeout(cpfTimeout); ultimoCPFBuscado = '';
+                ['cpf', 'nome', 'whatsapp', 'instagram', 'email', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'cepEndereco', 'estado', 'observacoes'].forEach(function(id) { const campo = document.getElementById(id); if (campo) campo.value = ''; });
+                document.getElementById('dadosCarregados').classList.remove('show');
+                document.getElementById('avisoEnderecoAlterado').classList.remove('show');
+                dadosClienteCarregados = false; clienteIdAtual = null; enderecoIdAtual = null; enderecoOriginal = {}; enderecoFoiAlterado = false;
+                document.getElementById('pagamentoArea').classList.remove('mostrar');
+                document.getElementById('outrosEstadosBox').classList.remove('mostrar');
+                document.getElementById('freteCalculadoBox').classList.remove('mostrar');
+                regiaoSelecionadaAtual = ''; valorFreteAtual = 0;
+                // ✅ NOVO FLUXO: Limpar também a solicitação atual
+                solicitacaoIdAtual = null; numeroSolicitacaoAtual = null; dadosSolicitacaoCache = null;
+                resetarPagamento();
+                atualizarBotaoEnviar();
+                document.getElementById('cpf').focus();
+                sessionStorage.removeItem('solicitacao_dados');
+                sessionStorage.removeItem('solicitacao_cliente_id');
+                sessionStorage.removeItem('solicitacao_cobranca_id');
+                sessionStorage.removeItem('solicitacao_id_atual');
+                sessionStorage.removeItem('solicitacao_numero_atual');
+            }
+        }
+
+        async function gerarNumeroSolicitacao() {
+            // ✅ CORREÇÃO: Usar função SQL do banco (thread-safe, atômica)
+            try {
+                const { data, error } = await supabaseClient.rpc('gerar_numero_solicitacao');
+                if (error) {
+                    console.error('[NUMERO] Erro RPC:', error);
+                    const agora = new Date();
+                    const ano = agora.getFullYear();
+                    const timestamp = Date.now().toString().slice(-6);
+                    return 'SOL-' + ano + '-' + timestamp;
+                }
+                console.log('[NUMERO] Número gerado pelo banco:', data);
+                return data;
+            } catch (e) {
+                console.error('[NUMERO] Exceção:', e);
+                const agora = new Date();
+                const ano = agora.getFullYear();
+                const timestamp = Date.now().toString().slice(-6);
+                return 'SOL-' + ano + '-' + timestamp;
+            }
+        }
+
+        async function enviarEmailConfirmacao(dadosSolicitacao) {
+            console.log('[EMAIL] Iniciando envio de e-mails...');
+            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
+
+            try {
+                // ✅ CORREÇÃO: Enviar e-mail para o CLIENTE (se preenchido)
+                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
+                    const templateParamsCliente = {
+                        to_email: dadosSolicitacao.email,
+                        numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                        nome: dadosSolicitacao.nome,
+                        data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                        regiao: dadosSolicitacao.regiao,
+                        rua: dadosSolicitacao.rua,
+                        numero: dadosSolicitacao.numero,
+                        complemento: dadosSolicitacao.complemento || 'N/A',
+                        bairro: dadosSolicitacao.bairro,
+                        cidade: dadosSolicitacao.cidade,
+                        cep: dadosSolicitacao.cep,
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
+                    };
+                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
+                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
+                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
+                } else {
+                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
+                }
+
+                // ✅ CORREÇÃO: E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
+                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
+                const templateParamsAdmin = {
+                    to_email: 'marcobet@gmail.com',
+                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                    nome: dadosSolicitacao.nome,
+                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                    regiao: dadosSolicitacao.regiao,
+                    rua: dadosSolicitacao.rua,
+                    numero: dadosSolicitacao.numero,
+                    complemento: dadosSolicitacao.complemento || 'N/A',
+                    bairro: dadosSolicitacao.bairro,
+                    cidade: dadosSolicitacao.cidade,
+                    cep: dadosSolicitacao.cep,
+                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                    email_cliente: dadosSolicitacao.email || 'Não informado',
+                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
+                };
+                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
+                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
+                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
+
+                return true;
+            } catch (error) {
+                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
+                return false;
+            }
+        }
+
+        async function enviarFormulario(e, modoAutomatico) {
+            e.preventDefault();
+            modoAutomatico = modoAutomatico || false;
+
+            // ✅ NOVO FLUXO: Recuperar cobrancaId do sessionStorage
+            if (!cobrancaId) {
+                const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
+                if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
+                    cobrancaId = savedCobrancaId;
+                    console.log('[ENVIAR] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                }
+            }
+
+            // ✅ NOVO FLUXO: Recuperar solicitacaoId do sessionStorage
+            if (!solicitacaoIdAtual) {
+                const savedSolicitacaoId = sessionStorage.getItem('solicitacao_id_atual');
+                const savedNumero = sessionStorage.getItem('solicitacao_numero_atual');
+                if (savedSolicitacaoId) {
+                    solicitacaoIdAtual = savedSolicitacaoId;
+                    numeroSolicitacaoAtual = savedNumero;
+                    console.log('[ENVIAR] ✅ solicitacaoId recuperado do sessionStorage:', solicitacaoIdAtual);
+                }
+            }
+
+            console.log('[ENVIAR] solicitacaoId:', solicitacaoIdAtual, '| cobrancaId:', cobrancaId, '| modoAutomatico:', modoAutomatico);
+
+            if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
+            if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
+
+            const estado = document.getElementById('estado').value;
+            const cidade = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+
+            if (!estado || !cidade) {
+                alert('⚠️ Selecione o estado e informe a cidade.');
+                return;
+            }
+
+            calcularFrete();
+
+            // ✅ NOVO FLUXO: Se já tem solicitação criada, mostrar sucesso
+            if (solicitacaoIdAtual && numeroSolicitacaoAtual) {
+                console.log('[ENVIAR] Solicitação já existe:', numeroSolicitacaoAtual);
+                if (pagamentoConfirmado || estado !== 'SC') {
+                    document.getElementById('deliveryForm').style.display = 'none';
+                    document.getElementById('successMsg').classList.add('show');
+                    document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
+                    return;
+                }
+            }
+
+            // Para estados diferentes de SC, criar e mostrar sucesso
+            if (estado !== 'SC') {
+                const btnSubmit = document.getElementById('btnEnviar');
+                btnSubmit.innerHTML = '⏳ Enviando...';
+                btnSubmit.disabled = true;
+                try {
+                    await criarSolicitacaoPendente();
+                    if (dadosSolicitacaoCache) {
+                        await enviarEmailConfirmacao({
+                            email: dadosSolicitacaoCache.email,
+                            numeroSolicitacao: numeroSolicitacaoAtual,
+                            nome: dadosSolicitacaoCache.nome,
+                            dataSolicitacao: formatarData(new Date()),
+                            regiao: dadosSolicitacaoCache.regiao,
+                            rua: dadosSolicitacaoCache.rua,
+                            numero: dadosSolicitacaoCache.numero,
+                            complemento: dadosSolicitacaoCache.complemento,
+                            bairro: dadosSolicitacaoCache.bairro,
+                            cidade: dadosSolicitacaoCache.cidade,
+                            cep: dadosSolicitacaoCache.cep,
+                            observacoes: dadosSolicitacaoCache.observacoes,
+                            whatsapp: dadosSolicitacaoCache.whatsapp,
+                            instagram: dadosSolicitacaoCache.instagram
+                        });
+                    }
+                    document.getElementById('deliveryForm').style.display = 'none';
+                    document.getElementById('successMsg').classList.add('show');
+                    document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('❌ Erro: ' + error.message);
+                    btnSubmit.innerHTML = '📦 ENVIAR SOLICITACAO';
+                    btnSubmit.disabled = false;
+                }
+                return;
+            }
+
+            // Para SC, precisa gerar PIX primeiro
+            alert('⚠️ Para Santa Catarina, clique em "Gerar QR Code PIX" primeiro.');
+            document.getElementById('pagamentoArea').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
