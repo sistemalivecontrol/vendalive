@@ -1551,33 +1551,55 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             // 1. Criar ou atualizar cliente
             let clientePgId = clienteIdAtual;
-            // ✅ CORREÇÃO: Sempre buscar/atualizar cliente
-            {
-                console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
-                const { data: clienteExistente, error: erroBusca } = await supabaseClient
-                    .from('clientes_pg')
-                    .select('id, nome, whatsapp, email, instagram')
-                    .eq('cpf', cpf)
-                    .eq('cliente_id', clienteIdSistema)
-                    .limit(1)
-                    .maybeSingle();
+            let clienteExistente = null;
 
-                if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+            // ✅ CORREÇÃO: Sempre buscar e atualizar o cliente, mesmo com clienteIdAtual preenchido
+            console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf, '| clienteIdAtual:', clienteIdAtual);
+            const { data: clienteBuscado, error: erroBusca } = await supabaseClient
+                .from('clientes_pg')
+                .select('id, nome, whatsapp, email, instagram')
+                .eq('cpf', cpf)
+                .eq('cliente_id', clienteIdSistema)
+                .limit(1)
+                .maybeSingle();
 
-                if (clienteExistente) {
-                    console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
-                    clientePgId = clienteExistente.id;
-                    clienteIdAtual = clientePgId;
-                    const dadosAtualizacao = {};
-                    if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                    if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
-                    if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
-                    if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
-                    if (Object.keys(dadosAtualizacao).length > 0) {
-                        await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+            if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+
+            if (clienteBuscado) {
+                console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteBuscado.id);
+                clientePgId = clienteBuscado.id;
+                clienteIdAtual = clientePgId;
+                clienteExistente = clienteBuscado;
+
+                // ✅ CORREÇÃO: Sempre atualizar os dados do cliente com valores do formulário
+                const dadosAtualizacao = {};
+                if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
+                if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
+
+                console.log('[SOLICITACAO-PENDENTE] Dados formulário - nome:', nome, '| whatsapp:', whatsapp, '| email:', email, '| instagram:', instagram);
+                console.log('[SOLICITACAO-PENDENTE] Dados banco - nome:', clienteExistente.nome, '| whatsapp:', clienteExistente.whatsapp, '| email:', clienteExistente.email, '| instagram:', clienteExistente.instagram);
+
+                if (Object.keys(dadosAtualizacao).length > 0) {
+                    console.log('[SOLICITACAO-PENDENTE] Atualizando cliente ID:', clientePgId, 'com:', dadosAtualizacao);
+                    const { data: updatedData, error: erroUpdate } = await supabaseClient
+                        .from('clientes_pg')
+                        .update(dadosAtualizacao)
+                        .eq('id', clientePgId)
+                        .select();
+                    if (erroUpdate) {
+                        console.error('[SOLICITACAO-PENDENTE] ❌ Erro ao atualizar:', erroUpdate);
+                    } else if (!updatedData || updatedData.length === 0) {
+                        console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas');
+                    } else {
+                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado!');
                     }
                 } else {
-                    console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
+                    console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração necessária');
+                }
+            } else if (!clientePgId) {
+                console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
                     const { data: novoCliente, error: erroCliente } = await supabaseClient
                         .from('clientes_pg')
                         .insert([{
@@ -1977,7 +1999,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }, 3000);
         }
 
-        async function iniciarVerificacaoPagamento() {
+        function iniciarVerificacaoPagamento() {
             console.log('[POLLING] Iniciando verificação de pagamento...');
             console.log('[POLLING] cobrancaId:', cobrancaId);
             console.log('[POLLING] mpPaymentId:', mpPaymentId);
