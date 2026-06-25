@@ -2051,7 +2051,12 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     return;
                 }
 
-                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
+                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp, '| cobranca:', cobranca);
+
+                // ✅ DEBUG: Mostrar todos os campos da cobrança
+                if (cobranca) {
+                    console.log('[POLLING] Dados completos da cobrança:', JSON.stringify(cobranca));
+                }
 
                 if (cobranca && (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited')) {
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO! Status:', cobranca.status, '| MP:', cobranca.status_mp);
