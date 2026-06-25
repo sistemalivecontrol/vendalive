@@ -1558,88 +1558,92 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             // 1. Criar ou atualizar cliente
             let clientePgId = clienteIdAtual;
-            if (!clientePgId) {
-                console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
-                const { data: clienteExistente, error: erroBusca } = await supabaseClient
-                    .from('clientes_pg')
-                    .select('id, nome, whatsapp, email, instagram')
-                    .eq('cpf', cpf)
-                    .eq('cliente_id', clienteIdSistema)
-                    .limit(1)
-                    .maybeSingle();
+            console.log('[SOLICITACAO-PENDENTE] clienteIdAtual inicial:', clientePgId);
 
-                if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+            // ✅ CORREÇÃO: SEMPRE buscar cliente por CPF para verificar/atualizar dados
+            console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
+            const { data: clienteExistente, error: erroBusca } = await supabaseClient
+                .from('clientes_pg')
+                .select('id, nome, whatsapp, email, instagram')
+                .eq('cpf', cpf)
+                .eq('cliente_id', clienteIdSistema)
+                .limit(1)
+                .maybeSingle();
 
-                console.log('[SOLICITACAO-PENDENTE] clienteExistente:', clienteExistente ? 'SIM' : 'NAO', 'id:', clienteExistente?.id);
-                if (clienteExistente) {
-                    console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
-                    console.log('[SOLICITACAO-PENDENTE] WhatsApp do banco:', JSON.stringify(clienteExistente.whatsapp), '| WhatsApp do form:', JSON.stringify(whatsapp));
-                    clientePgId = clienteExistente.id;
-                    clienteIdAtual = clientePgId;
-                    const dadosAtualizacao = {};
-                    if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                    // ✅ CORREÇÃO: Sempre atualizar WhatsApp se fornecido (pode ter sido alterado)
-                    if (whatsapp && whatsapp.trim()) {
-                        const whatsappBanco = clienteExistente.whatsapp || '';
-                        const whatsappForm = whatsapp.trim();
-                        if (whatsappForm !== whatsappBanco) {
-                            dadosAtualizacao.whatsapp = whatsappForm;
-                            console.log('[SOLICITACAO-PENDENTE] WhatsApp diferente, atualizando:', whatsappBanco, '->', whatsappForm);
-                        } else {
-                            console.log('[SOLICITACAO-PENDENTE] WhatsApp igual ao do banco, pulando atualização');
-                        }
-                    }
-                    if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
-                    if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
-                    if (Object.keys(dadosAtualizacao).length > 0) {
-                        console.log('[SOLICITACAO-PENDENTE] Atualizando cliente:', dadosAtualizacao);
-                        const { error: updateError } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
-                        if (updateError) {
-                            console.error('[SOLICITACAO-PENDENTE] Erro ao atualizar cliente:', updateError);
-                        } else {
-                            console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso');
-                        }
+            if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
+            console.log('[SOLICITACAO-PENDENTE] clienteExistente:', clienteExistente ? 'ENCONTRADO id=' + clienteExistente.id : 'NAO ENCONTRADO');
+
+            if (clienteExistente) {
+                console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
+                console.log('[SOLICITACAO-PENDENTE] WhatsApp do banco:', JSON.stringify(clienteExistente.whatsapp), '| WhatsApp do form:', JSON.stringify(whatsapp));
+                clientePgId = clienteExistente.id;
+                clienteIdAtual = clientePgId;
+                const dadosAtualizacao = {};
+                if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                // ✅ CORREÇÃO: Sempre atualizar WhatsApp se fornecido (pode ter sido alterado)
+                if (whatsapp && whatsapp.trim()) {
+                    const whatsappBanco = clienteExistente.whatsapp || '';
+                    const whatsappForm = whatsapp.trim();
+                    if (whatsappForm !== whatsappBanco) {
+                        dadosAtualizacao.whatsapp = whatsappForm;
+                        console.log('[SOLICITACAO-PENDENTE] WhatsApp diferente, atualizando:', whatsappBanco, '->', whatsappForm);
                     } else {
-                        console.log('[SOLICITACAO-PENDENTE] Nenhum dado alterado, pulando update do cliente');
-                    }
-                } else {
-                    console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
-                    const { data: novoCliente, error: erroCliente } = await supabaseClient
-                        .from('clientes_pg')
-                        .insert([{
-                            cliente_id: clienteIdSistema,
-                            cpf: cpf,
-                            nome: nome,
-                            whatsapp: whatsapp,
-                            email: email,
-                            instagram: instagram
-                        }])
-                        .select()
-                        .single();
-
-                    if (erroCliente) {
-                        if (erroCliente.code === '23505') {
-                            const { data: clienteDuplicado } = await supabaseClient
-                                .from('clientes_pg')
-                                .select('id')
-                                .eq('cpf', cpf)
-                                .eq('cliente_id', clienteIdSistema)
-                                .limit(1)
-                                .maybeSingle();
-                            if (clienteDuplicado) {
-                                clientePgId = clienteDuplicado.id;
-                                clienteIdAtual = clientePgId;
-                            } else {
-                                throw new Error('Não foi possível encontrar o cliente após erro de duplicidade');
-                            }
-                        } else {
-                            throw erroCliente;
-                        }
-                    } else {
-                        clientePgId = novoCliente.id;
-                        clienteIdAtual = clientePgId;
+                        console.log('[SOLICITACAO-PENDENTE] WhatsApp igual ao do banco, pulando atualização');
                     }
                 }
+                if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
+                if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                if (Object.keys(dadosAtualizacao).length > 0) {
+                    console.log('[SOLICITACAO-PENDENTE] Atualizando cliente:', dadosAtualizacao);
+                    const { error: updateError } = await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
+                    if (updateError) {
+                        console.error('[SOLICITACAO-PENDENTE] Erro ao atualizar cliente:', updateError);
+                    } else {
+                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso');
+                    }
+                } else {
+                    console.log('[SOLICITACAO-PENDENTE] Nenhum dado alterado, pulando update do cliente');
+                }
+            } else if (!clientePgId) {
+                // Só cria novo cliente se não tem clienteIdAtual E não encontrou por CPF
+                console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
+                const { data: novoCliente, error: erroCliente } = await supabaseClient
+                    .from('clientes_pg')
+                    .insert([{
+                        cliente_id: clienteIdSistema,
+                        cpf: cpf,
+                        nome: nome,
+                        whatsapp: whatsapp,
+                        email: email,
+                        instagram: instagram
+                    }])
+                    .select()
+                    .single();
+
+                if (erroCliente) {
+                    if (erroCliente.code === '23505') {
+                        const { data: clienteDuplicado } = await supabaseClient
+                            .from('clientes_pg')
+                            .select('id')
+                            .eq('cpf', cpf)
+                            .eq('cliente_id', clienteIdSistema)
+                            .limit(1)
+                            .maybeSingle();
+                        if (clienteDuplicado) {
+                            clientePgId = clienteDuplicado.id;
+                            clienteIdAtual = clientePgId;
+                        } else {
+                            throw new Error('Não foi possível encontrar o cliente após erro de duplicidade');
+                        }
+                    } else {
+                        throw erroCliente;
+                    }
+                } else {
+                    clientePgId = novoCliente.id;
+                    clienteIdAtual = clientePgId;
+                }
+            } else {
+                console.log('[SOLICITACAO-PENDENTE] Usando clienteIdAtual existente:', clientePgId, '(nao encontrado por CPF, possivelmente ID diferente)');
             }
 
             // 2. Criar ou buscar endereço
