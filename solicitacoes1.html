@@ -1554,7 +1554,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             let clientePgId = clienteIdAtual;
             let clienteExistente = null;
 
-            // ✅ CORREÇÃO CRÍTICA: Sempre buscar e atualizar o cliente, mesmo que clienteIdAtual já exista
+            // ✅ CORREÇÃO CRÍTICA: Sempre buscar e atualizar o cliente, mesmo com clienteIdAtual preenchido
             // O cliente pode ter sido carregado pelo CPF, mas os dados do formulário podem ser diferentes
             console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf, '| clienteIdAtual atual:', clienteIdAtual);
 
@@ -1587,7 +1587,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 if (Object.keys(dadosAtualizacao).length > 0) {
                     console.log('[SOLICITACAO-PENDENTE] Atualizando cliente existente ID:', clientePgId, 'com:', JSON.stringify(dadosAtualizacao));
 
-                    // ✅ CORREÇÃO: Usar .select() para confirmar que a linha foi atualizada
                     const { data: updatedData, error: erroUpdate } = await supabaseClient
                         .from('clientes_pg')
                         .update(dadosAtualizacao)
@@ -1596,37 +1595,21 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
                     if (erroUpdate) {
                         console.error('[SOLICITACAO-PENDENTE] ❌ Erro ao atualizar cliente:', erroUpdate);
-                        alert('Erro ao atualizar dados do cliente: ' + erroUpdate.message);
                     } else if (!updatedData || updatedData.length === 0) {
-                        console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas afetadas!');
-                        console.error('[SOLICITACAO-PENDENTE] Possíveis causas: RLS bloqueando, ID não existe, ou dados iguais');
-                        // Tentar novamente com upsert como fallback
-                        console.log('[SOLICITACAO-PENDENTE] Tentando fallback com upsert...');
+                        console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas! Tentando upsert...');
                         const { data: upsertData, error: upsertError } = await supabaseClient
                             .from('clientes_pg')
-                            .upsert({
-                                id: clientePgId,
-                                cliente_id: clienteIdSistema,
-                                cpf: cpf,
-                                nome: nome,
-                                whatsapp: whatsapp,
-                                email: email || null,
-                                instagram: instagram || null
-                            })
+                            .upsert({ id: clientePgId, cliente_id: clienteIdSistema, cpf: cpf, nome: nome, whatsapp: whatsapp, email: email || null, instagram: instagram || null })
                             .select();
-                        if (upsertError) {
-                            console.error('[SOLICITACAO-PENDENTE] ❌ Upsert também falhou:', upsertError);
-                        } else {
-                            console.log('[SOLICITACAO-PENDENTE] ✅ Upsert funcionou! Dados:', upsertData);
-                        }
+                        if (upsertError) console.error('[SOLICITACAO-PENDENTE] ❌ Upsert falhou:', upsertError);
+                        else console.log('[SOLICITACAO-PENDENTE] ✅ Upsert funcionou! Dados:', upsertData);
                     } else {
-                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso! Dados retornados:', updatedData);
+                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso! Dados:', updatedData);
                     }
                 } else {
                     console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração nos dados do cliente necessária (valores idênticos)');
                 }
             } else if (!clientePgId) {
-                // Só cria novo cliente se não encontrou no banco E não tem clienteIdAtual
                 console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
                     const { data: novoCliente, error: erroCliente } = await supabaseClient
                         .from('clientes_pg')
@@ -2171,50 +2154,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             try {
                 console.log('🔍 Buscando CPF:', cpfSomenteNumeros, 'no cliente:', clienteIdSistema);
-                // ✅ CORREÇÃO: Buscar com CPF sem formatação (padrão do banco)
-                let { data: cliente, error } = await supabaseClient
-                    .from('clientes_pg')
-                    .select('*')
-                    .eq('cpf', cpfSomenteNumeros)
-                    .eq('cliente_id', clienteIdSistema)
-                    .limit(1)
-                    .maybeSingle();
-
-                if (error) {
-                    console.error('❌ Erro na busca por CPF (sem formato):', error);
-                }
-
-                // ✅ CORREÇÃO: Se não encontrou, tentar com formatação
+                let { data: cliente, error } = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfSomenteNumeros).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
                 if (!cliente) {
                     const cpfFormatado = cpfSomenteNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                    console.log('🔍 Tentando CPF formatado:', cpfFormatado);
-                    let result = await supabaseClient
-                        .from('clientes_pg')
-                        .select('*')
-                        .eq('cpf', cpfFormatado)
-                        .eq('cliente_id', clienteIdSistema)
-                        .limit(1)
-                        .maybeSingle();
+                    let result = await supabaseClient.from('clientes_pg').select('*').eq('cpf', cpfFormatado).eq('cliente_id', clienteIdSistema).limit(1).maybeSingle();
                     cliente = result.data;
-                    if (result.error) {
-                        console.error('❌ Erro na busca por CPF (formatado):', result.error);
-                    }
-                }
-
-                // ✅ CORREÇÃO: Se ainda não encontrou, buscar com LIKE (parcial)
-                if (!cliente) {
-                    console.log('🔍 Tentando busca parcial com LIKE...');
-                    let result = await supabaseClient
-                        .from('clientes_pg')
-                        .select('*')
-                        .ilike('cpf', '%' + cpfSomenteNumeros + '%')
-                        .eq('cliente_id', clienteIdSistema)
-                        .limit(1)
-                        .maybeSingle();
-                    cliente = result.data;
-                    if (result.error) {
-                        console.error('❌ Erro na busca LIKE:', result.error);
-                    }
                 }
 
                 if (cliente) {
