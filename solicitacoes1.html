@@ -2010,7 +2010,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }, 3000);
         }
 
-        function iniciarVerificacaoPagamento() {
+        async function iniciarVerificacaoPagamento() {
             console.log('[POLLING] Iniciando verificação de pagamento...');
             console.log('[POLLING] cobrancaId:', cobrancaId);
             console.log('[POLLING] mpPaymentId:', mpPaymentId);
@@ -2018,7 +2018,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             pollingInterval = setInterval(async function() {
                 await verificarStatusPagamento();
             }, 3000);
-            verificarStatusPagamento();
+            await verificarStatusPagamento();
         }
 
         async function verificarStatusPagamento() {
