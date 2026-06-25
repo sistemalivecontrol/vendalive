@@ -315,6 +315,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -386,17 +387,17 @@
                             <th>Data / Hora</th>
                             <th>Nome</th>
                             <th>CPF</th>
-                            <th>WhatsApp</th>
                             <th>Instagram</th>
                             <th>Região</th>
                             <th>CEP</th>
                             <th>Endereço</th>
                             <th>Status</th>
                             <th>Código Rastreio</th>
+                            <th>Pagamento</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tbodySolicitacoes"><tr><td colspan="13" class="loading">Carregando solicitações...</td></tr></tbody>
+                    <tbody id="tbodySolicitacoes"><tr><td colspan="12" class="loading">Carregando solicitações...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -685,6 +686,8 @@ let solicitacoes = [];
                 solicitacoes = data || [];
                 // Carregar rastreamentos para cada solicitação
                 await carregarRastreamentos();
+                // Carregar dados de pagamento (cobrancas_pix)
+                await carregarPagamentos();
                 atualizarTabela();
                 atualizarEstatisticas();
             } catch (error) {
@@ -733,6 +736,52 @@ let solicitacoes = [];
             } catch (e) {
                 console.error('Erro ao carregar rastreamentos:', e);
             }
+        }
+        // ============================================
+        // CARREGAR DADOS DE PAGAMENTO (cobrancas_pix)
+        // ============================================
+        let pagamentosCache = {};
+        async function carregarPagamentos() {
+            if (!supabaseClient || solicitacoes.length === 0) return;
+            const cobrancaIds = solicitacoes.map(s => s.cobranca_id).filter(id => id);
+            if (cobrancaIds.length === 0) return;
+            try {
+                // Buscar de cobrancas_pix (Mercado Pago)
+                const { data: dataMP, error: errorMP } = await supabaseClient
+                    .from('cobrancas_pix')
+                    .select('id, pago_em, status, valor, valor_pago')
+                    .in('id', cobrancaIds);
+                if (errorMP) console.warn('[PAGAMENTO] Erro MP:', errorMP);
+                // Buscar de cobrancas_infinitepay
+                const { data: dataInf, error: errorInf } = await supabaseClient
+                    .from('cobrancas_infinitepay')
+                    .select('id, pago_em, status, valor, valor_pago')
+                    .in('id', cobrancaIds);
+                if (errorInf) console.warn('[PAGAMENTO] Erro InfinitePay:', errorInf);
+                pagamentosCache = {};
+                (dataMP || []).forEach(c => { pagamentosCache[c.id] = c; });
+                (dataInf || []).forEach(c => { pagamentosCache[c.id] = c; });
+                console.log('[PAGAMENTO] Cache carregado:', Object.keys(pagamentosCache).length, 'cobranças');
+            } catch (e) {
+                console.error('Erro ao carregar pagamentos:', e);
+            }
+        }
+        function formatarPagamento(cobrancaId) {
+            if (!cobrancaId || !pagamentosCache[cobrancaId]) {
+                return '<span style="color:#999;font-size:0.8rem;">—</span>';
+            }
+            const pag = pagamentosCache[cobrancaId];
+            if (pag.status === 'pago' && pag.pago_em) {
+                const d = new Date(pag.pago_em);
+                const dataStr = d.toLocaleDateString('pt-BR');
+                const horaStr = d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                return `<span style="color:#28a745;font-weight:600;">✅ Pago</span><br><span style="font-size:0.75rem;color:#666;">${dataStr} ${horaStr}</span>`;
+            } else if (pag.status === 'pendente') {
+                return '<span style="color:#f39c12;font-weight:600;">⏳ Pendente</span>';
+            } else if (pag.status === 'expirado' || pag.status === 'cancelado') {
+                return '<span style="color:#e74c3c;font-weight:600;">❌ ' + (pag.status === 'expirado' ? 'Expirado' : 'Cancelado') + '</span>';
+            }
+            return '<span style="color:#999;font-size:0.8rem;">—</span>';
         }
 // ============================================
 // NORMALIZAÇÃO DE TEXTO (remove acentos, lowercase)
@@ -786,6 +835,7 @@ async function aplicarFiltros() {
                 }
                 solicitacoes = resultado;
                 idsSelecionados.clear();
+                await carregarPagamentos();
                 atualizarTabela();
                 atualizarEstatisticas();
                 showAlert(`${solicitacoes.length} solicitação(ões) encontrada(s)`, 'success');
@@ -810,7 +860,7 @@ async function aplicarFiltros() {
         function atualizarTabela() {
             const tbody = document.getElementById('tbodySolicitacoes');
             if (solicitacoes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhuma solicitação encontrada</p></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhuma solicitação encontrada</p></td></tr>`;
                 return;
             }
             tbody.innerHTML = solicitacoes.map((s, index) => {
@@ -826,7 +876,6 @@ async function aplicarFiltros() {
                     <td>${dataSolicitacao}<br><span style="font-size:0.75rem;color:#888;font-weight:500;">${horaSolicitacao}</span></td>
                     <td><strong>${cliente.nome || 'N/A'}</strong></td>
                     <td>${formatarCPF(cliente.cpf)}</td>
-                    <td>${cliente.whatsapp ? `<a href="https://wa.me/${formatarWhatsApp(cliente.whatsapp)}" target="_blank" class="whatsapp-link">📱 ${cliente.whatsapp}</a>` : '-'}</td>
                     <td>${cliente.instagram ? `<a href="https://instagram.com/${cliente.instagram.replace('@', '')}" target="_blank" class="instagram-link">${cliente.instagram}</a>` : '-'}</td>
                     <td>${getTagRegiao(s.regiao || endereco.regiao)}</td>
                     <td>${formatarCEP(endereco.cep)}</td>
@@ -835,6 +884,7 @@ async function aplicarFiltros() {
                     <td style="text-align: center; vertical-align: middle;">
                         ${(s.codigo_rastreio || (rastreamentosCache[s.id] && rastreamentosCache[s.id][0] && rastreamentosCache[s.id][0].codigo_rastreio)) ? `<span class="codigo-rastreio-badge" onclick="abrirModalRastreio('${s.id}')" title="Clique para ver/editar rastreio">${s.codigo_rastreio || rastreamentosCache[s.id][0].codigo_rastreio}</span>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
                     </td>
+                    <td style="text-align: center; vertical-align: middle; white-space: nowrap;">${formatarPagamento(s.cobranca_id)}</td>
                     <td class="actions-cell" style="vertical-align: top; white-space: nowrap;">
                         <div style="display: flex; flex-direction: column; gap: 2px; align-items: stretch;">
                             ${s.codigo_rastreio ? `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Ver Rastreio</button>` : `<button class="btn-small btn-rastreio" onclick="abrirModalRastreio('${s.id}')">📦 Cadastrar</button>`}
