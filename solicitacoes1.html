@@ -187,6 +187,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -1526,18 +1527,19 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             const formData = new FormData(document.getElementById('deliveryForm'));
             const cpf = formData.get('cpf').replace(/\D/g, '');
-            const nome = formData.get('nome');
-            const whatsapp = formData.get('whatsapp');
-            const email = formData.get('email');
-            const instagram = formData.get('instagram');
-            const rua = formData.get('rua');
-            const numero = formData.get('numero');
-            const complemento = formData.get('complemento');
-            const bairro = formData.get('bairro');
-            const cidadeForm = formData.get('cidade');
-            const estadoForm = formData.get('estado');
-            const cep = formData.get('cep');
-            const observacoes = formData.get('observacoes');
+            // ✅ CORREÇÃO: Usar document.getElementById para garantir valor atualizado do campo
+            const nome = document.getElementById('nome').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const instagram = document.getElementById('instagram').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const complemento = document.getElementById('complemento').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const cidadeForm = document.getElementById('cidade') ? document.getElementById('cidade').value.trim() : '';
+            const estadoForm = document.getElementById('estado').value;
+            const cep = document.getElementById('cepEndereco').value.trim();
+            const observacoes = document.getElementById('observacoes').value.trim();
 
             let regiao = 'Outros Estados';
             if (estadoForm === 'SC') {
