@@ -187,7 +187,6 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="spinner-overlay" id="spinnerOverlay">
@@ -1552,65 +1551,33 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             // 1. Criar ou atualizar cliente
             let clientePgId = clienteIdAtual;
-            let clienteExistente = null;
+            // ✅ CORREÇÃO: Sempre buscar/atualizar cliente
+            {
+                console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
+                const { data: clienteExistente, error: erroBusca } = await supabaseClient
+                    .from('clientes_pg')
+                    .select('id, nome, whatsapp, email, instagram')
+                    .eq('cpf', cpf)
+                    .eq('cliente_id', clienteIdSistema)
+                    .limit(1)
+                    .maybeSingle();
 
-            // ✅ CORREÇÃO CRÍTICA: Sempre buscar e atualizar o cliente, mesmo com clienteIdAtual preenchido
-            // O cliente pode ter sido carregado pelo CPF, mas os dados do formulário podem ser diferentes
-            console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf, '| clienteIdAtual atual:', clienteIdAtual);
+                if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
 
-            const { data: clienteBuscado, error: erroBusca } = await supabaseClient
-                .from('clientes_pg')
-                .select('id, nome, whatsapp, email, instagram')
-                .eq('cpf', cpf)
-                .eq('cliente_id', clienteIdSistema)
-                .limit(1)
-                .maybeSingle();
-
-            if (erroBusca) console.error('[SOLICITACAO-PENDENTE] Erro ao buscar cliente:', erroBusca);
-
-            if (clienteBuscado) {
-                console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteBuscado.id);
-                clientePgId = clienteBuscado.id;
-                clienteIdAtual = clientePgId;
-                clienteExistente = clienteBuscado;
-
-                // ✅ CORREÇÃO: Sempre atualizar os dados do cliente com os valores do formulário
-                const dadosAtualizacao = {};
-                if (nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                if (whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
-                if (email !== clienteExistente.email) dadosAtualizacao.email = email || null;
-                if (instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram || null;
-
-                console.log('[SOLICITACAO-PENDENTE] Dados do formulário - nome:', nome, '| whatsapp:', whatsapp, '| email:', email, '| instagram:', instagram);
-                console.log('[SOLICITACAO-PENDENTE] Dados do banco - nome:', clienteExistente.nome, '| whatsapp:', clienteExistente.whatsapp, '| email:', clienteExistente.email, '| instagram:', clienteExistente.instagram);
-
-                if (Object.keys(dadosAtualizacao).length > 0) {
-                    console.log('[SOLICITACAO-PENDENTE] Atualizando cliente existente ID:', clientePgId, 'com:', JSON.stringify(dadosAtualizacao));
-
-                    const { data: updatedData, error: erroUpdate } = await supabaseClient
-                        .from('clientes_pg')
-                        .update(dadosAtualizacao)
-                        .eq('id', clientePgId)
-                        .select();
-
-                    if (erroUpdate) {
-                        console.error('[SOLICITACAO-PENDENTE] ❌ Erro ao atualizar cliente:', erroUpdate);
-                    } else if (!updatedData || updatedData.length === 0) {
-                        console.error('[SOLICITACAO-PENDENTE] ⚠️ UPDATE retornou 0 linhas! Tentando upsert...');
-                        const { data: upsertData, error: upsertError } = await supabaseClient
-                            .from('clientes_pg')
-                            .upsert({ id: clientePgId, cliente_id: clienteIdSistema, cpf: cpf, nome: nome, whatsapp: whatsapp, email: email || null, instagram: instagram || null })
-                            .select();
-                        if (upsertError) console.error('[SOLICITACAO-PENDENTE] ❌ Upsert falhou:', upsertError);
-                        else console.log('[SOLICITACAO-PENDENTE] ✅ Upsert funcionou! Dados:', upsertData);
-                    } else {
-                        console.log('[SOLICITACAO-PENDENTE] ✅ Cliente atualizado com sucesso! Dados:', updatedData);
+                if (clienteExistente) {
+                    console.log('[SOLICITACAO-PENDENTE] Cliente existente encontrado:', clienteExistente.id);
+                    clientePgId = clienteExistente.id;
+                    clienteIdAtual = clientePgId;
+                    const dadosAtualizacao = {};
+                    if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
+                    if (whatsapp && whatsapp !== clienteExistente.whatsapp) dadosAtualizacao.whatsapp = whatsapp;
+                    if (email && email !== clienteExistente.email) dadosAtualizacao.email = email;
+                    if (instagram && instagram !== clienteExistente.instagram) dadosAtualizacao.instagram = instagram;
+                    if (Object.keys(dadosAtualizacao).length > 0) {
+                        await supabaseClient.from('clientes_pg').update(dadosAtualizacao).eq('id', clientePgId);
                     }
                 } else {
-                    console.log('[SOLICITACAO-PENDENTE] Nenhuma alteração nos dados do cliente necessária (valores idênticos)');
-                }
-            } else if (!clientePgId) {
-                console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
+                    console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
                     const { data: novoCliente, error: erroCliente } = await supabaseClient
                         .from('clientes_pg')
                         .insert([{
@@ -2018,7 +1985,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             pollingInterval = setInterval(async function() {
                 await verificarStatusPagamento();
             }, 3000);
-            await verificarStatusPagamento();
+            verificarStatusPagamento();
         }
 
         async function verificarStatusPagamento() {
