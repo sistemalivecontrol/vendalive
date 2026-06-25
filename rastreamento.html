@@ -316,6 +316,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head><body>
     <div class="container">
         <div class="header">
@@ -755,7 +756,7 @@ let solicitacoes = [];
                 // Buscar de cobrancas_infinitepay
                 const { data: dataInf, error: errorInf } = await supabaseClient
                     .from('cobrancas_infinitepay')
-                    .select('id, pago_em, status, valor, valor_pago')
+                    .select('id, status, valor_original, valor_pago, webhook_recebido_em')
                     .in('id', cobrancaIds);
                 if (errorInf) console.warn('[PAGAMENTO] Erro InfinitePay:', errorInf);
                 pagamentosCache = {};
@@ -771,15 +772,27 @@ let solicitacoes = [];
                 return '<span style="color:#999;font-size:0.8rem;">—</span>';
             }
             const pag = pagamentosCache[cobrancaId];
-            if (pag.status === 'pago' && pag.pago_em) {
-                const d = new Date(pag.pago_em);
+
+            // ✅ CORREÇÃO: Suporte a ambos os gateways
+            // Mercado Pago: status 'pago', pago_em
+            // InfinitePay: status 'paid', webhook_recebido_em
+            const isPago = pag.status === 'pago' || pag.status === 'paid';
+            const dataPagamento = pag.pago_em || pag.webhook_recebido_em;
+
+            if (isPago && dataPagamento) {
+                const d = new Date(dataPagamento);
                 const dataStr = d.toLocaleDateString('pt-BR');
                 const horaStr = d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
                 return `<span style="color:#28a745;font-weight:600;">✅ Pago</span><br><span style="font-size:0.75rem;color:#666;">${dataStr} ${horaStr}</span>`;
-            } else if (pag.status === 'pendente') {
+            } else if (pag.status === 'pendente' || pag.status === 'pending') {
                 return '<span style="color:#f39c12;font-weight:600;">⏳ Pendente</span>';
-            } else if (pag.status === 'expirado' || pag.status === 'cancelado') {
-                return '<span style="color:#e74c3c;font-weight:600;">❌ ' + (pag.status === 'expirado' ? 'Expirado' : 'Cancelado') + '</span>';
+            } else if (pag.status === 'expirado' || pag.status === 'expired' || pag.status === 'cancelado' || pag.status === 'cancelled' || pag.status === 'failed') {
+                let statusText = '❌ ';
+                if (pag.status === 'expirado' || pag.status === 'expired') statusText += 'Expirado';
+                else if (pag.status === 'cancelado' || pag.status === 'cancelled') statusText += 'Cancelado';
+                else if (pag.status === 'failed') statusText += 'Falhou';
+                else statusText += pag.status;
+                return '<span style="color:#e74c3c;font-weight:600;">' + statusText + '</span>';
             }
             return '<span style="color:#999;font-size:0.8rem;">—</span>';
         }
