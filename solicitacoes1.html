@@ -1549,7 +1549,6 @@
         // Função para gravar log no Supabase
         async function gravarLogWhatsApp(dados) {
             if (!supabaseClient || !clienteIdSistema) {
-                console.warn('[LOG-WA] Supabase não disponível, log não gravado');
                 return null;
             }
             try {
@@ -1581,13 +1580,18 @@
                     .single();
 
                 if (error) {
-                    console.error('[LOG-WA] Erro ao gravar log:', error);
+                    // Silenciosamente ignora erro de RLS - não bloqueia envio
+                    if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                        console.log('[LOG-WA] RLS bloqueou log (não crítico)');
+                    } else {
+                        console.warn('[LOG-WA] Erro ao gravar log:', error.message || error);
+                    }
                     return null;
                 }
                 console.log('[LOG-WA] Log gravado, ID:', data.id);
                 return data.id;
             } catch (e) {
-                console.error('[LOG-WA] Exceção ao gravar log:', e);
+                // Silenciosamente ignora qualquer erro de log
                 return null;
             }
         }
@@ -1610,12 +1614,15 @@
                     .eq('id', logId);
 
                 if (error) {
-                    console.error('[LOG-WA] Erro ao atualizar log:', error);
+                    // Silenciosamente ignora erro de RLS
+                    if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                        console.log('[LOG-WA] RLS bloqueou update (não crítico)');
+                    }
                 } else {
                     console.log('[LOG-WA] Log atualizado, ID:', logId);
                 }
             } catch (e) {
-                console.error('[LOG-WA] Exceção ao atualizar log:', e);
+                // Silenciosamente ignora
             }
         }
 
