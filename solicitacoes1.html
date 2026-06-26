@@ -12,7 +12,7 @@
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="-1">
     <meta http-equiv="pragma" content="no-cache">
-    <!-- v2026-06-26-1750-DEDUP-FIX -->
+    <!-- v2026-06-26-1821-NO-POLLING-WEBHOOK -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1625,12 +1625,10 @@
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) { btnGerar.style.display = 'none'; console.log('[POLLING] Botão Gerar PIX escondido'); }
 
-                    // CHAMAR EDGE FUNCTION para enviar WhatsApp + Email (cliente + admin)
-                    // SÓ para SC/Floripa - Outros estados já enviaram na página
-                    if (solicitacaoIdAtual && estadoAtual === 'SC') {
-                        console.log('[POLLING] Chamando Edge Function whats-email-webhook para SC/Floripa...');
-                        await chamarWebhookNotificacoes(solicitacaoIdAtual, cobrancaId);
-                    }
+                    // NOTIFICAÇÕES (WhatsApp + Email) são enviadas pela Edge Function mercadopago-webhook
+                    // quando o Mercado Pago confirma o pagamento. A página apenas mostra o status na tela.
+                    // NÃO chamar whats-email-webhook daqui para evitar duplicidade!
+                    console.log('[POLLING] ✅ Pagamento confirmado! Notificações serão enviadas pelo webhook do Mercado Pago.');
 
                     console.log('[POLLING] Mostrando tela de sucesso em 2 segundos...');
                     setTimeout(function() {
