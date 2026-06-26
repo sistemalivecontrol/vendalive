@@ -8,7 +8,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- v2026-06-25-1725-WHATSAPP-FIX -->
+    <meta http-equiv="cache-control" content="max-age=0">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="-1">
+    <meta http-equiv="pragma" content="no-cache">
+    <!-- v2026-06-26-1122-POLLING-FIX -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -188,12 +192,19 @@
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
 <base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
+    <script>
+        // Cache-busting: force reload if version mismatch detected
+        (function(){
+            var expectedVersion = 'v2026-06-26-1122';
+            var currentVersion = document.querySelector('meta[name="version"]')?.content || '';
+            if(currentVersion && currentVersion !== expectedVersion) {
+                console.log('[CACHE] Version mismatch, forcing reload...');
+                location.reload(true);
+            }
+        })();
+    </script>
     <div class="spinner-overlay" id="spinnerOverlay">
         <div class="spinner-box">
             <div class="loading"></div>
@@ -203,8 +214,8 @@
     <div class="redirecionando-overlay" id="redirecionandoOverlay">
         <div class="redirecionando-box">
             <div class="loading"></div>
-            <h2>✅ Pagamento Confirmado!</h2>
-            <p>Enviando sua solicitação e redirecionando para a página de confirmação...</p>
+            <h2>✅ Solicitação Enviada!</h2>
+            <p>Enviando notificações e redirecionando...</p>
         </div>
     </div>
     <div class="container">
@@ -466,6 +477,7 @@
         </div>
     </div>
 <script>
+
         // ============================================
         // EVOLUTION API - ENVIO DE WHATSAPP (V2 ROBUSTO)
         // ============================================
@@ -473,348 +485,10 @@
         const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
         const EVOLUTION_INSTANCE = 'pingodegente';
 
-        // ✅ CORREÇÃO: Função helper para verificar se a instância está online
-        async function verificarInstanciaEvolution() {
-            try {
-                const response = await fetch(`${EVOLUTION_API_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': EVOLUTION_API_KEY
-                    }
-                });
-                const data = await response.json();
-                console.log('[WA-STATUS] Estado da instância:', data);
-                return data && (data.state === 'open' || data.state === 'connected');
-            } catch (e) {
-                console.warn('[WA-STATUS] Não foi possível verificar estado da instância:', e.message);
-                return true; // Assume online para não bloquear
-            }
-        }
-
-        // ✅ CORREÇÃO: Função para enviar mensagem WhatsApp com retry e melhor tratamento de erro
-        async function enviarWhatsApp(numero, texto, opcoes) {
-            opcoes = opcoes || {};
-
-            // 1. Normalizar número
-            let numeroLimpo = String(numero || '').replace(/\D/g, '');
-            if (!numeroLimpo) {
-                console.error('[WA] ❌ Número vazio ou inválido');
-                return { sucesso: false, erro: 'Número vazio ou inválido', log_id: null };
-            }
-            if (!numeroLimpo.startsWith('55')) {
-                numeroLimpo = '55' + numeroLimpo;
-            }
-
-            console.log('[WA] 📤 Enviando para:', numeroLimpo);
-            console.log('[WA] 📄 Texto (primeiros 100 chars):', texto.substring(0, 100));
-
-            // 2. Gravar log inicial (pendente) - NÃO BLOQUEANTE
-            let logId = null;
-            try {
-                logId = await gravarLogWhatsApp({
-                    numero: numeroLimpo,
-                    destinatario: opcoes.destinatario || null,
-                    mensagem: texto,
-                    status: 'pendente',
-                    origem: opcoes.origem || 'solicitacao-entrega',
-                    tipo_envio: opcoes.tipo_envio || 'notificacao',
-                    referencia_id: opcoes.referencia_id || null,
-                    referencia_tipo: opcoes.referencia_tipo || null,
-                    codigo_rastreio: opcoes.codigo_rastreio || null,
-                    valor: opcoes.valor || null,
-                    metadata: opcoes.metadata || {}
-                });
-            } catch (logErr) {
-                console.warn('[WA] ⚠️ Erro ao gravar log inicial (não crítico):', logErr.message);
-            }
-
-            // 3. Tentar enviar com retry (até 2 tentativas)
-            let ultimoErro = null;
-            for (let tentativa = 1; tentativa <= 2; tentativa++) {
-                try {
-                    console.log(`[WA] Tentativa ${tentativa}/2...`);
-
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout // 15s timeout
-
-                    // ✅ CORREÇÃO: Usar endpoint correto da Evolution API v2
-                    // Endpoint: /message/sendText/{instance}
-                    const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': EVOLUTION_API_KEY
-                        },
-                        body: JSON.stringify({
-                            number: numeroLimpo,
-                            text: texto,
-                            options: {
-                                delay: 1200,
-                                presence: 'composing'
-                            }
-                        }),
-                        signal: controller.signal,
-                        keepalive: true // ✅ MANTÉM REQUISIÇÃO ATIVA MESMO SE PÁGINA NAVEGAR
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    // ✅ CORREÇÃO: Verificar status HTTP antes de parsear JSON
-                    const responseText = await response.text();
-                    let data = null;
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (parseErr) {
-                        console.warn('[WA] ⚠️ Resposta não é JSON:', responseText.substring(0, 200));
-                        data = { raw: responseText };
-                    }
-
-                    console.log(`[WA] Resposta HTTP ${response.status}:`, data);
-
-                    if (response.ok) {
-                        // Sucesso!
-                        console.log('✅ [WA] Mensagem enviada com sucesso!');
-
-                        // Atualizar log
-                        if (logId) {
-                            atualizarLogWhatsApp(logId, {
-                                status: 'enviado',
-                                status_envio: 'enviado',
-                                resposta_api: data,
-                                evolution_message_id: (data && data.key && data.key.id) ? data.key.id : null
-                            }).catch(e => console.warn('[WA] Erro ao atualizar log:', e));
-                        }
-
-                        return { sucesso: true, dados: data, log_id: logId };
-                    } else {
-                        // Erro HTTP
-                        const erroMsg = (data && data.message) ? data.message : `HTTP ${response.status}`;
-                        console.error(`[WA] ❌ Erro HTTP ${response.status}:`, erroMsg);
-                        ultimoErro = new Error(erroMsg);
-
-                        // Se for erro de instância desconectada, não tenta de novo
-                        if (response.status === 404 || response.status === 401) {
-                            break;
-                        }
-
-                        // Aguarda antes de retry
-                        if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
-                    }
-                } catch (erro) {
-                    ultimoErro = erro;
-                    console.error(`[WA] ❌ Erro na tentativa ${tentativa}:`, erro.name, erro.message);
-
-                    if (erro.name === 'AbortError') {
-                        console.log('[WA] ⏱️ Timeout na tentativa', tentativa);
-                    }
-
-                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); } // 5s entre retries
-                }
-            }
-
-            // Todas as tentativas falharam
-            console.error('[WA] ❌ Todas as tentativas falharam. Último erro:', ultimoErro ? ultimoErro.message : 'Erro desconhecido');
-
-            if (logId) {
-                atualizarLogWhatsApp(logId, {
-                    status: 'erro',
-                    status_envio: 'erro',
-                    erro_envio: ultimoErro ? ultimoErro.message : 'Erro desconhecido após retries'
-                }).catch(e => console.warn('[WA] Erro ao atualizar log de erro:', e));
-            }
-
-            return { sucesso: false, erro: ultimoErro ? ultimoErro.message : 'Erro desconhecido', log_id: logId };
-        }
-
-        // Função para gravar log no Supabase
-        async function gravarLogWhatsApp(dados) {
-            if (!supabaseClient || !clienteIdSistema) {
-                console.warn('[LOG-WA] Supabase não disponível, log não gravado');
-                return null;
-            }
-            try {
-                const payload = {
-                    cliente_sistema_id: clienteIdSistema,
-                    numero: dados.numero || '',
-                    numero_destino: dados.numero || '',
-                    destinatario: dados.destinatario || null,
-                    nome_destino: dados.destinatario || null,
-                    mensagem: dados.mensagem || null,
-                    status: dados.status || 'pendente',
-                    status_envio: dados.status_envio || dados.status || 'pendente',
-                    origem: dados.origem || 'solicitacao-entrega',
-                    tipo_envio: dados.tipo_envio || 'notificacao',
-                    referencia_id: dados.referencia_id || null,
-                    referencia_tipo: dados.referencia_tipo || null,
-                    codigo_rastreio: dados.codigo_rastreio || null,
-                    valor: dados.valor || null,
-                    metadata: dados.metadata || {},
-                    enviado_em: new Date().toISOString(),
-                    criado_em: new Date().toISOString(),
-                    atualizado_em: new Date().toISOString()
-                };
-
-                const { data, error } = await supabaseClient
-                    .from('whatsapp_envios')
-                    .insert([payload])
-                    .select('id')
-                    .single();
-
-                if (error) {
-                    console.error('[LOG-WA] Erro ao gravar log:', error);
-                    return null;
-                }
-
-                console.log('[LOG-WA] Log gravado, ID:', data.id);
-                return data.id;
-            } catch (e) {
-                console.error('[LOG-WA] Exceção ao gravar log:', e);
-                return null;
-            }
-        }
-
-        // Função para atualizar log existente
-        async function atualizarLogWhatsApp(logId, dados) {
-            if (!supabaseClient || !logId) return;
-            try {
-                const updateData = {
-                    atualizado_em: new Date().toISOString()
-                };
-                if (dados.status) updateData.status = dados.status;
-                if (dados.status_envio) updateData.status_envio = dados.status_envio;
-                if (dados.resposta_api) updateData.resposta_api = dados.resposta_api;
-                if (dados.erro_envio) updateData.erro_envio = dados.erro_envio;
-                if (dados.evolution_message_id) updateData.evolution_message_id = dados.evolution_message_id;
-                if (dados.enviado_em) updateData.enviado_em = dados.enviado_em;
-
-                const { error } = await supabaseClient
-                    .from('whatsapp_envios')
-                    .update(updateData)
-                    .eq('id', logId);
-
-                if (error) {
-                    console.error('[LOG-WA] Erro ao atualizar log:', error);
-                } else {
-                    console.log('[LOG-WA] Log atualizado, ID:', logId);
-                }
-            } catch (e) {
-                console.error('[LOG-WA] Exceção ao atualizar log:', e);
-            }
-        }
-
-        // ✅ CORREÇÃO: Mensagem 1 - Solicitação Recebida (com verificação de número)
-        async function enviarConfirmacaoSolicitacao(dados) {
-            // Verificar se tem WhatsApp
-            if (!dados.whatsapp || !dados.whatsapp.trim()) {
-                console.warn('[WA-CONF] ⚠️ Sem WhatsApp do cliente, pulando envio de confirmação');
-                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
-            }
-
-            const texto = `Olá *${dados.nome}*! 👋
-
-🚚 *Solicitação de Entrega Recebida!*
-
-📋 *Número:* ${dados.numeroSolicitacao}
-📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
-💰 *Valor do Frete:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
-
-⏳ Agora é só aguardar o recebimento do número do rastreamento!
-
-_Pingo de Gente - LiveControl_`;
-
-            console.log('[WA-CONF] Enviando confirmação de solicitação para:', dados.whatsapp);
-            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
-                destinatario: dados.nome,
-                origem: 'solicitacao-entrega',
-                tipo_envio: 'confirmacao_solicitacao',
-                referencia_id: dados.solicitacaoId || null,
-                referencia_tipo: 'solicitacao_pg',
-                valor: dados.valorFrete || null,
-                metadata: {
-                    numero_solicitacao: dados.numeroSolicitacao,
-                    bairro: dados.bairro,
-                    cidade: dados.cidade,
-                    regiao: dados.regiao || null
-                }
-            });
-
-            console.log('[WA-CONF] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
-            return resultado;
-        }
-
-        // ✅ CORREÇÃO: Mensagem 2 - Pagamento Confirmado (com verificação de número)
-        async function enviarConfirmacaoPagamento(dados) {
-            // Verificar se tem WhatsApp
-            if (!dados.whatsapp || !dados.whatsapp.trim()) {
-                console.warn('[WA-PAY] ⚠️ Sem WhatsApp do cliente, pulando envio de confirmação de pagamento');
-                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
-            }
-
-            const texto = `Olá *${dados.nome}*! 🎉
-
-✅ *Pagamento Confirmado!*
-
-🚚 Sua entrega foi liberada e será processada em breve.
-
-📋 *Número:* ${dados.numeroSolicitacao}
-📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
-💰 *Valor Pago:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
-
-Acompanhe o status pelo nosso sistema.
-
-_Pingo de Gente - LiveControl_`;
-
-            console.log('[WA-PAY] Enviando confirmação de pagamento para:', dados.whatsapp);
-            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
-                destinatario: dados.nome,
-                origem: 'solicitacao-entrega',
-                tipo_envio: 'confirmacao_pagamento',
-                referencia_id: dados.solicitacaoId || null,
-                referencia_tipo: 'solicitacao_pg',
-                valor: dados.valorFrete || null,
-                metadata: {
-                    numero_solicitacao: dados.numeroSolicitacao,
-                    bairro: dados.bairro,
-                    cidade: dados.cidade,
-                    regiao: dados.regiao || null,
-                    pagamento_confirmado: true
-                }
-            });
-
-            console.log('[WA-PAY] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
-            return resultado;
-        }
-const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
         const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
         emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
-
-        // ✅ CORREÇÃO: Função alternativa de envio de e-mail via Supabase Edge Function
-        // Caso o EmailJS não entregue (vai para spam), usamos o Supabase
-        async function enviarEmailViaSupabase(dadosEmail) {
-            console.log('[EMAIL-SUPABASE] Tentando enviar via Supabase...');
-            try {
-                const response = await fetch(SUPABASE_URL + '/functions/v1/enviar-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                    },
-                    body: JSON.stringify({
-                        para: dadosEmail.para,
-                        assunto: dadosEmail.assunto,
-                        corpo: dadosEmail.corpo,
-                        html: dadosEmail.html || false
-                    })
-                });
-                const result = await response.json();
-                console.log('[EMAIL-SUPABASE] Resultado:', result);
-                return result;
-            } catch (error) {
-                console.error('[EMAIL-SUPABASE] Erro:', error);
-                return null;
-            }
-        }
 
         const CIDADES_GRANDE_FLORIPA = [
             'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
@@ -887,14 +561,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         var valorFreteAtual = 0;
         var estadoAtual = '';
         var cidadeAtual = '';
-        // ✅ NOVO FLUXO: Variáveis para solicitação criada antes do PIX
         var solicitacaoIdAtual = null;
         var numeroSolicitacaoAtual = null;
         var dadosSolicitacaoCache = null;
-        // ✅ NOVO FLUXO: Variáveis para solicitação criada antes do PIX
-        var solicitacaoIdAtual = null;
-        var numeroSolicitacaoAtual = null;
-        var dadosSolicitacaoCache = null;
+        // FLAG: true quando o cliente selecionou estado diferente de SC (sem pagamento PIX)
+        var isOutrosEstados = false;
 
         document.addEventListener('DOMContentLoaded', function() {
             verificarOrigemAcesso();
@@ -966,6 +637,9 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             estadoAtual = estado;
             cidadeAtual = cidade;
 
+            // RESETAR FLAG de outros estados
+            isOutrosEstados = false;
+
             const freteBox = document.getElementById('freteCalculadoBox');
             const outrosEstadosBox = document.getElementById('outrosEstadosBox');
             const pagamentoArea = document.getElementById('pagamentoArea');
@@ -976,8 +650,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             freteBox.classList.remove('mostrar');
             outrosEstadosBox.classList.remove('mostrar');
             pagamentoArea.classList.remove('mostrar');
-            // ✅ CORREÇÃO: Só resetar pagamento se não estiver confirmado
-            // Se pagamento já foi confirmado, manter cobrancaId para vinculação no INSERT
             if (!pagamentoConfirmado) {
                 resetarPagamento();
             } else {
@@ -996,9 +668,11 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
 
             if (estado !== 'SC') {
+                // OUTROS ESTADOS: Marcar flag, sem PIX, envio imediato
+                isOutrosEstados = true;
                 regiaoSelecionadaAtual = 'outros';
                 valorFreteAtual = 0;
-                pagamentoConfirmado = true;
+                pagamentoConfirmado = true; // Considera "pago" para liberar envio
 
                 freteValor.textContent = 'A Consultar';
                 freteDescricao.textContent = 'Aguarde, iremos pesar e medir o seu pacote e escolher o menor valor para sua cidade !!';
@@ -1006,7 +680,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 freteBox.classList.add('mostrar');
                 outrosEstadosBox.classList.add('mostrar');
 
-                console.log('[FRETE] Outros Estados - Orçamento via Direct');
+                console.log('[FRETE] Outros Estados - Orçamento via Direct, envio imediato');
             } else {
                 const cidadeNormalizada = cidade.toUpperCase().replace(/\s+/g, ' ').trim();
                 const isGrandeFloripa = CIDADES_GRANDE_FLORIPA.includes(cidadeNormalizada);
@@ -1100,16 +774,14 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 cidade: cidade, estado: estado, cep: cep, observacoes: observacoes,
                 regiao: regiaoSelecionadaAtual, valor: valorFreteAtual,
                 clientePgId: clienteIdAtual, enderecoId: enderecoIdAtual,
-                cobrancaId: cobrancaId  // ✅ CORREÇÃO: Incluir cobrancaId nos dados salvos
+                cobrancaId: cobrancaId
             };
 
             sessionStorage.setItem('solicitacao_dados', JSON.stringify(dados));
             sessionStorage.setItem('solicitacao_cliente_id', clienteIdSistema);
-            // ✅ CORREÇÃO: Sempre salvar cobrancaId no sessionStorage
             if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined' && cobrancaId !== '') {
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
             }
-            // ✅ NOVO FLUXO: Salvar solicitacaoId no sessionStorage
             if (solicitacaoIdAtual) {
                 sessionStorage.setItem('solicitacao_id_atual', solicitacaoIdAtual);
                 sessionStorage.setItem('solicitacao_numero_atual', numeroSolicitacaoAtual);
@@ -1118,7 +790,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         }
 
         function verificarDadosSalvos() {
-            // ✅ NOVO FLUXO: Restaurar solicitacaoId do sessionStorage
             const savedSolicitacaoId = sessionStorage.getItem('solicitacao_id_atual');
             const savedNumero = sessionStorage.getItem('solicitacao_numero_atual');
             if (savedSolicitacaoId) {
@@ -1132,8 +803,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 console.log('[FORM] Solicitação já enviada anteriormente:', numeroSolicitacaoSalvo);
                 sessionStorage.removeItem('solicitacao_dados');
                 sessionStorage.removeItem('solicitacao_cliente_id');
-                // ✅ CORREÇÃO: NÃO limpar cobranca_id aqui! Manter para próxima solicitação
-                // sessionStorage.removeItem('solicitacao_cobranca_id'); ← REMOVIDO!
                 sessionStorage.removeItem('solicitacao_numero');
                 sessionStorage.removeItem('solicitacao_nome');
                 sessionStorage.removeItem('solicitacao_regiao');
@@ -1209,18 +878,16 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             const sessionFlag = sessionStorage.getItem('acesso_dashboard') === 'true';
             acessoInterno = referrerEhDashboard || sessionFlag;
 
-            // ✅ CORREÇÃO: Recuperar cobrancaId do sessionStorage SEMPRE (independentemente da URL)
             const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
             if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
                 cobrancaId = savedCobrancaId;
-                console.log('[ORIGEM] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                console.log('[ORIGEM] cobrancaId recuperado do sessionStorage:', cobrancaId);
             }
 
-            // Se veio com cobranca_id na URL, sobrescreve o do sessionStorage
             if (cobrancaIdDaURL) {
                 cobrancaId = cobrancaIdDaURL;
                 sessionStorage.setItem('solicitacao_cobranca_id', cobrancaId);
-                console.log('[ORIGEM] ✅ cobrancaId da URL:', cobrancaId);
+                console.log('[ORIGEM] cobrancaId da URL:', cobrancaId);
             }
 
             if (clienteIdDaURL) {
@@ -1451,7 +1118,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 if (this.checked) {
                     formBox.classList.remove('desabilitado');
                     confirmacaoBox.classList.add('ativo');
-                    document.getElementById('freteCalculadoBox').classList.add('mostrar');
                     if (regiaoPendente) { aplicarSelecaoRegiao(regiaoPendente); regiaoPendente = null; }
                 } else {
                     formBox.classList.add('desabilitado');
@@ -1505,7 +1171,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
         function resetarPagamento() {
             pagamentoConfirmado = false;
-            // ✅ NOVO FLUXO: NÃO limpar solicitacaoIdAtual - manter para rastreabilidade
             mpPaymentId = null;
             pixQrCode = null;
             pixCopiaCola = null;
@@ -1519,11 +1184,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             verificarCamposObrigatoriosPIX();
         }
 
-        
-        // ============================================
-        // ✅ NOVO FLUXO: Funções para criar solicitação antes do PIX
-        // ============================================
-
         async function criarSolicitacaoPendente() {
             console.log('[SOLICITACAO-PENDENTE] ========== INICIANDO ==========');
             console.log('[SOLICITACAO-PENDENTE] Criando solicitação com status pendente...');
@@ -1532,7 +1192,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             const formData = new FormData(document.getElementById('deliveryForm'));
             const cpf = formData.get('cpf').replace(/\D/g, '');
-            // ✅ CORREÇÃO: Usar document.getElementById para garantir valor atualizado do campo
             const nome = document.getElementById('nome').value.trim();
             const whatsapp = document.getElementById('whatsapp').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -1560,7 +1219,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             let clientePgId = clienteIdAtual;
             console.log('[SOLICITACAO-PENDENTE] clienteIdAtual inicial:', clientePgId);
 
-            // ✅ CORREÇÃO: SEMPRE buscar cliente por CPF para verificar/atualizar dados
             console.log('[SOLICITACAO-PENDENTE] Buscando cliente existente com CPF:', cpf);
             const { data: clienteExistente, error: erroBusca } = await supabaseClient
                 .from('clientes_pg')
@@ -1580,7 +1238,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 clienteIdAtual = clientePgId;
                 const dadosAtualizacao = {};
                 if (nome && nome !== clienteExistente.nome) dadosAtualizacao.nome = nome;
-                // ✅ CORREÇÃO: Sempre atualizar WhatsApp se fornecido (pode ter sido alterado)
                 if (whatsapp && whatsapp.trim()) {
                     const whatsappBanco = clienteExistente.whatsapp || '';
                     const whatsappForm = whatsapp.trim();
@@ -1605,7 +1262,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                     console.log('[SOLICITACAO-PENDENTE] Nenhum dado alterado, pulando update do cliente');
                 }
             } else if (!clientePgId) {
-                // Só cria novo cliente se não tem clienteIdAtual E não encontrou por CPF
                 console.log('[SOLICITACAO-PENDENTE] Criando novo cliente...');
                 const { data: novoCliente, error: erroCliente } = await supabaseClient
                     .from('clientes_pg')
@@ -1792,8 +1448,388 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
         }
 
+        // ============================================
+        // ENVIO DE MENSAGENS - FLUXO DUAL
+        // ============================================
+        // Para OUTROS ESTADOS: envio imediato na página (sem pagamento PIX)
+        // Para SC: envio via webhook após confirmação de pagamento
+
+        // Função para enviar WhatsApp via Evolution API
+        async function enviarWhatsApp(numero, texto, opcoes) {
+            opcoes = opcoes || {};
+            let numeroLimpo = String(numero || '').replace(/\D/g, '');
+            if (!numeroLimpo) {
+                console.error('[WA] ❌ Número vazio ou inválido');
+                return { sucesso: false, erro: 'Número vazio ou inválido', log_id: null };
+            }
+            if (!numeroLimpo.startsWith('55')) {
+                numeroLimpo = '55' + numeroLimpo;
+            }
+
+            console.log('[WA] 📤 Enviando para:', numeroLimpo);
+            console.log('[WA] 📄 Texto (primeiros 100 chars):', texto.substring(0, 100));
+
+            let logId = null;
+            try {
+                logId = await gravarLogWhatsApp({
+                    numero: numeroLimpo,
+                    destinatario: opcoes.destinatario || null,
+                    mensagem: texto,
+                    status: 'pendente',
+                    origem: opcoes.origem || 'solicitacao-entrega',
+                    tipo_envio: opcoes.tipo_envio || 'notificacao',
+                    referencia_id: opcoes.referencia_id || null,
+                    referencia_tipo: opcoes.referencia_tipo || null,
+                    codigo_rastreio: opcoes.codigo_rastreio || null,
+                    valor: opcoes.valor || null,
+                    metadata: opcoes.metadata || {}
+                });
+            } catch (logErr) {
+                console.warn('[WA] ⚠️ Erro ao gravar log inicial (não crítico):', logErr.message);
+            }
+
+            let ultimoErro = null;
+            for (let tentativa = 1; tentativa <= 2; tentativa++) {
+                try {
+                    console.log(`[WA] Tentativa ${tentativa}/2...`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                    const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': EVOLUTION_API_KEY
+                        },
+                        body: JSON.stringify({
+                            number: numeroLimpo,
+                            text: texto,
+                            options: {
+                                delay: 1200,
+                                presence: 'composing'
+                            }
+                        }),
+                        signal: controller.signal,
+                        keepalive: true
+                    });
+
+                    clearTimeout(timeoutId);
+                    const responseText = await response.text();
+                    let data = null;
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (parseErr) {
+                        console.warn('[WA] ⚠️ Resposta não é JSON:', responseText.substring(0, 200));
+                        data = { raw: responseText };
+                    }
+
+                    console.log(`[WA] Resposta HTTP ${response.status}:`, data);
+
+                    if (response.ok) {
+                        console.log('✅ [WA] Mensagem enviada com sucesso!');
+                        if (logId) {
+                            atualizarLogWhatsApp(logId, {
+                                status: 'enviado',
+                                status_envio: 'enviado',
+                                resposta_api: data,
+                                evolution_message_id: (data && data.key && data.key.id) ? data.key.id : null
+                            }).catch(e => console.warn('[WA] Erro ao atualizar log:', e));
+                        }
+                        return { sucesso: true, dados: data, log_id: logId };
+                    } else {
+                        const erroMsg = (data && data.message) ? data.message : `HTTP ${response.status}`;
+                        console.error(`[WA] ❌ Erro HTTP ${response.status}:`, erroMsg);
+                        ultimoErro = new Error(erroMsg);
+                        if (response.status === 404 || response.status === 401) break;
+                        if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); }
+                    }
+                } catch (erro) {
+                    ultimoErro = erro;
+                    console.error(`[WA] ❌ Erro na tentativa ${tentativa}:`, erro.name, erro.message);
+                    if (tentativa < 2) { await new Promise(r => setTimeout(r, 5000)); }
+                }
+            }
+
+            console.error('[WA] ❌ Todas as tentativas falharam. Último erro:', ultimoErro ? ultimoErro.message : 'Erro desconhecido');
+            if (logId) {
+                atualizarLogWhatsApp(logId, {
+                    status: 'erro',
+                    status_envio: 'erro',
+                    erro_envio: ultimoErro ? ultimoErro.message : 'Erro desconhecido após retries'
+                }).catch(e => console.warn('[WA] Erro ao atualizar log de erro:', e));
+            }
+            return { sucesso: false, erro: ultimoErro ? ultimoErro.message : 'Erro desconhecido', log_id: logId };
+        }
+
+        // Função para gravar log no Supabase
+        async function gravarLogWhatsApp(dados) {
+            if (!supabaseClient || !clienteIdSistema) {
+                return null;
+            }
+            try {
+                const payload = {
+                    cliente_sistema_id: clienteIdSistema,
+                    numero: dados.numero || '',
+                    numero_destino: dados.numero || '',
+                    destinatario: dados.destinatario || null,
+                    nome_destino: dados.destinatario || null,
+                    mensagem: dados.mensagem || null,
+                    status: dados.status || 'pendente',
+                    status_envio: dados.status_envio || dados.status || 'pendente',
+                    origem: dados.origem || 'solicitacao-entrega',
+                    tipo_envio: dados.tipo_envio || 'notificacao',
+                    referencia_id: dados.referencia_id || null,
+                    referencia_tipo: dados.referencia_tipo || null,
+                    codigo_rastreio: dados.codigo_rastreio || null,
+                    valor: dados.valor || null,
+                    metadata: dados.metadata || {},
+                    enviado_em: new Date().toISOString(),
+                    criado_em: new Date().toISOString(),
+                    atualizado_em: new Date().toISOString()
+                };
+
+                const { data, error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .insert([payload])
+                    .select('id')
+                    .single();
+
+                if (error) {
+                    // Silenciosamente ignora erro de RLS - não bloqueia envio
+                    if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                        console.log('[LOG-WA] RLS bloqueou log (não crítico)');
+                    } else {
+                        console.warn('[LOG-WA] Erro ao gravar log:', error.message || error);
+                    }
+                    return null;
+                }
+                console.log('[LOG-WA] Log gravado, ID:', data.id);
+                return data.id;
+            } catch (e) {
+                // Silenciosamente ignora qualquer erro de log
+                return null;
+            }
+        }
+
+        // Função para atualizar log existente
+        async function atualizarLogWhatsApp(logId, dados) {
+            if (!supabaseClient || !logId) return;
+            try {
+                const updateData = { atualizado_em: new Date().toISOString() };
+                if (dados.status) updateData.status = dados.status;
+                if (dados.status_envio) updateData.status_envio = dados.status_envio;
+                if (dados.resposta_api) updateData.resposta_api = dados.resposta_api;
+                if (dados.erro_envio) updateData.erro_envio = dados.erro_envio;
+                if (dados.evolution_message_id) updateData.evolution_message_id = dados.evolution_message_id;
+                if (dados.enviado_em) updateData.enviado_em = dados.enviado_em;
+
+                const { error } = await supabaseClient
+                    .from('whatsapp_envios')
+                    .update(updateData)
+                    .eq('id', logId);
+
+                if (error) {
+                    // Silenciosamente ignora erro de RLS
+                    if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                        console.log('[LOG-WA] RLS bloqueou update (não crítico)');
+                    }
+                } else {
+                    console.log('[LOG-WA] Log atualizado, ID:', logId);
+                }
+            } catch (e) {
+                // Silenciosamente ignora
+            }
+        }
+
+        // Mensagem de confirmação para OUTROS ESTADOS (envio imediato)
+        async function enviarConfirmacaoOutrosEstados(dados) {
+            if (!dados.whatsapp || !dados.whatsapp.trim()) {
+                console.warn('[WA-OUTROS] ⚠️ Sem WhatsApp do cliente, pulando envio');
+                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
+            }
+
+            const texto = `Olá *${dados.nome}*! 👋
+
+🚚 *Solicitação de Entrega Recebida!*
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.rua}, ${dados.numero} - ${dados.bairro}, ${dados.cidade} - ${dados.estado}
+🌎 *Região:* Outros Estados (frete a consultar)
+
+⏳ Iremos pesar seu pacote e retornaremos com o orçamento via Direct do Instagram!
+
+_Pingo de Gente - Venda Live_`;
+
+            console.log('[WA-OUTROS] Enviando confirmação para:', dados.whatsapp);
+            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_outros_estados',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: 0,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    estado: dados.estado,
+                    regiao: 'Outros Estados'
+                }
+            });
+
+            console.log('[WA-OUTROS] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
+            return resultado;
+        }
+
+        // Mensagem de confirmação de pagamento para SC (usada no webhook)
+        async function enviarConfirmacaoPagamento(dados) {
+            if (!dados.whatsapp || !dados.whatsapp.trim()) {
+                console.warn('[WA-PAY] ⚠️ Sem WhatsApp do cliente, pulando envio de confirmação de pagamento');
+                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
+            }
+
+            const texto = `Olá *${dados.nome}*! 🎉
+
+✅ *Pagamento Confirmado!*
+
+🚚 Sua entrega foi liberada e será processada em breve.
+
+📋 *Número:* ${dados.numeroSolicitacao}
+📍 *Endereço:* ${dados.bairro}, ${dados.cidade}
+💰 *Valor Pago:* R$ ${dados.valorFrete.toFixed(2).replace('.', ',')}
+
+Acompanhe o status pelo nosso sistema.
+
+_Pingo de Gente - Venda Live_`;
+
+            console.log('[WA-PAY] Enviando confirmação de pagamento para:', dados.whatsapp);
+            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
+                destinatario: dados.nome,
+                origem: 'solicitacao-entrega',
+                tipo_envio: 'confirmacao_pagamento',
+                referencia_id: dados.solicitacaoId || null,
+                referencia_tipo: 'solicitacao_pg',
+                valor: dados.valorFrete || null,
+                metadata: {
+                    numero_solicitacao: dados.numeroSolicitacao,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    regiao: dados.regiao || null,
+                    pagamento_confirmado: true
+                }
+            });
+
+            console.log('[WA-PAY] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
+            return resultado;
+        }
+
+        // Função para enviar e-mail via EmailJS
+        async function enviarEmailConfirmacao(dadosSolicitacao) {
+            console.log('[EMAIL] Iniciando envio de e-mails...');
+            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
+
+            try {
+                // E-mail para o CLIENTE (se preenchido)
+                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
+                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
+                    const templateParamsCliente = {
+                        to_email: dadosSolicitacao.email,
+                        numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                        nome: dadosSolicitacao.nome,
+                        data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                        regiao: dadosSolicitacao.regiao,
+                        rua: dadosSolicitacao.rua,
+                        numero: dadosSolicitacao.numero,
+                        complemento: dadosSolicitacao.complemento || 'N/A',
+                        bairro: dadosSolicitacao.bairro,
+                        cidade: dadosSolicitacao.cidade,
+                        cep: dadosSolicitacao.cep,
+                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                        reply_to: 'marcobet@gmail.com'
+                    };
+                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
+                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
+                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
+                } else {
+                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
+                }
+
+                // E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
+                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
+                const templateParamsAdmin = {
+                    to_email: 'marcobet@gmail.com',
+                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
+                    nome: dadosSolicitacao.nome,
+                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
+                    regiao: dadosSolicitacao.regiao,
+                    rua: dadosSolicitacao.rua,
+                    numero: dadosSolicitacao.numero,
+                    complemento: dadosSolicitacao.complemento || 'N/A',
+                    bairro: dadosSolicitacao.bairro,
+                    cidade: dadosSolicitacao.cidade,
+                    cep: dadosSolicitacao.cep,
+                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
+                    email_cliente: dadosSolicitacao.email || 'Não informado',
+                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
+                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
+                    reply_to: 'marcobet@gmail.com'
+                };
+                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
+                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
+                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
+
+                return true;
+            } catch (error) {
+                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
+                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
+                return false;
+            }
+        }
+
+        // Enviar confirmações para OUTROS ESTADOS (email + WhatsApp imediatos)
+        async function enviarConfirmacoesOutrosEstados(dados) {
+            console.log('[CONFIRMACOES-OUTROS] Enviando confirmações para outros estados...');
+            const resultados = { email: false, whatsapp: false };
+
+            try {
+                await enviarEmailConfirmacao({
+                    email: dados.email,
+                    numeroSolicitacao: dados.numeroSolicitacao,
+                    nome: dados.nome,
+                    dataSolicitacao: formatarData(new Date()),
+                    regiao: dados.regiao,
+                    rua: dados.rua,
+                    numero: dados.numero,
+                    complemento: dados.complemento,
+                    bairro: dados.bairro,
+                    cidade: dados.cidade,
+                    cep: dados.cep,
+                    observacoes: dados.observacoes,
+                    whatsapp: dados.whatsapp,
+                    instagram: dados.instagram
+                });
+                resultados.email = true;
+                console.log('[CONFIRMACOES-OUTROS] ✅ E-mail enviado');
+            } catch (e) {
+                console.warn('[CONFIRMACOES-OUTROS] ⚠️ E-mail falhou:', e.message);
+            }
+
+            if (dados.whatsapp && dados.whatsapp.trim()) {
+                try {
+                    await enviarConfirmacaoOutrosEstados(dados);
+                    resultados.whatsapp = true;
+                    console.log('[CONFIRMACOES-OUTROS] ✅ WhatsApp enviado');
+                } catch (err) {
+                    console.warn('[CONFIRMACOES-OUTROS] ⚠️ WhatsApp falhou:', err.message);
+                }
+            }
+
+            return resultados;
+        }
+
+        // Enviar confirmações para SC (usado no webhook após pagamento)
         async function enviarConfirmacoesPagamento(dados) {
-            console.log('[CONFIRMACOES] Enviando confirmações...');
+            console.log('[CONFIRMACOES] Enviando confirmações de pagamento...');
             try {
                 await enviarEmailConfirmacao({
                     email: dados.email,
@@ -1835,7 +1871,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
         }
 
-        
         async function gerarPixMercadoPago() {
             const btn = document.getElementById('btnGerarPix');
             const nome = document.getElementById('nome').value.trim();
@@ -1843,7 +1878,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             const telefone = document.getElementById('whatsapp').value.trim();
             const email = document.getElementById('email').value.trim();
 
-            // ✅ NOVO FLUXO: Verificar se já existe solicitação criada e paga
             if (solicitacaoIdAtual && pagamentoConfirmado) {
                 console.log('[PIX] ✅ Solicitação já criada e paga:', solicitacaoIdAtual);
                 alert('✅ Pagamento já confirmado!\n\nSolicitação #' + numeroSolicitacaoAtual + ' já foi liberada.');
@@ -1861,7 +1895,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             document.getElementById('spinnerOverlay').classList.add('ativo');
 
             try {
-                // ✅ NOVO FLUXO: Criar solicitação ANTES de gerar PIX
                 if (!solicitacaoIdAtual) {
                     console.log('[PIX] Criando solicitação pendente antes do PIX...');
                     await criarSolicitacaoPendente();
@@ -1903,7 +1936,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 pixQrCode = pix.qr_code_base64;
                 pixCopiaCola = pix.qr_code;
 
-                // ✅ Vincular cobrança à solicitação já criada
                 await vincularCobrancaSolicitacao(cobrancaId);
 
                 document.getElementById('pixValor').textContent = 'R$ ' + valorFreteAtual.toFixed(2).replace('.', ',');
@@ -1965,61 +1997,30 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             });
         }
 
-        function redirecionarParaPixSucesso(numeroSolicitacao, nome, regiao, valorFrete) {
-            console.log('[REDIRECT] Redirecionando para pix-sucesso.html...');
-
-            sessionStorage.setItem('pix_sucesso_numero', numeroSolicitacao);
-            sessionStorage.setItem('pix_sucesso_nome', nome);
-            sessionStorage.setItem('pix_sucesso_regiao', regiao);
-            sessionStorage.setItem('pix_sucesso_valor', valorFrete.toFixed(2).replace('.', ','));
-
-            sessionStorage.removeItem('solicitacao_dados');
-            sessionStorage.removeItem('solicitacao_cliente_id');
-            sessionStorage.removeItem('solicitacao_cobranca_id');
-
-            const pathnameAtual = window.location.pathname;
-            const diretorio = pathnameAtual.substring(0, pathnameAtual.lastIndexOf('/') + 1);
-            const urlSucesso = window.location.origin + diretorio + 'pix-sucesso.html' + '?cliente=' + clienteIdSistema;
-
-            console.log('[REDIRECT] URL:', urlSucesso);
-            window.location.href = urlSucesso;
-        }
-
-        async function enviarSolicitacaoAutomatica() {
-            console.log('[AUTO] ==========================================');
-            console.log('[AUTO] Pagamento confirmado - mostrando sucesso...');
-            console.log('[AUTO] ==========================================');
-
-            // ✅ NOVO FLUXO: A solicitação já foi criada antes do PIX
-            // Apenas mostrar a tela de sucesso
-            document.getElementById('redirecionandoOverlay').classList.add('ativo');
-
-            // Enviar confirmações em background
-            if (dadosSolicitacaoCache) {
-                enviarConfirmacoesPagamento(dadosSolicitacaoCache);
-            }
-
-            setTimeout(function() {
-                document.getElementById('redirecionandoOverlay').classList.remove('ativo');
-                document.getElementById('deliveryForm').style.display = 'none';
-                document.getElementById('successMsg').classList.add('show');
-                document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
-            }, 3000);
-        }
-
         function iniciarVerificacaoPagamento() {
             console.log('[POLLING] Iniciando verificação de pagamento...');
             console.log('[POLLING] cobrancaId:', cobrancaId);
             console.log('[POLLING] mpPaymentId:', mpPaymentId);
             if (pollingInterval) clearInterval(pollingInterval);
+
+            // Contador de verificações para feedback visual
+            window.pollingContador = 0;
+
             pollingInterval = setInterval(async function() {
+                window.pollingContador++;
                 await verificarStatusPagamento();
             }, 3000);
+
+            // Primeira verificação imediata
+            window.pollingContador = 0;
             verificarStatusPagamento();
         }
 
         async function verificarStatusPagamento() {
-            if (pagamentoConfirmado) return;
+            if (pagamentoConfirmado) {
+                console.log('[POLLING] Pagamento já confirmado, parando polling');
+                return;
+            }
 
             let idBusca = cobrancaId;
             let campoBusca = 'id';
@@ -2035,7 +2036,10 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
 
             try {
-                console.log('[POLLING] Verificando', campoBusca, ':', idBusca);
+                window.pollingContador = (window.pollingContador || 0) + 1;
+                const contador = window.pollingContador;
+
+                console.log('[POLLING] Verificação #' + contador + ' - Buscando', campoBusca, ':', idBusca);
 
                 let query = supabaseClient.from('cobrancas_pix').select('status, status_mp');
                 if (campoBusca === 'id') {
@@ -2047,43 +2051,48 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 const { data: cobranca, error } = await query.single();
 
                 if (error) {
-                    console.log('[POLLING] Erro na query:', error);
+                    console.log('[POLLING] #' + contador + ' Erro na query:', error.message || error);
+                    // Atualizar status visual com contador de tentativas
+                    const statusEl = document.getElementById('statusPagamento');
+                    if (statusEl && statusEl.style.display !== 'none') {
+                        statusEl.innerHTML = '⏳ Verificando pagamento... (tentativa ' + contador + ')';
+                    }
                     return;
                 }
 
-                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp, '| cobranca:', cobranca);
+                console.log('[POLLING] #' + contador + ' Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
 
-                // ✅ DEBUG: Mostrar todos os campos da cobrança
-                if (cobranca) {
-                    console.log('[POLLING] Dados completos da cobrança:', JSON.stringify(cobranca));
+                // Atualizar status visual a cada verificação
+                const statusEl = document.getElementById('statusPagamento');
+                if (statusEl && cobranca) {
+                    if (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited') {
+                        statusEl.className = 'status-pagamento pago';
+                        statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
+                    } else {
+                        statusEl.className = 'status-pagamento pendente';
+                        statusEl.innerHTML = '⏳ Aguardando pagamento... (verificação ' + contador + ')<br><small>Status: ' + (cobranca.status_mp || cobranca.status || 'pendente') + '</small>';
+                    }
+                    statusEl.style.display = 'inline-flex';
                 }
 
                 if (cobranca && (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited')) {
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO! Status:', cobranca.status, '| MP:', cobranca.status_mp);
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval);
+                    pollingInterval = null;
 
-                    // ✅ Atualizar solicitação no banco
                     try {
                         await atualizarSolicitacaoParaPago();
                     } catch (err) {
                         console.error('[POLLING] Erro ao atualizar solicitação:', err);
                     }
 
-                    // Esconder botão Gerar PIX
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) {
                         btnGerar.style.display = 'none';
                         console.log('[POLLING] Botão Gerar PIX escondido');
                     }
 
-                    // Atualizar status visual para "Pago"
-                    const statusEl = document.getElementById('statusPagamento');
-                    statusEl.className = 'status-pagamento pago';
-                    statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
-                    statusEl.style.display = 'inline-flex';
-
-                    // ✅ Enviar confirmações (email + WhatsApp) em background
                     if (dadosSolicitacaoCache) {
                         console.log('[POLLING] Enviando confirmações...');
                         enviarConfirmacoesPagamento(dadosSolicitacaoCache).catch(err => {
@@ -2091,7 +2100,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                         });
                     }
 
-                    // ✅ Mostrar mensagem de sucesso na página (sempre, independente de erros)
                     console.log('[POLLING] Mostrando tela de sucesso em 2 segundos...');
                     setTimeout(function() {
                         console.log('[POLLING] Exibindo tela de sucesso!');
@@ -2133,21 +2141,19 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
 
             if (estado !== 'SC') {
+                // OUTROS ESTADOS: botão liberado para envio imediato
                 btn.innerHTML = '📦 ENVIAR SOLICITACAO';
                 btn.classList.remove('btn-enviar-bloqueado');
                 btn.disabled = false;
             } else if (solicitacaoIdAtual && pagamentoConfirmado) {
-                // ✅ Já tem solicitação e pagamento confirmado
                 btn.innerHTML = '✅ SOLICITAÇÃO LIBERADA - Ver detalhes';
                 btn.classList.remove('btn-enviar-bloqueado');
                 btn.disabled = false;
             } else if (solicitacaoIdAtual && !pagamentoConfirmado) {
-                // ✅ Solicitação criada, aguardando pagamento
                 btn.innerHTML = '⏳ Aguardando pagamento do PIX...';
                 btn.classList.add('btn-enviar-bloqueado');
                 btn.disabled = true;
             } else {
-                // Ainda não criou solicitação
                 btn.innerHTML = '🔒 Clique em "Gerar QR Code PIX" acima';
                 btn.classList.add('btn-enviar-bloqueado');
                 btn.disabled = true;
@@ -2296,8 +2302,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 document.getElementById('pagamentoArea').classList.remove('mostrar');
                 document.getElementById('outrosEstadosBox').classList.remove('mostrar');
                 document.getElementById('freteCalculadoBox').classList.remove('mostrar');
-                regiaoSelecionadaAtual = ''; valorFreteAtual = 0;
-                // ✅ NOVO FLUXO: Limpar também a solicitação atual
+                regiaoSelecionadaAtual = ''; valorFreteAtual = 0; isOutrosEstados = false;
                 solicitacaoIdAtual = null; numeroSolicitacaoAtual = null; dadosSolicitacaoCache = null;
                 resetarPagamento();
                 atualizarBotaoEnviar();
@@ -2311,7 +2316,6 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         }
 
         async function gerarNumeroSolicitacao() {
-            // ✅ CORREÇÃO: Usar função SQL do banco (thread-safe, atômica)
             try {
                 const { data, error } = await supabaseClient.rpc('gerar_numero_solicitacao');
                 if (error) {
@@ -2332,93 +2336,28 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
             }
         }
 
-        async function enviarEmailConfirmacao(dadosSolicitacao) {
-            console.log('[EMAIL] Iniciando envio de e-mails...');
-            console.log('[EMAIL] Dados:', JSON.stringify(dadosSolicitacao));
-
-            try {
-                // ✅ CORREÇÃO: Enviar e-mail para o CLIENTE (se preenchido)
-                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
-                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
-                    const templateParamsCliente = {
-                        to_email: dadosSolicitacao.email,
-                        numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
-                        nome: dadosSolicitacao.nome,
-                        data_solicitacao: dadosSolicitacao.dataSolicitacao,
-                        regiao: dadosSolicitacao.regiao,
-                        rua: dadosSolicitacao.rua,
-                        numero: dadosSolicitacao.numero,
-                        complemento: dadosSolicitacao.complemento || 'N/A',
-                        bairro: dadosSolicitacao.bairro,
-                        cidade: dadosSolicitacao.cidade,
-                        cep: dadosSolicitacao.cep,
-                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
-                        reply_to: 'marcobet@gmail.com'
-                    };
-                    console.log('[EMAIL] Template params cliente:', templateParamsCliente);
-                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
-                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status, '| Text:', responseCliente.text);
-                } else {
-                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
-                }
-
-                // ✅ CORREÇÃO: E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
-                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
-                const templateParamsAdmin = {
-                    to_email: 'marcobet@gmail.com',
-                    numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
-                    nome: dadosSolicitacao.nome,
-                    data_solicitacao: dadosSolicitacao.dataSolicitacao,
-                    regiao: dadosSolicitacao.regiao,
-                    rua: dadosSolicitacao.rua,
-                    numero: dadosSolicitacao.numero,
-                    complemento: dadosSolicitacao.complemento || 'N/A',
-                    bairro: dadosSolicitacao.bairro,
-                    cidade: dadosSolicitacao.cidade,
-                    cep: dadosSolicitacao.cep,
-                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
-                    email_cliente: dadosSolicitacao.email || 'Não informado',
-                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
-                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
-                    reply_to: 'marcobet@gmail.com'
-                };
-                console.log('[EMAIL] Template params admin:', templateParamsAdmin);
-                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
-                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status, '| Text:', responseAdmin.text);
-
-                return true;
-            } catch (error) {
-                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
-                console.error('❌ [EMAIL] Erro detalhes:', JSON.stringify(error));
-                return false;
-            }
-        }
-
-        async function enviarFormulario(e, modoAutomatico) {
+        async function enviarFormulario(e) {
             e.preventDefault();
-            modoAutomatico = modoAutomatico || false;
 
-            // ✅ NOVO FLUXO: Recuperar cobrancaId do sessionStorage
             if (!cobrancaId) {
                 const savedCobrancaId = sessionStorage.getItem('solicitacao_cobranca_id');
                 if (savedCobrancaId && savedCobrancaId !== 'null' && savedCobrancaId !== 'undefined' && savedCobrancaId !== '') {
                     cobrancaId = savedCobrancaId;
-                    console.log('[ENVIAR] ✅ cobrancaId recuperado do sessionStorage:', cobrancaId);
+                    console.log('[ENVIAR] cobrancaId recuperado do sessionStorage:', cobrancaId);
                 }
             }
 
-            // ✅ NOVO FLUXO: Recuperar solicitacaoId do sessionStorage
             if (!solicitacaoIdAtual) {
                 const savedSolicitacaoId = sessionStorage.getItem('solicitacao_id_atual');
                 const savedNumero = sessionStorage.getItem('solicitacao_numero_atual');
                 if (savedSolicitacaoId) {
                     solicitacaoIdAtual = savedSolicitacaoId;
                     numeroSolicitacaoAtual = savedNumero;
-                    console.log('[ENVIAR] ✅ solicitacaoId recuperado do sessionStorage:', solicitacaoIdAtual);
+                    console.log('[ENVIAR] solicitacaoId recuperado do sessionStorage:', solicitacaoIdAtual);
                 }
             }
 
-            console.log('[ENVIAR] solicitacaoId:', solicitacaoIdAtual, '| cobrancaId:', cobrancaId, '| modoAutomatico:', modoAutomatico);
+            console.log('[ENVIAR] solicitacaoId:', solicitacaoIdAtual, '| cobrancaId:', cobrancaId, '| isOutrosEstados:', isOutrosEstados);
 
             if (!supabaseConectado) { alert('❌ Sistema não conectado.'); return; }
             if (!clienteIdSistema) { alert('❌ Cliente não identificado. Verifique o link ou faça login.'); return; }
@@ -2433,7 +2372,7 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 
             calcularFrete();
 
-            // ✅ NOVO FLUXO: Se já tem solicitação criada, mostrar sucesso
+            // Se já tem solicitação criada, mostrar sucesso
             if (solicitacaoIdAtual && numeroSolicitacaoAtual) {
                 console.log('[ENVIAR] Solicitação já existe:', numeroSolicitacaoAtual);
                 if (pagamentoConfirmado || estado !== 'SC') {
@@ -2444,39 +2383,35 @@ const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 }
             }
 
-            // Para estados diferentes de SC, criar e mostrar sucesso
+            // Para OUTROS ESTADOS: criar solicitação e enviar mensagens imediatamente
             if (estado !== 'SC') {
                 const btnSubmit = document.getElementById('btnEnviar');
                 btnSubmit.innerHTML = '⏳ Enviando...';
                 btnSubmit.disabled = true;
+                document.getElementById('spinnerOverlay').classList.add('ativo');
+
                 try {
+                    // 1. Criar solicitação no banco
                     await criarSolicitacaoPendente();
+
+                    // 2. Enviar mensagens imediatamente (email + WhatsApp)
                     if (dadosSolicitacaoCache) {
-                        await enviarEmailConfirmacao({
-                            email: dadosSolicitacaoCache.email,
-                            numeroSolicitacao: numeroSolicitacaoAtual,
-                            nome: dadosSolicitacaoCache.nome,
-                            dataSolicitacao: formatarData(new Date()),
-                            regiao: dadosSolicitacaoCache.regiao,
-                            rua: dadosSolicitacaoCache.rua,
-                            numero: dadosSolicitacaoCache.numero,
-                            complemento: dadosSolicitacaoCache.complemento,
-                            bairro: dadosSolicitacaoCache.bairro,
-                            cidade: dadosSolicitacaoCache.cidade,
-                            cep: dadosSolicitacaoCache.cep,
-                            observacoes: dadosSolicitacaoCache.observacoes,
-                            whatsapp: dadosSolicitacaoCache.whatsapp,
-                            instagram: dadosSolicitacaoCache.instagram
-                        });
+                        console.log('[ENVIAR-OUTROS] Enviando confirmações imediatas...');
+                        await enviarConfirmacoesOutrosEstados(dadosSolicitacaoCache);
                     }
+
+                    // 3. Mostrar tela de sucesso
+                    document.getElementById('spinnerOverlay').classList.remove('ativo');
                     document.getElementById('deliveryForm').style.display = 'none';
                     document.getElementById('successMsg').classList.add('show');
                     document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
+
                 } catch (error) {
                     console.error('Erro:', error);
-                    alert('❌ Erro: ' + error.message);
+                    document.getElementById('spinnerOverlay').classList.remove('ativo');
                     btnSubmit.innerHTML = '📦 ENVIAR SOLICITACAO';
                     btnSubmit.disabled = false;
+                    alert('❌ Erro: ' + error.message);
                 }
                 return;
             }
