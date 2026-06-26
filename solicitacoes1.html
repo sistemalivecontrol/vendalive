@@ -8,7 +8,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- v2026-06-26-1020-OUTROS-ESTADOS-ENVIO -->
+    <meta http-equiv="cache-control" content="max-age=0">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="-1">
+    <meta http-equiv="pragma" content="no-cache">
+    <!-- v2026-06-26-1122-POLLING-FIX -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -190,6 +194,17 @@
 <base target="_blank">
 </head>
 <body>
+    <script>
+        // Cache-busting: force reload if version mismatch detected
+        (function(){
+            var expectedVersion = 'v2026-06-26-1122';
+            var currentVersion = document.querySelector('meta[name="version"]')?.content || '';
+            if(currentVersion && currentVersion !== expectedVersion) {
+                console.log('[CACHE] Version mismatch, forcing reload...');
+                location.reload(true);
+            }
+        })();
+    </script>
     <div class="spinner-overlay" id="spinnerOverlay">
         <div class="spinner-box">
             <div class="loading"></div>
@@ -1987,14 +2002,25 @@ _Pingo de Gente - Venda Live_`;
             console.log('[POLLING] cobrancaId:', cobrancaId);
             console.log('[POLLING] mpPaymentId:', mpPaymentId);
             if (pollingInterval) clearInterval(pollingInterval);
+
+            // Contador de verificações para feedback visual
+            window.pollingContador = 0;
+
             pollingInterval = setInterval(async function() {
+                window.pollingContador++;
                 await verificarStatusPagamento();
             }, 3000);
+
+            // Primeira verificação imediata
+            window.pollingContador = 0;
             verificarStatusPagamento();
         }
 
         async function verificarStatusPagamento() {
-            if (pagamentoConfirmado) return;
+            if (pagamentoConfirmado) {
+                console.log('[POLLING] Pagamento já confirmado, parando polling');
+                return;
+            }
 
             let idBusca = cobrancaId;
             let campoBusca = 'id';
@@ -2010,7 +2036,10 @@ _Pingo de Gente - Venda Live_`;
             }
 
             try {
-                console.log('[POLLING] Verificando', campoBusca, ':', idBusca);
+                window.pollingContador = (window.pollingContador || 0) + 1;
+                const contador = window.pollingContador;
+
+                console.log('[POLLING] Verificação #' + contador + ' - Buscando', campoBusca, ':', idBusca);
 
                 let query = supabaseClient.from('cobrancas_pix').select('status, status_mp');
                 if (campoBusca === 'id') {
@@ -2022,20 +2051,35 @@ _Pingo de Gente - Venda Live_`;
                 const { data: cobranca, error } = await query.single();
 
                 if (error) {
-                    console.log('[POLLING] Erro na query:', error);
+                    console.log('[POLLING] #' + contador + ' Erro na query:', error.message || error);
+                    // Atualizar status visual com contador de tentativas
+                    const statusEl = document.getElementById('statusPagamento');
+                    if (statusEl && statusEl.style.display !== 'none') {
+                        statusEl.innerHTML = '⏳ Verificando pagamento... (tentativa ' + contador + ')';
+                    }
                     return;
                 }
 
-                console.log('[POLLING] Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
+                console.log('[POLLING] #' + contador + ' Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
 
-                if (cobranca) {
-                    console.log('[POLLING] Dados completos da cobrança:', JSON.stringify(cobranca));
+                // Atualizar status visual a cada verificação
+                const statusEl = document.getElementById('statusPagamento');
+                if (statusEl && cobranca) {
+                    if (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited') {
+                        statusEl.className = 'status-pagamento pago';
+                        statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
+                    } else {
+                        statusEl.className = 'status-pagamento pendente';
+                        statusEl.innerHTML = '⏳ Aguardando pagamento... (verificação ' + contador + ')<br><small>Status: ' + (cobranca.status_mp || cobranca.status || 'pendente') + '</small>';
+                    }
+                    statusEl.style.display = 'inline-flex';
                 }
 
                 if (cobranca && (cobranca.status === 'pago' || cobranca.status_mp === 'approved' || cobranca.status_mp === 'accredited')) {
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO! Status:', cobranca.status, '| MP:', cobranca.status_mp);
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval);
+                    pollingInterval = null;
 
                     try {
                         await atualizarSolicitacaoParaPago();
@@ -2048,11 +2092,6 @@ _Pingo de Gente - Venda Live_`;
                         btnGerar.style.display = 'none';
                         console.log('[POLLING] Botão Gerar PIX escondido');
                     }
-
-                    const statusEl = document.getElementById('statusPagamento');
-                    statusEl.className = 'status-pagamento pago';
-                    statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong><br>Solicitação #' + numeroSolicitacaoAtual + ' liberada';
-                    statusEl.style.display = 'inline-flex';
 
                     if (dadosSolicitacaoCache) {
                         console.log('[POLLING] Enviando confirmações...');
