@@ -12,7 +12,7 @@
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="-1">
     <meta http-equiv="pragma" content="no-cache">
-    <!-- v2026-06-26-1555-WEBHOOK-EMAIL -->
+    <!-- v2026-06-26-1833-SEM-ATUALIZAR-STATUS -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -191,6 +191,7 @@
         .redirecionando-box h2 { color: #FF6B8A; font-size: 1.5rem; margin-bottom: 15px; }
         .redirecionando-box p { color: #636E72; font-size: 1rem; line-height: 1.6; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -548,6 +549,7 @@
         var dadosSolicitacaoCache = null;
         var isOutrosEstados = false;
         var webhookJaChamado = false;
+        var webhookChamando = false;
 
         document.addEventListener('DOMContentLoaded', function() {
             verificarOrigemAcesso();
@@ -1240,17 +1242,7 @@
             } catch (e) { console.error('[VINCULAR] Exceção:', e); }
         }
 
-        async function atualizarSolicitacaoParaPago() {
-            if (!solicitacaoIdAtual) { console.warn('[ATUALIZAR-PAGO] Sem solicitacaoId'); return; }
-            try {
-                console.log('[ATUALIZAR-PAGO] Atualizando solicitação', solicitacaoIdAtual, 'para pago...');
-                const { error } = await supabaseClient.from('solicitacoes_pg').update({ status: 'pago' }).eq('id', solicitacaoIdAtual);
-                if (error) console.error('[ATUALIZAR-PAGO] Erro:', error);
-                else console.log('[ATUALIZAR-PAGO] ✅ Solicitação atualizada!');
-            } catch (e) { console.error('[ATUALIZAR-PAGO] Exceção:', e); }
-        }
-
-        // ============================================
+                // ============================================
         // ENVIO DE MENSAGENS - SÓ PARA OUTROS ESTADOS
         // ============================================
         // Grande Floripa e SC: envio via Edge Function whats-email-webhook (quando pagamento confirmado)
@@ -1441,7 +1433,15 @@
         // CHAMAR EDGE FUNCTION (para Grande Floripa e SC quando pagamento confirmado)
         // ============================================
         async function chamarWebhookNotificacoes(solicitacaoId, cobrancaId) {
-            if (webhookJaChamado) { console.log('[WEBHOOK] Já foi chamado, ignorando...'); return; }
+            // PROTEÇÃO 1: Verificar se já foi chamado nesta sessão (memória)
+            if (webhookJaChamado) { console.log('[WEBHOOK] Já foi chamado nesta sessão, ignorando...'); return; }
+            // PROTEÇÃO 2: Verificar se já foi chamado em sessões anteriores (sessionStorage)
+            const webhookKey = 'webhook_enviado_' + solicitacaoId;
+            if (sessionStorage.getItem(webhookKey)) { console.log('[WEBHOOK] Já foi chamado em sessão anterior, ignorando...'); return; }
+            // PROTEÇÃO 3: Evitar chamadas simultâneas (race condition)
+            if (webhookChamando) { console.log('[WEBHOOK] Chamada em andamento, aguardando...'); return; }
+
+            webhookChamando = true;
             webhookJaChamado = true;
             console.log('[WEBHOOK] Chamando whats-email-webhook para solicitacao:', solicitacaoId);
             try {
@@ -1454,13 +1454,20 @@
                 console.log('[WEBHOOK] Resposta:', data);
                 if (!response.ok) {
                     console.error('[WEBHOOK] Erro:', data.error || 'Erro desconhecido');
-                    webhookJaChamado = false; // Permite retry
+                    // Não resetar flags em caso de erro para evitar spam
+                    // webhookJaChamado = false; 
                 } else {
                     console.log('[WEBHOOK] ✅ Notificações enviadas com sucesso!');
+                    // Marcar no sessionStorage para persistir entre recarregamentos
+                    sessionStorage.setItem(webhookKey, 'true');
+                    sessionStorage.setItem('webhook_enviado_cobranca_' + cobrancaId, 'true');
                 }
             } catch (error) {
                 console.error('[WEBHOOK] Erro ao chamar Edge Function:', error);
-                webhookJaChamado = false; // Permite retry
+                // Não resetar flags em caso de erro para evitar spam
+                // webhookJaChamado = false;
+            } finally {
+                webhookChamando = false;
             }
         }
 
@@ -1566,9 +1573,14 @@
 
         async function verificarStatusPagamento() {
             if (pagamentoConfirmado) { console.log('[POLLING] Pagamento já confirmado, parando polling'); return; }
+
+            // PROTEÇÃO: Evitar múltiplas verificações simultâneas
+            if (window.verificandoPagamento) { console.log('[POLLING] Verificação já em andamento, pulando...'); return; }
+            window.verificandoPagamento = true;
+
             let idBusca = cobrancaId; let campoBusca = 'id';
             if (!idBusca && mpPaymentId) { idBusca = mpPaymentId; campoBusca = 'mp_payment_id'; }
-            if (!idBusca) { console.log('[POLLING] Sem ID para verificar'); return; }
+            if (!idBusca) { console.log('[POLLING] Sem ID para verificar'); window.verificandoPagamento = false; return; }
             try {
                 window.pollingContador = (window.pollingContador || 0) + 1;
                 const contador = window.pollingContador;
@@ -1580,6 +1592,7 @@
                     console.log('[POLLING] #' + contador + ' Erro na query:', error.message || error);
                     const statusEl = document.getElementById('statusPagamento');
                     if (statusEl && statusEl.style.display !== 'none') statusEl.innerHTML = '⏳ Verificando pagamento... (tentativa ' + contador + ')';
+                    window.verificandoPagamento = false;
                     return;
                 }
                 console.log('[POLLING] #' + contador + ' Status:', cobranca?.status, '| MP:', cobranca?.status_mp);
@@ -1598,15 +1611,15 @@
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO!');
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval); pollingInterval = null;
-                    try { await atualizarSolicitacaoParaPago(); } catch (err) { console.error('[POLLING] Erro ao atualizar solicitação:', err); }
+                    // Status da solicitação NÃO muda com pagamento - é sobre entrega, não pagamento
+                    // O mercadopago-webhook já atualiza a cobranca para 'pago'
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) { btnGerar.style.display = 'none'; console.log('[POLLING] Botão Gerar PIX escondido'); }
 
-                    // CHAMAR EDGE FUNCTION para enviar WhatsApp + Email (cliente + admin)
-                    if (solicitacaoIdAtual) {
-                        console.log('[POLLING] Chamando Edge Function whats-email-webhook...');
-                        chamarWebhookNotificacoes(solicitacaoIdAtual, cobrancaId);
-                    }
+                    // NOTIFICAÇÕES (WhatsApp + Email) são enviadas pela Edge Function mercadopago-webhook
+                    // quando o Mercado Pago confirma o pagamento. A página apenas mostra o status na tela.
+                    // NÃO chamar whats-email-webhook daqui para evitar duplicidade!
+                    console.log('[POLLING] ✅ Pagamento confirmado! Notificações serão enviadas pelo webhook do Mercado Pago.');
 
                     console.log('[POLLING] Mostrando tela de sucesso em 2 segundos...');
                     setTimeout(function() {
@@ -1617,6 +1630,7 @@
                     }, 2000);
                 }
             } catch (e) { console.error('[POLLING] Erro:', e); }
+            finally { window.verificandoPagamento = false; }
         }
 
         function atualizarBotaoEnviar() {
