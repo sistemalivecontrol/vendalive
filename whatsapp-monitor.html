@@ -103,7 +103,8 @@
         .log-entry.falha { color: #e74c3c; }
         .log-entry.info { color: #3498db; }
     </style>
-    </head>
+    <base target="_blank">
+</head>
 <body>
     <div class="container">
         <div class="header">
@@ -148,7 +149,7 @@
             <div class="filter-grid">
                 <div class="form-group"><label>Data Início</label><input type="date" id="filtroDataInicio"></div>
                 <div class="form-group"><label>Data Fim</label><input type="date" id="filtroDataFim"></div>
-                <div class="form-group"><label>Tipo</label><select id="filtroTipo"><option value="">Todos</option><option value="pix_cobranca">PIX Cobrança</option><option value="rastreamento">Rastreamento</option><option value="confirmacao_solicitacao">Confirmação Solicitação</option><option value="confirmacao_pagamento">Confirmação Pagamento</option></select></div>
+                <div class="form-group"><label>Tipo</label><select id="filtroTipo"><option value="">Todos</option><option value="pix_cobranca">PIX Cobrança</option><option value="rastreamento">Rastreamento</option><option value="confirmacao_solicitacao">Confirmação Solicitação</option><option value="confirmacao_pagamento">Confirmação Pagamento</option><option value="confirmacao_outros_estados">Confirmação Outros Estados</option></select></div>
                 <div class="form-group"><label>Status</label><select id="filtroStatus"><option value="">Todos</option><option value="enviado">Enviado</option><option value="timeout">Timeout</option><option value="falha">Falha</option><option value="numero_invalido">Número Inválido</option><option value="reenviado">Reenviado</option></select></div>
                 <div class="form-group"><label>Origem</label><select id="filtroOrigem"><option value="">Todas</option><option value="coblive">Cobrança Live</option><option value="rastreamento">Rastreamento</option><option value="solicitacao-entrega">Solicitação Entrega</option></select></div>
                 <div class="form-group"><label>Buscar</label><input type="text" id="filtroBusca" placeholder="Nome ou número..."></div>
@@ -444,7 +445,7 @@
                     var valor = envio.valor ? 'R$ ' + parseFloat(envio.valor).toFixed(2).replace('.', ',') : '-';
                     var statusClass = 'status-' + status;
                     var origemClass = 'origem-' + origem;
-                    var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitacao' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : tipo)));
+                    var tipoLabel = tipo === 'pix_cobranca' ? '💳 PIX' : (tipo === 'rastreamento' ? '📦 Rastreio' : (tipo === 'confirmacao_solicitacao' ? '✅ Conf. Solicitacao' : (tipo === 'confirmacao_pagamento' ? '💰 Conf. Pagamento' : (tipo === 'confirmacao_outros_estados' ? '🌎 Conf. Outros Estados' : tipo))));
                     var origemLabel = origem === 'coblive' ? '💰 COBRANCA LIVE' : (origem === 'rastreamento' ? '🚚 RASTREAMENTO' : (origem === 'solicitacao-entrega' ? '📦 SOLICITACAO ENTREGA' : origem));
                     var safeMsg = mensagem.replace(/"/g, '&quot;').replace(/'/g, "&#39;");
                     var btnReenviar = '<button class="btn-reenviar" id="btn-reenviar-' + envio.id + '" data-log-id="' + envio.id + '" data-numero="' + numero + '" data-mensagem="' + safeMsg + '" data-tipo="' + tipo + '">🔄 Reenviar</button>';
