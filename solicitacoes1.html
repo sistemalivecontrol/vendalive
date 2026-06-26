@@ -12,7 +12,7 @@
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="-1">
     <meta http-equiv="pragma" content="no-cache">
-    <!-- v2026-06-26-1821-NO-POLLING-WEBHOOK -->
+    <!-- v2026-06-26-1833-SEM-ATUALIZAR-STATUS -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1242,17 +1242,7 @@
             } catch (e) { console.error('[VINCULAR] Exceção:', e); }
         }
 
-        async function atualizarSolicitacaoParaPago() {
-            if (!solicitacaoIdAtual) { console.warn('[ATUALIZAR-PAGO] Sem solicitacaoId'); return; }
-            try {
-                console.log('[ATUALIZAR-PAGO] Atualizando solicitação', solicitacaoIdAtual, 'para pago...');
-                const { error } = await supabaseClient.from('solicitacoes_pg').update({ status: 'pago' }).eq('id', solicitacaoIdAtual);
-                if (error) console.error('[ATUALIZAR-PAGO] Erro:', error);
-                else console.log('[ATUALIZAR-PAGO] ✅ Solicitação atualizada!');
-            } catch (e) { console.error('[ATUALIZAR-PAGO] Exceção:', e); }
-        }
-
-        // ============================================
+                // ============================================
         // ENVIO DE MENSAGENS - SÓ PARA OUTROS ESTADOS
         // ============================================
         // Grande Floripa e SC: envio via Edge Function whats-email-webhook (quando pagamento confirmado)
@@ -1621,7 +1611,8 @@
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO!');
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval); pollingInterval = null;
-                    try { await atualizarSolicitacaoParaPago(); } catch (err) { console.error('[POLLING] Erro ao atualizar solicitação:', err); }
+                    // Status da solicitação NÃO muda com pagamento - é sobre entrega, não pagamento
+                    // O mercadopago-webhook já atualiza a cobranca para 'pago'
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) { btnGerar.style.display = 'none'; console.log('[POLLING] Botão Gerar PIX escondido'); }
 
