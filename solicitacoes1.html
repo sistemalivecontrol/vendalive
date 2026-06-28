@@ -194,6 +194,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <script>
@@ -429,7 +430,7 @@
                     </div>
                     <div class="config-field">
                         <label>Texto - Prazo de Solicitação</label>
-                        <textarea id="configTextoPrazo" placeholder="Solicitações abertas até Quarta-feira {{data}} às 17:00h"></textarea>
+                        <textarea id="configTextoPrazo" placeholder="Solicitações abertas até Sexta-feira {{data}} às 17:00h"></textarea>
                         <small>Variável: {{data}}</small>
                     </div>
                 </div>
@@ -530,7 +531,7 @@
         var supabaseClient = null, supabaseConectado = false, clienteIdSistema = null, modoAcesso = 'publico', nomeEmpresa = '';
         const STORAGE_CONFIG = 'solicitacao_config';
         const CONFIG_PADRAO = {
-            envio: { titulo: 'Próximo Envio', emoji: '⏰', textoProximaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira da próxima semana</strong>', textoEstaSemana: 'Sua sacola será enviada entre <strong>Quinta e Sexta-feira desta semana</strong>', textoPrazo: 'Solicitações abertas até <strong>Quarta-feira {{data}} às 17:00h</strong>' },
+            envio: { titulo: 'Próximo Envio', emoji: '⏰', textoProximaSemana: 'Sua sacola será enviada na <strong>Segunda-feira da próxima semana</strong>', textoEstaSemana: 'Sua sacola será enviada na <strong>Segunda-feira desta semana</strong>', textoPrazo: 'Solicitações abertas até <strong>Sexta-feira {{data}} às 17:00h</strong>' },
             precos: { floripa: 15.00, sc: 21.99 }
         };
         let configAtual = { ...CONFIG_PADRAO };
@@ -1012,29 +1013,30 @@
             const hora = agora.getHours();
             const minutos = agora.getMinutes();
             const horaAtualEmMinutos = (hora * 60) + minutos;
-            const limiteQuarta = (17 * 60);
+            const limiteSexta = (17 * 60);
             const infoDiv = document.getElementById('infoEnvioUnificado');
             const dataAtualStr = formatarData(agora);
             const nomeDiaAtual = obterNomeDiaSemana(diaSemana);
             let html = '<span class="emoji-grande">' + configAtual.envio.emoji + '</span>';
             html += '<h2>' + configAtual.envio.titulo + '</h2>';
             html += '<p class="data-atual">Hoje é ' + nomeDiaAtual + ' dia ' + dataAtualStr + '.</p>';
-            if (diaSemana === 3 && horaAtualEmMinutos < limiteQuarta) {
-                const quintaEnvio = new Date(agora); quintaEnvio.setDate(agora.getDate() + 1);
-                const sextaEnvio = new Date(agora); sextaEnvio.setDate(agora.getDate() + 2);
-                let textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
-                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
+            if (diaSemana === 5 && horaAtualEmMinutos < limiteSexta) {
+                // Sexta antes das 17:00 → entrega SEGUNDA desta semana
+                const segundaEnvio = new Date(agora); segundaEnvio.setDate(agora.getDate() + 3);
+                let textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(segundaEnvio) + ')</p>';
                 let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', dataAtualStr);
                 html += '<p class="prazo-info">' + textoPrazo + '</p>';
             } else {
-                let diasAteQuarta = (3 - diaSemana + 7) % 7;
-                if (diasAteQuarta === 0) diasAteQuarta = 7;
-                const proximaQuarta = new Date(agora); proximaQuarta.setDate(agora.getDate() + diasAteQuarta);
-                const quintaEnvio = new Date(proximaQuarta); quintaEnvio.setDate(proximaQuarta.getDate() + 1);
-                const sextaEnvio = new Date(proximaQuarta); sextaEnvio.setDate(proximaQuarta.getDate() + 2);
-                let textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(quintaEnvio)).replace('{{data_fim}}', formatarData(sextaEnvio));
-                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(quintaEnvio) + ' e ' + formatarData(sextaEnvio) + ')</p>';
-                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaQuarta));
+                // Próxima sexta-feira
+                let diasAteSexta = (5 - diaSemana + 7) % 7;
+                if (diasAteSexta === 0) diasAteSexta = 7;
+                const proximaSexta = new Date(agora); proximaSexta.setDate(agora.getDate() + diasAteSexta);
+                // Segunda após a próxima sexta = próxima sexta + 3 dias
+                const segundaEnvio = new Date(proximaSexta); segundaEnvio.setDate(proximaSexta.getDate() + 3);
+                let textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
+                html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(segundaEnvio) + ')</p>';
+                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaSexta));
                 html += '<p class="prazo-info">' + textoPrazo + '</p>';
             }
             infoDiv.innerHTML = html;
