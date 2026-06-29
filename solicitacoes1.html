@@ -2632,6 +2632,10 @@
 
                     console.log('[POLLING] ✅ Pagamento confirmado! Notificações serão enviadas pelo webhook do Mercado Pago.');
 
+                    // Disparar notificações via Edge Function (WhatsApp + Email)
+                    console.log('[POLLING] Disparando notificações via Edge Function...');
+                    chamarWebhookNotificacoes(solicitacaoIdAtual, cobrancaId);
+
                     // Mostrar tela de sucesso IMEDIATAMENTE (sem setTimeout que pode falhar)
                     console.log('[POLLING] Exibindo tela de sucesso!');
                     mostrarTelaSucesso();
