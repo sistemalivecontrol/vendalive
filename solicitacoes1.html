@@ -2697,10 +2697,12 @@
             const successEl = document.getElementById('successMsg');
             const numeroEl = document.getElementById('numeroSolicitacaoDisplay');
             if (formEl) formEl.style.display = 'none';
-            if (successEl) successEl.classList.add('show');
+            if (successEl) {
+                successEl.classList.add('show');
+                // Scroll para a mensagem de sucesso (posição atual, não topo)
+                successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             if (numeroEl) numeroEl.textContent = numeroSolicitacaoAtual || '-';
-            // Scroll para o topo para ver a mensagem de sucesso
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function atualizarBotaoEnviar() {
