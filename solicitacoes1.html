@@ -2582,11 +2582,17 @@
         }
 
         async function verificarStatusPagamento() {
-            if (pagamentoConfirmado) { console.log('[POLLING] Pagamento já confirmado, parando polling'); return; }
-
             // PROTEÇÃO: Evitar múltiplas verificações simultâneas
             if (window.verificandoPagamento) { console.log('[POLLING] Verificação já em andamento, pulando...'); return; }
             window.verificandoPagamento = true;
+
+            // Se já confirmado, apenas mostrar a tela de sucesso (pode ter sido chamado novamente)
+            if (pagamentoConfirmado) {
+                console.log('[POLLING] Pagamento já confirmado, mostrando tela de sucesso...');
+                mostrarTelaSucesso();
+                window.verificandoPagamento = false;
+                return;
+            }
 
             let idBusca = cobrancaId; let campoBusca = 'id';
             if (!idBusca && mpPaymentId) { idBusca = mpPaymentId; campoBusca = 'mp_payment_id'; }
@@ -2621,26 +2627,29 @@
                     console.log('[POLLING] ✅ PAGAMENTO CONFIRMADO!');
                     pagamentoConfirmado = true;
                     clearInterval(pollingInterval); pollingInterval = null;
-                    // Status da solicitação NÃO muda com pagamento - é sobre entrega, não pagamento
-                    // O mercadopago-webhook já atualiza a cobranca para 'pago'
                     const btnGerar = document.getElementById('btnGerarPix');
                     if (btnGerar) { btnGerar.style.display = 'none'; console.log('[POLLING] Botão Gerar PIX escondido'); }
 
-                    // NOTIFICAÇÕES (WhatsApp + Email) são enviadas pela Edge Function mercadopago-webhook
-                    // quando o Mercado Pago confirma o pagamento. A página apenas mostra o status na tela.
-                    // NÃO chamar whats-email-webhook daqui para evitar duplicidade!
                     console.log('[POLLING] ✅ Pagamento confirmado! Notificações serão enviadas pelo webhook do Mercado Pago.');
 
-                    console.log('[POLLING] Mostrando tela de sucesso em 2 segundos...');
-                    setTimeout(function() {
-                        console.log('[POLLING] Exibindo tela de sucesso!');
-                        document.getElementById('deliveryForm').style.display = 'none';
-                        document.getElementById('successMsg').classList.add('show');
-                        document.getElementById('numeroSolicitacaoDisplay').textContent = numeroSolicitacaoAtual;
-                    }, 2000);
+                    // Mostrar tela de sucesso IMEDIATAMENTE (sem setTimeout que pode falhar)
+                    console.log('[POLLING] Exibindo tela de sucesso!');
+                    mostrarTelaSucesso();
                 }
             } catch (e) { console.error('[POLLING] Erro:', e); }
             finally { window.verificandoPagamento = false; }
+        }
+
+        function mostrarTelaSucesso() {
+            console.log('[SUCESSO] Mostrando tela de sucesso. solicitacaoId:', solicitacaoIdAtual, 'numero:', numeroSolicitacaoAtual);
+            const formEl = document.getElementById('deliveryForm');
+            const successEl = document.getElementById('successMsg');
+            const numeroEl = document.getElementById('numeroSolicitacaoDisplay');
+            if (formEl) formEl.style.display = 'none';
+            if (successEl) successEl.classList.add('show');
+            if (numeroEl) numeroEl.textContent = numeroSolicitacaoAtual || '-';
+            // Scroll para o topo para ver a mensagem de sucesso
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function atualizarBotaoEnviar() {
