@@ -1020,23 +1020,35 @@
             let html = '<span class="emoji-grande">' + configAtual.envio.emoji + '</span>';
             html += '<h2>' + configAtual.envio.titulo + '</h2>';
             html += '<p class="data-atual">Hoje é ' + nomeDiaAtual + ' dia ' + dataAtualStr + '.</p>';
+
+            // Calcular a próxima sexta-feira (dia 5)
+            let diasAteSexta = (5 - diaSemana + 7) % 7;
+            if (diasAteSexta === 0) {
+                // Hoje é sexta - verificar se ainda está dentro do prazo (antes das 17:00)
+                if (horaAtualEmMinutos < limiteSexta) {
+                    // Ainda dentro do prazo de sexta → entrega na segunda desta semana (hoje + 3)
+                    diasAteSexta = 0;
+                } else {
+                    // Prazo de sexta já passou → próxima sexta é daqui a 7 dias
+                    diasAteSexta = 7;
+                }
+            }
+            const proximaSexta = new Date(agora); proximaSexta.setDate(agora.getDate() + diasAteSexta);
+            // Segunda-feira após a próxima sexta = próxima sexta + 3 dias
+            const segundaEnvio = new Date(proximaSexta); segundaEnvio.setDate(proximaSexta.getDate() + 3);
+
+            let textoEnvio, textoPrazo;
             if (diaSemana === 5 && horaAtualEmMinutos < limiteSexta) {
-                // Sexta antes das 17:00 → entrega SEGUNDA desta semana
-                const segundaEnvio = new Date(agora); segundaEnvio.setDate(agora.getDate() + 3);
-                let textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
+                // Sexta antes das 17:00 → entrega na segunda desta semana
+                textoEnvio = configAtual.envio.textoEstaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
                 html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(segundaEnvio) + ')</p>';
-                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', dataAtualStr);
+                textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', dataAtualStr);
                 html += '<p class="prazo-info">' + textoPrazo + '</p>';
             } else {
-                // Próxima sexta-feira
-                let diasAteSexta = (5 - diaSemana + 7) % 7;
-                if (diasAteSexta === 0) diasAteSexta = 7;
-                const proximaSexta = new Date(agora); proximaSexta.setDate(agora.getDate() + diasAteSexta);
-                // Segunda após a próxima sexta = próxima sexta + 3 dias
-                const segundaEnvio = new Date(proximaSexta); segundaEnvio.setDate(proximaSexta.getDate() + 3);
-                let textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
+                // Segunda da próxima semana
+                textoEnvio = configAtual.envio.textoProximaSemana.replace('{{data_inicio}}', formatarData(segundaEnvio)).replace('{{data_fim}}', formatarData(segundaEnvio));
                 html += '<p class="envio-info">' + textoEnvio + '<br>(' + formatarData(segundaEnvio) + ')</p>';
-                let textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaSexta));
+                textoPrazo = configAtual.envio.textoPrazo.replace('{{data}}', formatarData(proximaSexta));
                 html += '<p class="prazo-info">' + textoPrazo + '</p>';
             }
             infoDiv.innerHTML = html;
