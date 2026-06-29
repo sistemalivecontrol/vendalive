@@ -2453,32 +2453,79 @@
 
             webhookChamando = true;
             webhookJaChamado = true;
-            console.log('[WEBHOOK] Chamando whats-email-webhook para solicitacao:', solicitacaoId);
+            console.log('[WEBHOOK] Chamando notificações para solicitacao:', solicitacaoId);
+
             try {
+                // 1. Chamar WhatsApp + Email (função legada)
+                console.log('[WEBHOOK] Chamando whats-email-webhook...');
                 const response = await fetch(SUPABASE_URL + '/functions/v1/whats-email-webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
                     body: JSON.stringify({ solicitacao_id: solicitacaoId, cobranca_id: cobrancaId || null, cliente_sistema_id: clienteIdSistema })
                 });
                 const data = await response.json();
-                console.log('[WEBHOOK] Resposta:', data);
+                console.log('[WEBHOOK] whats-email-webhook resposta:', data);
                 if (!response.ok) {
-                    console.error('[WEBHOOK] Erro:', data.error || 'Erro desconhecido');
-                    // Não resetar flags em caso de erro para evitar spam
-                    // webhookJaChamado = false; 
+                    console.error('[WEBHOOK] Erro whats-email-webhook:', data.error || 'Erro desconhecido');
                 } else {
-                    console.log('[WEBHOOK] ✅ Notificações enviadas com sucesso!');
-                    // Marcar no sessionStorage para persistir entre recarregamentos
-                    sessionStorage.setItem(webhookKey, 'true');
-                    sessionStorage.setItem('webhook_enviado_cobranca_' + cobrancaId, 'true');
+                    console.log('[WEBHOOK] ✅ whats-email-webhook OK');
                 }
             } catch (error) {
-                console.error('[WEBHOOK] Erro ao chamar Edge Function:', error);
-                // Não resetar flags em caso de erro para evitar spam
-                // webhookJaChamado = false;
-            } finally {
-                webhookChamando = false;
+                console.error('[WEBHOOK] Erro ao chamar whats-email-webhook:', error);
             }
+
+            // 2. Chamar Email via SMTP (nova função - não depende de EmailJS)
+            try {
+                console.log('[EMAIL-SMTP] Chamando email-solicitacao...');
+                if (dadosSolicitacaoCache) {
+                    const emailPayload = {
+                        solicitacao_id: solicitacaoId,
+                        cobranca_id: cobrancaId || null,
+                        cliente_sistema_id: clienteIdSistema,
+                        nome: dadosSolicitacaoCache.nome || '',
+                        email: dadosSolicitacaoCache.email || '',
+                        whatsapp: dadosSolicitacaoCache.whatsapp || '',
+                        instagram: dadosSolicitacaoCache.instagram || '',
+                        rua: dadosSolicitacaoCache.rua || '',
+                        numero: dadosSolicitacaoCache.numero || '',
+                        complemento: dadosSolicitacaoCache.complemento || '',
+                        bairro: dadosSolicitacaoCache.bairro || '',
+                        cidade: dadosSolicitacaoCache.cidade || '',
+                        estado: dadosSolicitacaoCache.estado || '',
+                        cep: dadosSolicitacaoCache.cep || '',
+                        numero_solicitacao: dadosSolicitacaoCache.numeroSolicitacao || numeroSolicitacaoAtual || '',
+                        regiao: dadosSolicitacaoCache.regiao || '',
+                        valor_frete: valorFreteAtual || 0,
+                        observacoes: dadosSolicitacaoCache.observacoes || '',
+                        enviar_cliente: true,
+                        enviar_admin: true
+                    };
+
+                    const emailResponse = await fetch(SUPABASE_URL + '/functions/v1/email-solicitacao', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+                        body: JSON.stringify(emailPayload)
+                    });
+                    const emailData = await emailResponse.json();
+                    console.log('[EMAIL-SMTP] email-solicitacao resposta:', emailData);
+                    if (!emailResponse.ok) {
+                        console.error('[EMAIL-SMTP] Erro:', emailData.error || 'Erro desconhecido');
+                    } else {
+                        console.log('[EMAIL-SMTP] ✅ E-mails enviados via SMTP!');
+                    }
+                } else {
+                    console.warn('[EMAIL-SMTP] dadosSolicitacaoCache não disponível, pulando envio de e-mail');
+                }
+            } catch (emailError) {
+                console.error('[EMAIL-SMTP] Erro ao chamar email-solicitacao:', emailError);
+            }
+
+            // Marcar como enviado
+            sessionStorage.setItem(webhookKey, 'true');
+            if (cobrancaId) {
+                sessionStorage.setItem('webhook_enviado_cobranca_' + cobrancaId, 'true');
+            }
+            webhookChamando = false;
         }
 
         async function gerarPixMercadoPago() {
