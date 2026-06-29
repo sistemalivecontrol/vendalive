@@ -12,7 +12,7 @@
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="-1">
     <meta http-equiv="pragma" content="no-cache">
-    <!-- v2026-06-29-1030-LAYOUT-MODERNIZADO -->
+    <!-- v2026-06-29-1101-SEM-ENVIO-DIRETO -->
     <title id="pageTitle">Solicitação de Entrega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1655,14 +1655,10 @@
     </div>
 <script>
 
-        const EVOLUTION_API_URL = 'https://evolution-api-o12a.onrender.com';
-        const EVOLUTION_API_KEY = '8117861c85b102b1fafd496132bba462';
-        const EVOLUTION_INSTANCE = 'pingodegente';
-
+        // Notificações via Edge Function whats-email-webhook (não mais direto da página)
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
-        const EMAILJS_CONFIG = { PUBLIC_KEY: 'R3iqK9BVPwhsiyJmk', SERVICE_ID: 'service_rqpqwg3', TEMPLATE_ID: 'template_ttdmkto' };
-        emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+        // EmailJS removido - envios agora via Edge Function whats-email-webhook
 
         const CIDADES_GRANDE_FLORIPA = [
             'AGUAS MORNAS', 'BIGUACU', 'FLORIANOPOLIS', 'GOVERNADOR CELSO RAMOS',
@@ -2446,197 +2442,7 @@
             } catch (e) { console.error('[VINCULAR] Exceção:', e); }
         }
 
-                // ============================================
-        // ENVIO DE MENSAGENS - SÓ PARA OUTROS ESTADOS
-        // ============================================
-        // Grande Floripa e SC: envio via Edge Function whats-email-webhook (quando pagamento confirmado)
-        // Outros Estados: envio imediato na página (WhatsApp + Email cliente + Email admin)
-
-        async function enviarWhatsApp(numero, texto, opcoes) {
-            opcoes = opcoes || {};
-            let numeroLimpo = String(numero || '').replace(/\D/g, '');
-            if (!numeroLimpo) { console.error('[WA] ❌ Número vazio'); return { sucesso: false, erro: 'Número vazio', log_id: null }; }
-            if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
-            console.log('[WA] 📤 Enviando para:', numeroLimpo);
-            let logId = null;
-            try {
-                logId = await gravarLogWhatsApp({
-                    numero: numeroLimpo, destinatario: opcoes.destinatario || null, mensagem: texto,
-                    status: 'pendente', origem: opcoes.origem || 'solicitacao-entrega',
-                    tipo_envio: opcoes.tipo_envio || 'notificacao', referencia_id: opcoes.referencia_id || null,
-                    referencia_tipo: opcoes.referencia_tipo || null, valor: opcoes.valor || null, metadata: opcoes.metadata || {}
-                });
-            } catch (logErr) { console.warn('[WA] ⚠️ Erro ao gravar log inicial:', logErr.message); }
-            let ultimoErro = null;
-            for (let tentativa = 1; tentativa <= 2; tentativa++) {
-                try {
-                    console.log('[WA] Tentativa ' + tentativa + '/2...');
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000);
-                    const response = await fetch(EVOLUTION_API_URL + '/message/sendText/' + EVOLUTION_INSTANCE, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': EVOLUTION_API_KEY },
-                        body: JSON.stringify({ number: numeroLimpo, text: texto, options: { delay: 1200, presence: 'composing' } }),
-                        signal: controller.signal, keepalive: true
-                    });
-                    clearTimeout(timeoutId);
-                    const responseText = await response.text();
-                    let data = null; try { data = JSON.parse(responseText); } catch (parseErr) { data = { raw: responseText }; }
-                    console.log('[WA] Resposta HTTP ' + response.status + ':', data);
-                    if (response.ok) {
-                        console.log('✅ [WA] Mensagem enviada com sucesso!');
-                        if (logId) {
-                            atualizarLogWhatsApp(logId, {
-                                status: 'enviado', status_envio: 'enviado', resposta_api: data,
-                                evolution_message_id: (data && data.key && data.key.id) ? data.key.id : null
-                            }).catch(e => console.warn('[WA] Erro ao atualizar log:', e));
-                        }
-                        return { sucesso: true, dados: data, log_id: logId };
-                    } else {
-                        const erroMsg = (data && data.message) ? data.message : 'HTTP ' + response.status;
-                        console.error('[WA] ❌ Erro HTTP ' + response.status + ':', erroMsg);
-                        ultimoErro = new Error(erroMsg);
-                        if (response.status === 404 || response.status === 401) break;
-                        if (tentativa < 2) await new Promise(r => setTimeout(r, 5000));
-                    }
-                } catch (erro) {
-                    ultimoErro = erro;
-                    console.error('[WA] ❌ Erro na tentativa ' + tentativa + ':', erro.name, erro.message);
-                    if (tentativa < 2) await new Promise(r => setTimeout(r, 5000));
-                }
-            }
-            console.error('[WA] ❌ Todas as tentativas falharam.');
-            if (logId) {
-                atualizarLogWhatsApp(logId, { status: 'erro', status_envio: 'erro', erro_envio: ultimoErro ? ultimoErro.message : 'Erro desconhecido' }).catch(e => console.warn('[WA] Erro ao atualizar log:', e));
-            }
-            return { sucesso: false, erro: ultimoErro ? ultimoErro.message : 'Erro desconhecido', log_id: logId };
-        }
-
-        async function gravarLogWhatsApp(dados) {
-            if (!supabaseClient || !clienteIdSistema) return null;
-            try {
-                const payload = {
-                    cliente_sistema_id: clienteIdSistema, numero: dados.numero || '', numero_destino: dados.numero || '',
-                    destinatario: dados.destinatario || null, nome_destino: dados.destinatario || null, mensagem: dados.mensagem || null,
-                    status: dados.status || 'pendente', status_envio: dados.status_envio || dados.status || 'pendente',
-                    origem: dados.origem || 'solicitacao-entrega', tipo_envio: dados.tipo_envio || 'notificacao',
-                    referencia_id: dados.referencia_id || null, referencia_tipo: dados.referencia_tipo || null,
-                    codigo_rastreio: dados.codigo_rastreio || null, valor: dados.valor || null, metadata: dados.metadata || {},
-                    enviado_em: new Date().toISOString(), criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString()
-                };
-                const { data, error } = await supabaseClient.from('whatsapp_envios').insert([payload]).select('id').single();
-                if (error) {
-                    if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
-                        console.log('[LOG-WA] RLS bloqueou log (não crítico)');
-                    } else { console.warn('[LOG-WA] Erro ao gravar log:', error.message || error); }
-                    return null;
-                }
-                console.log('[LOG-WA] Log gravado, ID:', data.id);
-                return data.id;
-            } catch (e) { return null; }
-        }
-
-        async function atualizarLogWhatsApp(logId, dados) {
-            if (!supabaseClient || !logId) return;
-            try {
-                const updateData = { atualizado_em: new Date().toISOString() };
-                if (dados.status) updateData.status = dados.status;
-                if (dados.status_envio) updateData.status_envio = dados.status_envio;
-                if (dados.resposta_api) updateData.resposta_api = dados.resposta_api;
-                if (dados.erro_envio) updateData.erro_envio = dados.erro_envio;
-                if (dados.evolution_message_id) updateData.evolution_message_id = dados.evolution_message_id;
-                const { error } = await supabaseClient.from('whatsapp_envios').update(updateData).eq('id', logId);
-                if (error && error.code === '42501') console.log('[LOG-WA] RLS bloqueou update (não crítico)');
-                else console.log('[LOG-WA] Log atualizado, ID:', logId);
-            } catch (e) {}
-        }
-
-        // Mensagem de confirmação para OUTROS ESTADOS (envio imediato na página)
-        async function enviarConfirmacaoOutrosEstados(dados) {
-            if (!dados.whatsapp || !dados.whatsapp.trim()) {
-                console.warn('[WA-OUTROS] ⚠️ Sem WhatsApp do cliente, pulando envio');
-                return { sucesso: false, erro: 'Sem número de WhatsApp', ignorado: true };
-            }
-            const texto = 'Olá *' + dados.nome + '*! 👋\n\n🚚 *Solicitação de Entrega Recebida!*\n\n📋 *Número:* ' + dados.numeroSolicitacao + '\n📍 *Endereço:* ' + dados.rua + ', ' + dados.numero + ' - ' + dados.bairro + ', ' + dados.cidade + ' - ' + dados.estado + '\n🌎 *Região:* Outros Estados (frete a consultar)\n\n⏳ Iremos pesar seu pacote e retornaremos com o orçamento via Direct do Instagram!\n\n_Pingo de Gente - Venda Live_';
-            console.log('[WA-OUTROS] Enviando confirmação para:', dados.whatsapp);
-            const resultado = await enviarWhatsApp(dados.whatsapp, texto, {
-                destinatario: dados.nome, origem: 'solicitacao-entrega', tipo_envio: 'confirmacao_outros_estados',
-                referencia_id: dados.solicitacaoId || null, referencia_tipo: 'solicitacao_pg', valor: 0,
-                metadata: { numero_solicitacao: dados.numeroSolicitacao, bairro: dados.bairro, cidade: dados.cidade, estado: dados.estado, regiao: 'Outros Estados' }
-            });
-            console.log('[WA-OUTROS] Resultado:', resultado.sucesso ? '✅ Enviado' : '❌ Falhou', resultado.erro || '');
-            return resultado;
-        }
-
-        // Função para enviar e-mail via EmailJS (SÓ para OUTROS ESTADOS)
-        async function enviarEmailConfirmacao(dadosSolicitacao) {
-            console.log('[EMAIL] Iniciando envio de e-mails...');
-            try {
-                // E-mail para o CLIENTE (se tiver e-mail)
-                if (dadosSolicitacao.email && dadosSolicitacao.email.trim()) {
-                    console.log('[EMAIL] Enviando para CLIENTE:', dadosSolicitacao.email);
-                    const templateParamsCliente = {
-                        to_email: dadosSolicitacao.email, numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
-                        nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao,
-                        regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero,
-                        complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro,
-                        cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep,
-                        observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação', reply_to: 'marcobet@gmail.com'
-                    };
-                    const responseCliente = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsCliente);
-                    console.log('✅ [EMAIL] E-mail para CLIENTE enviado! Status:', responseCliente.status);
-                } else {
-                    console.log('[EMAIL] Cliente não preencheu e-mail, pulando envio para cliente');
-                }
-                // E-mail para ADMIN (marcobet@gmail.com) - SEMPRE!
-                console.log('[EMAIL] Enviando para ADMIN: marcobet@gmail.com');
-                const templateParamsAdmin = {
-                    to_email: 'marcobet@gmail.com', numero_solicitacao: dadosSolicitacao.numeroSolicitacao,
-                    nome: dadosSolicitacao.nome, data_solicitacao: dadosSolicitacao.dataSolicitacao,
-                    regiao: dadosSolicitacao.regiao, rua: dadosSolicitacao.rua, numero: dadosSolicitacao.numero,
-                    complemento: dadosSolicitacao.complemento || 'N/A', bairro: dadosSolicitacao.bairro,
-                    cidade: dadosSolicitacao.cidade, cep: dadosSolicitacao.cep,
-                    observacoes: dadosSolicitacao.observacoes || 'Nenhuma observação',
-                    email_cliente: dadosSolicitacao.email || 'Não informado',
-                    whatsapp_cliente: dadosSolicitacao.whatsapp || 'Não informado',
-                    instagram_cliente: dadosSolicitacao.instagram || 'Não informado',
-                    reply_to: 'marcobet@gmail.com'
-                };
-                const responseAdmin = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParamsAdmin);
-                console.log('✅ [EMAIL] E-mail para ADMIN enviado! Status:', responseAdmin.status);
-                return true;
-            } catch (error) {
-                console.error('❌ [EMAIL] Erro ao enviar e-mail:', error);
-                return false;
-            }
-        }
-
-        // Enviar confirmações para OUTROS ESTADOS (email + WhatsApp imediatos na página)
-        async function enviarConfirmacoesOutrosEstados(dados) {
-            console.log('[CONFIRMACOES-OUTROS] Enviando confirmações para outros estados...');
-            const resultados = { email: false, whatsapp: false };
-            try {
-                await enviarEmailConfirmacao({
-                    email: dados.email, numeroSolicitacao: dados.numeroSolicitacao, nome: dados.nome,
-                    dataSolicitacao: formatarData(new Date()), regiao: dados.regiao, rua: dados.rua,
-                    numero: dados.numero, complemento: dados.complemento, bairro: dados.bairro,
-                    cidade: dados.cidade, cep: dados.cep, observacoes: dados.observacoes,
-                    whatsapp: dados.whatsapp, instagram: dados.instagram
-                });
-                resultados.email = true; console.log('[CONFIRMACOES-OUTROS] ✅ E-mail enviado');
-            } catch (e) { console.warn('[CONFIRMACOES-OUTROS] ⚠️ E-mail falhou:', e.message); }
-            if (dados.whatsapp && dados.whatsapp.trim()) {
-                try {
-                    await enviarConfirmacaoOutrosEstados(dados);
-                    resultados.whatsapp = true; console.log('[CONFIRMACOES-OUTROS] ✅ WhatsApp enviado');
-                } catch (err) { console.warn('[CONFIRMACOES-OUTROS] ⚠️ WhatsApp falhou:', err.message); }
-            }
-            return resultados;
-        }
-
-        // ============================================
-        // CHAMAR EDGE FUNCTION (para Grande Floripa e SC quando pagamento confirmado)
-        // ============================================
-        async function chamarWebhookNotificacoes(solicitacaoId, cobrancaId) {
+                async function chamarWebhookNotificacoes(solicitacaoId, cobrancaId) {
             // PROTEÇÃO 1: Verificar se já foi chamado nesta sessão (memória)
             if (webhookJaChamado) { console.log('[WEBHOOK] Já foi chamado nesta sessão, ignorando...'); return; }
             // PROTEÇÃO 2: Verificar se já foi chamado em sessões anteriores (sessionStorage)
@@ -3058,17 +2864,16 @@
                     return;
                 }
             }
-            // Para OUTROS ESTADOS: criar solicitação e enviar mensagens imediatamente
+            // Para OUTROS ESTADOS: criar solicitação e notificar via Edge Function (não bloqueante)
             if (estado !== 'SC') {
                 const btnSubmit = document.getElementById('btnEnviar');
                 btnSubmit.innerHTML = '⏳ Enviando...'; btnSubmit.disabled = true;
                 document.getElementById('spinnerOverlay').classList.add('ativo');
                 try {
                     await criarSolicitacaoPendente();
-                    if (dadosSolicitacaoCache) {
-                        console.log('[ENVIAR-OUTROS] Enviando confirmações imediatas...');
-                        await enviarConfirmacoesOutrosEstados(dadosSolicitacaoCache);
-                    }
+                    // Notificações via Edge Function (não bloqueia a página)
+                    console.log('[ENVIAR-OUTROS] Solicitação criada. Disparando notificações via Edge Function...');
+                    chamarWebhookNotificacoes(solicitacaoIdAtual, null);
                     document.getElementById('spinnerOverlay').classList.remove('ativo');
                     document.getElementById('deliveryForm').style.display = 'none';
                     document.getElementById('successMsg').classList.add('show');
