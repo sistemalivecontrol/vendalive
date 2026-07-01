@@ -282,6 +282,12 @@
         </div>
     </div>
 <script>
+        // Debug global
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('[GLOBAL ERROR]', msg, 'Line:', line, 'Col:', col);
+            document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;"><h2>Erro na página</h2><p>' + msg + '</p><p>Linha: ' + line + '</p><p>Recarregue a página (Ctrl+F5) e verifique o console.</p></div>';
+            return false;
+        };
 
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
