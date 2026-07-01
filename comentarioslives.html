@@ -246,6 +246,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="header">
@@ -971,8 +972,7 @@
                         c.tipo,
                         c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : ''
                     ].map(v => `"${(v || '').replace(/"/g, '""')}"`).join(';'))
-                ].join('
-');
+                ].join('\n');
 
                 // Download
                 const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
