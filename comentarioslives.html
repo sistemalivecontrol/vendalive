@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VendaLive - Comentarios de Lives</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128250;</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>TV</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; color: #333; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-logo { width: 45px; height: 45px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .header-logo { width: 45px; height: 45px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #667eea; }
         .header-title { color: white; font-size: 22px; font-weight: 700; }
         .header-subtitle { color: rgba(255,255,255,0.8); font-size: 13px; }
         .header-right { display: flex; align-items: center; gap: 15px; }
@@ -155,7 +155,7 @@
 <body>
     <div class="header">
         <div class="header-left">
-            <div class="header-logo">&#128250;</div>
+            <div class="header-logo">VL</div>
             <div><div class="header-title">VendaLive</div><div class="header-subtitle">Comentarios de Lives</div></div>
         </div>
         <div class="header-right">
@@ -170,7 +170,7 @@
         <div class="instagram-section" id="instagramSection">
             <div class="instagram-header">
                 <div class="instagram-info">
-                    <div class="instagram-avatar" id="instagramAvatar">I</div>
+                    <div class="instagram-avatar" id="instagramAvatar">IG</div>
                     <div class="instagram-details">
                         <h3 id="instagramTitle">Instagram nao conectado</h3>
                         <p id="instagramSubtitle">Conecte uma conta do Instagram para importar comentarios de lives</p>
@@ -205,89 +205,9 @@
             </div>
         </div>
     </div>
-
-    <div class="modal-overlay" id="importModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-download"></i> Importar Comentarios da Live</h3>
-                <button class="modal-close" onclick="fecharModalImportar()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="contaAtivaInfo" style="margin-bottom: 15px; padding: 10px 15px; background: #e7eaff; border-radius: 10px; display: none;">
-                    <i class="fab fa-instagram" style="color: #667eea;"></i> <span style="font-weight: 600; color: #667eea;" id="contaAtivaNome"></span>
-                </div>
-                <div class="sugestoes-section" id="sugestoesSection">
-                    <div class="sugestoes-title"><i class="fas fa-magic"></i> Lives recentes encontradas</div>
-                    <div id="sugestoesContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Buscando lives...</p></div></div>
-                </div>
-                <div class="input-section">
-                    <label class="input-label"><i class="fas fa-link"></i> Ou cole o link/ID da live manualmente</label>
-                    <input type="text" class="input-field" id="liveUrlInput" placeholder="https://www.instagram.com/live/ABC123 ou ID da live">
-                    <button class="btn-buscar" id="btnBuscarComentarios" onclick="buscarComentariosManual()"><i class="fas fa-search"></i> Buscar Comentarios</button>
-                </div>
-                <div id="resultadosContainer" class="hidden" style="margin-top: 20px;">
-                    <div class="sugestoes-title">Comentarios encontrados</div>
-                    <div id="comentariosResultado"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="tokenModal">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-key"></i> Adicionar Conta via Token</h3>
-                <button class="modal-close" onclick="fecharModalToken()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info" style="margin-bottom: 15px;">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <strong>Como obter o Access Token:</strong><br>
-                        1. Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a><br>
-                        2. Selecione seu app e gere um token com permissao <code>instagram_business_basic</code><br>
-                        3. Cole o token abaixo
-                    </div>
-                </div>
-                <label class="input-label"><i class="fas fa-lock"></i> Access Token do Instagram</label>
-                <textarea class="input-field token-input" id="tokenInput" rows="3" placeholder="EAAa... (cole o token aqui)"></textarea>
-                <label class="input-label" style="margin-top: 10px;"><i class="fas fa-user"></i> Nome de usuario (opcional)</label>
-                <input type="text" class="input-field" id="tokenUsernameInput" placeholder="pingodegentelojaebrecho">
-                <div class="token-help">
-                    O token sera validado automaticamente ao salvar. Certifique-se de que a conta e do tipo <strong>Business</strong> ou <strong>Creator</strong>.
-                </div>
-                <button class="btn-buscar" id="btnSalvarToken" onclick="salvarTokenManual()" style="margin-top: 15px;">
-                    <i class="fas fa-save"></i> Salvar Conta
-                </button>
-                <div id="tokenValidacao" style="margin-top: 10px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="viewModal">
-        <div class="modal" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-comments"></i> Comentarios da Live</h3>
-                <button class="modal-close" onclick="fecharModalView()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="filters-bar" style="margin-bottom: 15px;">
-                    <button class="filter-btn active" onclick="filtrarComentarios('todos', this)">Todos</button>
-                    <button class="filter-btn" onclick="filtrarComentarios('venda', this)">Vendas</button>
-                    <button class="filter-btn" onclick="filtrarComentarios('interesse', this)">Interesses</button>
-                    <button class="filter-btn" onclick="filtrarComentarios('duvida', this)">Duvidas</button>
-                </div>
-                <div id="comentariosViewContainer"></div>
-            </div>
-        </div>
-    </div>
 <script>
-        // Debug global
-        window.onerror = function(msg, url, line, col, error) {
-            console.error('[GLOBAL ERROR]', msg, 'Line:', line, 'Col:', col);
-            document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;"><h2>Erro na página</h2><p>' + msg + '</p><p>Linha: ' + line + '</p><p>Recarregue a página (Ctrl+F5) e verifique o console.</p></div>';
-            return false;
-        };
+
+
 
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
@@ -818,7 +738,7 @@
                     const dataLive = live.timestamp ? new Date(live.timestamp).toLocaleDateString('pt-BR') : 'Data desconhecida';
                     const horaLive = live.timestamp ? new Date(live.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                     const caption = live.caption ? live.caption.substring(0, 50) + (live.caption.length > 50 ? '...' : '') : 'Sem descricao';
-                    return '<div class="sugestao-item" onclick="selecionarLive('' + live.id + '', '' + (live.permalink || '') + '')"><div class="sugestao-info"><span class="sugestao-icon">&#128250;</span><div><div class="sugestao-text">' + caption + '</div><div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + ' <i class="fas fa-comment"></i> ' + (live.comments_count || 0) + ' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #667eea;"></i></div>';
+                    return '<div class="sugestao-item" onclick="selecionarLive('' + live.id + '', '' + (live.permalink || '') + '')"><div class="sugestao-info"><span class="sugestao-icon">TV</span><div><div class="sugestao-text">' + caption + '</div><div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + ' <i class="fas fa-comment"></i> ' + (live.comments_count || 0) + ' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #667eea;"></i></div>';
                 }).join('');
             } catch (error) { 
                 console.error('[COMENTARIOS-LIVES] Erro ao buscar sugestoes:', error); 
@@ -1065,8 +985,8 @@
         document.getElementById('tokenModal').addEventListener('click', function(e) { if (e.target === this) fecharModalToken(); });
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalView(); fecharModalToken(); } });
     
-</body>
-</html>
+    
+    
     </script>
 </body>
 </html>
