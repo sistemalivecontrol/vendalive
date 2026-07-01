@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendaLive - Monitor Instagram</title>
+    <link rel="icon" type="image/svg+xml" href="../images/favicon-vendalive.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo {
+            width: 45px; height: 45px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .header-title {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .header-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+        }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .btn-voltar {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+        .user-info {
+            color: white;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i { color: #667eea; }
+
+        /* Login Section */
+        .login-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .login-section h2 {
+            font-size: 28px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        .login-section p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        .btn-instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);
+        }
+        .btn-instagram:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 39, 67, 0.5);
+        }
+        .btn-instagram i { font-size: 20px; }
+
+        /* Config Section */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .config-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+        .config-item label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .config-item input:focus, .config-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .config-item .hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .btn-salvar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        .btn-salvar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Posts Grid */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .post-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .post-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 50px;
+        }
+        .post-content {
+            padding: 20px;
+        }
+        .post-caption {
+            font-size: 14px;
+            color: #495057;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .post-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        .post-stat i { color: #dc2743; }
+        .btn-ver-comentarios {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-ver-comentarios:hover {
+            opacity: 0.9;
+        }
+
+        /* Comments Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 18px;
+            color: #1a1a2e;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+        }
+        .modal-body {
+            padding: 20px 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .comment-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .comment-user {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 14px;
+        }
+        .comment-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .comment-text {
+            font-size: 14px;
+            color: #495057;
+            line-height: 1.5;
+        }
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-action {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-venda {
+            background: #28a745;
+            color: white;
+        }
+        .btn-venda:hover { background: #218838; }
+        .btn-interesse {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-interesse:hover { background: #e0a800; }
+        .btn-duvida {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-duvida:hover { background: #138496; }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid #e9ecef;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #495057;
+        }
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .loading i {
+            font-size: 40px;
+            animation: spin 1s linear infinite;
+            color: #667eea;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        /* Hidden */
+        .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; padding: 15px; }
+            .header-title { font-size: 18px; }
+            .container { padding: 15px; }
+            .posts-grid { grid-template-columns: 1fr; }
+            .config-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo"><i class="fas fa-bolt"></i></div>
+            <div>
+                <div class="header-title">VendaLive</div>
+                <div class="header-subtitle">Monitor Instagram</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info" id="userInfo">
+                <i class="fas fa-user"></i>
+                <span id="userName">Carregando...</span>
+            </div>
+            <button class="btn-voltar" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Alertas -->
+        <div id="alertContainer"></div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card login-section">
+            <i class="fab fa-instagram" style="font-size: 60px; color: #dc2743; margin-bottom: 20px;"></i>
+            <h2>Conectar Instagram</h2>
+            <p>Conecte sua conta do Instagram para monitorar comentários e gerenciar vendas em tempo real.</p>
+            <button class="btn-instagram" onclick="conectarInstagram()">
+                <i class="fab fa-instagram"></i>
+                Conectar com Instagram
+            </button>
+        </div>
+
+        <!-- Config Section -->
+        <div id="configSection" class="card hidden">
+            <div class="card-title">
+                <i class="fas fa-cog"></i>
+                Configuração do Instagram
+            </div>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>App ID</label>
+                    <input type="text" id="appId" value="1039076025227775" readonly>
+                    <div class="hint">ID do aplicativo Meta</div>
+                </div>
+                <div class="config-item">
+                    <label>App Secret</label>
+                    <input type="password" id="appSecret" placeholder="Cole o App Secret aqui">
+                    <div class="hint">Chave secreta do aplicativo (obter em Configurações do app)</div>
+                </div>
+                <div class="config-item">
+                    <label>Page ID</label>
+                    <input type="text" id="pageId" value="1098792813327949" readonly>
+                    <div class="hint">ID da Página do Facebook vinculada</div>
+                </div>
+                <div class="config-item">
+                    <label>Instagram Business ID</label>
+                    <input type="text" id="instagramId" value="17841425335096578" readonly>
+                    <div class="hint">ID da conta Instagram Business</div>
+                </div>
+                <div class="config-item">
+                    <label>Access Token</label>
+                    <input type="password" id="accessToken" placeholder="Cole o token de acesso aqui">
+                    <div class="hint">Token gerado no Graph API Explorer</div>
+                </div>
+                <div class="config-item">
+                    <label>Username</label>
+                    <input type="text" id="username" value="vendaliveoficial" readonly>
+                    <div class="hint">Perfil do Instagram</div>
+                </div>
+            </div>
+            <button class="btn-salvar" onclick="salvarConfiguracao()">
+                <i class="fas fa-save"></i> Salvar Configuração
+            </button>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="statsSection" class="hidden">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="statPosts">0</div>
+                    <div class="stat-label">Posts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statComentarios">0</div>
+                    <div class="stat-label">Comentários</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statVendas">0</div>
+                    <div class="stat-label">Vendas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statInteresses">0</div>
+                    <div class="stat-label">Interesses</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Section -->
+        <div id="postsSection" class="card hidden">
+            <div class="card-title">
+                <i class="fab fa-instagram"></i>
+                Posts do Instagram
+            </div>
+            <div class="filters-bar">
+                <button class="filter-btn active" onclick="filtrarPosts('todos')">Todos</button>
+                <button class="filter-btn" onclick="filtrarPosts('com_comentarios')">Com Comentários</button>
+                <button class="filter-btn" onclick="filtrarPosts('sem_comentarios')">Sem Comentários</button>
+                <button class="filter-btn" onclick="filtrarPosts('vendas')">Vendas</button>
+                <button class="filter-btn" onclick="filtrarPosts('interesses')">Interesses</button>
+            </div>
+            <div id="postsContainer" class="posts-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Carregando posts...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div class="modal-overlay" id="commentsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-comments"></i> Comentários do Post</h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="commentsContainer">
+                <!-- Comments will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // SUPABASE CONFIG
+        // ========================================
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        let supabaseClient = null;
+        let usuarioLogado = null;
+        let postsData = [];
+        let comentariosData = [];
+        let configuracao = {};
+
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('[INSTAGRAM-MONITOR] Iniciando...');
+
+            // Aguardar Supabase carregar
+            let tentativas = 0;
+            while (tentativas < 20) {
+                if (typeof window.supabase !== 'undefined') {
+                    break;
+                }
+                await new Promise(r => setTimeout(r, 300));
+                tentativas++;
+            }
+
+            if (typeof window.supabase === 'undefined') {
+                console.error('[INSTAGRAM-MONITOR] Supabase nao carregou');
+                mostrarAlerta('Erro ao carregar biblioteca. Recarregue a pagina.', 'error');
+                return;
+            }
+
+            const { createClient } = window.supabase;
+            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Verificar autenticação
+            await verificarAutenticacao();
+        });
+
+        async function verificarAutenticacao() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    console.log('[INSTAGRAM-MONITOR] Sem sessao, redirecionando...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                usuarioLogado = session.user;
+                document.getElementById('userName').textContent = usuarioLogado.email;
+
+                // Carregar configuração do Instagram
+                await carregarConfiguracao();
+
+            } catch (erro) {
+                console.error('[INSTAGRAM-MONITOR] Erro auth:', erro);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ========================================
+        // CONFIGURAÇÃO
+        // ========================================
+        async function carregarConfiguracao() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('*')
+                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .single();
+
+                if (data && data.instagram_access_token) {
+                    configuracao = {
+                        appId: data.instagram_app_id || '1039076025227775',
+                        appSecret: data.instagram_app_secret || '',
+                        pageId: data.instagram_page_id || '1098792813327949',
+                        instagramId: data.instagram_business_id || '17841425335096578',
+                        accessToken: data.instagram_access_token || '',
+                        username: data.instagram_username || 'vendaliveoficial'
+                    };
+
+                    // Preencher campos
+                    document.getElementById('appId').value = configuracao.appId;
+                    document.getElementById('appSecret').value = configuracao.appSecret;
+                    document.getElementById('pageId').value = configuracao.pageId;
+                    document.getElementById('instagramId').value = configuracao.instagramId;
+                    document.getElementById('accessToken').value = configuracao.accessToken;
+                    document.getElementById('username').value = configuracao.username;
+
+                    // Mostrar seção de posts
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('configSection').classList.remove('hidden');
+                    document.getElementById('statsSection').classList.remove('hidden');
+                    document.getElementById('postsSection').classList.remove('hidden');
+
+                    // Carregar posts
+                    await carregarPosts();
+                } else {
+                    // Mostrar tela de login/configuração
+                    document.getElementById('loginSection').classList.remove('hidden');
+                    document.getElementById('configSection').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.log('[INSTAGRAM-MONITOR] Config nao encontrada, mostrando login');
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('configSection').classList.remove('hidden');
+            }
+        }
+
+        async function salvarConfiguracao() {
+            const config = {
+                instagram_app_id: document.getElementById('appId').value,
+                instagram_app_secret: document.getElementById('appSecret').value,
+                instagram_page_id: document.getElementById('pageId').value,
+                instagram_business_id: document.getElementById('instagramId').value,
+                instagram_access_token: document.getElementById('accessToken').value,
+                instagram_username: document.getElementById('username').value
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .upsert({
+                        cliente_id: '0824668c-1e10-415e-8998-09d72ef47dcb',
+                        ...config
+                    });
+
+                if (error) throw error;
+
+                mostrarAlerta('Configuracao salva com sucesso!', 'success');
+
+                // Recarregar posts
+                configuracao = {
+                    appId: config.instagram_app_id,
+                    appSecret: config.instagram_app_secret,
+                    pageId: config.instagram_page_id,
+                    instagramId: config.instagram_business_id,
+                    accessToken: config.instagram_access_token,
+                    username: config.instagram_username
+                };
+
+                document.getElementById('statsSection').classList.remove('hidden');
+                document.getElementById('postsSection').classList.remove('hidden');
+                await carregarPosts();
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao salvar:', error);
+                mostrarAlerta('Erro ao salvar configuracao: ' + error.message, 'error');
+            }
+        }
+
+        // ========================================
+        // INSTAGRAM API
+        // ========================================
+        async function carregarPosts() {
+            if (!configuracao.accessToken) {
+                mostrarAlerta('Configure o Access Token primeiro', 'error');
+                return;
+            }
+
+            try {
+                const url = `https://graph.facebook.com/v25.0/${configuracao.instagramId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=${configuracao.accessToken}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                postsData = data.data || [];
+
+                // Atualizar stats
+                document.getElementById('statPosts').textContent = postsData.length;
+
+                // Calcular comentários totais
+                const totalComentarios = postsData.reduce((sum, p) => sum + (p.comments_count || 0), 0);
+                document.getElementById('statComentarios').textContent = totalComentarios;
+
+                renderizarPosts(postsData);
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao carregar posts:', error);
+                mostrarAlerta('Erro ao carregar posts: ' + error.message, 'error');
+            }
+        }
+
+        async function carregarComentarios(mediaId) {
+            if (!configuracao.accessToken) return;
+
+            try {
+                const url = `https://graph.facebook.com/v25.0/${mediaId}/comments?fields=id,text,username,timestamp,like_count&access_token=${configuracao.accessToken}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                comentariosData = data.data || [];
+                renderizarComentarios(comentariosData);
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao carregar comentarios:', error);
+                document.getElementById('commentsContainer').innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Erro ao carregar comentarios: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // ========================================
+        // RENDERIZAÇÃO
+        // ========================================
+        function renderizarPosts(posts) {
+            const container = document.getElementById('postsContainer');
+
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6c757d;">
+                        <i class="fab fa-instagram" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <p>Nenhum post encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = posts.map(post => {
+                const caption = post.caption || 'Sem legenda';
+                const shortCaption = caption.length > 100 ? caption.substring(0, 100) + '...' : caption;
+                const dataPost = post.timestamp ? new Date(post.timestamp).toLocaleDateString('pt-BR') : '';
+
+                return `
+                    <div class="post-card" data-id="${post.id}">
+                        <div class="post-image">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-caption">${shortCaption}</div>
+                            <div class="post-stats">
+                                <div class="post-stat">
+                                    <i class="fas fa-comment"></i>
+                                    <span>${post.comments_count || 0} comentarios</span>
+                                </div>
+                                <div class="post-stat">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>${dataPost}</span>
+                                </div>
+                            </div>
+                            <button class="btn-ver-comentarios" onclick="abrirComentarios('${post.id}')">
+                                <i class="fas fa-comments"></i> Ver Comentarios
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarComentarios(comentarios) {
+            const container = document.getElementById('commentsContainer');
+
+            if (comentarios.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6c757d;">
+                        <i class="fas fa-comment-slash" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <p>Nenhum comentario neste post</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = comentarios.map(comment => {
+                const dataComment = comment.timestamp ? new Date(comment.timestamp).toLocaleString('pt-BR') : '';
+                const texto = comment.text || '';
+
+                // Detectar tipo de comentario
+                let tipo = 'duvida';
+                if (texto.toLowerCase().includes('quero') || texto.toLowerCase().includes('comprei') || texto.toLowerCase().includes('vou querer')) {
+                    tipo = 'venda';
+                } else if (texto.toLowerCase().includes('quanto') || texto.toLowerCase().includes('valor') || texto.toLowerCase().includes('preco') || texto.toLowerCase().includes('preço')) {
+                    tipo = 'interesse';
+                }
+
+                const btnClass = tipo === 'venda' ? 'btn-venda' : tipo === 'interesse' ? 'btn-interesse' : 'btn-duvida';
+                const btnText = tipo === 'venda' ? 'Venda' : tipo === 'interesse' ? 'Interesse' : 'Duvida';
+
+                return `
+                    <div class="comment-item" data-id="${comment.id}">
+                        <div class="comment-header">
+                            <span class="comment-user">@${comment.username || 'usuario'}</span>
+                            <span class="comment-time">${dataComment}</span>
+                        </div>
+                        <div class="comment-text">${texto}</div>
+                        <div class="comment-actions">
+                            <button class="btn-action ${btnClass}" onclick="classificarComentario('${comment.id}', '${tipo}', '${comment.username}', '${texto.replace(/'/g, "\'")}')">
+                                <i class="fas fa-tag"></i> ${btnText}
+                            </button>
+                            <button class="btn-action btn-interesse" onclick="converterVenda('${comment.id}', '${comment.username}', '${texto.replace(/'/g, "\'")}')">
+                                <i class="fas fa-shopping-cart"></i> Converter Venda
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========================================
+        // AÇÕES
+        // ========================================
+        function abrirComentarios(mediaId) {
+            document.getElementById('commentsModal').classList.add('active');
+            document.getElementById('commentsContainer').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Carregando comentarios...</p>
+                </div>
+            `;
+            carregarComentarios(mediaId);
+        }
+
+        function fecharModal() {
+            document.getElementById('commentsModal').classList.remove('active');
+        }
+
+        async function classificarComentario(commentId, tipo, username, texto) {
+            try {
+                const { error } = await supabaseClient
+                    .from('instagram_comentarios')
+                    .upsert({
+                        cliente_id: '0824668c-1e10-415e-8998-09d72ef47dcb',
+                        comment_id: commentId,
+                        username: username,
+                        texto: texto,
+                        tipo: tipo,
+                        status: 'novo',
+                        created_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+
+                mostrarAlerta(`Comentario classificado como: ${tipo}`, 'success');
+                atualizarStats();
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao classificar:', error);
+                mostrarAlerta('Erro ao classificar: ' + error.message, 'error');
+            }
+        }
+
+        async function converterVenda(commentId, username, texto) {
+            try {
+                // Salvar como venda
+                await classificarComentario(commentId, 'venda', username, texto);
+
+                // Abrir modal de venda (pode ser integrado com vendas.html)
+                mostrarAlerta('Venda registrada! Cliente: @' + username, 'success');
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao converter:', error);
+            }
+        }
+
+        async function atualizarStats() {
+            try {
+                const { data: vendas } = await supabaseClient
+                    .from('instagram_comentarios')
+                    .select('*')
+                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .eq('tipo', 'venda');
+
+                const { data: interesses } = await supabaseClient
+                    .from('instagram_comentarios')
+                    .select('*')
+                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .eq('tipo', 'interesse');
+
+                document.getElementById('statVendas').textContent = vendas ? vendas.length : 0;
+                document.getElementById('statInteresses').textContent = interesses ? interesses.length : 0;
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro stats:', error);
+            }
+        }
+
+        // ========================================
+        // FILTROS
+        // ========================================
+        function filtrarPosts(filtro) {
+            // Atualizar botões
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            let postsFiltrados = [...postsData];
+
+            switch(filtro) {
+                case 'com_comentarios':
+                    postsFiltrados = postsData.filter(p => (p.comments_count || 0) > 0);
+                    break;
+                case 'sem_comentarios':
+                    postsFiltrados = postsData.filter(p => (p.comments_count || 0) === 0);
+                    break;
+                case 'vendas':
+                    // Filtrar posts que têm comentários classificados como venda
+                    // Implementação futura
+                    break;
+                case 'interesses':
+                    // Filtrar posts que têm comentários classificados como interesse
+                    // Implementação futura
+                    break;
+            }
+
+            renderizarPosts(postsFiltrados);
+        }
+
+        // ========================================
+        // LOGIN INSTAGRAM
+        // ========================================
+        function conectarInstagram() {
+            const appId = document.getElementById('appId').value;
+            const redirectUri = 'https://vendalive.com.br/instagram-monitor.html';
+            const scope = 'instagram_basic,instagram_manage_comments,instagram_manage_messages,pages_read_engagement';
+
+            const url = `https://www.facebook.com/v25.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=token`;
+
+            window.location.href = url;
+        }
+
+        // Verificar se voltou do OAuth
+        function verificarOAuthCallback() {
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token=')) {
+                const token = hash.split('access_token=')[1].split('&')[0];
+                document.getElementById('accessToken').value = token;
+                mostrarAlerta('Token recebido! Salve a configuracao.', 'success');
+
+                // Limpar hash
+                history.replaceState(null, null, ' ');
+            }
+        }
+
+        verificarOAuthCallback();
+
+        // ========================================
+        // UTILITÁRIOS
+        // ========================================
+        function mostrarAlerta(mensagem, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-error' : 'alert-info';
+            const icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+
+            container.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas ${icon}"></i>
+                    ${mensagem}
+                </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('commentsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+    </script>
+</body>
+</html>
