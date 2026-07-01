@@ -321,7 +321,7 @@
 
         async function carregarContasInstagram() {
             try {
-                const { data, error } = await supabaseClient.from('configuracoes_pagamento').select('instagram_access_token, instagram_business_id, instagram_username, instagram_accounts').eq('cliente_id', clienteId).single();
+                const { data, error } = await supabaseClient.from('configuracoes_pagamento').select('instagram_access_token, instagram_business_id, instagram_username, instagram_accounts').eq('cliente_id', clienteId).maybeSingle();
                 contasInstagram = [];
                 if (data) {
                     if (data.instagram_access_token && data.instagram_username) {
