@@ -634,9 +634,9 @@
                 document.getElementById('userName').textContent = usuarioLogado.email;
 
                 const { data: userData } = await supabaseClient
-                    .from('usuarios')
+                    .from('usuarios_pg')
                     .select('cliente_id')
-                    .eq('id', usuarioLogado.id)
+                    .eq('auth_id', usuarioLogado.id)
                     .single();
 
                 if (userData && userData.cliente_id) {
