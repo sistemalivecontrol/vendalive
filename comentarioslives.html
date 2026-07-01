@@ -388,11 +388,12 @@
                     contasSection.classList.remove('hidden');
                     contasContainer.innerHTML = contasInstagram.map((conta) => {
                         const isAtiva = contaAtiva && contaAtiva.username === conta.username;
-                        return '<div class="conta-item ' + (isAtiva ? 'ativa' : '') + '" onclick="selecionarConta('' + conta.username + '')">' +
+                        return '<div class="conta-item ' + (isAtiva ? 'ativa' : '') + '" onclick="selecionarConta(' + conta.username + ')">' +
                             '<div class="conta-item-info"><div class="conta-avatar">' + conta.username.charAt(0).toUpperCase() + '</div>' +
                             '<div><div class="conta-nome">@' + conta.username + '</div><div class="conta-username">' + (conta.instagramId || 'ID nao disponivel') + '</div></div></div>' +
-                            '<div class="conta-actions">' + (isAtiva ? '<span class="conta-badge"><i class="fas fa-check"></i> Ativa</span>' : '<button class="btn-conta-action btn-usar" onclick="event.stopPropagation(); selecionarConta('' + conta.username + '')" title="Usar esta conta"><i class="fas fa-play"></i></button>') +
-                            '<button class="btn-conta-action btn-remover-conta" onclick="event.stopPropagation(); removerConta('' + conta.username + '')" title="Remover conta"><i class="fas fa-trash"></i></button></div></div>';
+                            '<div class="conta-actions">' + (isAtiva ? '<span class="conta-badge"><i class="fas fa-check"></i> Ativa</span>' : '<button class="btn-conta-action btn-usar" onclick="event.stopPropagation(); selecionarConta(' + conta.username + ')" title="Usar esta conta"><i class="fas fa-play"></i></button>') +
+                            '<button class="btn-conta-action btn-remover-conta" onclick="event.stopPropagation(); removerConta(' + conta.username + ')" title="Remover conta"><i class="fas fa-trash"></i></button></div></div>';
+
                     }).join('');
                 } else { 
                     contasSection.classList.add('hidden'); 
