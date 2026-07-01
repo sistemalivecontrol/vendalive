@@ -733,44 +733,57 @@
             console.log('[INSTAGRAM-MONITOR] Salvando config:', config);
 
             try {
-                // Verificar se a tabela existe
-                const { data: testData, error: testError } = await supabaseClient
+                // Verificar se ja existe registro para este cliente
+                const { data: existing, error: selectError } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .select('id')
                     .eq('cliente_id', clienteId)
                     .limit(1);
 
-                if (testError && testError.code === '42P01') {
-                    // Tabela nao existe - salvar no localStorage
-                    localStorage.setItem('instagram_config_' + clienteId, JSON.stringify(config));
-                    mostrarAlerta('Configuracao salva localmente (tabela nao existe no banco). Execute o SQL primeiro!', 'info');
-
-                    configuracao = {
-                        appId: config.instagram_app_id,
-                        appSecret: config.instagram_app_secret,
-                        pageId: config.instagram_page_id,
-                        instagramId: config.instagram_business_id,
-                        accessToken: config.instagram_access_token,
-                        username: config.instagram_username
-                    };
-
-                    document.getElementById('statsSection').classList.remove('hidden');
-                    document.getElementById('postsSection').classList.remove('hidden');
-                    await carregarPosts();
-                    return;
+                if (selectError) {
+                    console.error('[INSTAGRAM-MONITOR] Erro SELECT:', selectError);
+                    throw selectError;
                 }
 
-                // Tabela existe - salvar no banco
-                const { error } = await supabaseClient
-                    .from('configuracoes_pagamento')
-                    .upsert({
-                        cliente_id: clienteId,
-                        ...config
-                    }, { onConflict: 'cliente_id' });
+                let saveError = null;
 
-                if (error) {
-                    console.error('[INSTAGRAM-MONITOR] Erro upsert:', error);
-                    throw error;
+                if (existing && existing.length > 0) {
+                    // UPDATE - ja existe, atualizar
+                    console.log('[INSTAGRAM-MONITOR] Atualizando registro existente...');
+                    const { error } = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update({
+                            instagram_app_id: config.instagram_app_id,
+                            instagram_app_secret: config.instagram_app_secret,
+                            instagram_page_id: config.instagram_page_id,
+                            instagram_business_id: config.instagram_business_id,
+                            instagram_access_token: config.instagram_access_token,
+                            instagram_username: config.instagram_username
+                        })
+                        .eq('cliente_id', clienteId);
+
+                    saveError = error;
+                } else {
+                    // INSERT - novo registro
+                    console.log('[INSTAGRAM-MONITOR] Inserindo novo registro...');
+                    const { error } = await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert({
+                            cliente_id: clienteId,
+                            instagram_app_id: config.instagram_app_id,
+                            instagram_app_secret: config.instagram_app_secret,
+                            instagram_page_id: config.instagram_page_id,
+                            instagram_business_id: config.instagram_business_id,
+                            instagram_access_token: config.instagram_access_token,
+                            instagram_username: config.instagram_username
+                        });
+
+                    saveError = error;
+                }
+
+                if (saveError) {
+                    console.error('[INSTAGRAM-MONITOR] Erro save:', saveError);
+                    throw saveError;
                 }
 
                 mostrarAlerta('Configuracao salva com sucesso!', 'success');
@@ -793,7 +806,12 @@
 
                 // Fallback: salvar no localStorage
                 localStorage.setItem('instagram_config_' + clienteId, JSON.stringify(config));
-                mostrarAlerta('Configuracao salva localmente. Erro no banco: ' + error.message, 'info');
+
+                if (error.code === '42P01') {
+                    mostrarAlerta('Tabela nao existe! Execute o SQL primeiro. Config salva localmente.', 'error');
+                } else {
+                    mostrarAlerta('Configuracao salva localmente. Erro no banco: ' + error.message, 'info');
+                }
 
                 configuracao = {
                     appId: config.instagram_app_id,
