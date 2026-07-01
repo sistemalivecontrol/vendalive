@@ -84,19 +84,29 @@
         }
         .card-title i { color: #667eea; }
 
-        .login-section {
+        /* Status Section */
+        .status-section {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
-        .login-section h2 {
-            font-size: 28px;
+        .status-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .status-icon.desconectado { color: #dc3545; }
+        .status-icon.conectado { color: #28a745; }
+        .status-title {
+            font-size: 24px;
             color: #1a1a2e;
             margin-bottom: 10px;
         }
-        .login-section p {
+        .status-text {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             font-size: 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .btn-instagram {
             background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
@@ -118,44 +128,8 @@
             box-shadow: 0 6px 20px rgba(220, 39, 67, 0.5);
         }
         .btn-instagram i { font-size: 20px; }
-
-        .config-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .config-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #e9ecef;
-        }
-        .config-item label {
-            display: block;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .config-item input, .config-item select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        .config-item input:focus, .config-item select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .config-item .hint {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-        .btn-salvar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-desconectar {
+            background: #dc3545;
             color: white;
             border: none;
             padding: 12px 30px;
@@ -164,13 +138,63 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 15px;
+            margin-left: 15px;
         }
-        .btn-salvar:hover {
+        .btn-desconectar:hover {
+            background: #c82333;
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
+        /* Perfil Info */
+        .perfil-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .perfil-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .perfil-dados h3 {
+            font-size: 20px;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+        .perfil-dados p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .perfil-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .perfil-stat {
+            text-align: center;
+        }
+        .perfil-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .perfil-stat-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* Posts Grid */
         .posts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -239,6 +263,7 @@
             opacity: 0.9;
         }
 
+        /* Comments Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -342,6 +367,7 @@
         }
         .btn-duvida:hover { background: #138496; }
 
+        /* Filters */
         .filters-bar {
             display: flex;
             gap: 15px;
@@ -368,6 +394,7 @@
             border-color: #667eea;
         }
 
+        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
@@ -380,6 +407,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Alert */
         .alert {
             padding: 15px 20px;
             border-radius: 10px;
@@ -392,6 +420,7 @@
         .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 
+        /* Stats Cards */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -416,47 +445,16 @@
             margin-top: 5px;
         }
 
+        /* Hidden */
         .hidden { display: none !important; }
 
-        .btn-refresh {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-refresh:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-        }
-
-        .btn-refresh:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-refresh i {
-            transition: transform 0.5s;
-        }
-        .btn-refresh.spinning i {
-            animation: spin 1s linear infinite;
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 10px; padding: 15px; }
             .header-title { font-size: 18px; }
             .container { padding: 15px; }
             .posts-grid { grid-template-columns: 1fr; }
-            .config-grid { grid-template-columns: 1fr; }
+            .perfil-info { flex-direction: column; text-align: center; }
         }
     </style>
 <base target="_blank">
@@ -484,58 +482,42 @@
     <div class="container">
         <div id="alertContainer"></div>
 
-        <!-- Login Section -->
-        <div id="loginSection" class="card login-section">
-            <i class="fab fa-instagram" style="font-size: 60px; color: #dc2743; margin-bottom: 20px;"></i>
-            <h2>Conectar Instagram</h2>
-            <p>Conecte sua conta do Instagram para monitorar comentarios e gerenciar vendas.</p>
+        <!-- Status Desconectado -->
+        <div id="statusDesconectado" class="card status-section">
+            <i class="fab fa-instagram status-icon desconectado"></i>
+            <h2 class="status-title">Instagram nao conectado</h2>
+            <p class="status-text">
+                Conecte sua conta do Instagram para monitorar comentarios, 
+                identificar vendas e gerenciar seus clientes em tempo real.
+            </p>
             <button class="btn-instagram" onclick="conectarInstagram()">
                 <i class="fab fa-instagram"></i>
                 Conectar com Instagram
             </button>
         </div>
 
-        <!-- Config Section -->
-        <div id="configSection" class="card hidden">
-            <div class="card-title">
-                <i class="fas fa-cog"></i>
-                Configuracao do Instagram
+        <!-- Status Conectado -->
+        <div id="statusConectado" class="card hidden">
+            <div class="perfil-info">
+                <div class="perfil-avatar" id="perfilAvatar">IG</div>
+                <div class="perfil-dados">
+                    <h3 id="perfilUsername">@username</h3>
+                    <p id="perfilStatus"><i class="fas fa-check-circle" style="color: #28a745;"></i> Conectado</p>
+                    <div class="perfil-stats">
+                        <div class="perfil-stat">
+                            <div class="perfil-stat-value" id="perfilPosts">0</div>
+                            <div class="perfil-stat-label">Posts</div>
+                        </div>
+                        <div class="perfil-stat">
+                            <div class="perfil-stat-value" id="perfilSeguidores">0</div>
+                            <div class="perfil-stat-label">Seguidores</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-desconectar" onclick="desconectarInstagram()">
+                    <i class="fas fa-unlink"></i> Desconectar
+                </button>
             </div>
-            <div class="config-grid">
-                <div class="config-item">
-                    <label>App ID</label>
-                    <input type="text" id="appId" value="1039076025227775" readonly>
-                    <div class="hint">ID do aplicativo Meta</div>
-                </div>
-                <div class="config-item">
-                    <label>App Secret</label>
-                    <input type="password" id="appSecret" placeholder="Cole o App Secret aqui">
-                    <div class="hint">Chave secreta do aplicativo</div>
-                </div>
-                <div class="config-item">
-                    <label>Page ID</label>
-                    <input type="text" id="pageId" value="1098792813327949" readonly>
-                    <div class="hint">ID da Pagina do Facebook vinculada</div>
-                </div>
-                <div class="config-item">
-                    <label>Instagram Business ID</label>
-                    <input type="text" id="instagramId" value="17841425335096578" readonly>
-                    <div class="hint">ID da conta Instagram Business</div>
-                </div>
-                <div class="config-item">
-                    <label>Access Token</label>
-                    <input type="password" id="accessToken" placeholder="Cole o token de acesso aqui">
-                    <div class="hint">Token gerado no Graph API Explorer</div>
-                </div>
-                <div class="config-item">
-                    <label>Username</label>
-                    <input type="text" id="username" value="vendaliveoficial" readonly>
-                    <div class="hint">Perfil do Instagram</div>
-                </div>
-            </div>
-            <button class="btn-salvar" onclick="salvarConfiguracao()">
-                <i class="fas fa-save"></i> Salvar Configuracao
-            </button>
         </div>
 
         <!-- Stats Section -->
@@ -567,7 +549,7 @@
                     <i class="fab fa-instagram"></i>
                     Posts do Instagram
                 </div>
-                <button class="btn-refresh" id="btnRefresh" onclick="carregarPosts()">
+                <button class="btn-refresh" id="btnRefresh" onclick="carregarPosts()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-sync-alt"></i> Atualizar
                 </button>
             </div>
@@ -603,12 +585,20 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
+        // Configuracao do APP VendaLive (fixo, nao muda por cliente)
+        const APP_CONFIG = {
+            appId: '1039076025227775',
+            appSecret: 'd9b3fb77365c4026a088613d915a9bf1',
+            redirectUri: 'https://vendalive.com.br/instagram-monitor.html',
+            scope: 'instagram_basic,instagram_manage_comments,instagram_manage_messages,pages_read_engagement,pages_show_list'
+        };
+
         let supabaseClient = null;
         let usuarioLogado = null;
         let clienteId = null;
         let postsData = [];
         let comentariosData = [];
-        let configuracao = {};
+        let instagramConfig = null;
         let currentMediaId = null;
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -622,7 +612,6 @@
             }
 
             if (typeof window.supabase === 'undefined') {
-                console.error('[INSTAGRAM-MONITOR] Supabase nao carregou');
                 mostrarAlerta('Erro ao carregar biblioteca. Recarregue a pagina.', 'error');
                 return;
             }
@@ -637,7 +626,6 @@
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
-                    console.log('[INSTAGRAM-MONITOR] Sem sessao');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -645,8 +633,7 @@
                 usuarioLogado = session.user;
                 document.getElementById('userName').textContent = usuarioLogado.email;
 
-                // Buscar cliente_id do usuario logado
-                const { data: userData, error: userError } = await supabaseClient
+                const { data: userData } = await supabaseClient
                     .from('usuarios')
                     .select('cliente_id')
                     .eq('id', usuarioLogado.id)
@@ -654,12 +641,14 @@
 
                 if (userData && userData.cliente_id) {
                     clienteId = userData.cliente_id;
-                    console.log('[INSTAGRAM-MONITOR] cliente_id:', clienteId);
                 } else {
-                    // Fallback para o cliente do Pingo de Gente
                     clienteId = '0824668c-1e10-415e-8998-09d72ef47dcb';
                 }
 
+                // Verificar se voltou do OAuth
+                await verificarOAuthCallback();
+
+                // Carregar configuracao do Instagram
                 await carregarConfiguracao();
 
             } catch (erro) {
@@ -668,178 +657,276 @@
             }
         }
 
+        // ========================================
+        // OAUTH - CONEXAO AUTOMATICA
+        // ========================================
+        function conectarInstagram() {
+            // Gerar state para seguranca
+            const state = btoa(Math.random().toString(36)).substring(0, 20);
+            localStorage.setItem('instagram_oauth_state', state);
+
+            const url = `https://www.facebook.com/v25.0/dialog/oauth?` +
+                `client_id=${APP_CONFIG.appId}` +
+                `&redirect_uri=${encodeURIComponent(APP_CONFIG.redirectUri)}` +
+                `&scope=${APP_CONFIG.scope}` +
+                `&response_type=code` +
+                `&state=${state}`;
+
+            window.location.href = url;
+        }
+
+        async function verificarOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            if (error) {
+                mostrarAlerta('Erro na autorizacao: ' + error, 'error');
+                return;
+            }
+
+            if (!code) return;
+
+            // Verificar state
+            const savedState = localStorage.getItem('instagram_oauth_state');
+            if (state && state !== savedState) {
+                mostrarAlerta('Erro de seguranca. Tente novamente.', 'error');
+                return;
+            }
+
+            localStorage.removeItem('instagram_oauth_state');
+
+            mostrarAlerta('Autorizando... Aguarde.', 'info');
+
+            try {
+                // Trocar code por access token
+                const tokenUrl = `https://graph.facebook.com/v25.0/oauth/access_token?` +
+                    `client_id=${APP_CONFIG.appId}` +
+                    `&client_secret=${APP_CONFIG.appSecret}` +
+                    `&redirect_uri=${encodeURIComponent(APP_CONFIG.redirectUri)}` +
+                    `&code=${code}`;
+
+                const response = await fetch(tokenUrl);
+                const tokenData = await response.json();
+
+                if (tokenData.error) {
+                    throw new Error(tokenData.error.message);
+                }
+
+                const accessToken = tokenData.access_token;
+
+                // Buscar paginas do usuario
+                const pagesResponse = await fetch(
+                    `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,instagram_business_account{username,media_count,followers_count}&access_token=${accessToken}`
+                );
+                const pagesData = await pagesResponse.json();
+
+                if (pagesData.error) {
+                    throw new Error(pagesData.error.message);
+                }
+
+                // Pegar a primeira pagina com Instagram
+                let pageInfo = null;
+                let instagramInfo = null;
+
+                if (pagesData.data && pagesData.data.length > 0) {
+                    for (const page of pagesData.data) {
+                        if (page.instagram_business_account) {
+                            pageInfo = page;
+                            instagramInfo = page.instagram_business_account;
+                            break;
+                        }
+                    }
+                }
+
+                if (!instagramInfo) {
+                    throw new Error('Nenhuma conta Instagram Business encontrada vinculada a sua Pagina do Facebook.');
+                }
+
+                // Salvar configuracao
+                await salvarConfiguracaoOAuth({
+                    accessToken: accessToken,
+                    pageId: pageInfo.id,
+                    instagramId: instagramInfo.id,
+                    username: instagramInfo.username,
+                    mediaCount: instagramInfo.media_count || 0,
+                    followersCount: instagramInfo.followers_count || 0
+                });
+
+                // Limpar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+                mostrarAlerta('Instagram conectado com sucesso! @' + instagramInfo.username, 'success');
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro OAuth:', error);
+                mostrarAlerta('Erro ao conectar: ' + error.message, 'error');
+            }
+        }
+
+        async function salvarConfiguracaoOAuth(config) {
+            try {
+                const { data: existing } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('id')
+                    .eq('cliente_id', clienteId)
+                    .limit(1);
+
+                const dados = {
+                    cliente_id: clienteId,
+                    instagram_app_id: APP_CONFIG.appId,
+                    instagram_page_id: config.pageId,
+                    instagram_business_id: config.instagramId,
+                    instagram_access_token: config.accessToken,
+                    instagram_username: config.username
+                };
+
+                if (existing && existing.length > 0) {
+                    await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .update(dados)
+                        .eq('cliente_id', clienteId);
+                } else {
+                    await supabaseClient
+                        .from('configuracoes_pagamento')
+                        .insert(dados);
+                }
+
+                // Salvar tambem no localStorage como backup
+                localStorage.setItem('instagram_config_' + clienteId, JSON.stringify({
+                    ...dados,
+                    mediaCount: config.mediaCount,
+                    followersCount: config.followersCount
+                }));
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao salvar no banco:', error);
+                // Salvar no localStorage
+                localStorage.setItem('instagram_config_' + clienteId, JSON.stringify({
+                    cliente_id: clienteId,
+                    instagram_app_id: APP_CONFIG.appId,
+                    instagram_page_id: config.pageId,
+                    instagram_business_id: config.instagramId,
+                    instagram_access_token: config.accessToken,
+                    instagram_username: config.username,
+                    mediaCount: config.mediaCount,
+                    followersCount: config.followersCount
+                }));
+            }
+        }
+
+        async function desconectarInstagram() {
+            if (!confirm('Tem certeza que deseja desconectar o Instagram?')) return;
+
+            try {
+                await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .update({
+                        instagram_access_token: null,
+                        instagram_username: null
+                    })
+                    .eq('cliente_id', clienteId);
+
+                localStorage.removeItem('instagram_config_' + clienteId);
+
+                instagramConfig = null;
+                mostrarAlerta('Instagram desconectado.', 'info');
+                setTimeout(() => location.reload(), 1500);
+
+            } catch (error) {
+                console.error('[INSTAGRAM-MONITOR] Erro ao desconectar:', error);
+                localStorage.removeItem('instagram_config_' + clienteId);
+                location.reload();
+            }
+        }
+
+        // ========================================
+        // CARREGAR CONFIGURACAO
+        // ========================================
         async function carregarConfiguracao() {
             console.log('[INSTAGRAM-MONITOR] Carregando configuracao...');
 
+            // Tentar banco primeiro
             try {
-                // Tentar buscar de configuracoes_pagamento
                 const { data, error } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .select('*')
                     .eq('cliente_id', clienteId)
                     .single();
 
-                console.log('[INSTAGRAM-MONITOR] Config retornada:', data, 'Erro:', error);
-
-                if (data) {
-                    configuracao = {
-                        appId: data.instagram_app_id || '1039076025227775',
-                        appSecret: data.instagram_app_secret || '',
-                        pageId: data.instagram_page_id || '1098792813327949',
-                        instagramId: data.instagram_business_id || '17841425335096578',
-                        accessToken: data.instagram_access_token || '',
-                        username: data.instagram_username || 'vendaliveoficial'
+                if (data && data.instagram_access_token) {
+                    instagramConfig = {
+                        accessToken: data.instagram_access_token,
+                        pageId: data.instagram_page_id,
+                        instagramId: data.instagram_business_id,
+                        username: data.instagram_username
                     };
+                }
+            } catch (e) {
+                console.log('[INSTAGRAM-MONITOR] Banco nao disponivel, tentando localStorage');
+            }
 
-                    document.getElementById('appId').value = configuracao.appId;
-                    document.getElementById('appSecret').value = configuracao.appSecret;
-                    document.getElementById('pageId').value = configuracao.pageId;
-                    document.getElementById('instagramId').value = configuracao.instagramId;
-                    document.getElementById('accessToken').value = configuracao.accessToken;
-                    document.getElementById('username').value = configuracao.username;
-
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('configSection').classList.remove('hidden');
-
-                    if (configuracao.accessToken) {
-                        document.getElementById('statsSection').classList.remove('hidden');
-                        document.getElementById('postsSection').classList.remove('hidden');
-                        await carregarPosts();
-                        await carregarStats();
+            // Fallback localStorage
+            if (!instagramConfig) {
+                const local = localStorage.getItem('instagram_config_' + clienteId);
+                if (local) {
+                    const parsed = JSON.parse(local);
+                    if (parsed.instagram_access_token) {
+                        instagramConfig = {
+                            accessToken: parsed.instagram_access_token,
+                            pageId: parsed.instagram_page_id,
+                            instagramId: parsed.instagram_business_id,
+                            username: parsed.instagram_username
+                        };
                     }
-                } else {
-                    document.getElementById('loginSection').classList.remove('hidden');
-                    document.getElementById('configSection').classList.remove('hidden');
                 }
+            }
 
-            } catch (error) {
-                console.log('[INSTAGRAM-MONITOR] Tabela configuracoes_pagamento nao existe ou erro:', error);
-                // Mostrar config vazia
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('configSection').classList.remove('hidden');
+            if (instagramConfig) {
+                mostrarConectado();
+            } else {
+                mostrarDesconectado();
             }
         }
 
-        async function salvarConfiguracao() {
-            const config = {
-                instagram_app_id: document.getElementById('appId').value,
-                instagram_app_secret: document.getElementById('appSecret').value,
-                instagram_page_id: document.getElementById('pageId').value,
-                instagram_business_id: document.getElementById('instagramId').value,
-                instagram_access_token: document.getElementById('accessToken').value,
-                instagram_username: document.getElementById('username').value
-            };
+        function mostrarConectado() {
+            document.getElementById('statusDesconectado').classList.add('hidden');
+            document.getElementById('statusConectado').classList.remove('hidden');
+            document.getElementById('statsSection').classList.remove('hidden');
+            document.getElementById('postsSection').classList.remove('hidden');
 
-            console.log('[INSTAGRAM-MONITOR] Salvando config:', config);
+            document.getElementById('perfilUsername').textContent = '@' + (instagramConfig.username || 'username');
+            document.getElementById('perfilAvatar').textContent = (instagramConfig.username || 'IG').substring(0, 2).toUpperCase();
 
-            try {
-                // Verificar se ja existe registro para este cliente
-                const { data: existing, error: selectError } = await supabaseClient
-                    .from('configuracoes_pagamento')
-                    .select('id')
-                    .eq('cliente_id', clienteId)
-                    .limit(1);
-
-                if (selectError) {
-                    console.error('[INSTAGRAM-MONITOR] Erro SELECT:', selectError);
-                    throw selectError;
-                }
-
-                let saveError = null;
-
-                if (existing && existing.length > 0) {
-                    // UPDATE - ja existe, atualizar
-                    console.log('[INSTAGRAM-MONITOR] Atualizando registro existente...');
-                    const { error } = await supabaseClient
-                        .from('configuracoes_pagamento')
-                        .update({
-                            instagram_app_id: config.instagram_app_id,
-                            instagram_app_secret: config.instagram_app_secret,
-                            instagram_page_id: config.instagram_page_id,
-                            instagram_business_id: config.instagram_business_id,
-                            instagram_access_token: config.instagram_access_token,
-                            instagram_username: config.instagram_username
-                        })
-                        .eq('cliente_id', clienteId);
-
-                    saveError = error;
-                } else {
-                    // INSERT - novo registro
-                    console.log('[INSTAGRAM-MONITOR] Inserindo novo registro...');
-                    const { error } = await supabaseClient
-                        .from('configuracoes_pagamento')
-                        .insert({
-                            cliente_id: clienteId,
-                            instagram_app_id: config.instagram_app_id,
-                            instagram_app_secret: config.instagram_app_secret,
-                            instagram_page_id: config.instagram_page_id,
-                            instagram_business_id: config.instagram_business_id,
-                            instagram_access_token: config.instagram_access_token,
-                            instagram_username: config.instagram_username
-                        });
-
-                    saveError = error;
-                }
-
-                if (saveError) {
-                    console.error('[INSTAGRAM-MONITOR] Erro save:', saveError);
-                    throw saveError;
-                }
-
-                mostrarAlerta('Configuracao salva com sucesso!', 'success');
-
-                configuracao = {
-                    appId: config.instagram_app_id,
-                    appSecret: config.instagram_app_secret,
-                    pageId: config.instagram_page_id,
-                    instagramId: config.instagram_business_id,
-                    accessToken: config.instagram_access_token,
-                    username: config.instagram_username
-                };
-
-                document.getElementById('statsSection').classList.remove('hidden');
-                document.getElementById('postsSection').classList.remove('hidden');
-                await carregarPosts();
-
-            } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao salvar:', error);
-
-                // Fallback: salvar no localStorage
-                localStorage.setItem('instagram_config_' + clienteId, JSON.stringify(config));
-
-                if (error.code === '42P01') {
-                    mostrarAlerta('Tabela nao existe! Execute o SQL primeiro. Config salva localmente.', 'error');
-                } else {
-                    mostrarAlerta('Configuracao salva localmente. Erro no banco: ' + error.message, 'info');
-                }
-
-                configuracao = {
-                    appId: config.instagram_app_id,
-                    appSecret: config.instagram_app_secret,
-                    pageId: config.instagram_page_id,
-                    instagramId: config.instagram_business_id,
-                    accessToken: config.instagram_access_token,
-                    username: config.instagram_username
-                };
-
-                document.getElementById('statsSection').classList.remove('hidden');
-                document.getElementById('postsSection').classList.remove('hidden');
-                await carregarPosts();
-            }
+            carregarPosts();
+            carregarStats();
         }
 
+        function mostrarDesconectado() {
+            document.getElementById('statusDesconectado').classList.remove('hidden');
+            document.getElementById('statusConectado').classList.add('hidden');
+            document.getElementById('statsSection').classList.add('hidden');
+            document.getElementById('postsSection').classList.add('hidden');
+        }
+
+        // ========================================
+        // CARREGAR POSTS
+        // ========================================
         async function carregarPosts() {
-            if (!configuracao.accessToken) {
-                mostrarAlerta('Configure o Access Token primeiro', 'error');
+            if (!instagramConfig || !instagramConfig.accessToken) {
+                mostrarAlerta('Token nao disponivel', 'error');
                 return;
             }
 
             const btn = document.getElementById('btnRefresh');
-            btn.classList.add('spinning');
-            btn.disabled = true;
+            if (btn) {
+                btn.querySelector('i').style.animation = 'spin 1s linear infinite';
+                btn.disabled = true;
+            }
 
             try {
-                const url = `https://graph.facebook.com/v25.0/${configuracao.instagramId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=${configuracao.accessToken}`;
+                const url = `https://graph.facebook.com/v25.0/${instagramConfig.instagramId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=${instagramConfig.accessToken}`;
 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -851,6 +938,7 @@
                 postsData = data.data || [];
 
                 document.getElementById('statPosts').textContent = postsData.length;
+                document.getElementById('perfilPosts').textContent = postsData.length;
 
                 const totalComentarios = postsData.reduce((sum, p) => sum + (p.comments_count || 0), 0);
                 document.getElementById('statComentarios').textContent = totalComentarios;
@@ -858,26 +946,26 @@
                 renderizarPosts(postsData);
 
             } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao carregar posts:', error);
+                console.error('[INSTAGRAM-MONITOR] Erro:', error);
                 document.getElementById('postsContainer').innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #721c24; background: #f8d7da; border-radius: 12px;">
                         <i class="fas fa-exclamation-circle" style="font-size: 30px; margin-bottom: 10px;"></i>
-                        <p><strong>Erro ao carregar posts:</strong></p>
-                        <p>${error.message}</p>
-                        <p style="font-size: 12px; margin-top: 10px;">Verifique se o Access Token esta valido e nao expirou.</p>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">O token pode ter expirado. Desconecte e conecte novamente.</p>
                     </div>
                 `;
             } finally {
-                btn.classList.remove('spinning');
-                btn.disabled = false;
+                if (btn) {
+                    btn.querySelector('i').style.animation = '';
+                    btn.disabled = false;
+                }
             }
         }
 
         async function carregarComentarios(mediaId) {
-            if (!configuracao.accessToken) return;
+            if (!instagramConfig || !instagramConfig.accessToken) return;
 
             currentMediaId = mediaId;
-
             document.getElementById('commentsContainer').innerHTML = `
                 <div class="loading">
                     <i class="fas fa-spinner"></i>
@@ -886,7 +974,7 @@
             `;
 
             try {
-                const url = `https://graph.facebook.com/v25.0/${mediaId}/comments?fields=id,text,username,timestamp,like_count&access_token=${configuracao.accessToken}`;
+                const url = `https://graph.facebook.com/v25.0/${mediaId}/comments?fields=id,text,username,timestamp,like_count&access_token=${instagramConfig.accessToken}`;
 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -899,16 +987,18 @@
                 renderizarComentarios(comentariosData);
 
             } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao carregar comentarios:', error);
                 document.getElementById('commentsContainer').innerHTML = `
                     <div class="alert alert-error">
                         <i class="fas fa-exclamation-circle"></i>
-                        Erro ao carregar comentarios: ${error.message}
+                        Erro: ${error.message}
                     </div>
                 `;
             }
         }
 
+        // ========================================
+        // RENDERIZACAO
+        // ========================================
         function renderizarPosts(posts) {
             const container = document.getElementById('postsContainer');
 
@@ -1001,6 +1091,9 @@
             }).join('');
         }
 
+        // ========================================
+        // ACOES
+        // ========================================
         function abrirComentarios(mediaId) {
             document.getElementById('commentsModal').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -1014,29 +1107,8 @@
 
         async function classificarComentario(commentId, tipo, username, texto) {
             try {
-                // Tentar salvar no banco
-                const { error } = await supabaseClient
-                    .from('instagram_comentarios')
-                    .upsert({
-                        cliente_id: clienteId,
-                        comment_id: commentId,
-                        media_id: currentMediaId,
-                        username: username,
-                        texto: texto,
-                        tipo: tipo,
-                        status: 'novo',
-                        created_at: new Date().toISOString()
-                    }, { onConflict: 'cliente_id,comment_id' });
-
-                if (error && error.code !== '42P01') {
-                    console.error('[INSTAGRAM-MONITOR] Erro ao classificar:', error);
-                }
-
-                // Salvar no localStorage como fallback
-                const key = 'instagram_comentarios_' + clienteId;
-                let comentarios = JSON.parse(localStorage.getItem(key) || '[]');
-                const existingIndex = comentarios.findIndex(c => c.comment_id === commentId);
-                const novoComentario = {
+                const dados = {
+                    cliente_id: clienteId,
                     comment_id: commentId,
                     media_id: currentMediaId,
                     username: username,
@@ -1046,70 +1118,41 @@
                     created_at: new Date().toISOString()
                 };
 
-                if (existingIndex >= 0) {
-                    comentarios[existingIndex] = novoComentario;
-                } else {
-                    comentarios.push(novoComentario);
+                try {
+                    await supabaseClient.from('instagram_comentarios').upsert(dados, { onConflict: 'cliente_id,comment_id' });
+                } catch (e) {
+                    console.log('Banco nao disponivel, usando localStorage');
                 }
 
+                const key = 'instagram_comentarios_' + clienteId;
+                let comentarios = JSON.parse(localStorage.getItem(key) || '[]');
+                const idx = comentarios.findIndex(c => c.comment_id === commentId);
+                if (idx >= 0) comentarios[idx] = dados;
+                else comentarios.push(dados);
                 localStorage.setItem(key, JSON.stringify(comentarios));
 
                 mostrarAlerta(`Comentario classificado como: ${tipo}`, 'success');
                 await carregarStats();
 
             } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao classificar:', error);
-                mostrarAlerta('Erro ao classificar: ' + error.message, 'error');
+                mostrarAlerta('Erro: ' + error.message, 'error');
             }
         }
 
         async function converterVenda(commentId, username, texto) {
-            try {
-                await classificarComentario(commentId, 'venda', username, texto);
-
-                // Tentar abrir pagina de vendas com dados preenchidos
-                const params = new URLSearchParams({
-                    cliente_instagram: username,
-                    observacao: texto,
-                    origem: 'instagram'
-                });
-
-                mostrarAlerta('Venda registrada! Cliente: @' + username, 'success');
-
-            } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao converter:', error);
-            }
+            await classificarComentario(commentId, 'venda', username, texto);
+            mostrarAlerta('Venda registrada! Cliente: @' + username, 'success');
         }
 
         async function carregarStats() {
             try {
-                // Tentar do banco
-                const { data: vendas } = await supabaseClient
-                    .from('instagram_comentarios')
-                    .select('*')
-                    .eq('cliente_id', clienteId)
-                    .eq('tipo', 'venda');
-
-                const { data: interesses } = await supabaseClient
-                    .from('instagram_comentarios')
-                    .select('*')
-                    .eq('cliente_id', clienteId)
-                    .eq('tipo', 'interesse');
-
-                document.getElementById('statVendas').textContent = vendas ? vendas.length : 0;
-                document.getElementById('statInteresses').textContent = interesses ? interesses.length : 0;
-
-            } catch (error) {
-                // Fallback do localStorage
                 const key = 'instagram_comentarios_' + clienteId;
                 const comentarios = JSON.parse(localStorage.getItem(key) || '[]');
-
                 const vendas = comentarios.filter(c => c.tipo === 'venda');
                 const interesses = comentarios.filter(c => c.tipo === 'interesse');
-
                 document.getElementById('statVendas').textContent = vendas.length;
                 document.getElementById('statInteresses').textContent = interesses.length;
-            }
+            } catch (e) {}
         }
 
         function filtrarPosts(filtro, btn) {
@@ -1117,7 +1160,6 @@
             btn.classList.add('active');
 
             let postsFiltrados = [...postsData];
-
             switch(filtro) {
                 case 'com_comentarios':
                     postsFiltrados = postsData.filter(p => (p.comments_count || 0) > 0);
@@ -1125,37 +1167,13 @@
                 case 'sem_comentarios':
                     postsFiltrados = postsData.filter(p => (p.comments_count || 0) === 0);
                     break;
-                case 'vendas':
-                case 'interesses':
-                    // Futuro: filtrar por posts que tem comentarios classificados
-                    break;
             }
-
             renderizarPosts(postsFiltrados);
         }
 
-        function conectarInstagram() {
-            const appId = document.getElementById('appId').value;
-            const redirectUri = 'https://vendalive.com.br/instagram-monitor.html';
-            const scope = 'instagram_basic,instagram_manage_comments,instagram_manage_messages,pages_read_engagement';
-
-            const url = `https://www.facebook.com/v25.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=token`;
-
-            window.location.href = url;
-        }
-
-        function verificarOAuthCallback() {
-            const hash = window.location.hash;
-            if (hash && hash.includes('access_token=')) {
-                const token = hash.split('access_token=')[1].split('&')[0];
-                document.getElementById('accessToken').value = token;
-                mostrarAlerta('Token recebido! Salve a configuracao.', 'success');
-                history.replaceState(null, null, ' ');
-            }
-        }
-
-        verificarOAuthCallback();
-
+        // ========================================
+        // UTILITARIOS
+        // ========================================
         function mostrarAlerta(mensagem, tipo) {
             const container = document.getElementById('alertContainer');
             const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-error' : 'alert-info';
@@ -1168,9 +1186,7 @@
                 </div>
             `;
 
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 5000);
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
         }
 
         function escapeHtml(text) {
@@ -1181,15 +1197,11 @@
         }
 
         document.getElementById('commentsModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                fecharModal();
-            }
+            if (e.target === this) fecharModal();
         });
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                fecharModal();
-            }
+            if (e.key === 'Escape') fecharModal();
         });
     </script>
 </body>
