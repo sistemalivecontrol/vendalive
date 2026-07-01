@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VendaLive - Comentarios de Lives</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128250;</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -170,7 +170,7 @@
         <div class="instagram-section" id="instagramSection">
             <div class="instagram-header">
                 <div class="instagram-info">
-                    <div class="instagram-avatar" id="instagramAvatar">&#128247;</div>
+                    <div class="instagram-avatar" id="instagramAvatar">I</div>
                     <div class="instagram-details">
                         <h3 id="instagramTitle">Instagram nao conectado</h3>
                         <p id="instagramSubtitle">Conecte uma conta do Instagram para importar comentarios de lives</p>
@@ -206,7 +206,6 @@
         </div>
     </div>
 
-    <!-- Modal Importar -->
     <div class="modal-overlay" id="importModal">
         <div class="modal">
             <div class="modal-header">
@@ -234,7 +233,6 @@
         </div>
     </div>
 
-    <!-- Modal Token Manual -->
     <div class="modal-overlay" id="tokenModal">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
@@ -266,7 +264,6 @@
         </div>
     </div>
 
-    <!-- Modal Ver Comentarios -->
     <div class="modal-overlay" id="viewModal">
         <div class="modal" style="max-width: 900px;">
             <div class="modal-header">
@@ -286,7 +283,6 @@
     </div>
 <script>
 
-
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
@@ -294,8 +290,8 @@
         let instagramConfig = null, contasInstagram = [], contaAtiva = null;
         let livesData = [], comentariosData = [], liveSelecionada = null;
 
-        const PRODUTOS_KEYWORDS = ['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','n\u00ba','n\u00b0','menino','menina','bebe','bebe','infantil'];
-        const TIPOS_KEYWORDS = { venda: ['quero','comprei','vou querer','pego','levo','mando','pago','pix'], interesse: ['quanto','valor','preco','preco','tem ainda','disponivel','ainda tem'], duvida: ['mostra','qual','como','onde','quando','tamanho','cor'] };
+        const PRODUTOS_KEYWORDS = ['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','menino','menina','bebe','infantil'];
+        const TIPOS_KEYWORDS = { venda: ['quero','comprei','vou querer','pego','levo','mando','pago','pix'], interesse: ['quanto','valor','preco','tem ainda','disponivel','ainda tem'], duvida: ['mostra','qual','como','onde','quando','tamanho','cor'] };
 
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('[COMENTARIOS-LIVES] Iniciando...');
@@ -335,13 +331,11 @@
             }
         }
 
-        // CORRECAO PRINCIPAL: Usar cliente_sistema_id com fallback
         async function carregarContasInstagram() {
             console.log('[COMENTARIOS-LIVES] Carregando contas Instagram...');
             contasInstagram = [];
 
             try {
-                // Tenta buscar com cliente_sistema_id (coluna correta da tabela)
                 const { data, error } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .select('instagram_access_token, instagram_business_id, instagram_username, instagram_accounts, cliente_sistema_id, cliente_id')
@@ -350,7 +344,6 @@
 
                 if (error) {
                     console.log('[COMENTARIOS-LIVES] Erro query (tentando fallback):', error.message);
-                    // Fallback: tenta com cliente_id se cliente_sistema_id falhar
                     const { data: data2, error: error2 } = await supabaseClient
                         .from('configuracoes_pagamento')
                         .select('instagram_access_token, instagram_business_id, instagram_username, instagram_accounts, cliente_sistema_id, cliente_id')
@@ -469,11 +462,11 @@
                     contasSection.classList.remove('hidden');
                     contasContainer.innerHTML = contasInstagram.map((conta) => {
                         const isAtiva = contaAtiva && contaAtiva.username === conta.username;
-                        return '<div class="conta-item ' + (isAtiva ? 'ativa' : '') + '" onclick="selecionarConta(\'' + conta.username + '\')">' +
+                        return '<div class="conta-item ' + (isAtiva ? 'ativa' : '') + '" onclick="selecionarConta('' + conta.username + '')">' +
                             '<div class="conta-item-info"><div class="conta-avatar">' + conta.username.charAt(0).toUpperCase() + '</div>' +
                             '<div><div class="conta-nome">@' + conta.username + '</div><div class="conta-username">' + (conta.instagramId || 'ID nao disponivel') + '</div></div></div>' +
-                            '<div class="conta-actions">' + (isAtiva ? '<span class="conta-badge"><i class="fas fa-check"></i> Ativa</span>' : '<button class="btn-conta-action btn-usar" onclick="event.stopPropagation(); selecionarConta(\'' + conta.username + '\')" title="Usar esta conta"><i class="fas fa-play"></i></button>') +
-                            '<button class="btn-conta-action btn-remover-conta" onclick="event.stopPropagation(); removerConta(\'' + conta.username + '\')" title="Remover conta"><i class="fas fa-trash"></i></button></div></div>';
+                            '<div class="conta-actions">' + (isAtiva ? '<span class="conta-badge"><i class="fas fa-check"></i> Ativa</span>' : '<button class="btn-conta-action btn-usar" onclick="event.stopPropagation(); selecionarConta('' + conta.username + '')" title="Usar esta conta"><i class="fas fa-play"></i></button>') +
+                            '<button class="btn-conta-action btn-remover-conta" onclick="event.stopPropagation(); removerConta('' + conta.username + '')" title="Remover conta"><i class="fas fa-trash"></i></button></div></div>';
                     }).join('');
                 } else { 
                     contasSection.classList.add('hidden'); 
@@ -492,9 +485,6 @@
             }
         }
 
-        // ========================================
-        // CONECTAR INSTAGRAM VIA OAUTH OFICIAL
-        // ========================================
         function conectarInstagram() {
             console.log('[COMENTARIOS-LIVES] Iniciando OAuth do Instagram...');
 
@@ -503,65 +493,48 @@
             const left = (window.screen.width - width) / 2;
             const top = (window.screen.height - height) / 2;
 
-            // URL da Edge Function que inicia o OAuth
             const oauthUrl = SUPABASE_URL + '/functions/v1/instagram-oauth?cliente_id=' + encodeURIComponent(clienteId);
 
             console.log('[COMENTARIOS-LIVES] Abrindo popup OAuth:', oauthUrl);
 
-            // Abre popup para o fluxo OAuth
             const popup = window.open(
                 oauthUrl, 
                 'instagram-oauth', 
                 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes'
             );
 
-            // Verifica se o popup foi bloqueado
             if (!popup || popup.closed || typeof popup.closed === 'undefined') {
                 mostrarAlerta('Popup bloqueado! Permita popups para este site e tente novamente.', 'warning');
-                // Fallback: redireciona na mesma janela
                 window.location.href = oauthUrl;
                 return;
             }
 
-            // Escuta mensagem da página de callback
             const messageHandler = async function(event) {
-                // Verifica se a mensagem veio do nosso domínio
                 if (event.origin !== window.location.origin) return;
 
                 if (event.data && event.data.type === 'instagram-oauth-success') {
                     window.removeEventListener('message', messageHandler);
                     console.log('[COMENTARIOS-LIVES] OAuth sucesso:', event.data);
-
-                    // Recarrega as contas do banco
                     await carregarContasInstagram();
                     mostrarAlerta('Conta @' + event.data.username + ' conectada com sucesso!', 'success');
-
-                    // Fecha o popup se ainda estiver aberto
-                    if (popup && !popup.closed) {
-                        popup.close();
-                    }
+                    if (popup && !popup.closed) popup.close();
                 }
 
                 if (event.data && event.data.type === 'instagram-oauth-error') {
                     window.removeEventListener('message', messageHandler);
                     console.error('[COMENTARIOS-LIVES] OAuth erro:', event.data);
                     mostrarAlerta('Erro ao conectar Instagram: ' + (event.data.error || 'Erro desconhecido'), 'error');
-
-                    if (popup && !popup.closed) {
-                        popup.close();
-                    }
+                    if (popup && !popup.closed) popup.close();
                 }
             };
 
             window.addEventListener('message', messageHandler);
 
-            // Verifica periodicamente se o popup foi fechado
             const checkClosed = setInterval(function() {
                 if (popup.closed) {
                     clearInterval(checkClosed);
                     window.removeEventListener('message', messageHandler);
                     console.log('[COMENTARIOS-LIVES] Popup fechado pelo usuario');
-                    // Recarrega contas caso tenha sido conectado
                     carregarContasInstagram();
                 }
             }, 1000);
@@ -786,7 +759,7 @@
                 const dataLive = live.data_live ? new Date(live.data_live).toLocaleDateString('pt-BR') : 'Data desconhecida';
                 const statusClass = live.status === 'importada' ? 'importada' : live.status === 'disponivel' ? 'disponivel' : 'expirada';
                 const statusText = live.status === 'importada' ? 'Importada' : live.status === 'disponivel' ? 'Disponivel' : 'Expirada';
-                return '<div class="live-card" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span><div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" onclick="verComentariosLive(\'' + live.id + '\')"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-exportar" onclick="exportarLive(\'' + live.id + '\')"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>';
+                return '<div class="live-card" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span><div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" onclick="verComentariosLive('' + live.id + '')"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-exportar" onclick="exportarLive('' + live.id + '')"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>';
             }).join('');
         }
 
@@ -839,7 +812,7 @@
                     const dataLive = live.timestamp ? new Date(live.timestamp).toLocaleDateString('pt-BR') : 'Data desconhecida';
                     const horaLive = live.timestamp ? new Date(live.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                     const caption = live.caption ? live.caption.substring(0, 50) + (live.caption.length > 50 ? '...' : '') : 'Sem descricao';
-                    return '<div class="sugestao-item" onclick="selecionarLive(\'' + live.id + '\', \' + (live.permalink || '') + '\')"><div class="sugestao-info"><span class="sugestao-icon">&#128250;</span><div><div class="sugestao-text">' + caption + '</div><div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + ' <i class="fas fa-comment"></i> ' + (live.comments_count || 0) + ' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #667eea;"></i></div>';
+                    return '<div class="sugestao-item" onclick="selecionarLive('' + live.id + '', '' + (live.permalink || '') + '')"><div class="sugestao-info"><span class="sugestao-icon">&#128250;</span><div><div class="sugestao-text">' + caption + '</div><div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + ' <i class="fas fa-comment"></i> ' + (live.comments_count || 0) + ' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #667eea;"></i></div>';
                 }).join('');
             } catch (error) { 
                 console.error('[COMENTARIOS-LIVES] Erro ao buscar sugestoes:', error); 
@@ -1052,8 +1025,10 @@
                     return; 
                 }
 
-                const csv = 'Usuario;Comentario;Produto;Tipo;Data\n' + comentarios.map(c => [c.username, c.texto, c.produto || '', c.tipo, c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : ''].map(v => '"' + (v || '').replace(/"/g, '""') + '"').join(';')).join('\n');
-                const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+                const csv = 'Usuario;Comentario;Produto;Tipo;Data
+' + comentarios.map(c => [c.username, c.texto, c.produto || '', c.tipo, c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : ''].map(v => '"' + (v || '').replace(/"/g, '""') + '"').join(';')).join('
+');
+                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a'); 
                 link.href = URL.createObjectURL(blob); 
                 link.download = 'live_comentarios_' + liveId + '_' + new Date().toISOString().split('T')[0] + '.csv'; 
@@ -1084,7 +1059,8 @@
         document.getElementById('tokenModal').addEventListener('click', function(e) { if (e.target === this) fecharModalToken(); });
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalView(); fecharModalToken(); } });
     
-    
+</body>
+</html>
     </script>
 </body>
 </html>
