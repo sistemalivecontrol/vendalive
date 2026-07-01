@@ -45,6 +45,8 @@
         .btn-trocar:hover { background: #667eea; color: white; }
         .btn-desconectar { background: #dc3545; color: white; }
         .btn-desconectar:hover { background: #c82333; }
+        .btn-manual { background: #17a2b8; color: white; }
+        .btn-manual:hover { background: #138496; }
         .contas-salvas { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1); }
         .contas-salvas-title { font-size: 13px; color: #6c757d; margin-bottom: 10px; font-weight: 600; }
         .conta-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: white; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
@@ -134,6 +136,10 @@
         .empty-state i { font-size: 60px; margin-bottom: 20px; color: #dee2e6; }
         .empty-state h3 { font-size: 20px; color: #495057; margin-bottom: 10px; }
         .empty-state p { font-size: 14px; max-width: 400px; margin: 0 auto; }
+        .token-input { font-family: monospace; font-size: 12px; }
+        .token-help { font-size: 12px; color: #6c757d; margin-top: 8px; line-height: 1.5; }
+        .token-help a { color: #667eea; }
+        .token-help code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 10px; padding: 15px; }
             .header-title { font-size: 18px; }
@@ -173,6 +179,7 @@
                 </div>
                 <div class="instagram-actions" id="instagramActions">
                     <button class="btn-instagram btn-conectar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Instagram</button>
+                    <button class="btn-instagram btn-manual" onclick="abrirModalToken()"><i class="fas fa-key"></i> Adicionar Token</button>
                 </div>
             </div>
             <div class="contas-salvas hidden" id="contasSalvasSection">
@@ -199,6 +206,7 @@
         </div>
     </div>
 
+    <!-- Modal Importar -->
     <div class="modal-overlay" id="importModal">
         <div class="modal">
             <div class="modal-header">
@@ -226,6 +234,39 @@
         </div>
     </div>
 
+    <!-- Modal Token Manual -->
+    <div class="modal-overlay" id="tokenModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Adicionar Conta via Token</h3>
+                <button class="modal-close" onclick="fecharModalToken()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" style="margin-bottom: 15px;">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Como obter o Access Token:</strong><br>
+                        1. Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a><br>
+                        2. Selecione seu app e gere um token com permissao <code>instagram_business_basic</code><br>
+                        3. Cole o token abaixo
+                    </div>
+                </div>
+                <label class="input-label"><i class="fas fa-lock"></i> Access Token do Instagram</label>
+                <textarea class="input-field token-input" id="tokenInput" rows="3" placeholder="EAAa... (cole o token aqui)"></textarea>
+                <label class="input-label" style="margin-top: 10px;"><i class="fas fa-user"></i> Nome de usuario (opcional)</label>
+                <input type="text" class="input-field" id="tokenUsernameInput" placeholder="pingodegentelojaebrecho">
+                <div class="token-help">
+                    O token sera validado automaticamente ao salvar. Certifique-se de que a conta e do tipo <strong>Business</strong> ou <strong>Creator</strong>.
+                </div>
+                <button class="btn-buscar" id="btnSalvarToken" onclick="salvarTokenManual()" style="margin-top: 15px;">
+                    <i class="fas fa-save"></i> Salvar Conta
+                </button>
+                <div id="tokenValidacao" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Comentarios -->
     <div class="modal-overlay" id="viewModal">
         <div class="modal" style="max-width: 900px;">
             <div class="modal-header">
@@ -251,7 +292,7 @@
         let instagramConfig = null, contasInstagram = [], contaAtiva = null;
         let livesData = [], comentariosData = [], liveSelecionada = null;
 
-        const PRODUTOS_KEYWORDS = ['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','n\u00ba','n\u00b0','menino','menina','bebe','bebe','infantil'];
+        const PRODUTOS_KEYWORDS = ['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','nº','n°','menino','menina','bebe','bebe','infantil'];
         const TIPOS_KEYWORDS = { venda: ['quero','comprei','vou querer','pego','levo','mando','pago','pix'], interesse: ['quanto','valor','preco','preco','tem ainda','disponivel','ainda tem'], duvida: ['mostra','qual','como','onde','quando','tamanho','cor'] };
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -273,7 +314,6 @@
                 const { data: userData } = await supabaseClient.from('usuarios_pg').select('cliente_id').eq('auth_id', usuarioLogado.id).single();
                 if (userData && userData.cliente_id) { clienteId = userData.cliente_id; } else { clienteId = '0824668c-1e10-415e-8998-09d72ef47dcb'; }
                 console.log('[COMENTARIOS-LIVES] cliente_id:', clienteId);
-                await processarCallbackInstagram();
                 await carregarContasInstagram();
                 await carregarLivesImportadas();
             } catch (erro) { console.error('[COMENTARIOS-LIVES] Erro auth:', erro); window.location.href = 'login.html'; }
@@ -315,7 +355,7 @@
                 subtitle.textContent = 'Conta ativa para importacao de comentarios';
                 status.className = 'instagram-status status-conectado';
                 status.innerHTML = '<i class="fas fa-check-circle"></i> Conectado';
-                actions.innerHTML = '<button class="btn-instagram btn-trocar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Outra Conta</button><button class="btn-instagram btn-desconectar" onclick="desconectarInstagram()"><i class="fas fa-unlink"></i> Desconectar</button>';
+                actions.innerHTML = '<button class="btn-instagram btn-trocar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Outra Conta</button><button class="btn-instagram btn-manual" onclick="abrirModalToken()"><i class="fas fa-key"></i> Adicionar Token</button><button class="btn-instagram btn-desconectar" onclick="desconectarInstagram()"><i class="fas fa-unlink"></i> Desconectar</button>';
                 btnImportar.disabled = false; btnImportar.style.opacity = '1';
                 if (contasInstagram.length > 1) {
                     contasSection.classList.remove('hidden');
@@ -334,7 +374,7 @@
                 subtitle.textContent = 'Conecte uma conta do Instagram para importar comentarios de lives';
                 status.className = 'instagram-status status-desconectado';
                 status.innerHTML = '<i class="fas fa-times-circle"></i> Desconectado';
-                actions.innerHTML = '<button class="btn-instagram btn-conectar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Instagram</button>';
+                actions.innerHTML = '<button class="btn-instagram btn-conectar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Instagram</button><button class="btn-instagram btn-manual" onclick="abrirModalToken()"><i class="fas fa-key"></i> Adicionar Token</button>';
                 btnImportar.disabled = true; btnImportar.style.opacity = '0.5';
                 contasSection.classList.add('hidden');
             }
@@ -358,25 +398,6 @@
                     mostrarAlerta('Erro ao conectar Instagram: ' + (event.data.error || 'Erro desconhecido'), 'error');
                 }
             });
-        }
-
-        async function processarCallbackInstagram() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code'), state = urlParams.get('state'), error = urlParams.get('error');
-            if (error) { mostrarAlerta('Erro no OAuth do Instagram: ' + error, 'error'); window.history.replaceState({}, document.title, window.location.pathname); return; }
-            if (code) {
-                console.log('[COMENTARIOS-LIVES] Codigo OAuth recebido, processando...');
-                try {
-                    const response = await fetch(SUPABASE_URL + '/functions/v1/instagram-oauth', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }, body: JSON.stringify({ code: code, state: state, cliente_id: clienteId }) });
-                    const result = await response.json();
-                    if (result.success && result.data) {
-                        const novaConta = { accessToken: result.data.access_token, instagramId: result.data.instagram_business_id, username: result.data.username || result.data.instagram_username, ativa: true };
-                        await adicionarContaInstagram(novaConta);
-                        mostrarAlerta('Conta @' + novaConta.username + ' conectada com sucesso!', 'success');
-                    } else { mostrarAlerta('Erro ao processar OAuth: ' + (result.error || 'Erro desconhecido'), 'error'); }
-                } catch (e) { console.error('[COMENTARIOS-LIVES] Erro no callback:', e); mostrarAlerta('Erro ao processar conexao com Instagram', 'error'); }
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
         }
 
         async function adicionarContaInstagram(novaConta) {
@@ -422,6 +443,32 @@
             try { await supabaseClient.from('configuracoes_pagamento').update({ instagram_access_token: null, instagram_business_id: null, instagram_username: null, instagram_accounts: null }).eq('cliente_id', clienteId); }
             catch (e) { console.log('[COMENTARIOS-LIVES] Erro ao limpar banco:', e); }
             atualizarUIInstagram(); mostrarAlerta('Todas as contas desconectadas!', 'success');
+        }
+
+        // ========================================
+        // MODAL TOKEN MANUAL
+        // ========================================
+        function abrirModalToken() { document.getElementById('tokenModal').classList.add('active'); document.body.style.overflow = 'hidden'; document.getElementById('tokenInput').value = ''; document.getElementById('tokenUsernameInput').value = ''; document.getElementById('tokenValidacao').innerHTML = ''; }
+        function fecharModalToken() { document.getElementById('tokenModal').classList.remove('active'); document.body.style.overflow = ''; }
+
+        async function salvarTokenManual() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const usernameInput = document.getElementById('tokenUsernameInput').value.trim();
+            const btn = document.getElementById('btnSalvarToken');
+            const validacaoDiv = document.getElementById('tokenValidacao');
+            if (!token) { validacaoDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Informe o access token.</div>'; return; }
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando token...';
+            try {
+                const response = await fetch('https://graph.instagram.com/me?fields=id,username,account_type&access_token=' + token);
+                const data = await response.json();
+                if (data.error) { validacaoDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Token invalido: ' + (data.error.message || 'Erro desconhecido') + '</div>'; return; }
+                const username = usernameInput || data.username || 'conta_' + data.id;
+                const novaConta = { accessToken: token, instagramId: data.id, username: username, ativa: true };
+                await adicionarContaInstagram(novaConta);
+                fecharModalToken();
+                mostrarAlerta('Conta @' + username + ' adicionada com sucesso!', 'success');
+            } catch (e) { console.error('[COMENTARIOS-LIVES] Erro validacao token:', e); validacaoDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro ao validar token. Verifique se o token esta correto.</div>'; }
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Salvar Conta'; }
         }
 
         async function carregarLivesImportadas() {
@@ -567,7 +614,7 @@
                 const { data, error } = await supabaseClient.from('live_comentarios').select('*').eq('live_id', liveId).order('timestamp', { ascending: true });
                 if (error) throw error; const comentarios = data || [];
                 if (comentarios.length === 0) { mostrarAlerta('Nenhum comentario para exportar', 'warning'); return; }
-                const csv = ['Usuario;Comentario;Produto;Tipo;Data'].join('') + '\n' + comentarios.map(c => [c.username, c.texto, c.produto || '', c.tipo, c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : ''].map(v => '"' + (v || '').replace(/"/g, '""') + '"').join(';')).join('\n');
+                const csv = 'Usuario;Comentario;Produto;Tipo;Data\n' + comentarios.map(c => [c.username, c.texto, c.produto || '', c.tipo, c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : ''].map(v => '"' + (v || '').replace(/"/g, '""') + '"').join(';')).join('\n');
                 const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'live_comentarios_' + liveId + '_' + new Date().toISOString().split('T')[0] + '.csv'; link.click();
                 mostrarAlerta('Relatorio exportado com sucesso!', 'success');
@@ -586,7 +633,8 @@
 
         document.getElementById('importModal').addEventListener('click', function(e) { if (e.target === this) fecharModalImportar(); });
         document.getElementById('viewModal').addEventListener('click', function(e) { if (e.target === this) fecharModalView(); });
-        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalView(); } });
+        document.getElementById('tokenModal').addEventListener('click', function(e) { if (e.target === this) fecharModalToken(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalView(); fecharModalToken(); } });
     </script>
 </body>
 </html>
