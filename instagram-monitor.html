@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VendaLive - Monitor Instagram</title>
-    <link rel="icon" type="image/svg+xml" href="../images/favicon-vendalive.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -84,7 +84,6 @@
         }
         .card-title i { color: #667eea; }
 
-        /* Login Section */
         .login-section {
             text-align: center;
             padding: 60px 20px;
@@ -120,7 +119,6 @@
         }
         .btn-instagram i { font-size: 20px; }
 
-        /* Config Section */
         .config-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -173,7 +171,6 @@
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        /* Posts Grid */
         .posts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -242,7 +239,6 @@
             opacity: 0.9;
         }
 
-        /* Comments Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -319,6 +315,7 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         .btn-action {
             padding: 6px 14px;
@@ -345,7 +342,6 @@
         }
         .btn-duvida:hover { background: #138496; }
 
-        /* Filters */
         .filters-bar {
             display: flex;
             gap: 15px;
@@ -372,7 +368,6 @@
             border-color: #667eea;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
@@ -385,7 +380,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Alert */
         .alert {
             padding: 15px 20px;
             border-radius: 10px;
@@ -398,7 +392,6 @@
         .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 
-        /* Stats Cards */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -423,10 +416,41 @@
             margin-top: 5px;
         }
 
-        /* Hidden */
         .hidden { display: none !important; }
 
-        /* Responsive */
+        .btn-refresh {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-refresh i {
+            transition: transform 0.5s;
+        }
+        .btn-refresh.spinning i {
+            animation: spin 1s linear infinite;
+        }
+
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 10px; padding: 15px; }
             .header-title { font-size: 18px; }
@@ -440,7 +464,7 @@
 <body>
     <div class="header">
         <div class="header-left">
-            <div class="header-logo"><i class="fas fa-bolt"></i></div>
+            <div class="header-logo">📱</div>
             <div>
                 <div class="header-title">VendaLive</div>
                 <div class="header-subtitle">Monitor Instagram</div>
@@ -458,14 +482,13 @@
     </div>
 
     <div class="container">
-        <!-- Alertas -->
         <div id="alertContainer"></div>
 
         <!-- Login Section -->
         <div id="loginSection" class="card login-section">
             <i class="fab fa-instagram" style="font-size: 60px; color: #dc2743; margin-bottom: 20px;"></i>
             <h2>Conectar Instagram</h2>
-            <p>Conecte sua conta do Instagram para monitorar comentários e gerenciar vendas em tempo real.</p>
+            <p>Conecte sua conta do Instagram para monitorar comentarios e gerenciar vendas.</p>
             <button class="btn-instagram" onclick="conectarInstagram()">
                 <i class="fab fa-instagram"></i>
                 Conectar com Instagram
@@ -476,7 +499,7 @@
         <div id="configSection" class="card hidden">
             <div class="card-title">
                 <i class="fas fa-cog"></i>
-                Configuração do Instagram
+                Configuracao do Instagram
             </div>
             <div class="config-grid">
                 <div class="config-item">
@@ -487,12 +510,12 @@
                 <div class="config-item">
                     <label>App Secret</label>
                     <input type="password" id="appSecret" placeholder="Cole o App Secret aqui">
-                    <div class="hint">Chave secreta do aplicativo (obter em Configurações do app)</div>
+                    <div class="hint">Chave secreta do aplicativo</div>
                 </div>
                 <div class="config-item">
                     <label>Page ID</label>
                     <input type="text" id="pageId" value="1098792813327949" readonly>
-                    <div class="hint">ID da Página do Facebook vinculada</div>
+                    <div class="hint">ID da Pagina do Facebook vinculada</div>
                 </div>
                 <div class="config-item">
                     <label>Instagram Business ID</label>
@@ -511,7 +534,7 @@
                 </div>
             </div>
             <button class="btn-salvar" onclick="salvarConfiguracao()">
-                <i class="fas fa-save"></i> Salvar Configuração
+                <i class="fas fa-save"></i> Salvar Configuracao
             </button>
         </div>
 
@@ -524,7 +547,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statComentarios">0</div>
-                    <div class="stat-label">Comentários</div>
+                    <div class="stat-label">Comentarios</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statVendas">0</div>
@@ -539,19 +562,24 @@
 
         <!-- Posts Section -->
         <div id="postsSection" class="card hidden">
-            <div class="card-title">
-                <i class="fab fa-instagram"></i>
-                Posts do Instagram
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="card-title" style="margin-bottom: 0;">
+                    <i class="fab fa-instagram"></i>
+                    Posts do Instagram
+                </div>
+                <button class="btn-refresh" id="btnRefresh" onclick="carregarPosts()">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
             </div>
             <div class="filters-bar">
-                <button class="filter-btn active" onclick="filtrarPosts('todos')">Todos</button>
-                <button class="filter-btn" onclick="filtrarPosts('com_comentarios')">Com Comentários</button>
-                <button class="filter-btn" onclick="filtrarPosts('sem_comentarios')">Sem Comentários</button>
-                <button class="filter-btn" onclick="filtrarPosts('vendas')">Vendas</button>
-                <button class="filter-btn" onclick="filtrarPosts('interesses')">Interesses</button>
+                <button class="filter-btn active" onclick="filtrarPosts('todos', this)">Todos</button>
+                <button class="filter-btn" onclick="filtrarPosts('com_comentarios', this)">Com Comentarios</button>
+                <button class="filter-btn" onclick="filtrarPosts('sem_comentarios', this)">Sem Comentarios</button>
+                <button class="filter-btn" onclick="filtrarPosts('vendas', this)">Vendas</button>
+                <button class="filter-btn" onclick="filtrarPosts('interesses', this)">Interesses</button>
             </div>
             <div id="postsContainer" class="posts-grid">
-                <div class="loading">
+                <div class="loading" style="grid-column: 1/-1;">
                     <i class="fas fa-spinner"></i>
                     <p>Carregando posts...</p>
                 </div>
@@ -563,40 +591,32 @@
     <div class="modal-overlay" id="commentsModal">
         <div class="modal">
             <div class="modal-header">
-                <h3><i class="fas fa-comments"></i> Comentários do Post</h3>
+                <h3><i class="fas fa-comments"></i> Comentarios do Post</h3>
                 <button class="modal-close" onclick="fecharModal()">&times;</button>
             </div>
             <div class="modal-body" id="commentsContainer">
-                <!-- Comments will be loaded here -->
             </div>
         </div>
     </div>
 
     <script>
-        // ========================================
-        // SUPABASE CONFIG
-        // ========================================
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         let supabaseClient = null;
         let usuarioLogado = null;
+        let clienteId = null;
         let postsData = [];
         let comentariosData = [];
         let configuracao = {};
+        let currentMediaId = null;
 
-        // ========================================
-        // INICIALIZAÇÃO
-        // ========================================
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('[INSTAGRAM-MONITOR] Iniciando...');
 
-            // Aguardar Supabase carregar
             let tentativas = 0;
             while (tentativas < 20) {
-                if (typeof window.supabase !== 'undefined') {
-                    break;
-                }
+                if (typeof window.supabase !== 'undefined') break;
                 await new Promise(r => setTimeout(r, 300));
                 tentativas++;
             }
@@ -610,7 +630,6 @@
             const { createClient } = window.supabase;
             supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // Verificar autenticação
             await verificarAutenticacao();
         });
 
@@ -618,7 +637,7 @@
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (!session) {
-                    console.log('[INSTAGRAM-MONITOR] Sem sessao, redirecionando...');
+                    console.log('[INSTAGRAM-MONITOR] Sem sessao');
                     window.location.href = 'login.html';
                     return;
                 }
@@ -626,7 +645,21 @@
                 usuarioLogado = session.user;
                 document.getElementById('userName').textContent = usuarioLogado.email;
 
-                // Carregar configuração do Instagram
+                // Buscar cliente_id do usuario logado
+                const { data: userData, error: userError } = await supabaseClient
+                    .from('usuarios')
+                    .select('cliente_id')
+                    .eq('id', usuarioLogado.id)
+                    .single();
+
+                if (userData && userData.cliente_id) {
+                    clienteId = userData.cliente_id;
+                    console.log('[INSTAGRAM-MONITOR] cliente_id:', clienteId);
+                } else {
+                    // Fallback para o cliente do Pingo de Gente
+                    clienteId = '0824668c-1e10-415e-8998-09d72ef47dcb';
+                }
+
                 await carregarConfiguracao();
 
             } catch (erro) {
@@ -635,18 +668,20 @@
             }
         }
 
-        // ========================================
-        // CONFIGURAÇÃO
-        // ========================================
         async function carregarConfiguracao() {
+            console.log('[INSTAGRAM-MONITOR] Carregando configuracao...');
+
             try {
+                // Tentar buscar de configuracoes_pagamento
                 const { data, error } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .select('*')
-                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .eq('cliente_id', clienteId)
                     .single();
 
-                if (data && data.instagram_access_token) {
+                console.log('[INSTAGRAM-MONITOR] Config retornada:', data, 'Erro:', error);
+
+                if (data) {
                     configuracao = {
                         appId: data.instagram_app_id || '1039076025227775',
                         appSecret: data.instagram_app_secret || '',
@@ -656,7 +691,6 @@
                         username: data.instagram_username || 'vendaliveoficial'
                     };
 
-                    // Preencher campos
                     document.getElementById('appId').value = configuracao.appId;
                     document.getElementById('appSecret').value = configuracao.appSecret;
                     document.getElementById('pageId').value = configuracao.pageId;
@@ -664,22 +698,23 @@
                     document.getElementById('accessToken').value = configuracao.accessToken;
                     document.getElementById('username').value = configuracao.username;
 
-                    // Mostrar seção de posts
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('configSection').classList.remove('hidden');
-                    document.getElementById('statsSection').classList.remove('hidden');
-                    document.getElementById('postsSection').classList.remove('hidden');
 
-                    // Carregar posts
-                    await carregarPosts();
+                    if (configuracao.accessToken) {
+                        document.getElementById('statsSection').classList.remove('hidden');
+                        document.getElementById('postsSection').classList.remove('hidden');
+                        await carregarPosts();
+                        await carregarStats();
+                    }
                 } else {
-                    // Mostrar tela de login/configuração
                     document.getElementById('loginSection').classList.remove('hidden');
                     document.getElementById('configSection').classList.remove('hidden');
                 }
 
             } catch (error) {
-                console.log('[INSTAGRAM-MONITOR] Config nao encontrada, mostrando login');
+                console.log('[INSTAGRAM-MONITOR] Tabela configuracoes_pagamento nao existe ou erro:', error);
+                // Mostrar config vazia
                 document.getElementById('loginSection').classList.remove('hidden');
                 document.getElementById('configSection').classList.remove('hidden');
             }
@@ -695,19 +730,51 @@
                 instagram_username: document.getElementById('username').value
             };
 
+            console.log('[INSTAGRAM-MONITOR] Salvando config:', config);
+
             try {
+                // Verificar se a tabela existe
+                const { data: testData, error: testError } = await supabaseClient
+                    .from('configuracoes_pagamento')
+                    .select('id')
+                    .eq('cliente_id', clienteId)
+                    .limit(1);
+
+                if (testError && testError.code === '42P01') {
+                    // Tabela nao existe - salvar no localStorage
+                    localStorage.setItem('instagram_config_' + clienteId, JSON.stringify(config));
+                    mostrarAlerta('Configuracao salva localmente (tabela nao existe no banco). Execute o SQL primeiro!', 'info');
+
+                    configuracao = {
+                        appId: config.instagram_app_id,
+                        appSecret: config.instagram_app_secret,
+                        pageId: config.instagram_page_id,
+                        instagramId: config.instagram_business_id,
+                        accessToken: config.instagram_access_token,
+                        username: config.instagram_username
+                    };
+
+                    document.getElementById('statsSection').classList.remove('hidden');
+                    document.getElementById('postsSection').classList.remove('hidden');
+                    await carregarPosts();
+                    return;
+                }
+
+                // Tabela existe - salvar no banco
                 const { error } = await supabaseClient
                     .from('configuracoes_pagamento')
                     .upsert({
-                        cliente_id: '0824668c-1e10-415e-8998-09d72ef47dcb',
+                        cliente_id: clienteId,
                         ...config
-                    });
+                    }, { onConflict: 'cliente_id' });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('[INSTAGRAM-MONITOR] Erro upsert:', error);
+                    throw error;
+                }
 
                 mostrarAlerta('Configuracao salva com sucesso!', 'success');
 
-                // Recarregar posts
                 configuracao = {
                     appId: config.instagram_app_id,
                     appSecret: config.instagram_app_secret,
@@ -723,18 +790,35 @@
 
             } catch (error) {
                 console.error('[INSTAGRAM-MONITOR] Erro ao salvar:', error);
-                mostrarAlerta('Erro ao salvar configuracao: ' + error.message, 'error');
+
+                // Fallback: salvar no localStorage
+                localStorage.setItem('instagram_config_' + clienteId, JSON.stringify(config));
+                mostrarAlerta('Configuracao salva localmente. Erro no banco: ' + error.message, 'info');
+
+                configuracao = {
+                    appId: config.instagram_app_id,
+                    appSecret: config.instagram_app_secret,
+                    pageId: config.instagram_page_id,
+                    instagramId: config.instagram_business_id,
+                    accessToken: config.instagram_access_token,
+                    username: config.instagram_username
+                };
+
+                document.getElementById('statsSection').classList.remove('hidden');
+                document.getElementById('postsSection').classList.remove('hidden');
+                await carregarPosts();
             }
         }
 
-        // ========================================
-        // INSTAGRAM API
-        // ========================================
         async function carregarPosts() {
             if (!configuracao.accessToken) {
                 mostrarAlerta('Configure o Access Token primeiro', 'error');
                 return;
             }
+
+            const btn = document.getElementById('btnRefresh');
+            btn.classList.add('spinning');
+            btn.disabled = true;
 
             try {
                 const url = `https://graph.facebook.com/v25.0/${configuracao.instagramId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=${configuracao.accessToken}`;
@@ -748,10 +832,8 @@
 
                 postsData = data.data || [];
 
-                // Atualizar stats
                 document.getElementById('statPosts').textContent = postsData.length;
 
-                // Calcular comentários totais
                 const totalComentarios = postsData.reduce((sum, p) => sum + (p.comments_count || 0), 0);
                 document.getElementById('statComentarios').textContent = totalComentarios;
 
@@ -759,12 +841,31 @@
 
             } catch (error) {
                 console.error('[INSTAGRAM-MONITOR] Erro ao carregar posts:', error);
-                mostrarAlerta('Erro ao carregar posts: ' + error.message, 'error');
+                document.getElementById('postsContainer').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #721c24; background: #f8d7da; border-radius: 12px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 30px; margin-bottom: 10px;"></i>
+                        <p><strong>Erro ao carregar posts:</strong></p>
+                        <p>${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Verifique se o Access Token esta valido e nao expirou.</p>
+                    </div>
+                `;
+            } finally {
+                btn.classList.remove('spinning');
+                btn.disabled = false;
             }
         }
 
         async function carregarComentarios(mediaId) {
             if (!configuracao.accessToken) return;
+
+            currentMediaId = mediaId;
+
+            document.getElementById('commentsContainer').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Carregando comentarios...</p>
+                </div>
+            `;
 
             try {
                 const url = `https://graph.facebook.com/v25.0/${mediaId}/comments?fields=id,text,username,timestamp,like_count&access_token=${configuracao.accessToken}`;
@@ -790,9 +891,6 @@
             }
         }
 
-        // ========================================
-        // RENDERIZAÇÃO
-        // ========================================
         function renderizarPosts(posts) {
             const container = document.getElementById('postsContainer');
 
@@ -817,7 +915,7 @@
                             <i class="fab fa-instagram"></i>
                         </div>
                         <div class="post-content">
-                            <div class="post-caption">${shortCaption}</div>
+                            <div class="post-caption">${escapeHtml(shortCaption)}</div>
                             <div class="post-stats">
                                 <div class="post-stat">
                                     <i class="fas fa-comment"></i>
@@ -854,11 +952,11 @@
                 const dataComment = comment.timestamp ? new Date(comment.timestamp).toLocaleString('pt-BR') : '';
                 const texto = comment.text || '';
 
-                // Detectar tipo de comentario
                 let tipo = 'duvida';
-                if (texto.toLowerCase().includes('quero') || texto.toLowerCase().includes('comprei') || texto.toLowerCase().includes('vou querer')) {
+                const textoLower = texto.toLowerCase();
+                if (textoLower.includes('quero') || textoLower.includes('comprei') || textoLower.includes('vou querer') || textoLower.includes('pego')) {
                     tipo = 'venda';
-                } else if (texto.toLowerCase().includes('quanto') || texto.toLowerCase().includes('valor') || texto.toLowerCase().includes('preco') || texto.toLowerCase().includes('preço')) {
+                } else if (textoLower.includes('quanto') || textoLower.includes('valor') || textoLower.includes('preco') || textoLower.includes('preço') || textoLower.includes('tem ainda')) {
                     tipo = 'interesse';
                 }
 
@@ -868,15 +966,15 @@
                 return `
                     <div class="comment-item" data-id="${comment.id}">
                         <div class="comment-header">
-                            <span class="comment-user">@${comment.username || 'usuario'}</span>
+                            <span class="comment-user">@${escapeHtml(comment.username || 'usuario')}</span>
                             <span class="comment-time">${dataComment}</span>
                         </div>
-                        <div class="comment-text">${texto}</div>
+                        <div class="comment-text">${escapeHtml(texto)}</div>
                         <div class="comment-actions">
-                            <button class="btn-action ${btnClass}" onclick="classificarComentario('${comment.id}', '${tipo}', '${comment.username}', '${texto.replace(/'/g, "\'")}')">
+                            <button class="btn-action ${btnClass}" onclick="classificarComentario('${comment.id}', '${tipo}', '${escapeHtml(comment.username || 'usuario')}', '${escapeHtml(texto)}')">
                                 <i class="fas fa-tag"></i> ${btnText}
                             </button>
-                            <button class="btn-action btn-interesse" onclick="converterVenda('${comment.id}', '${comment.username}', '${texto.replace(/'/g, "\'")}')">
+                            <button class="btn-action btn-interesse" onclick="converterVenda('${comment.id}', '${escapeHtml(comment.username || 'usuario')}', '${escapeHtml(texto)}')">
                                 <i class="fas fa-shopping-cart"></i> Converter Venda
                             </button>
                         </div>
@@ -885,42 +983,61 @@
             }).join('');
         }
 
-        // ========================================
-        // AÇÕES
-        // ========================================
         function abrirComentarios(mediaId) {
             document.getElementById('commentsModal').classList.add('active');
-            document.getElementById('commentsContainer').innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-spinner"></i>
-                    <p>Carregando comentarios...</p>
-                </div>
-            `;
+            document.body.style.overflow = 'hidden';
             carregarComentarios(mediaId);
         }
 
         function fecharModal() {
             document.getElementById('commentsModal').classList.remove('active');
+            document.body.style.overflow = '';
         }
 
         async function classificarComentario(commentId, tipo, username, texto) {
             try {
+                // Tentar salvar no banco
                 const { error } = await supabaseClient
                     .from('instagram_comentarios')
                     .upsert({
-                        cliente_id: '0824668c-1e10-415e-8998-09d72ef47dcb',
+                        cliente_id: clienteId,
                         comment_id: commentId,
+                        media_id: currentMediaId,
                         username: username,
                         texto: texto,
                         tipo: tipo,
                         status: 'novo',
                         created_at: new Date().toISOString()
-                    });
+                    }, { onConflict: 'cliente_id,comment_id' });
 
-                if (error) throw error;
+                if (error && error.code !== '42P01') {
+                    console.error('[INSTAGRAM-MONITOR] Erro ao classificar:', error);
+                }
+
+                // Salvar no localStorage como fallback
+                const key = 'instagram_comentarios_' + clienteId;
+                let comentarios = JSON.parse(localStorage.getItem(key) || '[]');
+                const existingIndex = comentarios.findIndex(c => c.comment_id === commentId);
+                const novoComentario = {
+                    comment_id: commentId,
+                    media_id: currentMediaId,
+                    username: username,
+                    texto: texto,
+                    tipo: tipo,
+                    status: 'novo',
+                    created_at: new Date().toISOString()
+                };
+
+                if (existingIndex >= 0) {
+                    comentarios[existingIndex] = novoComentario;
+                } else {
+                    comentarios.push(novoComentario);
+                }
+
+                localStorage.setItem(key, JSON.stringify(comentarios));
 
                 mostrarAlerta(`Comentario classificado como: ${tipo}`, 'success');
-                atualizarStats();
+                await carregarStats();
 
             } catch (error) {
                 console.error('[INSTAGRAM-MONITOR] Erro ao classificar:', error);
@@ -930,10 +1047,15 @@
 
         async function converterVenda(commentId, username, texto) {
             try {
-                // Salvar como venda
                 await classificarComentario(commentId, 'venda', username, texto);
 
-                // Abrir modal de venda (pode ser integrado com vendas.html)
+                // Tentar abrir pagina de vendas com dados preenchidos
+                const params = new URLSearchParams({
+                    cliente_instagram: username,
+                    observacao: texto,
+                    origem: 'instagram'
+                });
+
                 mostrarAlerta('Venda registrada! Cliente: @' + username, 'success');
 
             } catch (error) {
@@ -941,35 +1063,40 @@
             }
         }
 
-        async function atualizarStats() {
+        async function carregarStats() {
             try {
+                // Tentar do banco
                 const { data: vendas } = await supabaseClient
                     .from('instagram_comentarios')
                     .select('*')
-                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .eq('cliente_id', clienteId)
                     .eq('tipo', 'venda');
 
                 const { data: interesses } = await supabaseClient
                     .from('instagram_comentarios')
                     .select('*')
-                    .eq('cliente_id', '0824668c-1e10-415e-8998-09d72ef47dcb')
+                    .eq('cliente_id', clienteId)
                     .eq('tipo', 'interesse');
 
                 document.getElementById('statVendas').textContent = vendas ? vendas.length : 0;
                 document.getElementById('statInteresses').textContent = interesses ? interesses.length : 0;
 
             } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro stats:', error);
+                // Fallback do localStorage
+                const key = 'instagram_comentarios_' + clienteId;
+                const comentarios = JSON.parse(localStorage.getItem(key) || '[]');
+
+                const vendas = comentarios.filter(c => c.tipo === 'venda');
+                const interesses = comentarios.filter(c => c.tipo === 'interesse');
+
+                document.getElementById('statVendas').textContent = vendas.length;
+                document.getElementById('statInteresses').textContent = interesses.length;
             }
         }
 
-        // ========================================
-        // FILTROS
-        // ========================================
-        function filtrarPosts(filtro) {
-            // Atualizar botões
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+        function filtrarPosts(filtro, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
             let postsFiltrados = [...postsData];
 
@@ -981,21 +1108,14 @@
                     postsFiltrados = postsData.filter(p => (p.comments_count || 0) === 0);
                     break;
                 case 'vendas':
-                    // Filtrar posts que têm comentários classificados como venda
-                    // Implementação futura
-                    break;
                 case 'interesses':
-                    // Filtrar posts que têm comentários classificados como interesse
-                    // Implementação futura
+                    // Futuro: filtrar por posts que tem comentarios classificados
                     break;
             }
 
             renderizarPosts(postsFiltrados);
         }
 
-        // ========================================
-        // LOGIN INSTAGRAM
-        // ========================================
         function conectarInstagram() {
             const appId = document.getElementById('appId').value;
             const redirectUri = 'https://vendalive.com.br/instagram-monitor.html';
@@ -1006,24 +1126,18 @@
             window.location.href = url;
         }
 
-        // Verificar se voltou do OAuth
         function verificarOAuthCallback() {
             const hash = window.location.hash;
             if (hash && hash.includes('access_token=')) {
                 const token = hash.split('access_token=')[1].split('&')[0];
                 document.getElementById('accessToken').value = token;
                 mostrarAlerta('Token recebido! Salve a configuracao.', 'success');
-
-                // Limpar hash
                 history.replaceState(null, null, ' ');
             }
         }
 
         verificarOAuthCallback();
 
-        // ========================================
-        // UTILITÁRIOS
-        // ========================================
         function mostrarAlerta(mensagem, tipo) {
             const container = document.getElementById('alertContainer');
             const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-error' : 'alert-info';
@@ -1041,9 +1155,21 @@
             }, 5000);
         }
 
-        // Fechar modal ao clicar fora
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         document.getElementById('commentsModal').addEventListener('click', function(e) {
             if (e.target === this) {
+                fecharModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
                 fecharModal();
             }
         });
