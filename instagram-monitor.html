@@ -3,393 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendaLive - Monitor Instagram</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <title>VendaLive - Conectando Instagram...</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128250;</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-logo {
-            width: 45px; height: 45px;
-            background: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-        }
-        .header-title { color: white; font-size: 22px; font-weight: 700; }
-        .header-subtitle { color: rgba(255,255,255,0.8); font-size: 13px; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .btn-voltar {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
-        .user-info { color: white; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 25px; }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .card-title {
-            font-size: 18px; font-weight: 700; color: #1a1a2e;
-            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
-        }
-        .card-title i { color: #667eea; }
-
-        /* Status Section */
-        .status-section { text-align: center; padding: 40px 20px; }
-        .status-icon { font-size: 60px; margin-bottom: 20px; }
-        .status-icon.desconectado { color: #dc3545; }
-        .status-icon.conectado { color: #28a745; }
-        .status-title { font-size: 24px; color: #1a1a2e; margin-bottom: 10px; }
-        .status-text { color: #666; margin-bottom: 25px; font-size: 15px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .btn-instagram {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            color: white; border: none; padding: 15px 40px; border-radius: 12px;
-            font-size: 16px; font-weight: 600; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 12px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(220, 39, 67, 0.4);
-        }
-        .btn-instagram:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(220, 39, 67, 0.5); }
-        .btn-instagram i { font-size: 20px; }
-        .btn-desconectar {
-            background: #dc3545; color: white; border: none;
-            padding: 12px 30px; border-radius: 10px; font-size: 14px;
-            font-weight: 600; cursor: pointer; transition: all 0.3s; margin-left: 15px;
-        }
-        .btn-desconectar:hover { background: #c82333; transform: translateY(-2px); }
-
-        /* Perfil Info */
-        .perfil-info {
-            display: flex; align-items: center; gap: 20px;
-            padding: 20px; background: #f8f9fa; border-radius: 12px; margin-bottom: 20px;
-        }
-        .perfil-avatar {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 30px; font-weight: bold;
-        }
-        .perfil-dados h3 { font-size: 20px; color: #1a1a2e; margin-bottom: 5px; }
-        .perfil-dados p { color: #6c757d; font-size: 14px; }
-        .perfil-stats { display: flex; gap: 20px; margin-top: 10px; }
-        .perfil-stat { text-align: center; }
-        .perfil-stat-value { font-size: 20px; font-weight: 700; color: #667eea; }
-        .perfil-stat-label { font-size: 12px; color: #6c757d; }
-
-        /* Posts Grid */
-        .posts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-        .post-card {
-            background: #f8f9fa; border-radius: 16px; overflow: hidden;
-            border: 1px solid #e9ecef;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .post-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .post-image {
-            width: 100%; height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 50px;
-        }
-        .post-content { padding: 20px; }
-        .post-caption {
-            font-size: 14px; color: #495057; line-height: 1.5;
-            margin-bottom: 12px;
-            display: -webkit-box; -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .post-stats { display: flex; gap: 15px; margin-bottom: 15px; }
-        .post-stat { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #6c757d; }
-        .post-stat i { color: #dc2743; }
-        .btn-ver-comentarios {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; padding: 10px; border-radius: 8px;
-            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
-        }
-        .btn-ver-comentarios:hover { opacity: 0.9; }
-
-        /* Comments Modal */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-            z-index: 1000; justify-content: center; align-items: center; padding: 20px;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal {
-            background: white; border-radius: 20px; width: 100%;
-            max-width: 700px; max-height: 85vh; overflow: hidden;
-            display: flex; flex-direction: column;
-        }
-        .modal-header {
-            padding: 20px 25px; border-bottom: 1px solid #e9ecef;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-header h3 { font-size: 18px; color: #1a1a2e; }
-        .modal-close { background: none; border: none; font-size: 24px; color: #6c757d; cursor: pointer; }
-        .modal-body { padding: 20px 25px; overflow-y: auto; flex: 1; }
-        .comment-item {
-            background: #f8f9fa; border-radius: 12px; padding: 15px;
-            margin-bottom: 12px; border-left: 4px solid #667eea;
-        }
-        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .comment-user { font-weight: 600; color: #1a1a2e; font-size: 14px; }
-        .comment-time { font-size: 12px; color: #6c757d; }
-        .comment-text { font-size: 14px; color: #495057; line-height: 1.5; }
-        .comment-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-action {
-            padding: 6px 14px; border-radius: 6px; font-size: 12px;
-            font-weight: 600; cursor: pointer; border: none; transition: all 0.3s;
-        }
-        .btn-venda { background: #28a745; color: white; }
-        .btn-venda:hover { background: #218838; }
-        .btn-interesse { background: #ffc107; color: #333; }
-        .btn-interesse:hover { background: #e0a800; }
-        .btn-duvida { background: #17a2b8; color: white; }
-        .btn-duvida:hover { background: #138496; }
-
-        /* Filters */
-        .filters-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-btn {
-            padding: 8px 20px; border-radius: 20px; border: 2px solid #e9ecef;
-            background: white; font-size: 13px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; color: #495057;
-        }
-        .filter-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border-color: transparent;
-        }
-        .filter-btn:hover { border-color: #667eea; }
-
-        /* Loading */
-        .loading { text-align: center; padding: 40px; color: #6c757d; }
-        .loading i { font-size: 40px; animation: spin 1s linear infinite; color: #667eea; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #333; }
+        .container { text-align: center; padding: 40px; }
+        .card { background: white; border-radius: 20px; padding: 50px 40px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .logo { font-size: 60px; margin-bottom: 20px; }
+        .title { font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
+        .subtitle { font-size: 16px; color: #6c757d; margin-bottom: 30px; }
+        .loading-spinner { width: 50px; height: 50px; border: 4px solid #e9ecef; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Alert */
-        .alert {
-            padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-
-        /* Stats Cards */
-        .stats-row {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px; margin-bottom: 20px;
-        }
-        .stat-card {
-            background: white; border-radius: 16px; padding: 20px;
-            text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        .stat-value { font-size: 32px; font-weight: 700; color: #667eea; }
-        .stat-label { font-size: 13px; color: #6c757d; margin-top: 5px; }
-
-        /* Hidden */
-        .hidden { display: none !important; }
-
-        /* Error Details */
-        .error-details {
-            background: #f8f9fa; border-radius: 8px; padding: 15px;
-            margin-top: 15px; text-align: left; font-size: 13px;
-            font-family: monospace; color: #721c24;
-        }
-        .error-details code { background: #fff; padding: 2px 6px; border-radius: 4px; }
-
-        /* Manual Token Input */
-        .manual-token-section {
-            margin-top: 20px; padding: 20px;
-            background: #f8f9fa; border-radius: 12px;
-            border: 2px dashed #dee2e6;
-        }
-        .manual-token-section h4 { color: #495057; margin-bottom: 10px; }
-        .manual-token-input {
-            width: 100%; padding: 12px; border: 1px solid #ced4da;
-            border-radius: 8px; font-size: 14px; margin-bottom: 10px;
-        }
-        .btn-salvar-token {
-            background: #28a745; color: white; border: none;
-            padding: 10px 25px; border-radius: 8px; font-size: 14px;
-            font-weight: 600; cursor: pointer; transition: all 0.3s;
-        }
-        .btn-salvar-token:hover { background: #218838; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 10px; padding: 15px; }
-            .header-title { font-size: 18px; }
-            .container { padding: 15px; }
-            .posts-grid { grid-template-columns: 1fr; }
-            .perfil-info { flex-direction: column; text-align: center; }
-        }
+        .success-icon { font-size: 60px; color: #28a745; margin-bottom: 20px; }
+        .error-icon { font-size: 60px; color: #dc3545; margin-bottom: 20px; }
+        .btn { display: inline-block; padding: 12px 30px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.3s; margin-top: 20px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-secondary { background: #e9ecef; color: #495057; }
+        .btn-secondary:hover { background: #dee2e6; }
+        .status-message { font-size: 14px; color: #6c757d; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+        .status-message.error { background: #f8d7da; color: #721c24; }
+        .status-message.success { background: #d4edda; color: #155724; }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <div class="header-logo">📱</div>
-            <div>
-                <div class="header-title">VendaLive</div>
-                <div class="header-subtitle">Monitor Instagram</div>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="user-info" id="userInfo">
-                <i class="fas fa-user"></i>
-                <span id="userName">Carregando...</span>
-            </div>
-            <button class="btn-voltar" onclick="window.location.href='dashboard.html'">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
-        </div>
-    </div>
-
     <div class="container">
-        <div id="alertContainer"></div>
-
-        <!-- Status Desconectado -->
-        <div id="statusDesconectado" class="card status-section">
-            <i class="fab fa-instagram status-icon desconectado"></i>
-            <h2 class="status-title">Instagram nao conectado</h2>
-            <p class="status-text">
-                Conecte sua conta do Instagram para monitorar comentarios, 
-                identificar vendas e gerenciar seus clientes em tempo real.
-            </p>
-            <button class="btn-instagram" onclick="conectarInstagram()">
-                <i class="fab fa-instagram"></i>
-                Conectar com Instagram
-            </button>
-
-            <!-- Fallback manual -->
-            <div class="manual-token-section" style="margin-top: 30px; display: none;" id="manualTokenSection">
-                <h4><i class="fas fa-key"></i> Ou insira o Access Token manualmente</h4>
-                <p style="font-size: 12px; color: #6c757d; margin-bottom: 10px;">
-                    Use esta opcao se o login automatico nao funcionar. 
-                    <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color: #667eea;">Gerar token aqui</a>
-                </p>
-                <input type="text" class="manual-token-input" id="manualTokenInput" placeholder="Cole o access token aqui...">
-                <button class="btn-salvar-token" onclick="salvarTokenManual()">
-                    <i class="fas fa-save"></i> Salvar Token
-                </button>
-            </div>
-        </div>
-
-        <!-- Status Conectado -->
-        <div id="statusConectado" class="card hidden">
-            <div class="perfil-info">
-                <div class="perfil-avatar" id="perfilAvatar">IG</div>
-                <div class="perfil-dados">
-                    <h3 id="perfilUsername">@username</h3>
-                    <p id="perfilStatus"><i class="fas fa-check-circle" style="color: #28a745;"></i> Conectado</p>
-                    <div class="perfil-stats">
-                        <div class="perfil-stat">
-                            <div class="perfil-stat-value" id="perfilPosts">0</div>
-                            <div class="perfil-stat-label">Posts</div>
-                        </div>
-                        <div class="perfil-stat">
-                            <div class="perfil-stat-value" id="perfilSeguidores">0</div>
-                            <div class="perfil-stat-label">Seguidores</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-desconectar" onclick="desconectarInstagram()">
-                    <i class="fas fa-unlink"></i> Desconectar
-                </button>
-            </div>
-        </div>
-
-        <!-- Stats Section -->
-        <div id="statsSection" class="hidden">
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-value" id="statPosts">0</div>
-                    <div class="stat-label">Posts</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="statComentarios">0</div>
-                    <div class="stat-label">Comentarios</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="statVendas">0</div>
-                    <div class="stat-label">Vendas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="statInteresses">0</div>
-                    <div class="stat-label">Interesses</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Posts Section -->
-        <div id="postsSection" class="card hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="card-title" style="margin-bottom: 0;">
-                    <i class="fab fa-instagram"></i>
-                    Posts do Instagram
-                </div>
-                <button class="btn-refresh" id="btnRefresh" onclick="carregarPosts()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-sync-alt"></i> Atualizar
-                </button>
-            </div>
-            <div class="filters-bar">
-                <button class="filter-btn active" onclick="filtrarPosts('todos', this)">Todos</button>
-                <button class="filter-btn" onclick="filtrarPosts('com_comentarios', this)">Com Comentarios</button>
-                <button class="filter-btn" onclick="filtrarPosts('sem_comentarios', this)">Sem Comentarios</button>
-                <button class="filter-btn" onclick="filtrarPosts('vendas', this)">Vendas</button>
-                <button class="filter-btn" onclick="filtrarPosts('interesses', this)">Interesses</button>
-            </div>
-            <div id="postsContainer" class="posts-grid">
-                <div class="loading" style="grid-column: 1/-1;">
-                    <i class="fas fa-spinner"></i>
-                    <p>Carregando posts...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Comments Modal -->
-    <div class="modal-overlay" id="commentsModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-comments"></i> Comentarios do Post</h3>
-                <button class="modal-close" onclick="fecharModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="commentsContainer"></div>
+        <div class="card" id="cardContent">
+            <div class="loading-spinner" id="spinner"></div>
+            <div class="title" id="title">Conectando Instagram...</div>
+            <div class="subtitle" id="subtitle">Aguarde enquanto processamos a autorização</div>
+            <div class="status-message" id="statusMessage" style="display: none;"></div>
         </div>
     </div>
 
@@ -397,771 +42,85 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-        // Configuracao do APP VendaLive (fixo, nao muda por cliente)
-        const APP_CONFIG = {
-            appId: '1039076025227775',
-            appSecret: 'd9b3fb77365c4026a088613d915a9bf1',
-            redirectUri: 'https://vendalive.com.br/instagram-monitor.html',
-            scope: 'instagram_basic,instagram_manage_comments,instagram_manage_messages,pages_read_engagement,pages_show_list'
-        };
+        // Extrai parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
 
-        let supabaseClient = null;
-        let usuarioLogado = null;
-        let clienteId = null;
-        let postsData = [];
-        let comentariosData = [];
-        let instagramConfig = null;
-        let currentMediaId = null;
-        let oauthErrorCount = 0;
+        const titleEl = document.getElementById('title');
+        const subtitleEl = document.getElementById('subtitle');
+        const spinnerEl = document.getElementById('spinner');
+        const statusEl = document.getElementById('statusMessage');
+        const cardEl = document.getElementById('cardContent');
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('[INSTAGRAM-MONITOR] Iniciando...');
-
-            let tentativas = 0;
-            while (tentativas < 20) {
-                if (typeof window.supabase !== 'undefined') break;
-                await new Promise(r => setTimeout(r, 300));
-                tentativas++;
-            }
-
-            if (typeof window.supabase === 'undefined') {
-                mostrarAlerta('Erro ao carregar biblioteca. Recarregue a pagina.', 'error');
-                return;
-            }
-
-            const { createClient } = window.supabase;
-            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            await verificarAutenticacao();
-        });
-
-        async function verificarAutenticacao() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                usuarioLogado = session.user;
-                document.getElementById('userName').textContent = usuarioLogado.email;
-
-                const { data: userData } = await supabaseClient
-                    .from('usuarios_pg')
-                    .select('cliente_id')
-                    .eq('auth_id', usuarioLogado.id)
-                    .single();
-
-                if (userData && userData.cliente_id) {
-                    clienteId = userData.cliente_id;
-                } else {
-                    clienteId = '0824668c-1e10-415e-8998-09d72ef47dcb';
-                }
-
-                console.log('[INSTAGRAM-MONITOR] cliente_id:', clienteId);
-
-                // Verificar se voltou do OAuth
-                await verificarOAuthCallback();
-
-                // Carregar configuracao do Instagram
-                await carregarConfiguracao();
-
-            } catch (erro) {
-                console.error('[INSTAGRAM-MONITOR] Erro auth:', erro);
-                window.location.href = 'login.html';
-            }
-        }
-
-        // ========================================
-        // OAUTH - CONEXAO AUTOMATICA
-        // ========================================
-        function conectarInstagram() {
-            const state = btoa(Math.random().toString(36)).substring(0, 20);
-            localStorage.setItem('instagram_oauth_state', state);
-
-            const url = `https://www.facebook.com/v25.0/dialog/oauth?` +
-                `client_id=${APP_CONFIG.appId}` +
-                `&redirect_uri=${encodeURIComponent(APP_CONFIG.redirectUri)}` +
-                `&scope=${APP_CONFIG.scope}` +
-                `&response_type=code` +
-                `&state=${state}`;
-
-            console.log('[INSTAGRAM-MONITOR] Redirecionando para OAuth:', url);
-            window.location.href = url;
-        }
-
-        async function verificarOAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const error = urlParams.get('error');
-            const errorCode = urlParams.get('error_code');
-            const errorReason = urlParams.get('error_reason');
-
+        async function processarCallback() {
+            // Se houve erro no OAuth
             if (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro OAuth:', error, errorCode, errorReason);
-                mostrarAlerta('Erro na autorizacao: ' + error + ' - ' + (errorReason || ''), 'error');
-                mostrarErroDetalhado('Erro OAuth', { error, errorCode, errorReason });
+                mostrarErro('Erro na autorização: ' + (errorDescription || error));
                 return;
             }
 
-            if (!code) return;
-
-            console.log('[INSTAGRAM-MONITOR] Code recebido:', code.substring(0, 20) + '...');
-
-            // Verificar state
-            const savedState = localStorage.getItem('instagram_oauth_state');
-            if (state && state !== savedState) {
-                mostrarAlerta('Erro de seguranca. Tente novamente.', 'error');
+            if (!code) {
+                mostrarErro('Código de autorização não encontrado. Tente conectar novamente.');
                 return;
             }
 
-            localStorage.removeItem('instagram_oauth_state');
-            mostrarAlerta('Autorizando... Aguarde.', 'info');
-
-            // Tentar usar Edge Function primeiro
-            let edgeFunctionSuccess = false;
             try {
-                console.log('[INSTAGRAM-MONITOR] Tentando Edge Function...');
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/instagram-oauth/exchange-token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'apikey': SUPABASE_ANON_KEY
-                    },
-                    body: JSON.stringify({ code })
-                });
-
-                console.log('[INSTAGRAM-MONITOR] Edge Function status:', response.status);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('[INSTAGRAM-MONITOR] Edge Function resposta:', data);
-
-                    if (data.success) {
-                        await salvarConfiguracaoOAuth({
-                            accessToken: data.accessToken,
-                            pageId: data.pageId,
-                            instagramId: data.instagramId,
-                            username: data.username,
-                            mediaCount: data.mediaCount,
-                            followersCount: data.followersCount
-                        });
-                        edgeFunctionSuccess = true;
-                        mostrarAlerta('Instagram conectado via Edge Function! @' + data.username, 'success');
-                    } else if (data.error) {
-                        throw new Error(data.error);
-                    }
-                } else {
-                    const errorText = await response.text();
-                    console.error('[INSTAGRAM-MONITOR] Edge Function erro:', response.status, errorText);
-                    throw new Error('Edge Function retornou ' + response.status);
-                }
-            } catch (edgeError) {
-                console.error('[INSTAGRAM-MONITOR] Edge Function falhou:', edgeError);
-
-                // Fallback: Processar diretamente no frontend
-                console.log('[INSTAGRAM-MONITOR] Tentando processamento direto no frontend...');
-                try {
-                    await processarOAuthDireto(code);
-                } catch (directError) {
-                    console.error('[INSTAGRAM-MONITOR] Processamento direto falhou:', directError);
-                    oauthErrorCount++;
-
-                    if (oauthErrorCount >= 2) {
-                        // Mostrar opcao manual
-                        document.getElementById('manualTokenSection').style.display = 'block';
-                        mostrarAlerta('Login automatico falhou. Use a opcao manual abaixo.', 'warning');
-                    } else {
-                        mostrarAlerta('Erro ao conectar: ' + directError.message, 'error');
-                        mostrarErroDetalhado('Erro no OAuth', { 
-                            edgeError: edgeError.message,
-                            directError: directError.message 
-                        });
-                    }
-                }
-            }
-
-            // Limpar URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        async function processarOAuthDireto(code) {
-            console.log('[INSTAGRAM-MONITOR] Trocando code por token...');
-
-            const tokenUrl = `https://graph.facebook.com/v25.0/oauth/access_token?` +
-                `client_id=${APP_CONFIG.appId}` +
-                `&client_secret=${APP_CONFIG.appSecret}` +
-                `&redirect_uri=${encodeURIComponent(APP_CONFIG.redirectUri)}` +
-                `&code=${code}`;
-
-            const response = await fetch(tokenUrl);
-            const tokenData = await response.json();
-
-            if (tokenData.error) {
-                throw new Error(tokenData.error.message);
-            }
-
-            const accessToken = tokenData.access_token;
-            console.log('[INSTAGRAM-MONITOR] Token obtido:', accessToken.substring(0, 20) + '...');
-
-            // Buscar paginas do usuario
-            const pagesResponse = await fetch(
-                `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,instagram_business_account{username,media_count,followers_count}&access_token=${accessToken}`
-            );
-            const pagesData = await pagesResponse.json();
-
-            if (pagesData.error) {
-                throw new Error(pagesData.error.message);
-            }
-
-            let pageInfo = null;
-            let instagramInfo = null;
-
-            if (pagesData.data && pagesData.data.length > 0) {
-                for (const page of pagesData.data) {
-                    if (page.instagram_business_account) {
-                        pageInfo = page;
-                        instagramInfo = page.instagram_business_account;
-                        break;
-                    }
-                }
-            }
-
-            if (!instagramInfo) {
-                throw new Error('Nenhuma conta Instagram Business encontrada vinculada a sua Pagina do Facebook.');
-            }
-
-            await salvarConfiguracaoOAuth({
-                accessToken: accessToken,
-                pageId: pageInfo.id,
-                instagramId: instagramInfo.id,
-                username: instagramInfo.username,
-                mediaCount: instagramInfo.media_count || 0,
-                followersCount: instagramInfo.followers_count || 0
-            });
-
-            mostrarAlerta('Instagram conectado com sucesso! @' + instagramInfo.username, 'success');
-        }
-
-        async function salvarConfiguracaoOAuth(config) {
-            console.log('[INSTAGRAM-MONITOR] Salvando configuracao...');
-
-            try {
-                const { data: existing } = await supabaseClient
-                    .from('configuracoes_pagamento')
-                    .select('id')
-                    .eq('cliente_id', clienteId)
-                    .limit(1);
-
-                const dados = {
-                    cliente_id: clienteId,
-                    instagram_app_id: APP_CONFIG.appId,
-                    instagram_page_id: config.pageId,
-                    instagram_business_id: config.instagramId,
-                    instagram_access_token: config.accessToken,
-                    instagram_username: config.username
-                };
-
-                if (existing && existing.length > 0) {
-                    await supabaseClient
-                        .from('configuracoes_pagamento')
-                        .update(dados)
-                        .eq('cliente_id', clienteId);
-                } else {
-                    await supabaseClient
-                        .from('configuracoes_pagamento')
-                        .insert(dados);
-                }
-
-                console.log('[INSTAGRAM-MONITOR] Configuracao salva no banco');
-            } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao salvar no banco:', error);
-            }
-
-            // Sempre salvar no localStorage como backup
-            localStorage.setItem('instagram_config_' + clienteId, JSON.stringify({
-                cliente_id: clienteId,
-                instagram_app_id: APP_CONFIG.appId,
-                instagram_page_id: config.pageId,
-                instagram_business_id: config.instagramId,
-                instagram_access_token: config.accessToken,
-                instagram_username: config.username,
-                mediaCount: config.mediaCount,
-                followersCount: config.followersCount
-            }));
-
-            // Atualizar a variavel global
-            instagramConfig = {
-                accessToken: config.accessToken,
-                pageId: config.pageId,
-                instagramId: config.instagramId,
-                username: config.username
-            };
-
-            // Mostrar interface conectada
-            mostrarConectado();
-        }
-
-        async function salvarTokenManual() {
-            const token = document.getElementById('manualTokenInput').value.trim();
-            if (!token) {
-                mostrarAlerta('Insira um token valido', 'error');
-                return;
-            }
-
-            mostrarAlerta('Verificando token...', 'info');
-
-            try {
-                // Verificar se o token e valido buscando informacoes
-                const response = await fetch(
-                    `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,instagram_business_account{username,media_count,followers_count}&access_token=${token}`
-                );
+                // Chama a Edge Function para trocar o code por token
+                const response = await fetch(SUPABASE_URL + '/functions/v1/instagram-callback?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state || ''));
                 const data = await response.json();
 
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                let pageInfo = null;
-                let instagramInfo = null;
-
-                if (data.data && data.data.length > 0) {
-                    for (const page of data.data) {
-                        if (page.instagram_business_account) {
-                            pageInfo = page;
-                            instagramInfo = page.instagram_business_account;
-                            break;
-                        }
-                    }
-                }
-
-                if (!instagramInfo) {
-                    throw new Error('Token valido, mas nenhuma conta Instagram Business encontrada.');
-                }
-
-                await salvarConfiguracaoOAuth({
-                    accessToken: token,
-                    pageId: pageInfo.id,
-                    instagramId: instagramInfo.id,
-                    username: instagramInfo.username,
-                    mediaCount: instagramInfo.media_count || 0,
-                    followersCount: instagramInfo.followers_count || 0
-                });
-
-                mostrarAlerta('Token manual salvo! @' + instagramInfo.username, 'success');
-                document.getElementById('manualTokenSection').style.display = 'none';
-
-            } catch (error) {
-                mostrarAlerta('Erro com o token: ' + error.message, 'error');
-            }
-        }
-
-        async function desconectarInstagram() {
-            if (!confirm('Tem certeza que deseja desconectar o Instagram?')) return;
-
-            try {
-                await supabaseClient
-                    .from('configuracoes_pagamento')
-                    .update({
-                        instagram_access_token: null,
-                        instagram_username: null
-                    })
-                    .eq('cliente_id', clienteId);
-
-                localStorage.removeItem('instagram_config_' + clienteId);
-                instagramConfig = null;
-
-                mostrarAlerta('Instagram desconectado.', 'info');
-                setTimeout(() => location.reload(), 1500);
-
-            } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro ao desconectar:', error);
-                localStorage.removeItem('instagram_config_' + clienteId);
-                location.reload();
-            }
-        }
-
-        // ========================================
-        // CARREGAR CONFIGURACAO
-        // ========================================
-        async function carregarConfiguracao() {
-            console.log('[INSTAGRAM-MONITOR] Carregando configuracao...');
-
-            // Tentar banco primeiro
-            try {
-                const { data, error } = await supabaseClient
-                    .from('configuracoes_pagamento')
-                    .select('*')
-                    .eq('cliente_id', clienteId)
-                    .single();
-
-                if (data && data.instagram_access_token) {
-                    instagramConfig = {
-                        accessToken: data.instagram_access_token,
-                        pageId: data.instagram_page_id,
-                        instagramId: data.instagram_business_id,
-                        username: data.instagram_username
-                    };
-                    console.log('[INSTAGRAM-MONITOR] Configuracao carregada do banco');
+                if (data.success) {
+                    mostrarSucesso(data.username, data.instagram_id);
+                } else {
+                    mostrarErro(data.error || 'Erro desconhecido ao conectar conta.');
                 }
             } catch (e) {
-                console.log('[INSTAGRAM-MONITOR] Banco nao disponivel, tentando localStorage');
-            }
-
-            // Fallback localStorage
-            if (!instagramConfig) {
-                const local = localStorage.getItem('instagram_config_' + clienteId);
-                if (local) {
-                    const parsed = JSON.parse(local);
-                    if (parsed.instagram_access_token) {
-                        instagramConfig = {
-                            accessToken: parsed.instagram_access_token,
-                            pageId: parsed.instagram_page_id,
-                            instagramId: parsed.instagram_business_id,
-                            username: parsed.instagram_username
-                        };
-                        console.log('[INSTAGRAM-MONITOR] Configuracao carregada do localStorage');
-                    }
-                }
-            }
-
-            if (instagramConfig) {
-                mostrarConectado();
-            } else {
-                mostrarDesconectado();
+                console.error('[INSTAGRAM-MONITOR] Erro:', e);
+                mostrarErro('Erro ao processar conexão. Verifique sua conexão e tente novamente.');
             }
         }
 
-        function mostrarConectado() {
-            document.getElementById('statusDesconectado').classList.add('hidden');
-            document.getElementById('statusConectado').classList.remove('hidden');
-            document.getElementById('statsSection').classList.remove('hidden');
-            document.getElementById('postsSection').classList.remove('hidden');
+        function mostrarSucesso(username, instagramId) {
+            spinnerEl.style.display = 'none';
+            cardEl.innerHTML = '<div class="success-icon">&#9989;</div>' +
+                '<div class="title">Conta conectada!</div>' +
+                '<div class="subtitle">@' + username + ' foi conectada com sucesso.</div>' +
+                '<div class="status-message success">ID da conta: ' + instagramId + '</div>' +
+                '<a href="comentarioslives.html" class="btn btn-primary">Ir para Comentários de Lives</a>' +
+                '<br><a href="dashboard.html" class="btn btn-secondary" style="margin-top: 10px;">Voltar ao Dashboard</a>';
 
-            document.getElementById('perfilUsername').textContent = '@' + (instagramConfig.username || 'username');
-            document.getElementById('perfilAvatar').textContent = (instagramConfig.username || 'IG').substring(0, 2).toUpperCase();
-
-            carregarPosts();
-            carregarStats();
-        }
-
-        function mostrarDesconectado() {
-            document.getElementById('statusDesconectado').classList.remove('hidden');
-            document.getElementById('statusConectado').classList.add('hidden');
-            document.getElementById('statsSection').classList.add('hidden');
-            document.getElementById('postsSection').classList.add('hidden');
-        }
-
-        // ========================================
-        // CARREGAR POSTS
-        // ========================================
-        async function carregarPosts() {
-            if (!instagramConfig || !instagramConfig.accessToken) {
-                mostrarAlerta('Token nao disponivel', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('btnRefresh');
-            if (btn) {
-                btn.querySelector('i').style.animation = 'spin 1s linear infinite';
-                btn.disabled = true;
-            }
-
-            try {
-                const url = `https://graph.facebook.com/v25.0/${instagramConfig.instagramId}/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=${instagramConfig.accessToken}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                postsData = data.data || [];
-
-                document.getElementById('statPosts').textContent = postsData.length;
-                document.getElementById('perfilPosts').textContent = postsData.length;
-
-                const totalComentarios = postsData.reduce((sum, p) => sum + (p.comments_count || 0), 0);
-                document.getElementById('statComentarios').textContent = totalComentarios;
-
-                renderizarPosts(postsData);
-
-            } catch (error) {
-                console.error('[INSTAGRAM-MONITOR] Erro:', error);
-                document.getElementById('postsContainer').innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #721c24; background: #f8d7da; border-radius: 12px;">
-                        <i class="fas fa-exclamation-circle" style="font-size: 30px; margin-bottom: 10px;"></i>
-                        <p><strong>Erro:</strong> ${error.message}</p>
-                        <p style="font-size: 12px; margin-top: 10px;">O token pode ter expirado. Desconecte e conecte novamente.</p>
-                    </div>
-                `;
-            } finally {
-                if (btn) {
-                    btn.querySelector('i').style.animation = '';
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        async function carregarComentarios(mediaId) {
-            if (!instagramConfig || !instagramConfig.accessToken) return;
-
-            currentMediaId = mediaId;
-            document.getElementById('commentsContainer').innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-spinner"></i>
-                    <p>Carregando comentarios...</p>
-                </div>
-            `;
-
-            try {
-                const url = `https://graph.facebook.com/v25.0/${mediaId}/comments?fields=id,text,username,timestamp,like_count&access_token=${instagramConfig.accessToken}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                comentariosData = data.data || [];
-                renderizarComentarios(comentariosData);
-
-            } catch (error) {
-                document.getElementById('commentsContainer').innerHTML = `
-                    <div class="alert alert-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        Erro: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        // ========================================
-        // RENDERIZACAO
-        // ========================================
-        function renderizarPosts(posts) {
-            const container = document.getElementById('postsContainer');
-
-            if (posts.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6c757d;">
-                        <i class="fab fa-instagram" style="font-size: 40px; margin-bottom: 15px;"></i>
-                        <p>Nenhum post encontrado</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = posts.map(post => {
-                const caption = post.caption || 'Sem legenda';
-                const shortCaption = caption.length > 100 ? caption.substring(0, 100) + '...' : caption;
-                const dataPost = post.timestamp ? new Date(post.timestamp).toLocaleDateString('pt-BR') : '';
-
-                return `
-                    <div class="post-card" data-id="${post.id}">
-                        <div class="post-image">
-                            <i class="fab fa-instagram"></i>
-                        </div>
-                        <div class="post-content">
-                            <div class="post-caption">${escapeHtml(shortCaption)}</div>
-                            <div class="post-stats">
-                                <div class="post-stat">
-                                    <i class="fas fa-comment"></i>
-                                    <span>${post.comments_count || 0} comentarios</span>
-                                </div>
-                                <div class="post-stat">
-                                    <i class="fas fa-calendar"></i>
-                                    <span>${dataPost}</span>
-                                </div>
-                            </div>
-                            <button class="btn-ver-comentarios" onclick="abrirComentarios('${post.id}')">
-                                <i class="fas fa-comments"></i> Ver Comentarios
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderizarComentarios(comentarios) {
-            const container = document.getElementById('commentsContainer');
-
-            if (comentarios.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #6c757d;">
-                        <i class="fas fa-comment-slash" style="font-size: 40px; margin-bottom: 15px;"></i>
-                        <p>Nenhum comentario neste post</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = comentarios.map(comment => {
-                const dataComment = comment.timestamp ? new Date(comment.timestamp).toLocaleString('pt-BR') : '';
-                const texto = comment.text || '';
-
-                let tipo = 'duvida';
-                const textoLower = texto.toLowerCase();
-                if (textoLower.includes('quero') || textoLower.includes('comprei') || textoLower.includes('vou querer') || textoLower.includes('pego')) {
-                    tipo = 'venda';
-                } else if (textoLower.includes('quanto') || textoLower.includes('valor') || textoLower.includes('preco') || textoLower.includes('preço') || textoLower.includes('tem ainda')) {
-                    tipo = 'interesse';
-                }
-
-                const btnClass = tipo === 'venda' ? 'btn-venda' : tipo === 'interesse' ? 'btn-interesse' : 'btn-duvida';
-                const btnText = tipo === 'venda' ? 'Venda' : tipo === 'interesse' ? 'Interesse' : 'Duvida';
-
-                return `
-                    <div class="comment-item" data-id="${comment.id}">
-                        <div class="comment-header">
-                            <span class="comment-user">@${escapeHtml(comment.username || 'usuario')}</span>
-                            <span class="comment-time">${dataComment}</span>
-                        </div>
-                        <div class="comment-text">${escapeHtml(texto)}</div>
-                        <div class="comment-actions">
-                            <button class="btn-action ${btnClass}" onclick="classificarComentario('${comment.id}', '${tipo}', '${escapeHtml(comment.username || 'usuario')}', '${escapeHtml(texto)}')">
-                                <i class="fas fa-tag"></i> ${btnText}
-                            </button>
-                            <button class="btn-action btn-interesse" onclick="converterVenda('${comment.id}', '${escapeHtml(comment.username || 'usuario')}', '${escapeHtml(texto)}')">
-                                <i class="fas fa-shopping-cart"></i> Converter Venda
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ========================================
-        // ACOES
-        // ========================================
-        function abrirComentarios(mediaId) {
-            document.getElementById('commentsModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-            carregarComentarios(mediaId);
-        }
-
-        function fecharModal() {
-            document.getElementById('commentsModal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        async function classificarComentario(commentId, tipo, username, texto) {
-            try {
-                const dados = {
-                    cliente_id: clienteId,
-                    comment_id: commentId,
-                    media_id: currentMediaId,
+            // Notifica a janela pai (se aberto via popup)
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'instagram-oauth-success',
                     username: username,
-                    texto: texto,
-                    tipo: tipo,
-                    status: 'novo',
-                    created_at: new Date().toISOString()
-                };
-
-                try {
-                    await supabaseClient.from('instagram_comentarios').upsert(dados, { onConflict: 'cliente_id,comment_id' });
-                } catch (e) {
-                    console.log('Banco nao disponivel, usando localStorage');
-                }
-
-                const key = 'instagram_comentarios_' + clienteId;
-                let comentarios = JSON.parse(localStorage.getItem(key) || '[]');
-                const idx = comentarios.findIndex(c => c.comment_id === commentId);
-                if (idx >= 0) comentarios[idx] = dados;
-                else comentarios.push(dados);
-                localStorage.setItem(key, JSON.stringify(comentarios));
-
-                mostrarAlerta(`Comentario classificado como: ${tipo}`, 'success');
-                await carregarStats();
-
-            } catch (error) {
-                mostrarAlerta('Erro: ' + error.message, 'error');
+                    instagram_id: instagramId
+                }, '*');
             }
         }
 
-        async function converterVenda(commentId, username, texto) {
-            await classificarComentario(commentId, 'venda', username, texto);
-            mostrarAlerta('Venda registrada! Cliente: @' + username, 'success');
-        }
+        function mostrarErro(mensagem) {
+            spinnerEl.style.display = 'none';
+            cardEl.innerHTML = '<div class="error-icon">&#10060;</div>' +
+                '<div class="title">Erro na conexão</div>' +
+                '<div class="subtitle">Não foi possível conectar sua conta</div>' +
+                '<div class="status-message error">' + mensagem + '</div>' +
+                '<a href="comentarioslives.html" class="btn btn-primary">Tentar novamente</a>' +
+                '<br><a href="dashboard.html" class="btn btn-secondary" style="margin-top: 10px;">Voltar ao Dashboard</a>';
 
-        async function carregarStats() {
-            try {
-                const key = 'instagram_comentarios_' + clienteId;
-                const comentarios = JSON.parse(localStorage.getItem(key) || '[]');
-                const vendas = comentarios.filter(c => c.tipo === 'venda');
-                const interesses = comentarios.filter(c => c.tipo === 'interesse');
-                document.getElementById('statVendas').textContent = vendas.length;
-                document.getElementById('statInteresses').textContent = interesses.length;
-            } catch (e) {}
-        }
-
-        function filtrarPosts(filtro, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            let postsFiltrados = [...postsData];
-            switch(filtro) {
-                case 'com_comentarios':
-                    postsFiltrados = postsData.filter(p => (p.comments_count || 0) > 0);
-                    break;
-                case 'sem_comentarios':
-                    postsFiltrados = postsData.filter(p => (p.comments_count || 0) === 0);
-                    break;
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'instagram-oauth-error',
+                    error: mensagem
+                }, '*');
             }
-            renderizarPosts(postsFiltrados);
         }
 
-        // ========================================
-        // UTILITARIOS
-        // ========================================
-        function mostrarAlerta(mensagem, tipo) {
-            const container = document.getElementById('alertContainer');
-            const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-error' : tipo === 'warning' ? 'alert-warning' : 'alert-info';
-            const icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : tipo === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-
-            container.innerHTML = `
-                <div class="alert ${alertClass}">
-                    <i class="fas ${icon}"></i>
-                    ${mensagem}
-                </div>
-            `;
-
-            setTimeout(() => { container.innerHTML = ''; }, 5000);
-        }
-
-        function mostrarErroDetalhado(titulo, detalhes) {
-            const container = document.getElementById('alertContainer');
-            container.innerHTML = `
-                <div class="alert alert-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
-                        <strong>${titulo}</strong>
-                        <div class="error-details">
-                            <pre>${JSON.stringify(detalhes, null, 2)}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        document.getElementById('commentsModal').addEventListener('click', function(e) {
-            if (e.target === this) fecharModal();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') fecharModal();
-        });
+        // Inicia processamento
+        processarCallback();
     </script>
 </body>
 </html>
