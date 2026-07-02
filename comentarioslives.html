@@ -357,6 +357,10 @@ const TIPOS_KEYWORDS = { venda: ['quero','comprei','vou querer','pego','levo','m
 
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('[COMENTARIOS-LIVES] Iniciando...');
+
+    // Verificar se voltou de OAuth
+    if (verificarRetornoOAuth()) return;
+
     let tentativas = 0;
     while (tentativas < 20) { if (typeof window.supabase !== 'undefined') break; await new Promise(r => setTimeout(r, 300)); tentativas++; }
     if (typeof window.supabase === 'undefined') { mostrarAlerta('Erro ao carregar biblioteca. Recarregue a pagina.', 'error'); return; }
@@ -447,15 +451,57 @@ function conectarInstagram() {
     const width = 600, height = 700, left = (window.screen.width - width) / 2, top = (window.screen.height - height) / 2;
     const oauthUrl = SUPABASE_URL + '/functions/v1/instagram-oauth?cliente_id=' + encodeURIComponent(clienteId);
     console.log('[COMENTARIOS-LIVES] Abrindo popup OAuth:', oauthUrl);
+
+    // Salvar estado para detectar retorno
+    sessionStorage.setItem('instagram_oauth_pending', 'true');
+    sessionStorage.setItem('instagram_oauth_time', Date.now().toString());
+
     const popup = window.open(oauthUrl, 'instagram-oauth', 'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
-    if (!popup || popup.closed || typeof popup.closed === 'undefined') { mostrarAlerta('Popup bloqueado! Permita popups para este site e tente novamente.', 'warning'); window.location.href = oauthUrl; return; }
-    const messageHandler = async function(event) {
-        if (event.origin !== window.location.origin) return;
-        if (event.data && event.data.type === 'instagram-oauth-success') { window.removeEventListener('message', messageHandler); console.log('[COMENTARIOS-LIVES] OAuth sucesso:', event.data); await carregarContasInstagram(); mostrarAlerta('Conta @' + event.data.username + ' conectada com sucesso!', 'success'); if (popup && !popup.closed) popup.close(); }
-        if (event.data && event.data.type === 'instagram-oauth-error') { window.removeEventListener('message', messageHandler); console.error('[COMENTARIOS-LIVES] OAuth erro:', event.data); mostrarAlerta('Erro ao conectar Instagram: ' + (event.data.error || 'Erro desconhecido'), 'error'); if (popup && !popup.closed) popup.close(); }
-    };
-    window.addEventListener('message', messageHandler);
-    const checkClosed = setInterval(function() { if (popup.closed) { clearInterval(checkClosed); window.removeEventListener('message', messageHandler); console.log('[COMENTARIOS-LIVES] Popup fechado pelo usuario'); carregarContasInstagram(); } }, 1000);
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') { 
+        mostrarAlerta('Popup bloqueado! Redirecionando...', 'warning'); 
+        window.location.href = oauthUrl; 
+        return; 
+    }
+
+    // Polling para verificar quando popup fecha
+    const checkClosed = setInterval(async function() { 
+        if (popup.closed) { 
+            clearInterval(checkClosed); 
+            console.log('[COMENTARIOS-LIVES] Popup fechado, recarregando contas...'); 
+            sessionStorage.removeItem('instagram_oauth_pending');
+            await carregarContasInstagram(); 
+            if (contaAtiva) {
+                mostrarAlerta('Conta verificada! Se conectada com sucesso, ela aparecera acima.', 'success');
+            }
+        } 
+    }, 1000);
+
+    // Timeout de seguranca
+    setTimeout(function() { clearInterval(checkClosed); sessionStorage.removeItem('instagram_oauth_pending'); }, 120000);
+}
+
+// Verificar se voltou de uma autenticacao OAuth
+function verificarRetornoOAuth() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+
+    if (code && state) {
+        console.log('[COMENTARIOS-LIVES] Detectado retorno OAuth na URL');
+        // Limpar URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        mostrarAlerta('Autenticacao recebida! Recarregando...', 'info');
+        setTimeout(() => location.reload(), 1500);
+        return true;
+    }
+    if (error) {
+        console.log('[COMENTARIOS-LIVES] Erro OAuth na URL:', error);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        mostrarAlerta('Erro na autenticacao: ' + error, 'error');
+        return true;
+    }
+    return false;
 }
 
 async function adicionarContaInstagram(novaConta) {
