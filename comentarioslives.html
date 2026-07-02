@@ -154,6 +154,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="header">
@@ -311,9 +312,7 @@ function renderizarComentariosView(comentarios){const container=document.getElem
 function filtrarComentarios(filtro,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');let filtrados=[...comentariosData];if(filtro!=='todos'){filtrados=comentariosData.filter(c=>c.tipo===filtro)}renderizarComentariosView(filtrados)}
 function fecharModalView(){document.getElementById('viewModal').classList.remove('active');document.body.style.overflow=''}
 
-async function exportarLive(liveId){try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;const comentarios=data||[];if(comentarios.length===0){mostrarAlerta('Nenhum comentario para exportar','warning');return}const csv='Usuario;Comentario;Produto;Tipo;Data
-'+comentarios.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('
-');const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();mostrarAlerta('Relatorio exportado!','success')}catch(error){mostrarAlerta('Erro ao exportar: '+error.message,'error')}}
+async function exportarLive(liveId){try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;const comentarios=data||[];if(comentarios.length===0){mostrarAlerta('Nenhum comentario para exportar','warning');return}const csv='Usuario;Comentario;Produto;Tipo;Data\n'+comentarios.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();mostrarAlerta('Relatorio exportado!','success')}catch(error){mostrarAlerta('Erro ao exportar: '+error.message,'error')}}
 
 function mostrarAlerta(mensagem,tipo){const container=document.getElementById('alertContainer');const alertClass=tipo==='success'?'alert-success':tipo==='error'?'alert-error':tipo==='warning'?'alert-warning':'alert-info';const icon=tipo==='success'?'fa-check-circle':tipo==='error'?'fa-exclamation-circle':tipo==='warning'?'fa-exclamation-triangle':'fa-info-circle';container.innerHTML='<div class="alert '+alertClass+'"><i class="fas '+icon+'"></i>'+mensagem+'</div>';setTimeout(()=>{container.innerHTML=''},5000)}
 function escapeHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=text;return div.innerHTML}
