@@ -162,24 +162,7 @@
             .comentario-texto { max-width: 200px; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
         }
-
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; backdrop-filter: blur(4px); align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease; }
-        @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 1px solid #e2e8f0; }
-        .modal-header h3 { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .modal-close { background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; }
-        .modal-close:hover { background: #f1f5f9; color: #0f172a; }
-        .modal-body { padding: 20px 25px; }
-        .input-section { margin-bottom: 16px; }
-        .input-label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
-        .input-field { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; transition: all 0.3s; color: #0f172a; }
-        .input-field:focus { outline: none; border-color: #0B193F; box-shadow: 0 0 0 3px rgba(11,25,63,0.1); }
-        .input-field:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
-        textarea.input-field { resize: vertical; min-height: 80px; }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -603,18 +586,8 @@ function mostrarAlerta(mensagem, tipo) {
 }
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
-document.addEventListener('DOMContentLoaded', function() {
-    var modalOverlay = document.getElementById('editarLiveModal');
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', function(e) { 
-            if (e.target === this) fecharModalEditarLive(); 
-        });
-    }
-});
-
-document.addEventListener('keydown', function(e) { 
-    if (e.key === 'Escape') { fecharModalEditarLive(); } 
-});
+document.getElementById('editarLiveModal').addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalToken(); fecharModalEditarLive(); } });
 </script>
 
     <!-- Modal Editar Live -->
