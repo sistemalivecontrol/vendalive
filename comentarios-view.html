@@ -318,9 +318,7 @@
     </div>
 
     <footer class="dashboard-footer">
-        <p>&copy; 2026 VendaLive | <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a></p>
-    </footer>
-<!-- Modal Editar Live -->
+        <p>&copy; 20<!-- Modal Editar Live -->
     <div class="modal-overlay" id="editarLiveModal">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
@@ -354,6 +352,22 @@
             <div style="padding: 0 25px 20px; display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="btn-outline" onclick="fecharModalEditarLive()" style="padding: 10px 20px; font-size: 13px;">Cancelar</button>
                 <button class="btn-primary" id="btnSalvarLive" onclick="salvarEdicaoLive()" style="padding: 10px 20px; font-size: 13px;"><i class="fas fa-save"></i> Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Trocar Live -->
+    <div class="modal-overlay" id="trocarLiveModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-exchange-alt"></i> Selecionar Outra Live</h3>
+                <button class="modal-close" onclick="fecharModalTrocarLive()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="trocarLiveLista"><div class="loading"><i class="fas fa-spinner"></i><p>Carregando lives...</p></div></div>
+            </div>
+            <div style="padding: 0 25px 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-outline" onclick="fecharModalTrocarLive()" style="padding: 10px 20px; font-size: 13px;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -645,6 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnEditar = document.getElementById('btnEditarLive');
     if (btnEditar) btnEditar.addEventListener('click', abrirModalEditarLive);
     var btnTrocar = document.getElementById('btnTrocarLive');
+    console.log('[TROCAR-LIVE] Botao trocar:', btnTrocar);
     if (btnTrocar) btnTrocar.addEventListener('click', abrirModalTrocarLive);
     var modalOverlay = document.getElementById('editarLiveModal');
     if (modalOverlay) modalOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
@@ -657,7 +672,11 @@ function escapeHtml(text) { if (!text) return ''; const div = document.createEle
 let livesDoCliente = [];
 
 async function abrirModalTrocarLive() {
-    document.getElementById('trocarLiveModal').classList.add('active');
+    console.log('[TROCAR-LIVE] Abrindo modal...');
+    var modal = document.getElementById('trocarLiveModal');
+    console.log('[TROCAR-LIVE] Modal element:', modal);
+    if (!modal) { console.error('[TROCAR-LIVE] Modal nao encontrado!'); return; }
+    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     document.getElementById('trocarLiveLista').innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Carregando lives...</p></div>';
     try {
@@ -706,26 +725,7 @@ function fecharModalTrocarLive() {
     document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', function(e) { 
-    if (e.key === 'Escape') { fecharModalEditarLive(); fecharModalTrocarLive(); } 
-});
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    var btnEditar = document.getElementById('btnEditarLive');
-    if (btnEditar) btnEditar.addEventListener('click', abrirModalEditarLive);
-    var btnTrocar = document.getElementById('btnTrocarLive');
-    if (btnTrocar) btnTrocar.addEventListener('click', abrirModalTrocarLive);
-    var modalOverlay = document.getElementById('editarLiveModal');
-    if (modalOverlay) modalOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
-    var trocarOverlay = document.getElementById('trocarLiveModal');
-    if (trocarOverlay) trocarOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalTrocarLive(); });
-});
-
-document.addEventListener('keydown', function(e) { 
-    if (e.key === 'Escape') { fecharModalEditarLive(); fecharModalTrocarLive(); } 
-});
-
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalEditarLive(); fecharModalTrocarLive(); } });
 </script>
 
 </body>
