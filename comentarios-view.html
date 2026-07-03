@@ -2,225 +2,306 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendaLive - Detalhes da Live</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Detalhes da Live - VendaLive</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; color: #333; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-logo { width: 45px; height: 45px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #667eea; }
-        .header-title { color: white; font-size: 22px; font-weight: 700; }
-        .header-subtitle { color: rgba(255,255,255,0.8); font-size: 13px; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
-        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
-        .user-info { color: white; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 25px; }
-        .card { background: white; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .card-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .card-title i { color: #667eea; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; min-height: 100vh; }
+        .header {
+            background: #0a1628; color: white; padding: 0 16px; height: 56px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .header-logo svg { width: 28px; height: 28px; }
+        .header-logo span { font-size: 16px; font-weight: 800; color: #ffffff; }
+        .header-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px; }
+        .header h1 { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .header-info { display: flex; gap: 12px; align-items: center; font-size: 12px; }
+        .header-info span { color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
+        .btn-header {
+            background: rgba(0, 102, 255, 0.15); border: 1px solid rgba(0, 102, 255, 0.3);
+            color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
+        .mobile-menu-btn { display: none; background: none; border: none; color: white; cursor: pointer; padding: 8px; margin-right: -8px; }
+        .mobile-menu-btn svg { width: 24px; height: 24px; }
+        .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; backdrop-filter: blur(4px); }
+        .mobile-menu-overlay.active { display: block; }
+        .mobile-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #0a1628; z-index: 201; transition: left 0.3s ease; overflow-y: auto; padding: 20px 16px; }
+        .mobile-menu.active { left: 0; }
+        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .mobile-menu-header span { font-size: 16px; font-weight: 700; color: white; }
+        .mobile-menu-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .mobile-menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 12px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 10px; transition: all 0.2s; margin-bottom: 4px; }
+        .mobile-menu-item:hover, .mobile-menu-item.active { background: rgba(0, 102, 255, 0.2); color: white; }
+        .mobile-menu-item .icon { font-size: 20px; width: 24px; text-align: center; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        .grid { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+        .sidebar { display: flex; flex-direction: column; gap: 4px; }
+        .menu-item {
+            background: white; padding: 13px 16px; border-radius: 12px; display: flex;
+            align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s;
+            text-decoration: none; color: #475569; font-size: 13px; font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04); border: 1px solid transparent;
+        }
+        .menu-item:hover { background: #0B193F; color: white; transform: translateX(4px); box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25); }
+        .menu-item.active { background: #0B193F; color: white; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25); }
+        .menu-item .icon { font-size: 18px; width: 22px; text-align: center; }
+        .content { display: flex; flex-direction: column; gap: 20px; }
+        .card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); }
+        .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .card h2 i { color: #0B193F; }
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .stat-value { font-size: 28px; font-weight: 700; color: #667eea; }
-        .stat-label { font-size: 13px; color: #6c757d; margin-top: 5px; }
-        .tabs-nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 20px; border-radius: 8px 8px 0 0; border: none; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-        .tab-btn:hover { color: #667eea; }
-        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; background: #f8f9fa; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); }
+        .stat-value { font-size: 26px; font-weight: 700; color: #0B193F; }
+        .stat-label { font-size: 13px; color: #64748b; margin-top: 5px; }
+        .tabs-nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; border-radius: 8px 8px 0 0; border: none; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #64748b; border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: 'Inter', sans-serif; }
+        .tab-btn:hover { color: #0B193F; }
+        .tab-btn.active { color: #0B193F; border-bottom-color: #0B193F; background: #f8fafc; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-        .search-input { flex: 1; min-width: 200px; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; transition: all 0.3s; }
-        .search-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .search-select { padding: 12px 15px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; min-width: 150px; background: white; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-success { background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-success:hover { background: #218838; }
-        .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-outline:hover { background: #667eea; color: white; }
+        .search-input { flex: 1; min-width: 200px; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+        .search-input:focus { outline: none; border-color: #0B193F; box-shadow: 0 0 0 3px rgba(11,25,63,0.1); }
+        .search-select { padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; min-width: 150px; background: white; font-family: 'Inter', sans-serif; }
+        .btn-primary { background: #0B193F; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; }
+        .btn-primary:hover { background: #152a52; transform: translateY(-1px); }
+        .btn-success { background: #22c55e; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-outline { background: white; color: #0B193F; border: 2px solid #0B193F; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+        .btn-outline:hover { background: #0B193F; color: white; }
         .comentarios-table { width: 100%; border-collapse: collapse; }
-        .comentarios-table th, .comentarios-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
-        .comentarios-table th { background: #f8f9fa; font-size: 13px; font-weight: 600; color: #495057; }
+        .comentarios-table th, .comentarios-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .comentarios-table th { background: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; }
         .comentarios-table td { font-size: 14px; color: #333; }
-        .comentarios-table tr:hover { background: #f8f9fa; }
-        .comentario-user { font-weight: 600; color: #667eea; }
-        .comentario-texto { color: #495057; max-width: 400px; word-break: break-word; }
-        .comentario-produto { display: inline-block; background: #e7eaff; color: #667eea; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .comentarios-table tr:hover { background: #f8fafc; }
+        .comentario-user { font-weight: 600; color: #0B193F; }
+        .comentario-texto { color: #475569; max-width: 400px; word-break: break-word; }
+        .comentario-produto { display: inline-block; background: #eff6ff; color: #0B193F; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
         .comentario-tipo { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .tipo-venda { background: #d4edda; color: #155724; }
-        .tipo-interesse { background: #fff3cd; color: #856404; }
-        .tipo-duvida { background: #d1ecf1; color: #0c5460; }
-        .tipo-outro { background: #e9ecef; color: #495057; }
-        .loading { text-align: center; padding: 40px; color: #6c757d; }
-        .loading i { font-size: 40px; animation: spin 1s linear infinite; color: #667eea; }
+        .tipo-venda { background: #dcfce7; color: #166534; }
+        .tipo-interesse { background: #fffbeb; color: #b45309; }
+        .tipo-duvida { background: #eff6ff; color: #0369a1; }
+        .tipo-outro { background: #f1f5f9; color: #475569; }
+        .loading { text-align: center; padding: 40px; color: #64748b; }
+        .loading i { font-size: 32px; animation: spin 1s linear infinite; color: #0B193F; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .alert-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .alert-info { background: #eff6ff; color: #0369a1; border: 1px solid #bfdbfe; }
+        .alert-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
         .hidden { display: none !important; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
-        .empty-state i { font-size: 60px; margin-bottom: 20px; color: #dee2e6; }
-        .empty-state h3 { font-size: 20px; color: #495057; margin-bottom: 10px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: #cbd5e1; }
+        .empty-state h3 { font-size: 18px; color: #475569; margin-bottom: 8px; }
         .empty-state p { font-size: 14px; max-width: 400px; margin: 0 auto; }
-        .intencao-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #e9ecef; }
-        .intencao-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .intencao-count { background: #667eea; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+        .intencao-card { background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .intencao-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .intencao-count { background: #0B193F; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
         .intencao-users { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .intencao-user { background: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #495057; border: 1px solid #dee2e6; }
-        .usuario-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.3s; }
-        .usuario-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15); }
-        .usuario-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; }
+        .intencao-user { background: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #475569; border: 1px solid #e2e8f0; }
+        .usuario-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.3s; }
+        .usuario-card:hover { border-color: #0B193F; box-shadow: 0 2px 8px rgba(11,25,63,0.15); }
+        .usuario-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #0B193F, #1a3a6e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; }
         .usuario-info { flex: 1; }
-        .usuario-nome { font-size: 15px; font-weight: 600; color: #1a1a2e; }
-        .usuario-meta { font-size: 12px; color: #6c757d; margin-top: 3px; }
-        .usuario-count { background: #667eea; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .usuario-nome { font-size: 15px; font-weight: 600; color: #0f172a; }
+        .usuario-meta { font-size: 12px; color: #64748b; margin-top: 3px; }
+        .usuario-count { background: #0B193F; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
         .toggle-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .toggle-item { display: flex; align-items: center; gap: 8px; }
         .toggle-switch { position: relative; width: 44px; height: 24px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 24px; transition: 0.3s; }
         .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        .toggle-switch input:checked + .toggle-slider { background: #667eea; }
+        .toggle-switch input:checked + .toggle-slider { background: #0B193F; }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
-        .toggle-label { font-size: 14px; color: #495057; }
+        .toggle-label { font-size: 14px; color: #475569; }
         .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; }
-        .page-btn { padding: 8px 14px; border: 1px solid #dee2e6; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
-        .page-btn:hover { background: #e9ecef; }
-        .page-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .page-btn { padding: 8px 14px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+        .page-btn:hover { background: #f1f5f9; }
+        .page-btn.active { background: #0B193F; color: white; border-color: #0B193F; }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .page-info { font-size: 14px; color: #6c757d; }
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 10px; padding: 15px; }
-            .container { padding: 15px; }
+        .page-info { font-size: 14px; color: #64748b; }
+        .dashboard-footer { margin-top: 40px; padding: 20px 16px; text-align: center; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; }
+        .dashboard-footer a { color: #64748b; text-decoration: none; transition: color 0.2s; }
+        .dashboard-footer a:hover { color: #0B193F; text-decoration: underline; }
+        .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
+        .icon-svg-sm { width: 14px; height: 14px; }
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .sidebar { display: none; }
+            .mobile-menu-btn { display: block; }
+            .header { padding: 0 12px; }
+            .header-info span { display: none; }
+            .header-info span:first-child { display: flex; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 12px; }
+            .header { height: 52px; }
+            .header-logo span { font-size: 14px; }
+            .header h1 { display: none; }
+            .card { padding: 20px; border-radius: 12px; }
             .search-bar { flex-direction: column; }
             .search-input, .search-select { width: 100%; }
             .comentario-texto { max-width: 200px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header"><span>Menu</span><button class="mobile-menu-close" onclick="fecharMenu()">&times;</button></div>
+        <a href="dashboard.html" class="mobile-menu-item" onclick="return goToMobile('dashboard.html')"><span class="icon">&#127968;</span><span>Dashboard</span></a>
+        <a href="live.html" class="mobile-menu-item" onclick="return goToMobile('live.html')"><span class="icon">&#127909;</span><span>Lives de Vendas</span></a>
+        <a href="coblive.html" class="mobile-menu-item" onclick="return goToMobile('coblive.html')"><span class="icon">&#128176;</span><span>Cobrança de Lives</span></a>
+        <a href="pix.automatizado.html" class="mobile-menu-item" onclick="return goToMobile('pix.automatizado.html')"><span class="icon">&#128179;</span><span>Pix Automação</span></a>
+        <a href="pix.manual.html" class="mobile-menu-item" onclick="return goToMobile('pix.manual.html')"><span class="icon">&#9989;</span><span>Pix Manual</span></a>
+        <a href="vendas.html" class="mobile-menu-item" onclick="return goToMobile('vendas.html')"><span class="icon">&#128722;</span><span>Vendas</span></a>
+        <a href="clientes.html" class="mobile-menu-item" onclick="return goToMobile('clientes.html')"><span class="icon">&#128101;</span><span>Clientes</span></a>
+        <a href="enderecos.html" class="mobile-menu-item" onclick="return goToMobile('enderecos.html')"><span class="icon">&#128205;</span><span>Endereços</span></a>
+        <a href="rastreamento.html" class="mobile-menu-item" onclick="return goToMobile('rastreamento.html')"><span class="icon">&#128230;</span><span>Solicitações de Entregas</span></a>
+        <a href="whatsapp-monitor.html" class="mobile-menu-item" onclick="return goToMobile('whatsapp-monitor.html')"><span class="icon">&#128241;</span><span>WhatsApp Monitor</span></a>
+        <a href="comentarioslives.html" class="mobile-menu-item active" onclick="return goToMobile('comentarioslives.html')"><span class="icon">&#128172;</span><span>Comentários de Lives</span></a>
+        <a href="configuracao-pagamento.html" class="mobile-menu-item" onclick="return goToMobile('configuracao-pagamento.html')"><span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span></a>
+        <a href="configuracoes.html" class="mobile-menu-item" onclick="return goToMobile('configuracoes.html')"><span class="icon">&#128295;</span><span>Configurações</span></a>
+        <a href="alterar-senha.html" class="mobile-menu-item" onclick="return goToMobile('alterar-senha.html')"><span class="icon">&#128274;</span><span>Alterar Senha</span></a>
+        <a href="solicitacoes.html" id="mobile-link-solicitacoes" class="mobile-menu-item"><span class="icon">&#128203;</span><span>Formulário de Entregas</span></a>
+    </div>
+
     <div class="header">
         <div class="header-left">
-            <div class="header-logo">VL</div>
-            <div>
-                <div class="header-title">VendaLive</div>
-                <div class="header-subtitle" id="liveSubtitle">Detalhes da Live</div>
-            </div>
+            <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <a href="dashboard.html" class="header-logo" style="text-decoration:none;">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/><path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/><path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/><circle cx="72" cy="25" r="22" fill="#ffffff"/><text x="72" y="32" text-anchor="middle" fill="#0B193F" font-size="16" font-weight="bold" font-family="Arial">LIVE</text></svg>
+                <span>Venda<span style="color:#5b9bd5;">Live</span></span>
+            </a>
+            <div class="header-divider"></div>
+            <h1 id="liveSubtitleTitle">Detalhes da Live</h1>
         </div>
-        <div class="header-right">
-            <div class="user-info" id="userInfo"><i class="fas fa-user"></i><span id="userName">Carregando...</span></div>
-            <button class="btn-voltar" onclick="window.location.href='comentarioslives.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
+        <div class="header-info">
+            <span id="info-usuario"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Carregando...</span>
+            <a href="configuracoes.html" class="btn-header" title="Configurações"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Config</a>
+            <button class="btn-header" onclick="logout()">Sair</button>
         </div>
     </div>
 
     <div class="container">
-        <div id="alertContainer"></div>
-
-        <div class="stats-row" id="statsRow">
-            <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Comentarios</div></div>
-            <div class="stat-card"><div class="stat-value" id="statVendas">0</div><div class="stat-label">Vendas</div></div>
-            <div class="stat-card"><div class="stat-value" id="statInteresses">0</div><div class="stat-label">Interesses</div></div>
-            <div class="stat-card"><div class="stat-value" id="statDuvidas">0</div><div class="stat-label">Duvidas</div></div>
-            <div class="stat-card"><div class="stat-value" id="statUsuarios">0</div><div class="stat-label">Usuarios Unicos</div></div>
-        </div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-                    <button class="btn-outline" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> CSV</button>
-                </div>
+        <div class="grid">
+            <div class="sidebar">
+                <a href="dashboard.html" class="menu-item" onclick="return goTo('dashboard.html')"><span class="icon">&#127968;</span><span>Dashboard</span></a>
+                <a href="live.html" class="menu-item" onclick="return goTo('live.html')"><span class="icon">&#127909;</span><span>Lives de Vendas</span></a>
+                <a href="coblive.html" class="menu-item" onclick="return goTo('coblive.html')"><span class="icon">&#128176;</span><span>Cobrança de Lives</span></a>
+                <a href="pix.automatizado.html" class="menu-item" onclick="return goTo('pix.automatizado.html')"><span class="icon">&#128179;</span><span>Pix Automação</span></a>
+                <a href="pix.manual.html" class="menu-item" onclick="return goTo('pix.manual.html')"><span class="icon">&#9989;</span><span>Pix Manual</span></a>
+                <a href="vendas.html" class="menu-item" onclick="return goTo('vendas.html')"><span class="icon">&#128722;</span><span>Vendas</span></a>
+                <a href="clientes.html" class="menu-item" onclick="return goTo('clientes.html')"><span class="icon">&#128101;</span><span>Clientes</span></a>
+                <a href="enderecos.html" class="menu-item" onclick="return goTo('enderecos.html')"><span class="icon">&#128205;</span><span>Endereços</span></a>
+                <a href="rastreamento.html" class="menu-item" onclick="return goTo('rastreamento.html')"><span class="icon">&#128230;</span><span>Solicitações de Entregas</span></a>
+                <a href="whatsapp-monitor.html" class="menu-item" onclick="return goTo('whatsapp-monitor.html')"><span class="icon">&#128241;</span><span>WhatsApp Monitor</span></a>
+                <a href="comentarioslives.html" class="menu-item active" onclick="return goTo('comentarioslives.html')"><span class="icon">&#128172;</span><span>Comentários de Lives</span></a>
+                <a href="configuracao-pagamento.html" class="menu-item" onclick="return goTo('configuracao-pagamento.html')"><span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span></a>
+                <a href="configuracoes.html" class="menu-item" onclick="return goTo('configuracoes.html')"><span class="icon">&#128295;</span><span>Configurações</span></a>
+                <a href="alterar-senha.html" class="menu-item" onclick="return goTo('alterar-senha.html')"><span class="icon">&#128274;</span><span>Alterar Senha</span></a>
+                <a href="solicitacoes.html" id="link-solicitacoes" class="menu-item"><span class="icon">&#128203;</span><span>Formulário de Entregas</span></a>
             </div>
 
-            <div class="tabs-nav">
-                <button class="tab-btn active" onclick="mudarTab('comentarios', this)"><i class="fas fa-comments"></i> Comentarios</button>
-                <button class="tab-btn" onclick="mudarTab('intencoes', this)"><i class="fas fa-shopping-cart"></i> Intencoes de Compra</button>
-                <button class="tab-btn" onclick="mudarTab('usuarios', this)"><i class="fas fa-users"></i> Usuarios</button>
-            </div>
-
-            <div id="tabComentarios" class="tab-content active">
-                <div class="search-bar">
-                    <input type="text" class="search-input" id="searchTexto" placeholder="Buscar por palavra-chave no comentario..." oninput="filtrarComentarios()">
-                    <input type="text" class="search-input" id="searchUsuario" placeholder="Filtrar por usuario..." oninput="filtrarComentarios()">
-                    <select class="search-select" id="filterTipo" onchange="filtrarComentarios()">
-                        <option value="">Todos os tipos</option>
-                        <option value="venda">Venda</option>
-                        <option value="interesse">Interesse</option>
-                        <option value="duvida">Duvida</option>
-                    </select>
-                    <select class="search-select" id="filterProduto" onchange="filtrarComentarios()">
-                        <option value="">Todos produtos</option>
-                    </select>
+            <div class="content">
+                <div id="alertContainer"></div>
+                <div class="stats-row" id="statsRow">
+                    <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Comentários</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statVendas">0</div><div class="stat-label">Vendas</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statInteresses">0</div><div class="stat-label">Interesses</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statDuvidas">0</div><div class="stat-label">Dúvidas</div></div>
+                    <div class="stat-card"><div class="stat-value" id="statUsuarios">0</div><div class="stat-label">Usuários Únicos</div></div>
                 </div>
-                <div id="comentariosContainer">
-                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando comentarios...</p></div>
-                </div>
-                <div class="pagination" id="paginationComentarios"></div>
-            </div>
-
-            <div id="tabIntencoes" class="tab-content">
-                <div class="toggle-row">
-                    <div class="toggle-item">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggleMensagens" onchange="renderizarIntencoes()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-label">Mostrar mensagens originais</span>
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                            <button class="btn-outline" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+                        </div>
                     </div>
-                    <div class="toggle-item">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggleTodos" checked onchange="renderizarIntencoes()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-label">Todos os produtos</span>
+                    <div class="tabs-nav">
+                        <button class="tab-btn active" onclick="mudarTab('comentarios', this)"><i class="fas fa-comments"></i> Comentários</button>
+                        <button class="tab-btn" onclick="mudarTab('intencoes', this)"><i class="fas fa-shopping-cart"></i> Intenções de Compra</button>
+                        <button class="tab-btn" onclick="mudarTab('usuarios', this)"><i class="fas fa-users"></i> Usuários</button>
                     </div>
-                </div>
-                <div class="search-bar">
-                    <button class="tab-btn active" onclick="mudarSubTab('produtos', this)" style="margin-bottom:0;border-bottom:none;">Por Produtos</button>
-                    <button class="tab-btn" onclick="mudarSubTab('usuarios', this)" style="margin-bottom:0;border-bottom:none;">Por Usuarios</button>
-                </div>
-                <div id="intencoesContainer">
-                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando intencoes...</p></div>
-                </div>
-            </div>
-
-            <div id="tabUsuarios" class="tab-content">
-                <div class="search-bar">
-                    <input type="text" class="search-input" id="searchUsuarioAba" placeholder="Buscar usuario..." oninput="filtrarUsuarios()">
-                </div>
-                <div id="usuariosContainer">
-                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando usuarios...</p></div>
+                    <div id="tabComentarios" class="tab-content active">
+                        <div class="search-bar">
+                            <input type="text" class="search-input" id="searchTexto" placeholder="Buscar por palavra-chave no comentário..." oninput="filtrarComentarios()">
+                            <input type="text" class="search-input" id="searchUsuario" placeholder="Filtrar por usuário..." oninput="filtrarComentarios()">
+                            <select class="search-select" id="filterTipo" onchange="filtrarComentarios()">
+                                <option value="">Todos os tipos</option>
+                                <option value="venda">Venda</option>
+                                <option value="interesse">Interesse</option>
+                                <option value="duvida">Dúvida</option>
+                            </select>
+                            <select class="search-select" id="filterProduto" onchange="filtrarComentarios()">
+                                <option value="">Todos produtos</option>
+                            </select>
+                        </div>
+                        <div id="comentariosContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Carregando comentários...</p></div></div>
+                        <div class="pagination" id="paginationComentarios"></div>
+                    </div>
+                    <div id="tabIntencoes" class="tab-content">
+                        <div class="toggle-row">
+                            <div class="toggle-item">
+                                <label class="toggle-switch"><input type="checkbox" id="toggleMensagens" onchange="renderizarIntencoes()"><span class="toggle-slider"></span></label>
+                                <span class="toggle-label">Mostrar mensagens originais</span>
+                            </div>
+                            <div class="toggle-item">
+                                <label class="toggle-switch"><input type="checkbox" id="toggleTodos" checked onchange="renderizarIntencoes()"><span class="toggle-slider"></span></label>
+                                <span class="toggle-label">Todos os produtos</span>
+                            </div>
+                        </div>
+                        <div class="search-bar">
+                            <button class="tab-btn active" onclick="mudarSubTab('produtos', this)" style="margin-bottom:0;border-bottom:none;">Por Produtos</button>
+                            <button class="tab-btn" onclick="mudarSubTab('usuarios', this)" style="margin-bottom:0;border-bottom:none;">Por Usuários</button>
+                        </div>
+                        <div id="intencoesContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Carregando intenções...</p></div></div>
+                    </div>
+                    <div id="tabUsuarios" class="tab-content">
+                        <div class="search-bar">
+                            <input type="text" class="search-input" id="searchUsuarioAba" placeholder="Buscar usuário..." oninput="filtrarUsuarios()">
+                        </div>
+                        <div id="usuariosContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Carregando usuários...</p></div></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
+    <footer class="dashboard-footer">
+        <p>&copy; 2026 VendaLive | <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a></p>
+    </footer>
+<script>
 const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-let supabaseClient = null;
-let usuarioLogado = null;
-let clienteId = null;
-let liveId = null;
-let liveData = null;
-let comentariosData = [];
-let comentariosFiltrados = [];
-let usuariosMap = new Map();
-let produtosSet = new Set();
-let subTabAtiva = 'produtos';
-let paginaAtual = 1;
+let supabaseClient = null, usuarioLogado = null, clienteId = null, liveId = null, liveData = null;
+let comentariosData = [], comentariosFiltrados = [], usuariosMap = new Map(), produtosSet = new Set();
+let subTabAtiva = 'produtos', paginaAtual = 1;
 const ITENS_POR_PAGINA = 50;
 
 const PRODUTOS_KEYWORDS = ['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','menino','menina','bebe','infantil','babucha','desapego','mescla','pantufa','tenis'];
@@ -230,21 +311,23 @@ const TIPOS_KEYWORDS = {
     duvida: ['mostra','qual','como','onde','quando','tamanho','cor']
 };
 
+function abrirMenu() { document.getElementById('mobileMenu').classList.add('active'); document.getElementById('mobileMenuOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+function fecharMenu() { document.getElementById('mobileMenu').classList.remove('active'); document.getElementById('mobileMenuOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+function goToMobile(url) { fecharMenu(); setTimeout(function() { window.location.href = url; }, 300); return false; }
+function goTo(url) { window.location.href = url; return false; }
+
+async function logout() {
+    try { if (supabaseClient) await supabaseClient.auth.signOut(); } catch (e) {}
+    localStorage.removeItem('supabase.auth.token'); sessionStorage.clear(); window.location.href = 'login.html';
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     const params = new URLSearchParams(window.location.search);
     liveId = params.get('live_id');
     if (!liveId) { mostrarAlerta('ID da live nao informado.', 'error'); return; }
-
     let t = 0;
-    while (t < 20) {
-        if (typeof window.supabase !== 'undefined') break;
-        await new Promise(r => setTimeout(r, 300));
-        t++;
-    }
-    if (typeof window.supabase === 'undefined') {
-        mostrarAlerta('Erro ao carregar biblioteca.', 'error');
-        return;
-    }
+    while (t < 20) { if (typeof window.supabase !== 'undefined') break; await new Promise(r => setTimeout(r, 300)); t++; }
+    if (typeof window.supabase === 'undefined') { mostrarAlerta('Erro ao carregar biblioteca.', 'error'); return; }
     const { createClient } = window.supabase;
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     await verificarAutenticacao();
@@ -255,15 +338,13 @@ async function verificarAutenticacao() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'login.html'; return; }
         usuarioLogado = session.user;
-        document.getElementById('userName').textContent = usuarioLogado.email;
+        const nome = usuarioLogado.user_metadata?.nome || usuarioLogado.email.split('@')[0];
+        document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + nome;
         const { data: userData } = await supabaseClient.from('usuarios_pg').select('cliente_id').eq('auth_id', usuarioLogado.id).single();
         if (userData && userData.cliente_id) { clienteId = userData.cliente_id; }
         else { clienteId = '0824668c-1e10-415e-8998-09d72ef47dcb'; }
         await carregarDadosLive();
-    } catch (e) {
-        console.error('Erro auth:', e);
-        window.location.href = 'login.html';
-    }
+    } catch (e) { console.error('Erro auth:', e); window.location.href = 'login.html'; }
 }
 
 async function carregarDadosLive() {
@@ -272,31 +353,19 @@ async function carregarDadosLive() {
         if (liveError || !live) { mostrarAlerta('Live nao encontrada.', 'error'); return; }
         liveData = live;
         document.getElementById('liveTitle').textContent = 'Live - ' + (new Date(live.data_live).toLocaleDateString('pt-BR'));
-        document.getElementById('liveSubtitle').textContent = live.media_id || 'Detalhes da Live';
-
+        document.getElementById('liveSubtitleTitle').textContent = live.media_id || 'Detalhes da Live';
         const { data: comentarios, error: comError } = await supabaseClient.from('live_comentarios').select('*').eq('live_id', liveId).order('timestamp', { ascending: true });
         if (comError) throw comError;
         comentariosData = comentarios || [];
-
         comentariosData.forEach(c => {
             if (!usuariosMap.has(c.username)) usuariosMap.set(c.username, { count: 0, firstMsg: c.timestamp, comentarios: [] });
-            const u = usuariosMap.get(c.username);
-            u.count++;
-            u.comentarios.push(c);
+            const u = usuariosMap.get(c.username); u.count++; u.comentarios.push(c);
             if (c.produto) produtosSet.add(c.produto);
         });
-
         const produtoSelect = document.getElementById('filterProduto');
         produtosSet.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; produtoSelect.appendChild(opt); });
-
-        atualizarStats();
-        filtrarComentarios();
-        renderizarIntencoes();
-        renderizarUsuarios();
-    } catch (e) {
-        console.error('Erro:', e);
-        mostrarAlerta('Erro ao carregar dados: ' + e.message, 'error');
-    }
+        atualizarStats(); filtrarComentarios(); renderizarIntencoes(); renderizarUsuarios();
+    } catch (e) { console.error('Erro:', e); mostrarAlerta('Erro ao carregar dados: ' + e.message, 'error'); }
 }
 
 function atualizarStats() {
@@ -326,7 +395,6 @@ function filtrarComentarios() {
     const usuario = document.getElementById('searchUsuario').value.toLowerCase().trim();
     const tipo = document.getElementById('filterTipo').value;
     const produto = document.getElementById('filterProduto').value;
-
     comentariosFiltrados = comentariosData.filter(c => {
         if (texto && !(c.texto || '').toLowerCase().includes(texto)) return false;
         if (usuario && !(c.username || '').toLowerCase().includes(usuario)) return false;
@@ -334,9 +402,7 @@ function filtrarComentarios() {
         if (produto && c.produto !== produto) return false;
         return true;
     });
-
-    paginaAtual = 1;
-    renderizarComentarios();
+    paginaAtual = 1; renderizarComentarios();
 }
 
 function renderizarComentarios() {
@@ -346,29 +412,21 @@ function renderizarComentarios() {
     const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
     const fim = inicio + ITENS_POR_PAGINA;
     const pagina = comentariosFiltrados.slice(inicio, fim);
-
-    if (total === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><h3>Nenhum comentario encontrado</h3><p>Tente ajustar os filtros de busca.</p></div>';
-        document.getElementById('paginationComentarios').innerHTML = '';
-        return;
-    }
-
+    if (total === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><h3>Nenhum comentario encontrado</h3><p>Tente ajustar os filtros de busca.</p></div>'; document.getElementById('paginationComentarios').innerHTML = ''; return; }
     let html = '<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th><th>Data</th></tr></thead><tbody>';
     pagina.forEach(c => {
         const data = c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR') : '-';
         const tipoClass = c.tipo === 'venda' ? 'tipo-venda' : c.tipo === 'interesse' ? 'tipo-interesse' : 'tipo-duvida';
-        html += '<tr><td class="comentario-user">@' + escapeHtml(c.username) + '</td><td class="comentario-texto">' + escapeHtml(c.texto) + '</td><td>' + (c.produto ? '<span class="comentario-produto">' + escapeHtml(c.produto) + '</span>' : '-') + '</td><td><span class="comentario-tipo ' + tipoClass + '">' + c.tipo + '</span></td><td style="font-size:12px;color:#6c757d;white-space:nowrap;">' + data + '</td></tr>';
+        html += '<tr><td class="comentario-user">@' + escapeHtml(c.username) + '</td><td class="comentario-texto">' + escapeHtml(c.texto) + '</td><td>' + (c.produto ? '<span class="comentario-produto">' + escapeHtml(c.produto) + '</span>' : '-') + '</td><td><span class="comentario-tipo ' + tipoClass + '">' + c.tipo + '</span></td><td style="font-size:12px;color:#64748b;white-space:nowrap;">' + data + '</td></tr>';
     });
     html += '</tbody></table>';
     container.innerHTML = html;
-
     let pagHTML = '';
     if (totalPaginas > 1) {
         pagHTML += '<button class="page-btn" onclick="mudarPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
         for (let i = 1; i <= totalPaginas; i++) {
-            if (i === 1 || i === totalPaginas || Math.abs(i - paginaAtual) <= 2) {
-                pagHTML += '<button class="page-btn ' + (i === paginaAtual ? 'active' : '') + '" onclick="mudarPagina(' + i + ')">' + i + '</button>';
-            } else if (Math.abs(i - paginaAtual) === 3) { pagHTML += '<span class="page-info">...</span>'; }
+            if (i === 1 || i === totalPaginas || Math.abs(i - paginaAtual) <= 2) { pagHTML += '<button class="page-btn ' + (i === paginaAtual ? 'active' : '') + '" onclick="mudarPagina(' + i + ')">' + i + '</button>'; }
+            else if (Math.abs(i - paginaAtual) === 3) { pagHTML += '<span class="page-info">...</span>'; }
         }
         pagHTML += '<button class="page-btn" onclick="mudarPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
     }
@@ -382,60 +440,26 @@ function renderizarIntencoes() {
     const container = document.getElementById('intencoesContainer');
     const mostrarMensagens = document.getElementById('toggleMensagens').checked;
     const mostrarTodos = document.getElementById('toggleTodos').checked;
-
     if (subTabAtiva === 'produtos') {
         const produtosMap = new Map();
-        comentariosData.forEach(c => {
-            if (!c.produto && !mostrarTodos) return;
-            const key = c.produto || 'Produto nao identificado';
-            if (!produtosMap.has(key)) produtosMap.set(key, { count: 0, users: new Set(), comentarios: [] });
-            const p = produtosMap.get(key); p.count++; p.users.add(c.username); p.comentarios.push(c);
-        });
-
+        comentariosData.forEach(c => { if (!c.produto && !mostrarTodos) return; const key = c.produto || 'Produto nao identificado'; if (!produtosMap.has(key)) produtosMap.set(key, { count: 0, users: new Set(), comentarios: [] }); const p = produtosMap.get(key); p.count++; p.users.add(c.username); p.comentarios.push(c); });
         if (produtosMap.size === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><h3>Nenhuma intencao de compra detectada</h3></div>'; return; }
-
         let html = '';
         produtosMap.forEach((d, nome) => {
             html += '<div class="intencao-card"><div class="intencao-title">' + escapeHtml(nome) + ' <span class="intencao-count">' + d.count + ' interesse' + (d.count > 1 ? 's' : '') + '</span></div>';
-            if (mostrarMensagens) {
-                html += '<div style="margin-top:10px;">';
-                d.comentarios.slice(0, 10).forEach(c => {
-                    html += '<div style="padding:8px 0;border-bottom:1px solid #e9ecef;font-size:13px;"><strong style="color:#667eea;">@' + escapeHtml(c.username) + ':</strong> ' + escapeHtml(c.texto) + '</div>';
-                });
-                if (d.comentarios.length > 10) html += '<div style="padding:8px 0;font-size:12px;color:#6c757d;">+' + (d.comentarios.length - 10) + ' mensagens...</div>';
-                html += '</div>';
-            }
-            html += '<div class="intencao-users">';
-            d.users.forEach(u => { html += '<span class="intencao-user">@' + escapeHtml(u) + '</span>'; });
-            html += '</div></div>';
+            if (mostrarMensagens) { html += '<div style="margin-top:10px;">'; d.comentarios.slice(0, 10).forEach(c => { html += '<div style="padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px;"><strong style="color:#0B193F;">@' + escapeHtml(c.username) + ':</strong> ' + escapeHtml(c.texto) + '</div>'; }); if (d.comentarios.length > 10) html += '<div style="padding:8px 0;font-size:12px;color:#64748b;">+' + (d.comentarios.length - 10) + ' mensagens...</div>'; html += '</div>'; }
+            html += '<div class="intencao-users">'; d.users.forEach(u => { html += '<span class="intencao-user">@' + escapeHtml(u) + '</span>'; }); html += '</div></div>';
         });
         container.innerHTML = html;
     } else {
         const usersMap = new Map();
-        comentariosData.forEach(c => {
-            if (!c.produto && !mostrarTodos) return;
-            if (!usersMap.has(c.username)) usersMap.set(c.username, { count: 0, produtos: new Set(), comentarios: [] });
-            const u = usersMap.get(c.username); u.count++; if (c.produto) u.produtos.add(c.produto); u.comentarios.push(c);
-        });
-
+        comentariosData.forEach(c => { if (!c.produto && !mostrarTodos) return; if (!usersMap.has(c.username)) usersMap.set(c.username, { count: 0, produtos: new Set(), comentarios: [] }); const u = usersMap.get(c.username); u.count++; if (c.produto) u.produtos.add(c.produto); u.comentarios.push(c); });
         if (usersMap.size === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>Nenhum usuario com intencao detectada</h3></div>'; return; }
-
         let html = '';
         usersMap.forEach((d, nome) => {
             html += '<div class="intencao-card"><div class="intencao-title">@' + escapeHtml(nome) + ' <span class="intencao-count">' + d.count + ' comentario' + (d.count > 1 ? 's' : '') + '</span></div>';
-            if (d.produtos.size > 0) {
-                html += '<div style="margin:8px 0;"><strong>Produtos:</strong> ';
-                d.produtos.forEach(p => { html += '<span class="comentario-produto">' + escapeHtml(p) + '</span> '; });
-                html += '</div>';
-            }
-            if (mostrarMensagens) {
-                html += '<div style="margin-top:10px;">';
-                d.comentarios.slice(0, 5).forEach(c => {
-                    html += '<div style="padding:6px 0;border-bottom:1px solid #e9ecef;font-size:13px;">' + escapeHtml(c.texto) + (c.produto ? ' <span class="comentario-produto">' + escapeHtml(c.produto) + '</span>' : '') + '</div>';
-                });
-                if (d.comentarios.length > 5) html += '<div style="padding:6px 0;font-size:12px;color:#6c757d;">+' + (d.comentarios.length - 5) + ' mensagens...</div>';
-                html += '</div>';
-            }
+            if (d.produtos.size > 0) { html += '<div style="margin:8px 0;"><strong>Produtos:</strong> '; d.produtos.forEach(p => { html += '<span class="comentario-produto">' + escapeHtml(p) + '</span> '; }); html += '</div>'; }
+            if (mostrarMensagens) { html += '<div style="margin-top:10px;">'; d.comentarios.slice(0, 5).forEach(c => { html += '<div style="padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:13px;">' + escapeHtml(c.texto) + (c.produto ? ' <span class="comentario-produto">' + escapeHtml(c.produto) + '</span>' : '') + '</div>'; }); if (d.comentarios.length > 5) html += '<div style="padding:6px 0;font-size:12px;color:#64748b;">+' + (d.comentarios.length - 5) + ' mensagens...</div>'; html += '</div>'; }
             html += '</div>';
         });
         container.innerHTML = html;
@@ -445,26 +469,16 @@ function renderizarIntencoes() {
 function renderizarUsuarios() {
     const container = document.getElementById('usuariosContainer');
     const filtro = document.getElementById('searchUsuarioAba').value.toLowerCase().trim();
-
     let users = Array.from(usuariosMap.entries());
     if (filtro) users = users.filter(([nome]) => nome.toLowerCase().includes(filtro));
     users.sort((a, b) => b[1].count - a[1].count);
-
-    if (users.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><h3>Nenhum usuario encontrado</h3></div>';
-        return;
-    }
-
+    if (users.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><h3>Nenhum usuario encontrado</h3></div>'; return; }
     let html = '';
     users.forEach(([nome, d]) => {
         const firstDate = d.firstMsg ? new Date(d.firstMsg).toLocaleString('pt-BR') : '-';
         const produtosUnicos = [...new Set(d.comentarios.filter(c => c.produto).map(c => c.produto))];
         const produtosText = produtosUnicos.length > 0 ? ' | Produtos: ' + produtosUnicos.join(', ') : '';
-        html += '<div class="usuario-card" onclick="filtrarPorUsuario(' + encodeURIComponent(nome) + ')">' +
-            '<div class="usuario-avatar">' + nome.charAt(0).toUpperCase() + '</div>' +
-            '<div class="usuario-info"><div class="usuario-nome">@' + escapeHtml(nome) + '</div>' +
-            '<div class="usuario-meta">' + d.count + ' comentario' + (d.count > 1 ? 's' : '') + ' | Primeira: ' + firstDate + produtosText + '</div></div>' +
-            '<div class="usuario-count">' + d.count + '</div></div>';
+        html += '<div class="usuario-card" onclick="filtrarPorUsuario(' + encodeURIComponent(JSON.stringify(nome)) + ')">' + '<div class="usuario-avatar">' + nome.charAt(0).toUpperCase() + '</div>' + '<div class="usuario-info"><div class="usuario-nome">@' + escapeHtml(nome) + '</div>' + '<div class="usuario-meta">' + d.count + ' comentario' + (d.count > 1 ? 's' : '') + ' | Primeira: ' + firstDate + produtosText + '</div></div>' + '<div class="usuario-count">' + d.count + '</div></div>';
     });
     container.innerHTML = html;
 }
@@ -472,9 +486,8 @@ function renderizarUsuarios() {
 function filtrarUsuarios() { renderizarUsuarios(); }
 
 function filtrarPorUsuario(username) {
-    // Decode if it was encoded from onclick
-    try { username = decodeURIComponent(username); } catch(e) {}
-    mudarTab('comentarios', document.querySelectorAll('.tab-btn')[0]);
+    try { username = JSON.parse(decodeURIComponent(username)); } catch(e) {}
+    mudarTab('comentarios', document.querySelectorAll('.tabs-nav .tab-btn')[0]);
     document.getElementById('searchUsuario').value = username;
     filtrarComentarios();
 }
@@ -511,6 +524,6 @@ function mostrarAlerta(mensagem, tipo) {
     setTimeout(() => { container.innerHTML = ''; }, 5000);
 }
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-    </script>
+</script>
 </body>
 </html>
