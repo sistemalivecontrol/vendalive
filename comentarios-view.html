@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendaLive - Detalhes da Live</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { width: 45px; height: 45px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #667eea; }
+        .header-title { color: white; font-size: 22px; font-weight: 700; }
+        .header-subtitle { color: rgba(255,255,255,0.8); font-size: 13px; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .btn-voltar { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .btn-voltar:hover { background: rgba(255,255,255,0.3); }
+        .user-info { color: white; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 25px; }
+        .card { background: white; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .card-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .card-title i { color: #667eea; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .stat-value { font-size: 28px; font-weight: 700; color: #667eea; }
+        .stat-label { font-size: 13px; color: #6c757d; margin-top: 5px; }
+        .tabs-nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; border-radius: 8px 8px 0 0; border: none; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-btn:hover { color: #667eea; }
+        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; background: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .search-input { flex: 1; min-width: 200px; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; transition: all 0.3s; }
+        .search-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .search-select { padding: 12px 15px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; min-width: 150px; background: white; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-success { background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-success:hover { background: #218838; }
+        .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-outline:hover { background: #667eea; color: white; }
+        .comentarios-table { width: 100%; border-collapse: collapse; }
+        .comentarios-table th, .comentarios-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
+        .comentarios-table th { background: #f8f9fa; font-size: 13px; font-weight: 600; color: #495057; }
+        .comentarios-table td { font-size: 14px; color: #333; }
+        .comentarios-table tr:hover { background: #f8f9fa; }
+        .comentario-user { font-weight: 600; color: #667eea; }
+        .comentario-texto { color: #495057; max-width: 400px; word-break: break-word; }
+        .comentario-produto { display: inline-block; background: #e7eaff; color: #667eea; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .comentario-tipo { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .tipo-venda { background: #d4edda; color: #155724; }
+        .tipo-interesse { background: #fff3cd; color: #856404; }
+        .tipo-duvida { background: #d1ecf1; color: #0c5460; }
+        .tipo-outro { background: #e9ecef; color: #495057; }
+        .loading { text-align: center; padding: 40px; color: #6c757d; }
+        .loading i { font-size: 40px; animation: spin 1s linear infinite; color: #667eea; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .hidden { display: none !important; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
+        .empty-state i { font-size: 60px; margin-bottom: 20px; color: #dee2e6; }
+        .empty-state h3 { font-size: 20px; color: #495057; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; max-width: 400px; margin: 0 auto; }
+        .intencao-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #e9ecef; }
+        .intencao-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .intencao-count { background: #667eea; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+        .intencao-users { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .intencao-user { background: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #495057; border: 1px solid #dee2e6; }
+        .usuario-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.3s; }
+        .usuario-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15); }
+        .usuario-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; }
+        .usuario-info { flex: 1; }
+        .usuario-nome { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+        .usuario-meta { font-size: 12px; color: #6c757d; margin-top: 3px; }
+        .usuario-count { background: #667eea; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .toggle-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .toggle-item { display: flex; align-items: center; gap: 8px; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 24px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: #667eea; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .toggle-label { font-size: 14px; color: #495057; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; }
+        .page-btn { padding: 8px 14px; border: 1px solid #dee2e6; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+        .page-btn:hover { background: #e9ecef; }
+        .page-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .page-info { font-size: 14px; color: #6c757d; }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; padding: 15px; }
+            .container { padding: 15px; }
+            .search-bar { flex-direction: column; }
+            .search-input, .search-select { width: 100%; }
+            .comentario-texto { max-width: 200px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">VL</div>
+            <div>
+                <div class="header-title">VendaLive</div>
+                <div class="header-subtitle" id="liveSubtitle">Detalhes da Live</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info" id="userInfo"><i class="fas fa-user"></i><span id="userName">Carregando...</span></div>
+            <button class="btn-voltar" onclick="window.location.href='comentarioslives.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertContainer"></div>
+
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Comentarios</div></div>
+            <div class="stat-card"><div class="stat-value" id="statVendas">0</div><div class="stat-label">Vendas</div></div>
+            <div class="stat-card"><div class="stat-value" id="statInteresses">0</div><div class="stat-label">Interesses</div></div>
+            <div class="stat-card"><div class="stat-value" id="statDuvidas">0</div><div class="stat-label">Duvidas</div></div>
+            <div class="stat-card"><div class="stat-value" id="statUsuarios">0</div><div class="stat-label">Usuarios Unicos</div></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn-outline" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+                </div>
+            </div>
+
+            <div class="tabs-nav">
+                <button class="tab-btn active" onclick="mudarTab('comentarios', this)"><i class="fas fa-comments"></i> Comentarios</button>
+                <button class="tab-btn" onclick="mudarTab('intencoes', this)"><i class="fas fa-shopping-cart"></i> Intencoes de Compra</button>
+                <button class="tab-btn" onclick="mudarTab('usuarios', this)"><i class="fas fa-users"></i> Usuarios</button>
+            </div>
+
+            <!-- ABA COMENTARIOS -->
+            <div id="tabComentarios" class="tab-content active">
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="searchTexto" placeholder="Buscar por palavra-chave no comentario..." oninput="filtrarComentarios()">
+                    <input type="text" class="search-input" id="searchUsuario" placeholder="Filtrar por usuario..." oninput="filtrarComentarios()">
+                    <select class="search-select" id="filterTipo" onchange="filtrarComentarios()">
+                        <option value="">Todos os tipos</option>
+                        <option value="venda">Venda</option>
+                        <option value="interesse">Interesse</option>
+                        <option value="duvida">Duvida</option>
+                    </select>
+                    <select class="search-select" id="filterProduto" onchange="filtrarComentarios()">
+                        <option value="">Todos produtos</option>
+                    </select>
+                </div>
+                <div id="comentariosContainer">
+                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando comentarios...</p></div>
+                </div>
+                <div class="pagination" id="paginationComentarios"></div>
+            </div>
+
+            <!-- ABA INTENCOES DE COMPRA -->
+            <div id="tabIntencoes" class="tab-content">
+                <div class="toggle-row">
+                    <div class="toggle-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleMensagens" onchange="renderizarIntencoes()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Mostrar mensagens originais</span>
+                    </div>
+                    <div class="toggle-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleTodos" checked onchange="renderizarIntencoes()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Todos os produtos</span>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <button class="tab-btn active" onclick="mudarSubTab('produtos', this)" style="margin-bottom:0;border-bottom:none;">Por Produtos</button>
+                    <button class="tab-btn" onclick="mudarSubTab('usuarios', this)" style="margin-bottom:0;border-bottom:none;">Por Usuarios</button>
+                </div>
+                <div id="intencoesContainer">
+                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando intencoes...</p></div>
+                </div>
+            </div>
+
+            <!-- ABA USUARIOS -->
+            <div id="tabUsuarios" class="tab-content">
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="searchUsuarioAba" placeholder="Buscar usuario..." oninput="filtrarUsuarios()">
+                </div>
+                <div id="usuariosContainer">
+                    <div class="loading"><i class="fas fa-spinner"></i><p>Carregando usuarios...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const SUPABASE_URL='https://aqrvozmxlcgrllclceke.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+let supabaseClient=null,usuarioLogado=null,clienteId=null,liveId=null,liveData=null,comentariosData=[],comentariosFiltrados=[],usuariosMap=new Map(),produtosSet=new Set(),subTabAtiva='produtos',paginaAtual=1,ITENS_POR_PAGINA=50;
+
+const PRODUTOS_KEYWORDS=['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','menino','menina','bebe','infantil','babucha','desapego','mescla','pantufa','tenis'];
+const TIPOS_KEYWORDS={venda:['quero','comprei','vou querer','pego','levo','mando','pago','pix'],interesse:['quanto','valor','preco','tem ainda','disponivel','ainda tem'],duvida:['mostra','qual','como','onde','quando','tamanho','cor']};
+
+document.addEventListener('DOMContentLoaded',async function(){
+    const params=new URLSearchParams(window.location.search);
+    liveId=params.get('live_id');
+    if(!liveId){mostrarAlerta('ID da live nao informado.','error');return}
+
+    let t=0;while(t<20){if(typeof window.supabase!=='undefined')break;await new Promise(r=>setTimeout(r,300));t++}
+    if(typeof window.supabase==='undefined'){mostrarAlerta('Erro ao carregar biblioteca.','error');return}
+    const{createClient}=window.supabase;supabaseClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    await verificarAutenticacao();
+});
+
+async function verificarAutenticacao(){
+    try{
+        const{data:{session}}=await supabaseClient.auth.getSession();
+        if(!session){window.location.href='login.html';return}
+        usuarioLogado=session.user;
+        document.getElementById('userName').textContent=usuarioLogado.email;
+        const{data:userData}=await supabaseClient.from('usuarios_pg').select('cliente_id').eq('auth_id',usuarioLogado.id).single();
+        if(userData&&userData.cliente_id){clienteId=userData.cliente_id}else{clienteId='0824668c-1e10-415e-8998-09d72ef47dcb'}
+        await carregarDadosLive();
+    }catch(e){console.error('Erro auth:',e);window.location.href='login.html'}
+}
+
+async function carregarDadosLive(){
+    try{
+        const{data:live,error:liveError}=await supabaseClient.from('lives_importadas').select('*').eq('id',liveId).eq('cliente_id',clienteId).single();
+        if(liveError||!live){mostrarAlerta('Live nao encontrada.','error');return}
+        liveData=live;
+        document.getElementById('liveTitle').textContent='Live - '+(new Date(live.data_live).toLocaleDateString('pt-BR'));
+        document.getElementById('liveSubtitle').textContent=live.media_id||'Detalhes da Live';
+
+        const{data:comentarios,error:comError}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});
+        if(comError)throw comError;
+        comentariosData=comentarios||[];
+
+        // Process data
+        comentariosData.forEach(c=>{
+            if(!usuariosMap.has(c.username))usuariosMap.set(c.username,{count:0,firstMsg:c.timestamp,comentarios:[]});
+            const u=usuariosMap.get(c.username);u.count++;u.comentarios.push(c);
+            if(c.produto)produtosSet.add(c.produto);
+        });
+
+        // Fill produto filter
+        const produtoSelect=document.getElementById('filterProduto');
+        produtosSet.forEach(p=>{const opt=document.createElement('option');opt.value=p;opt.textContent=p;produtoSelect.appendChild(opt)});
+
+        atualizarStats();
+        filtrarComentarios();
+        renderizarIntencoes();
+        renderizarUsuarios();
+    }catch(e){console.error('Erro:',e);mostrarAlerta('Erro ao carregar dados: '+e.message,'error')}
+}
+
+function atualizarStats(){
+    document.getElementById('statTotal').textContent=comentariosData.length;
+    document.getElementById('statVendas').textContent=comentariosData.filter(c=>c.tipo==='venda').length;
+    document.getElementById('statInteresses').textContent=comentariosData.filter(c=>c.tipo==='interesse').length;
+    document.getElementById('statDuvidas').textContent=comentariosData.filter(c=>c.tipo==='duvida').length;
+    document.getElementById('statUsuarios').textContent=usuariosMap.size;
+}
+
+function mudarTab(tab,btn){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+}
+
+function mudarSubTab(sub,btn){
+    subTabAtiva=sub;
+    document.querySelectorAll('#tabIntencoes .tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderizarIntencoes();
+}
+
+function filtrarComentarios(){
+    const texto=document.getElementById('searchTexto').value.toLowerCase().trim();
+    const usuario=document.getElementById('searchUsuario').value.toLowerCase().trim();
+    const tipo=document.getElementById('filterTipo').value;
+    const produto=document.getElementById('filterProduto').value;
+
+    comentariosFiltrados=comentariosData.filter(c=>{
+        if(texto&&!(c.texto||'').toLowerCase().includes(texto))return false;
+        if(usuario&&!(c.username||'').toLowerCase().includes(usuario))return false;
+        if(tipo&&c.tipo!==tipo)return false;
+        if(produto&&c.produto!==produto)return false;
+        return true;
+    });
+
+    paginaAtual=1;
+    renderizarComentarios();
+}
+
+function renderizarComentarios(){
+    const container=document.getElementById('comentariosContainer');
+    const total=comentariosFiltrados.length;
+    const totalPaginas=Math.ceil(total/ITENS_POR_PAGINA)||1;
+    const inicio=(paginaAtual-1)*ITENS_POR_PAGINA;
+    const fim=inicio+ITENS_POR_PAGINA;
+    const pagina=comentariosFiltrados.slice(inicio,fim);
+
+    if(total===0){
+        container.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><h3>Nenhum comentario encontrado</h3><p>Tente ajustar os filtros de busca.</p></div>';
+        document.getElementById('paginationComentarios').innerHTML='';
+        return;
+    }
+
+    container.innerHTML='<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th><th>Data</th></tr></thead><tbody>'+
+        pagina.map(c=>{
+            const data=c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):'-';
+            const tipoClass=c.tipo==='venda'?'tipo-venda':c.tipo==='interesse'?'tipo-interesse':'tipo-duvida';
+            return '<tr><td class="comentario-user">@'+escapeHtml(c.username)+'</td><td class="comentario-texto">'+escapeHtml(c.texto)+'</td><td>'+(c.produto?'<span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td><span class="comentario-tipo '+tipoClass+'">'+c.tipo+'</span></td><td style="font-size:12px;color:#6c757d;white-space:nowrap;">'+data+'</td></tr>';
+        }).join('')+'</tbody></table>';
+
+    // Pagination
+    let pagHTML='';
+    if(totalPaginas>1){
+        pagHTML+='<button class="page-btn" onclick="mudarPagina('+(paginaAtual-1)+')" '+(paginaAtual===1?'disabled':'')+'><i class="fas fa-chevron-left"></i></button>';
+        for(let i=1;i<=totalPaginas;i++){
+            if(i===1||i===totalPaginas||Math.abs(i-paginaAtual)<=2){
+                pagHTML+='<button class="page-btn '+(i===paginaAtual?'active':'')+'" onclick="mudarPagina('+i+')">'+i+'</button>';
+            }else if(Math.abs(i-paginaAtual)===3){pagHTML+='<span class="page-info">...</span>'}
+        }
+        pagHTML+='<button class="page-btn" onclick="mudarPagina('+(paginaAtual+1)+')" '+(paginaAtual===totalPaginas?'disabled':'')+'><i class="fas fa-chevron-right"></i></button>';
+    }
+    pagHTML+='<span class="page-info">'+total+' resultados</span>';
+    document.getElementById('paginationComentarios').innerHTML=pagHTML;
+}
+
+function mudarPagina(p){paginaAtual=p;renderizarComentarios();}
+
+function renderizarIntencoes(){
+    const container=document.getElementById('intencoesContainer');
+    const mostrarMensagens=document.getElementById('toggleMensagens').checked;
+    const mostrarTodos=document.getElementById('toggleTodos').checked;
+
+    if(subTabAtiva==='produtos'){
+        // Group by product
+        const produtosMap=new Map();
+        comentariosData.forEach(c=>{
+            if(!c.produto&&!mostrarTodos)return;
+            const key=c.produto||'Produto nao identificado';
+            if(!produtosMap.has(key))produtosMap.set(key,{count:0,users:new Set(),comentarios:[]});
+            const p=produtosMap.get(key);p.count++;p.users.add(c.username);p.comentarios.push(c);
+        });
+
+        if(produtosMap.size===0){container.innerHTML='<div class="empty-state"><i class="fas fa-shopping-cart"></i><h3>Nenhuma intencao de compra detectada</h3></div>';return}
+
+        container.innerHTML=Array.from(produtosMap.entries()).map(([nome,d])=>{
+            let html='<div class="intencao-card"><div class="intencao-title">'+escapeHtml(nome)+' <span class="intencao-count">'+d.count+' interesse'+(d.count>1?'s':'')+'</span></div>';
+            if(mostrarMensagens){
+                html+='<div style="margin-top:10px;">';
+                d.comentarios.slice(0,10).forEach(c=>{
+                    html+='<div style="padding:8px 0;border-bottom:1px solid #e9ecef;font-size:13px;"><strong style="color:#667eea;">@'+escapeHtml(c.username)+':</strong> '+escapeHtml(c.texto)+'</div>';
+                });
+                if(d.comentarios.length>10)html+='<div style="padding:8px 0;font-size:12px;color:#6c757d;">+'+(d.comentarios.length-10)+' mensagens...</div>';
+                html+='</div>';
+            }
+            html+='<div class="intencao-users">'+Array.from(d.users).map(u=>'<span class="intencao-user">@'+escapeHtml(u)+'</span>').join('')+'</div></div>';
+            return html;
+        }).join('');
+    }else{
+        // Group by user
+        const usersMap=new Map();
+        comentariosData.forEach(c=>{
+            if(!c.produto&&!mostrarTodos)return;
+            if(!usersMap.has(c.username))usersMap.set(c.username,{count:0,produtos:new Set(),comentarios:[]});
+            const u=usersMap.get(c.username);u.count++;if(c.produto)u.produtos.add(c.produto);u.comentarios.push(c);
+        });
+
+        if(usersMap.size===0){container.innerHTML='<div class="empty-state"><i class="fas fa-users"></i><h3>Nenhum usuario com intencao detectada</h3></div>';return}
+
+        container.innerHTML=Array.from(usersMap.entries()).map(([nome,d])=>{
+            let html='<div class="intencao-card"><div class="intencao-title">@'+escapeHtml(nome)+' <span class="intencao-count">'+d.count+' comentario'+(d.count>1?'s':'')+'</span></div>';
+            if(d.produtos.size>0)html+='<div style="margin:8px 0;"><strong>Produtos:</strong> '+Array.from(d.produtos).map(p=>'<span class="comentario-produto">'+escapeHtml(p)+'</span>').join(' ')+'</div>';
+            if(mostrarMensagens){
+                html+='<div style="margin-top:10px;">';
+                d.comentarios.slice(0,5).forEach(c=>{
+                    html+='<div style="padding:6px 0;border-bottom:1px solid #e9ecef;font-size:13px;">'+escapeHtml(c.texto)+(c.produto?' <span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'')+'</div>';
+                });
+                if(d.comentarios.length>5)html+='<div style="padding:6px 0;font-size:12px;color:#6c757d;">+'+(d.comentarios.length-5)+' mensagens...</div>';
+                html+='</div>';
+            }
+            html+='</div>';
+            return html;
+        }).join('');
+    }
+}
+
+function renderizarUsuarios(){
+    const container=document.getElementById('usuariosContainer');
+    const filtro=document.getElementById('searchUsuarioAba').value.toLowerCase().trim();
+
+    let users=Array.from(usuariosMap.entries());
+    if(filtro)users=users.filter(([nome])=>nome.toLowerCase().includes(filtro));
+    users.sort((a,b)=>b[1].count-a[1].count);
+
+    if(users.length===0){
+        container.innerHTML='<div class="empty-state"><i class="fas fa-users-slash"></i><h3>Nenhum usuario encontrado</h3></div>';
+        return;
+    }
+
+    container.innerHTML=users.map(([nome,d])=>{
+        const firstDate=d.firstMsg?new Date(d.firstMsg).toLocaleString('pt-BR'):'-';
+        const produtosUnicos=[...new Set(d.comentarios.filter(c=>c.produto).map(c=>c.produto))];
+        return '<div class="usuario-card" onclick="filtrarPorUsuario(''+nome+'')">'+
+            '<div class="usuario-avatar">'+nome.charAt(0).toUpperCase()+'</div>'+
+            '<div class="usuario-info"><div class="usuario-nome">@'+escapeHtml(nome)+'</div>'+
+            '<div class="usuario-meta">'+d.count+' comentario'+(d.count>1?'s':'')+' | Primeira: '+firstDate+(produtosUnicos.length>0?' | Produtos: '+produtosUnicos.join(', '):'')+'</div></div>'+
+            '<div class="usuario-count">'+d.count+'</div></div>';
+    }).join('');
+}
+
+function filtrarUsuarios(){renderizarUsuarios();}
+
+function filtrarPorUsuario(username){
+    mudarTab('comentarios',document.querySelectorAll('.tab-btn')[0]);
+    document.getElementById('searchUsuario').value=username;
+    filtrarComentarios();
+}
+
+function exportarExcel(){
+    const dados=comentariosFiltrados.length>0?comentariosFiltrados:comentariosData;
+    if(dados.length===0){mostrarAlerta('Nenhum dado para exportar','warning');return}
+    const wsData=[['Usuario','Comentario','Produto','Tipo','Data']];
+    dados.forEach(c=>{wsData.push([c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''])});
+    const ws=XLSX.utils.aoa_to_sheet(wsData);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Comentarios');
+    XLSX.writeFile(wb,'live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    mostrarAlerta('Excel exportado!','success');
+}
+
+function exportarCSV(){
+    const dados=comentariosFiltrados.length>0?comentariosFiltrados:comentariosData;
+    if(dados.length===0){mostrarAlerta('Nenhum dado para exportar','warning');return}
+    const csv='Usuario;Comentario;Produto;Tipo;Data
+'+dados.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('
+');
+    const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();
+    mostrarAlerta('CSV exportado!','success');
+}
+
+function mostrarAlerta(mensagem,tipo){
+    const container=document.getElementById('alertContainer');
+    const alertClass=tipo==='success'?'alert-success':tipo==='error'?'alert-error':tipo==='warning'?'alert-warning':'alert-info';
+    const icon=tipo==='success'?'fa-check-circle':tipo==='error'?'fa-exclamation-circle':tipo==='warning'?'fa-exclamation-triangle':'fa-info-circle';
+    container.innerHTML='<div class="alert '+alertClass+'"><i class="fas '+icon+'"></i>'+mensagem+'</div>';
+    setTimeout(()=>{container.innerHTML=''},5000);
+}
+function escapeHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=text;return div.innerHTML}
+    </script>
+</body>
+</html>
