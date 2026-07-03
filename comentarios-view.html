@@ -260,6 +260,7 @@
                         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                             <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
                             <button class="btn-primary" id="btnEditarLive" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-edit"></i> Editar Live</button>
+                            <button class="btn-outline" id="btnTrocarLive" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-exchange-alt"></i> Trocar Live</button>
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
@@ -643,23 +644,87 @@ function mostrarAlerta(mensagem, tipo) {
 document.addEventListener('DOMContentLoaded', function() {
     var btnEditar = document.getElementById('btnEditarLive');
     if (btnEditar) btnEditar.addEventListener('click', abrirModalEditarLive);
+    var btnTrocar = document.getElementById('btnTrocarLive');
+    if (btnTrocar) btnTrocar.addEventListener('click', abrirModalTrocarLive);
     var modalOverlay = document.getElementById('editarLiveModal');
     if (modalOverlay) modalOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
+    var trocarOverlay = document.getElementById('trocarLiveModal');
+    if (trocarOverlay) trocarOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalTrocarLive(); });
 });
 
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalEditarLive(); } });
+let livesDoCliente = [];
+
+async function abrirModalTrocarLive() {
+    document.getElementById('trocarLiveModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('trocarLiveLista').innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Carregando lives...</p></div>';
+    try {
+        const { data: lives, error } = await supabaseClient.from('lives_importadas')
+            .select('id, media_id, data_live, status, notas')
+            .eq('cliente_id', clienteId)
+            .order('data_live', { ascending: false });
+        if (error) throw error;
+        livesDoCliente = lives || [];
+        renderizarListaLives();
+    } catch (e) {
+        document.getElementById('trocarLiveLista').innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro ao carregar lives: ' + e.message + '</div>';
+    }
+}
+
+function renderizarListaLives() {
+    const container = document.getElementById('trocarLiveLista');
+    if (livesDoCliente.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-video-slash"></i><h3>Nenhuma live encontrada</h3></div>';
+        return;
+    }
+    let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+    livesDoCliente.forEach(live => {
+        const isAtual = live.id === liveId;
+        const data = live.data_live ? new Date(live.data_live).toLocaleDateString('pt-BR') : 'Sem data';
+        const statusClass = live.status === 'importada' ? 'tipo-duvida' : live.status === 'disponivel' ? 'tipo-venda' : 'tipo-interesse';
+        html += '<div class="usuario-card" style="cursor: pointer; ' + (isAtual ? 'border-color: #0B193F; background: #eff6ff;' : '') + '" onclick="trocarLive(\'' + live.id + '\')">' +
+            '<div class="usuario-avatar"><i class="fas fa-video"></i></div>' +
+            '<div class="usuario-info" style="flex: 1;">' +
+            '<div class="usuario-nome">' + (live.media_id || 'Live sem ID') + (isAtual ? ' <span class="comentario-produto">ATUAL</span>' : '') + '</div>' +
+            '<div class="usuario-meta">' + data + ' | <span class="comentario-tipo ' + statusClass + '">' + live.status + '</span></div>' +
+            '</div>' +
+            '<i class="fas fa-chevron-right" style="color: #64748b;"></i></div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function trocarLive(novaLiveId) {
+    if (novaLiveId === liveId) { fecharModalTrocarLive(); return; }
+    window.location.href = 'comentarios-view.html?live_id=' + novaLiveId;
+}
+
+function fecharModalTrocarLive() {
+    document.getElementById('trocarLiveModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) { 
+    if (e.key === 'Escape') { fecharModalEditarLive(); fecharModalTrocarLive(); } 
+});
 
 
 document.addEventListener('DOMContentLoaded', function() {
     var btnEditar = document.getElementById('btnEditarLive');
     if (btnEditar) btnEditar.addEventListener('click', abrirModalEditarLive);
+    var btnTrocar = document.getElementById('btnTrocarLive');
+    if (btnTrocar) btnTrocar.addEventListener('click', abrirModalTrocarLive);
     var modalOverlay = document.getElementById('editarLiveModal');
     if (modalOverlay) modalOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
+    var trocarOverlay = document.getElementById('trocarLiveModal');
+    if (trocarOverlay) trocarOverlay.addEventListener('click', function(e) { if (e.target === this) fecharModalTrocarLive(); });
 });
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalEditarLive(); } });
+document.addEventListener('keydown', function(e) { 
+    if (e.key === 'Escape') { fecharModalEditarLive(); fecharModalTrocarLive(); } 
+});
 
 </script>
 
