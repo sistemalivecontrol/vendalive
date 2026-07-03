@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- CACHE BUSTER v2 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -163,6 +167,7 @@
             .stats-row { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -328,6 +333,7 @@ async function logout() {
     localStorage.removeItem('supabase.auth.token'); sessionStorage.clear(); window.location.href = 'login.html';
 }
 
+console.log('[COMENTARIOS-VIEW] v2.0 - Carregando...');
 document.addEventListener('DOMContentLoaded', async function() {
     const params = new URLSearchParams(window.location.search);
     liveId = params.get('live_id');
