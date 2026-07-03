@@ -201,6 +201,10 @@
         <div class="header-info">
             <span id="info-usuario"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Carregando...</span>
             <a href="configuracoes.html" class="btn-header" title="Configurações"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Config</a>
+            <button class="btn-header" onclick="window.location.href='comentarioslives.html'" title="Voltar">
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Voltar
+            </button>
             <button class="btn-header" onclick="logout()">Sair</button>
         </div>
     </div>
@@ -236,7 +240,10 @@
                 </div>
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                        <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
+                            <button class="btn-primary" onclick="abrirModalEditarLive()" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-edit"></i> Editar Live</button>
+                        </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
                             <button class="btn-outline" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> CSV</button>
@@ -516,6 +523,60 @@ function exportarCSV() {
     mostrarAlerta('CSV exportado!', 'success');
 }
 
+function abrirModalEditarLive() {
+    if (!liveData) { mostrarAlerta('Dados da live não carregados.', 'error'); return; }
+    document.getElementById('editMediaId').value = liveData.media_id || '';
+    document.getElementById('editDataLive').value = liveData.data_live ? new Date(liveData.data_live).toISOString().slice(0, 16) : '';
+    document.getElementById('editStatus').value = liveData.status || 'importada';
+    document.getElementById('editNotas').value = liveData.notas || '';
+    document.getElementById('editarLiveValidacao').innerHTML = '';
+    document.getElementById('editarLiveModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalEditarLive() {
+    document.getElementById('editarLiveModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+async function salvarEdicaoLive() {
+    const btn = document.getElementById('btnSalvarLive');
+    const validacaoDiv = document.getElementById('editarLiveValidacao');
+    const dataLive = document.getElementById('editDataLive').value;
+    const status = document.getElementById('editStatus').value;
+    const notas = document.getElementById('editNotas').value.trim();
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+    try {
+        const updateData = { status: status };
+        if (dataLive) updateData.data_live = new Date(dataLive).toISOString();
+        if (notas) updateData.notas = notas;
+
+        const { error } = await supabaseClient.from('lives_importadas')
+            .update(updateData)
+            .eq('id', liveId)
+            .eq('cliente_id', clienteId);
+
+        if (error) throw error;
+
+        // Atualizar dados locais
+        liveData.status = status;
+        if (dataLive) liveData.data_live = new Date(dataLive).toISOString();
+        if (notas) liveData.notas = notas;
+
+        document.getElementById('liveTitle').textContent = 'Live - ' + (new Date(liveData.data_live).toLocaleDateString('pt-BR'));
+        fecharModalEditarLive();
+        mostrarAlerta('Live atualizada com sucesso!', 'success');
+        await carregarDadosLive();
+    } catch (e) {
+        console.error('Erro ao salvar live:', e);
+        validacaoDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro ao salvar: ' + e.message + '</div>';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+    }
+}
+
 function mostrarAlerta(mensagem, tipo) {
     const container = document.getElementById('alertContainer');
     const alertClass = tipo === 'success' ? 'alert-success' : tipo === 'error' ? 'alert-error' : tipo === 'warning' ? 'alert-warning' : 'alert-info';
@@ -524,6 +585,47 @@ function mostrarAlerta(mensagem, tipo) {
     setTimeout(() => { container.innerHTML = ''; }, 5000);
 }
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+document.getElementById('editarLiveModal').addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalToken(); fecharModalEditarLive(); } });
 </script>
+
+    <!-- Modal Editar Live -->
+    <div class="modal-overlay" id="editarLiveModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Editar Live</h3>
+                <button class="modal-close" onclick="fecharModalEditarLive()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-section" style="margin-top: 0; padding-top: 0; border: none;">
+                    <label class="input-label">ID da Mídia (Media ID)</label>
+                    <input type="text" class="input-field" id="editMediaId" placeholder="ID do post/reel no Instagram" disabled style="background: #f8fafc;">
+                    <small style="color: #64748b; font-size: 12px;">O ID da mídia não pode ser alterado</small>
+                </div>
+                <div class="input-section">
+                    <label class="input-label">Data da Live</label>
+                    <input type="datetime-local" class="input-field" id="editDataLive">
+                </div>
+                <div class="input-section">
+                    <label class="input-label">Status</label>
+                    <select class="input-field" id="editStatus">
+                        <option value="importada">Importada</option>
+                        <option value="disponivel">Disponível</option>
+                        <option value="expirada">Expirada</option>
+                    </select>
+                </div>
+                <div class="input-section">
+                    <label class="input-label">Notas / Observações</label>
+                    <textarea class="input-field" id="editNotas" rows="3" placeholder="Notas sobre esta live..."></textarea>
+                </div>
+                <div id="editarLiveValidacao"></div>
+            </div>
+            <div style="padding: 0 25px 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-outline" onclick="fecharModalEditarLive()" style="padding: 10px 20px; font-size: 13px;">Cancelar</button>
+                <button class="btn-primary" id="btnSalvarLive" onclick="salvarEdicaoLive()" style="padding: 10px 20px; font-size: 13px;"><i class="fas fa-save"></i> Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
