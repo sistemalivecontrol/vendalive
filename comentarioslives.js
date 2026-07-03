@@ -1,73 +1,749 @@
-const SUPABASE_URL='https://aqrvozmxlcgrllclceke.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
-let supabaseClient=null,usuarioLogado=null,clienteId=null,instagramConfig=null,contasInstagram=[],contaAtiva=null,livesData=[],comentariosData=[],liveSelecionada=null;
-const PRODUTOS_KEYWORDS=['conjunto','vestido','calca','blusa','camisa','camiseta','short','saia','casaco','jaqueta','moletom','pijama','roupa','tamanho','tam','numero','menino','menina','bebe','infantil'];
-const TIPOS_KEYWORDS={venda:['quero','comprei','vou querer','pego','levo','mando','pago','pix'],interesse:['quanto','valor','preco','tem ainda','disponivel','ainda tem'],duvida:['mostra','qual','como','onde','quando','tamanho','cor']};
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Alterar Senha - VendaLive</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; }
 
-document.addEventListener('DOMContentLoaded',async function(){console.log('[COMENTARIOS-LIVES] Iniciando...');let t=0;while(t<20){if(typeof window.supabase!=='undefined')break;await new Promise(r=>setTimeout(r,300));t++}if(typeof window.supabase==='undefined'){mostrarAlerta('Erro ao carregar biblioteca. Recarregue a pagina.','error');return}const{createClient}=window.supabase;supabaseClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);await verificarAutenticacao()});
+        /* ===== HEADER ===== */
+        .header {
+            background: #0a1628;
+            color: white;
+            padding: 0 16px;
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .header-logo svg { width: 28px; height: 28px; }
+        .header-logo span { font-size: 16px; font-weight: 800; color: #ffffff; }
+        .header-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px; }
+        .header h1 { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .header-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 12px;
+        }
+        .header-info span { color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
+        .btn-header {
+            background: rgba(0, 102, 255, 0.15);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-header:hover { background: rgba(0, 102, 255, 0.25); }
 
-async function verificarAutenticacao(){try{const{data:{session}}=await supabaseClient.auth.getSession();if(!session){window.location.href='login.html';return}usuarioLogado=session.user;document.getElementById('userName').textContent=usuarioLogado.email;const{data:userData}=await supabaseClient.from('usuarios_pg').select('cliente_id').eq('auth_id',usuarioLogado.id).single();if(userData&&userData.cliente_id){clienteId=userData.cliente_id}else{clienteId='0824668c-1e10-415e-8998-09d72ef47dcb'}console.log('[COMENTARIOS-LIVES] cliente_id:',clienteId);await carregarContasInstagram();await carregarLivesImportadas()}catch(e){console.error('[COMENTARIOS-LIVES] Erro auth:',e);window.location.href='login.html'}}
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: -8px;
+        }
+        .mobile-menu-btn svg { width: 24px; height: 24px; }
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            backdrop-filter: blur(4px);
+        }
+        .mobile-menu-overlay.active { display: block; }
+        .mobile-menu {
+            position: fixed;
+            top: 0; left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: #0a1628;
+            z-index: 201;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 16px;
+        }
+        .mobile-menu.active { left: 0; }
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .mobile-menu-header span { font-size: 16px; font-weight: 700; color: white; }
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 12px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .mobile-menu-item:hover, .mobile-menu-item.active {
+            background: rgba(0, 102, 255, 0.2);
+            color: white;
+        }
+        .mobile-menu-item .icon { font-size: 20px; width: 24px; text-align: center; }
 
-async function carregarContasInstagram(){console.log('[COMENTARIOS-LIVES] Carregando contas Instagram...');contasInstagram=[];try{const{data,error}=await supabaseClient.from('configuracoes_pagamento').select('instagram_access_token,instagram_business_id,instagram_username,instagram_accounts,cliente_sistema_id,cliente_id').eq('cliente_sistema_id',clienteId).maybeSingle();if(error){console.log('[COMENTARIOS-LIVES] Erro query:',error.message);const{data:data2,error:error2}=await supabaseClient.from('configuracoes_pagamento').select('instagram_access_token,instagram_business_id,instagram_username,instagram_accounts,cliente_sistema_id,cliente_id').eq('cliente_id',clienteId).maybeSingle();if(!error2&&data2){processarDadosConta(data2)}else{carregarDoLocalStorage()}}else if(data){processarDadosConta(data)}else{carregarDoLocalStorage()}}catch(e){carregarDoLocalStorage()}atualizarUIInstagram()}
+        /* ===== GRID LAYOUT ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        .grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+        }
 
-function processarDadosConta(data){console.log('[COMENTARIOS-LIVES] Dados encontrados no banco:',data);if(data.instagram_access_token&&data.instagram_username){contasInstagram.push({accessToken:data.instagram_access_token,instagramId:data.instagram_business_id,username:data.instagram_username,ativa:true})}if(data.instagram_accounts){try{const extras=typeof data.instagram_accounts==='string'?JSON.parse(data.instagram_accounts):data.instagram_accounts;if(Array.isArray(extras)){extras.forEach(c=>{if(!contasInstagram.find(ex=>ex.username===c.username))contasInstagram.push({...c,ativa:false})})}}catch(e){console.log('[COMENTARIOS-LIVES] Erro parse instagram_accounts:',e)}}if(contasInstagram.length>0){contaAtiva=contasInstagram.find(c=>c.ativa)||contasInstagram[0];if(contaAtiva){instagramConfig={accessToken:contaAtiva.accessToken,instagramId:contaAtiva.instagramId,username:contaAtiva.username}}localStorage.setItem('instagram_accounts_'+clienteId,JSON.stringify(contasInstagram))}}
+        /* ===== SIDEBAR MENU ===== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .menu-item {
+            background: white;
+            padding: 13px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            border: 1px solid transparent;
+        }
+        .menu-item:hover {
+            background: #0B193F;
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+        }
+        .menu-item.active {
+            background: #0B193F;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+        }
+        .menu-item .icon { font-size: 18px; width: 22px; text-align: center; }
 
-function carregarDoLocalStorage(){const local=localStorage.getItem('instagram_accounts_'+clienteId);if(local){try{contasInstagram=JSON.parse(local);contaAtiva=contasInstagram.find(c=>c.ativa)||contasInstagram[0]||null;if(contaAtiva){instagramConfig={accessToken:contaAtiva.accessToken,instagramId:contaAtiva.instagramId,username:contaAtiva.username}}console.log('[COMENTARIOS-LIVES] Contas carregadas do localStorage:',contasInstagram.length)}catch(e){contasInstagram=[];contaAtiva=null;instagramConfig=null}}}
+        /* ===== CONTENT ===== */
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .card h2 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-function atualizarUIInstagram(){const section=document.getElementById('instagramSection'),title=document.getElementById('instagramTitle'),subtitle=document.getElementById('instagramSubtitle'),status=document.getElementById('instagramStatus'),avatar=document.getElementById('instagramAvatar'),actions=document.getElementById('instagramActions'),contasSection=document.getElementById('contasSalvasSection'),contasContainer=document.getElementById('contasSalvasContainer'),btnImportar=document.getElementById('btnImportarComentarios');if(contaAtiva){section.classList.add('conectado');avatar.textContent=contaAtiva.username?contaAtiva.username.charAt(0).toUpperCase():'I';title.textContent='@'+contaAtiva.username;subtitle.textContent='Conta ativa para importacao de comentarios';status.className='instagram-status status-conectado';status.innerHTML='<i class="fas fa-check-circle"></i> Conectado';actions.innerHTML='<button class="btn-instagram btn-trocar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Outra Conta</button><button class="btn-instagram btn-manual" onclick="abrirModalToken()"><i class="fas fa-key"></i> Adicionar Token Manual</button><button class="btn-instagram btn-desconectar" onclick="desconectarInstagram()"><i class="fas fa-unlink"></i> Desconectar</button>';btnImportar.disabled=false;btnImportar.style.opacity='1';if(contasInstagram.length>1){contasSection.classList.remove('hidden');contasContainer.innerHTML=contasInstagram.map((conta)=>{const isAtiva=contaAtiva&&contaAtiva.username===conta.username;return '<div class="conta-item '+(isAtiva?'ativa':'')+'" onclick="selecionarConta(''+conta.username+'')"><div class="conta-item-info"><div class="conta-avatar">'+conta.username.charAt(0).toUpperCase()+'</div><div><div class="conta-nome">@'+conta.username+'</div><div class="conta-username">'+(conta.instagramId||'ID nao disponivel')+'</div></div></div><div class="conta-actions">'+(isAtiva?'<span class="conta-badge"><i class="fas fa-check"></i> Ativa</span>':'<button class="btn-conta-action btn-usar" onclick="event.stopPropagation(); selecionarConta(''+conta.username+'')" title="Usar esta conta"><i class="fas fa-play"></i></button>')+'<button class="btn-conta-action btn-remover-conta" onclick="event.stopPropagation(); removerConta(''+conta.username+'')" title="Remover conta"><i class="fas fa-trash"></i></button></div></div>'}).join('')}else{contasSection.classList.add('hidden')}}else{section.classList.remove('conectado');avatar.textContent='I';title.textContent='Instagram nao conectado';subtitle.textContent='Conecte uma conta do Instagram para importar comentarios de lives';status.className='instagram-status status-desconectado';status.innerHTML='<i class="fas fa-times-circle"></i> Desconectado';actions.innerHTML='<button class="btn-instagram btn-conectar" onclick="conectarInstagram()"><i class="fab fa-instagram"></i> Conectar Instagram</button><button class="btn-instagram btn-manual" onclick="abrirModalToken()"><i class="fas fa-key"></i> Adicionar Token Manual</button>';btnImportar.disabled=true;btnImportar.style.opacity='0.5';contasSection.classList.add('hidden')}}
+        .user-info-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px;
+            margin-bottom: 24px;
+        }
+        .user-info-card .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0B193F, #1a3a6e);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .user-info-card .details h3 { font-size: 16px; color: #0f172a; margin-bottom: 2px; }
+        .user-info-card .details p { color: #64748b; font-size: 14px; margin: 0; }
 
-function conectarInstagram(){console.log('[COMENTARIOS-LIVES] Iniciando OAuth...');const width=600,height=700,left=(window.screen.width-width)/2,top=(window.screen.height-height)/2;const oauthUrl=SUPABASE_URL+'/functions/v1/instagram-oauth?cliente_id='+encodeURIComponent(clienteId);console.log('[COMENTARIOS-LIVES] Abrindo popup:',oauthUrl);const popup=window.open(oauthUrl,'instagram-oauth','width='+width+',height='+height+',left='+left+',top='+top+',scrollbars=yes,resizable=yes');if(!popup||popup.closed||typeof popup.closed==='undefined'){mostrarAlerta('Popup bloqueado! Redirecionando...','warning');window.location.href=oauthUrl;return}sessionStorage.setItem('instagram_oauth_pending','true');const checkClosed=setInterval(async function(){if(popup.closed){clearInterval(checkClosed);sessionStorage.removeItem('instagram_oauth_pending');console.log('[COMENTARIOS-LIVES] Popup fechado, recarregando...');await carregarContasInstagram();if(contaAtiva){mostrarAlerta('Conta verificada!','success')}}},1000);setTimeout(function(){clearInterval(checkClosed);sessionStorage.removeItem('instagram_oauth_pending')},120000)}
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #0f172a;
+            font-size: 13px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #0f172a;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input::placeholder { color: #94a3b8; }
+        .form-group input:focus {
+            outline: none;
+            border-color: #0B193F;
+            box-shadow: 0 0 0 3px rgba(11, 25, 63, 0.1);
+        }
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 12px;
+        }
 
-async function adicionarContaInstagram(novaConta){contasInstagram.forEach(c=>c.ativa=false);novaConta.ativa=true;const existeIndex=contasInstagram.findIndex(c=>c.username===novaConta.username);if(existeIndex>=0)contasInstagram[existeIndex]=novaConta;else contasInstagram.push(novaConta);contaAtiva=novaConta;instagramConfig={accessToken:novaConta.accessToken,instagramId:novaConta.instagramId,username:novaConta.username};localStorage.setItem('instagram_accounts_'+clienteId,JSON.stringify(contasInstagram));try{const accountsJson=JSON.stringify(contasInstagram.filter(c=>c.username!==novaConta.username));const{error}=await supabaseClient.from('configuracoes_pagamento').upsert({cliente_sistema_id:clienteId,cliente_id:clienteId,instagram_access_token:novaConta.accessToken,instagram_business_id:novaConta.instagramId,instagram_username:novaConta.username,instagram_accounts:accountsJson},{onConflict:'cliente_sistema_id'});if(error)console.log('[COMENTARIOS-LIVES] Erro ao salvar no banco:',error.message);else console.log('[COMENTARIOS-LIVES] Conta salva no banco!')}catch(e){console.log('[COMENTARIOS-LIVES] Erro ao salvar no banco:',e)}atualizarUIInstagram()}
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: #0B193F;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: #152a52;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(11, 25, 63, 0.3);
+        }
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
 
-async function selecionarConta(username){const conta=contasInstagram.find(c=>c.username===username);if(!conta)return;contasInstagram.forEach(c=>c.ativa=false);conta.ativa=true;contaAtiva=conta;instagramConfig={accessToken:conta.accessToken,instagramId:conta.instagramId,username:conta.username};localStorage.setItem('instagram_accounts_'+clienteId,JSON.stringify(contasInstagram));atualizarUIInstagram();mostrarAlerta('Conta @'+username+' selecionada!','success')}
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+        .alert-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
 
-async function removerConta(username){if(!confirm('Remover a conta @'+username+'?'))return;contasInstagram=contasInstagram.filter(c=>c.username!==username);if(contasInstagram.length>0){contasInstagram[0].ativa=true;contaAtiva=contasInstagram[0];instagramConfig={accessToken:contaAtiva.accessToken,instagramId:contaAtiva.instagramId,username:contaAtiva.username}}else{contaAtiva=null;instagramConfig=null}localStorage.setItem('instagram_accounts_'+clienteId,JSON.stringify(contasInstagram));try{if(contaAtiva){const accountsJson=JSON.stringify(contasInstagram.filter(c=>c.username!==contaAtiva.username));await supabaseClient.from('configuracoes_pagamento').upsert({cliente_sistema_id:clienteId,cliente_id:clienteId,instagram_access_token:contaAtiva.accessToken,instagram_business_id:contaAtiva.instagramId,instagram_username:contaAtiva.username,instagram_accounts:accountsJson},{onConflict:'cliente_sistema_id'})}else{await supabaseClient.from('configuracoes_pagamento').update({instagram_access_token:null,instagram_business_id:null,instagram_username:null,instagram_accounts:null}).eq('cliente_sistema_id',clienteId)}}catch(e){console.log('[COMENTARIOS-LIVES] Erro ao atualizar banco:',e)}atualizarUIInstagram();mostrarAlerta('Conta @'+username+' removida!','success')}
+        .success-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .success-state .icon { font-size: 56px; margin-bottom: 16px; }
+        .success-state h3 { color: #059669; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .success-state p { color: #64748b; font-size: 14px; margin-bottom: 24px; }
 
-async function desconectarInstagram(){if(!confirm('Desconectar todas as contas do Instagram?'))return;contasInstagram=[];contaAtiva=null;instagramConfig=null;localStorage.removeItem('instagram_accounts_'+clienteId);try{await supabaseClient.from('configuracoes_pagamento').update({instagram_access_token:null,instagram_business_id:null,instagram_username:null,instagram_accounts:null}).eq('cliente_sistema_id',clienteId)}catch(e){console.log('[COMENTARIOS-LIVES] Erro ao limpar banco:',e)}atualizarUIInstagram();mostrarAlerta('Todas as contas desconectadas!','success')}
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-function abrirModalToken(){document.getElementById('tokenModal').classList.add('active');document.body.style.overflow='hidden';document.getElementById('tokenInput').value='';document.getElementById('tokenUsernameInput').value='';document.getElementById('tokenValidacao').innerHTML=''}
-function fecharModalToken(){document.getElementById('tokenModal').classList.remove('active');document.body.style.overflow=''}
+        .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
+        .icon-svg-sm { width: 14px; height: 14px; }
 
-async function salvarTokenManual(){const token=document.getElementById('tokenInput').value.trim(),usernameInput=document.getElementById('tokenUsernameInput').value.trim(),btn=document.getElementById('btnSalvarToken'),validacaoDiv=document.getElementById('tokenValidacao');if(!token){validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Informe o access token.</div>';return}btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Validando...';try{console.log('[COMENTARIOS-LIVES] Validando token contra Facebook Graph API...');const response=await fetch('https://graph.facebook.com/v18.0/me?fields=id,name&access_token='+token);const data=await response.json();console.log('[COMENTARIOS-LIVES] Resposta Facebook:',data);if(data.error){validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Token invalido: '+(data.error.message||'Erro desconhecido')+'</div>';return}const userId=data.id,userName=data.name||'usuario';console.log('[COMENTARIOS-LIVES] Buscando paginas...');const pagesResponse=await fetch('https://graph.facebook.com/v18.0/me/accounts?access_token='+token);const pagesData=await pagesResponse.json();console.log('[COMENTARIOS-LIVES] Paginas:',pagesData);if(pagesData.error){validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro ao buscar paginas: '+pagesData.error.message+'</div>';return}const pages=pagesData.data||[];if(pages.length===0){validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Nenhuma pagina encontrada.</div>';return}let instagramAccount=null,pageAccessToken=null;for(const page of pages){console.log('[COMENTARIOS-LIVES] Verificando pagina:',page.name);const igResponse=await fetch('https://graph.facebook.com/v18.0/'+page.id+'?fields=instagram_business_account{id,username}&access_token='+page.access_token);const igData=await igResponse.json();console.log('[COMENTARIOS-LIVES] Instagram data:',igData);if(igData.instagram_business_account){instagramAccount=igData.instagram_business_account;pageAccessToken=page.access_token;console.log('[COMENTARIOS-LIVES] Encontrada conta Instagram:',instagramAccount.username);break}}if(!instagramAccount){validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Nenhuma conta Instagram Business/Creator vinculada encontrada.</div>';return}const instagramId=instagramAccount.id,instagramUsername=instagramAccount.username||usernameInput||userName;const novaConta={accessToken:pageAccessToken,instagramId:instagramId,username:instagramUsername,ativa:true};await adicionarContaInstagram(novaConta);fecharModalToken();mostrarAlerta('Conta @'+instagramUsername+' adicionada com sucesso!','success')}catch(e){console.error('[COMENTARIOS-LIVES] Erro validacao token:',e);validacaoDiv.innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro ao validar token: '+e.message+'</div>'}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Salvar Conta'}}
+        /* Footer */
+        .dashboard-footer {
+            margin-top: 40px;
+            padding: 20px 16px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .dashboard-footer a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .dashboard-footer a:hover {
+            color: #0B193F;
+            text-decoration: underline;
+        }
 
-async function carregarLivesImportadas(){try{const{data,error}=await supabaseClient.from('lives_importadas').select('*').eq('cliente_id',clienteId).order('data_live',{ascending:false});if(error)throw error;livesData=data||[];renderizarLives(livesData);atualizarStats()}catch(error){console.error('[COMENTARIOS-LIVES] Erro ao carregar lives:',error);renderizarLives([])}}
+        .hidden { display: none !important; }
 
-function renderizarLives(lives){const container=document.getElementById('livesContainer');if(lives.length===0){container.innerHTML='<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-video-slash"></i><h3>Nenhuma live importada</h3><p>Clique em "Importar Comentarios" para buscar lives do seu Instagram.</p></div>';return}container.innerHTML=lives.map(live=>{const dataLive=live.data_live?new Date(live.data_live).toLocaleDateString('pt-BR'):'Data desconhecida';const statusClass=live.status==='importada'?'importada':live.status==='disponivel'?'disponivel':'expirada';const statusText=live.status==='importada'?'Importada':live.status==='disponivel'?'Disponivel':'Expirada';return '<div class="live-card" data-id="'+live.id+'"><div class="live-header"><span class="live-status '+statusClass+'">'+statusText+'</span><div class="live-date"><i class="fas fa-calendar"></i> '+dataLive+'</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">'+(live.total_comentarios||0)+'</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_vendas||0)+'</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_interesses||0)+'</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" onclick="verComentariosLive(''+live.id+'')"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-exportar" onclick="exportarLive(''+live.id+'')"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>'}).join('')}
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .sidebar { display: none; }
+            .mobile-menu-btn { display: block; }
+            .header { padding: 0 12px; }
+            .header-info span { display: none; }
+            .header-info span:first-child { display: flex; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 12px; }
+            .header { height: 52px; }
+            .header-logo span { font-size: 14px; }
+            .header h1 { display: none; }
+            .card { padding: 20px; border-radius: 12px; }
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; }
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <span>Menu</span>
+            <button class="mobile-menu-close" onclick="fecharMenu()">&times;</button>
+        </div>
+        <a href="live.html" class="mobile-menu-item" onclick="return goToMobile('live.html')">
+            <span class="icon">&#127909;</span><span>Lives de Vendas</span>
+        </a>
+        <a href="coblive.html" class="mobile-menu-item" onclick="return goToMobile('coblive.html')">
+            <span class="icon">&#128176;</span><span>Cobrança de Lives</span>
+        </a>
+        <a href="pix.automatizado.html" class="mobile-menu-item" onclick="return goToMobile('pix.automatizado.html')">
+            <span class="icon">&#128179;</span><span>Pix Automação</span>
+        </a>
+        <a href="pix.manual.html" class="mobile-menu-item" onclick="return goToMobile('pix.manual.html')">
+            <span class="icon">&#9989;</span><span>Pix Manual</span>
+        </a>
+        <a href="vendas.html" class="mobile-menu-item" onclick="return goToMobile('vendas.html')">
+            <span class="icon">&#128722;</span><span>Vendas</span>
+        </a>
+        <a href="clientes.html" class="mobile-menu-item" onclick="return goToMobile('clientes.html')">
+            <span class="icon">&#128101;</span><span>Clientes</span>
+        </a>
+        <a href="enderecos.html" class="mobile-menu-item" onclick="return goToMobile('enderecos.html')">
+            <span class="icon">&#128205;</span><span>Endereços</span>
+        </a>
+        <a href="rastreamento.html" class="mobile-menu-item" onclick="return goToMobile('rastreamento.html')">
+            <span class="icon">&#128230;</span><span>Solicitações de Entregas</span>
+        </a>
+        <a href="whatsapp-monitor.html" class="mobile-menu-item" onclick="return goToMobile('whatsapp-monitor.html')">
+            <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
+        </a>
+        <a href="comentarioslives.html" class="mobile-menu-item" onclick="return goToMobile('comentarioslives.html')">
+            <span class="icon">&#128172;</span><span>Comentários de Lives</span>
+        </a>
+        <a href="configuracao-pagamento.html" class="mobile-menu-item" onclick="return goToMobile('configuracao-pagamento.html')">
+            <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+        </a>
+        <a href="configuracoes.html" class="mobile-menu-item" onclick="return goToMobile('configuracoes.html')">
+            <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+        </a>
+        <a href="alterar-senha.html" class="mobile-menu-item active" onclick="return goToMobile('alterar-senha.html')">
+            <span class="icon">&#128274;</span><span>Alterar Senha</span>
+        </a>
+        <a href="solicitacoes.html" id="mobile-link-solicitacoes" class="mobile-menu-item">
+            <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
+        </a>
+    </div>
 
-function atualizarStats(){document.getElementById('statTotalLives').textContent=livesData.length;document.getElementById('statTotalComentarios').textContent=livesData.reduce((sum,l)=>sum+(l.total_comentarios||0),0);document.getElementById('statTotalVendas').textContent=livesData.reduce((sum,l)=>sum+(l.total_vendas||0),0);document.getElementById('statTotalInteresses').textContent=livesData.reduce((sum,l)=>sum+(l.total_interesses||0),0)}
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <a href="dashboard.html" class="header-logo" style="text-decoration:none;">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="15" width="60" height="70" rx="12" stroke="#ffffff" stroke-width="6" fill="none"/>
+                    <path d="M35 40 L55 52 L35 64 Z" fill="#ffffff"/>
+                    <path d="M20 75 L35 60" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+                    <circle cx="72" cy="25" r="22" fill="#ffffff"/>
+                    <text x="72" y="32" text-anchor="middle" fill="#0B193F" font-size="16" font-weight="bold" font-family="Arial">LIVE</text>
+                </svg>
+                <span>Venda<span style="color:#5b9bd5;">Live</span></span>
+            </a>
+            <div class="header-divider"></div>
+            <h1>Alterar Senha</h1>
+        </div>
+        <div class="header-info">
+            <span id="info-usuario">
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Carregando...
+            </span>
+            <a href="configuracoes.html" class="btn-header" title="Configurações">
+                <svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Config
+            </a>
+            <button class="btn-header" onclick="logout()">Sair</button>
+        </div>
+    </div>
 
-async function abrirModalImportar(){if(!instagramConfig||!instagramConfig.accessToken){mostrarAlerta('Conecte uma conta do Instagram primeiro!','warning');return}document.getElementById('importModal').classList.add('active');document.body.style.overflow='hidden';if(contaAtiva){document.getElementById('contaAtivaInfo').style.display='flex';document.getElementById('contaAtivaNome').textContent='@'+contaAtiva.username}document.getElementById('resultadosContainer').classList.add('hidden');document.getElementById('liveUrlInput').value='';await buscarSugestoesLives()}
-function fecharModalImportar(){document.getElementById('importModal').classList.remove('active');document.body.style.overflow=''}
+    <div class="container">
+        <div class="grid">
+            <!-- Sidebar Menu -->
+            <div class="sidebar">
+                <a href="live.html" class="menu-item" onclick="return goTo('live.html')">
+                    <span class="icon">&#127909;</span><span>Lives de Vendas</span>
+                </a>
+                <a href="coblive.html" class="menu-item" onclick="return goTo('coblive.html')">
+                    <span class="icon">&#128176;</span><span>Cobrança de Lives</span>
+                </a>
+                <a href="pix.automatizado.html" class="menu-item" onclick="return goTo('pix.automatizado.html')">
+                    <span class="icon">&#128179;</span><span>Pix Automação</span>
+                </a>
+                <a href="pix.manual.html" class="menu-item" onclick="return goTo('pix.manual.html')">
+                    <span class="icon">&#9989;</span><span>Pix Manual</span>
+                </a>
+                <a href="vendas.html" class="menu-item" onclick="return goTo('vendas.html')">
+                    <span class="icon">&#128722;</span><span>Vendas</span>
+                </a>
+                <a href="clientes.html" class="menu-item" onclick="return goTo('clientes.html')">
+                    <span class="icon">&#128101;</span><span>Clientes</span>
+                </a>
+                <a href="enderecos.html" class="menu-item" onclick="return goTo('enderecos.html')">
+                    <span class="icon">&#128205;</span><span>Endereços</span>
+                </a>
+                <a href="rastreamento.html" class="menu-item" onclick="return goTo('rastreamento.html')">
+                    <span class="icon">&#128230;</span><span>Solicitações de Entregas</span>
+                </a>
+                <a href="whatsapp-monitor.html" class="menu-item" onclick="return goTo('whatsapp-monitor.html')">
+                    <span class="icon">&#128241;</span><span>WhatsApp Monitor</span>
+                </a>
+                <a href="comentarioslives.html" class="menu-item" onclick="return goTo('comentarioslives.html')">
+                    <span class="icon">&#128172;</span><span>Comentários de Lives</span>
+                </a>
+                <a href="configuracao-pagamento.html" class="menu-item" onclick="return goTo('configuracao-pagamento.html')">
+                    <span class="icon">&#9881;&#65039;</span><span>Config. Pagamento</span>
+                </a>
+                <a href="configuracoes.html" class="menu-item" onclick="return goTo('configuracoes.html')">
+                    <span class="icon">&#9881;&#65039;</span><span>Configurações</span>
+                </a>
+                <a href="alterar-senha.html" class="menu-item active" onclick="return goTo('alterar-senha.html')">
+                    <span class="icon">&#128274;</span><span>Alterar Senha</span>
+                </a>
+                <a href="solicitacoes.html" id="link-solicitacoes" class="menu-item">
+                    <span class="icon">&#128203;</span><span>Formulário de Entregas</span>
+                </a>
+            </div>
 
-async function buscarSugestoesLives(){const container=document.getElementById('sugestoesContainer');container.innerHTML='<div class="loading"><i class="fas fa-spinner"></i><p>Buscando lives recentes...</p></div>';try{const url='https://graph.facebook.com/v18.0/'+instagramConfig.instagramId+'/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token='+instagramConfig.accessToken+'&limit=20';const response=await fetch(url);const data=await response.json();if(data.error)throw new Error(data.error.message);const lives=(data.data||[]).filter(item=>item.media_type==='VIDEO'||item.media_type==='REELS');if(lives.length===0){container.innerHTML='<div class="alert alert-info"><i class="fas fa-info-circle"></i> Nenhuma live recente encontrada. Cole o link manualmente.</div>';return}container.innerHTML=lives.map(live=>{const dataLive=live.timestamp?new Date(live.timestamp).toLocaleDateString('pt-BR'):'Data desconhecida';const horaLive=live.timestamp?new Date(live.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';const caption=live.caption?live.caption.substring(0,50)+(live.caption.length>50?'...':''):'Sem descricao';const tipo=live.media_type==='REELS'?'Reels':'Video';return '<div class="sugestao-item" onclick="selecionarLive(''+live.id+'', ''+(live.permalink||'')+'')"><div class="sugestao-info"><span class="sugestao-icon">📺</span><div><div class="sugestao-text">['+tipo+'] '+caption+'</div><div class="sugestao-data"><i class="fas fa-calendar"></i> '+dataLive+' '+horaLive+' <i class="fas fa-comment"></i> '+(live.comments_count||0)+' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #667eea;"></i></div>'}).join('')}catch(error){console.error('[COMENTARIOS-LIVES] Erro ao buscar sugestoes:',error);container.innerHTML='<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Nao foi possivel buscar lives automaticamente.</div>'}}
+            <!-- Content -->
+            <div class="content">
+                <!-- User Info Card -->
+                <div class="card">
+                    <div class="user-info-card">
+                        <div class="avatar" id="userAvatar">U</div>
+                        <div class="details">
+                            <h3 id="userName">Carregando...</h3>
+                            <p id="userEmail">...</p>
+                        </div>
+                    </div>
+                </div>
 
-function selecionarLive(mediaId,permalink){document.querySelectorAll('.sugestao-item').forEach(item=>item.classList.remove('selecionado'));event.currentTarget.classList.add('selecionado');liveSelecionada={mediaId:mediaId,permalink:permalink};document.getElementById('liveUrlInput').value=permalink||mediaId;buscarComentariosManual()}
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
 
-async function buscarComentariosManual(){const input=document.getElementById('liveUrlInput').value.trim();if(!input){mostrarAlerta('Insira o link ou ID da live','error');return}const btn=document.getElementById('btnBuscarComentarios');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Buscando...';try{let mediaId=input;if(input.includes('instagram.com')){const match=input.match(/\/([A-Za-z0-9_-]+)\/?/);if(match)mediaId=match[1]}if(instagramConfig&&instagramConfig.accessToken){await buscarComentariosViaAPI(mediaId)}else{mostrarAlerta('Instagram nao conectado.','error')}}catch(error){console.error('[COMENTARIOS-LIVES] Erro:',error);mostrarAlerta('Erro ao buscar comentarios: '+error.message,'error')}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-search"></i> Buscar Comentarios'}}
+                <!-- Form Card -->
+                <div class="card" id="formCard">
+                    <h2><i class="fas fa-shield-alt"></i> Segurança</h2>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Atualize sua senha de acesso ao VendaLive</p>
 
-async function buscarComentariosViaAPI(mediaId){try{const url='https://graph.facebook.com/v18.0/'+mediaId+'/comments?fields=id,text,username,timestamp,like_count&access_token='+instagramConfig.accessToken+'&limit=1000';const response=await fetch(url);const data=await response.json();if(data.error)throw new Error(data.error.message);comentariosData=(data.data||[]).map(comment=>analisarComentario(comment));mostrarResultadosComentarios(comentariosData);mostrarAlerta(comentariosData.length+' comentarios encontrados!','success');await salvarLiveImportada(mediaId,comentariosData)}catch(error){throw error}}
+                    <form id="formAlterarSenha">
+                        <div class="form-group">
+                            <label for="currentPassword">Senha Atual</label>
+                            <input type="password" id="currentPassword" required 
+                                   placeholder="Digite sua senha atual">
+                        </div>
 
-function analisarComentario(comment){const texto=(comment.text||'').toLowerCase();let tipo='duvida',produto=null;if(TIPOS_KEYWORDS.venda.some(k=>texto.includes(k)))tipo='venda';else if(TIPOS_KEYWORDS.interesse.some(k=>texto.includes(k)))tipo='interesse';for(const keyword of PRODUTOS_KEYWORDS){if(texto.includes(keyword.toLowerCase())){const index=texto.indexOf(keyword.toLowerCase());const start=Math.max(0,index-20);const end=Math.min(texto.length,index+keyword.length+20);produto=texto.substring(start,end).trim();break}}return{comment_id:comment.id,username:comment.username||'usuario',texto:comment.text||'',tipo:tipo,produto:produto,timestamp:comment.timestamp,like_count:comment.like_count||0}}
+                        <div class="form-group">
+                            <label for="newPassword">Nova Senha</label>
+                            <input type="password" id="newPassword" required 
+                                   placeholder="Mínimo 8 caracteres" minlength="8">
+                            <small>A senha deve ter pelo menos 8 caracteres</small>
+                        </div>
 
-function mostrarResultadosComentarios(comentarios){const container=document.getElementById('resultadosContainer'),resultadoDiv=document.getElementById('comentariosResultado');if(comentarios.length===0){resultadoDiv.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum comentario encontrado.</p></div>'}else{resultadoDiv.innerHTML='<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th></tr></thead><tbody>'+comentarios.slice(0,50).map(c=>'<tr><td class="comentario-user">@'+escapeHtml(c.username)+'</td><td class="comentario-texto">'+escapeHtml(c.texto)+'</td><td>'+(c.produto?'<span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td><span class="comentario-tipo tipo-'+c.tipo+'">'+c.tipo+'</span></td></tr>').join('')+'</tbody></table>'+(comentarios.length>50?'<p style="text-align:center;margin-top:10px;color:#6c757d;">Mostrando 50 de '+comentarios.length+' comentarios</p>':'')}container.classList.remove('hidden')}
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirmar Nova Senha</label>
+                            <input type="password" id="confirmPassword" required 
+                                   placeholder="Repita a nova senha">
+                        </div>
 
-async function salvarLiveImportada(mediaId,comentarios){try{const totalVendas=comentarios.filter(c=>c.tipo==='venda').length;const totalInteresses=comentarios.filter(c=>c.tipo==='interesse').length;const liveData={cliente_id:clienteId,media_id:mediaId,data_live:new Date().toISOString(),total_comentarios:comentarios.length,total_vendas:totalVendas,total_interesses:totalInteresses,status:'importada',instagram_username:contaAtiva?contaAtiva.username:null};const{data:liveInsert,error:liveError}=await supabaseClient.from('lives_importadas').insert(liveData).select().single();if(liveError)throw liveError;const comentariosToInsert=comentarios.map(c=>({live_id:liveInsert.id,cliente_id:clienteId,comment_id:c.comment_id,username:c.username,texto:c.texto,tipo:c.tipo,produto:c.produto,timestamp:c.timestamp}));const{error:comentariosError}=await supabaseClient.from('live_comentarios').insert(comentariosToInsert);if(comentariosError)throw comentariosError;mostrarAlerta('Live e comentarios salvos!','success');await carregarLivesImportadas()}catch(error){console.error('[COMENTARIOS-LIVES] Erro ao salvar:',error);mostrarAlerta('Erro ao salvar: '+error.message,'error')}}
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                <i class="fas fa-key"></i> Alterar Senha
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                                <i class="fas fa-arrow-left"></i> Voltar para Dashboard
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-async function verComentariosLive(liveId){document.getElementById('viewModal').classList.add('active');document.body.style.overflow='hidden';try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;comentariosData=data||[];renderizarComentariosView(comentariosData)}catch(error){document.getElementById('comentariosViewContainer').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro: '+error.message+'</div>'}}
+                <!-- Success State -->
+                <div class="card hidden" id="successCard">
+                    <div class="success-state">
+                        <div class="icon">&#9989;</div>
+                        <h3>Senha Alterada!</h3>
+                        <p>Sua senha foi atualizada com sucesso.<br>Use a nova senha no próximo login.</p>
+                        <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none;">
+                            <i class="fas fa-home"></i> Ir para Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function renderizarComentariosView(comentarios){const container=document.getElementById('comentariosViewContainer');if(comentarios.length===0){container.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum comentario encontrado.</p></div>';return}container.innerHTML='<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th><th>Data</th></tr></thead><tbody>'+comentarios.map(c=>{const data=c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):'-';return '<tr><td class="comentario-user">@'+escapeHtml(c.username)+'</td><td class="comentario-texto">'+escapeHtml(c.texto)+'</td><td>'+(c.produto?'<span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td><span class="comentario-tipo tipo-'+c.tipo+'">'+c.tipo+'</span></td><td style="font-size:12px;color:#6c757d;">'+data+'</td></tr>'}).join('')+'</tbody></table>'}
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <p>
+            &copy; 2026 VendaLive |
+            <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> |
+            <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a>
+        </p>
+    </footer>
 
-function filtrarComentarios(filtro,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');let filtrados=[...comentariosData];if(filtro!=='todos'){filtrados=comentariosData.filter(c=>c.tipo===filtro)}renderizarComentariosView(filtrados)}
-function fecharModalView(){document.getElementById('viewModal').classList.remove('active');document.body.style.overflow=''}
+    <script>
+        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-async function exportarLive(liveId){try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;const comentarios=data||[];if(comentarios.length===0){mostrarAlerta('Nenhum comentario para exportar','warning');return}const csv='Usuario;Comentario;Produto;Tipo;Data
-'+comentarios.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('
-');const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();mostrarAlerta('Relatorio exportado!','success')}catch(error){mostrarAlerta('Erro ao exportar: '+error.message,'error')}}
+        let supabaseClient = null;
 
-function mostrarAlerta(mensagem,tipo){const container=document.getElementById('alertContainer');const alertClass=tipo==='success'?'alert-success':tipo==='error'?'alert-error':tipo==='warning'?'alert-warning':'alert-info';const icon=tipo==='success'?'fa-check-circle':tipo==='error'?'fa-exclamation-circle':tipo==='warning'?'fa-exclamation-triangle':'fa-info-circle';container.innerHTML='<div class="alert '+alertClass+'"><i class="fas '+icon+'"></i>'+mensagem+'</div>';setTimeout(()=>{container.innerHTML=''},5000)}
-function escapeHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=text;return div.innerHTML}
+        // ===== MOBILE MENU =====
+        function abrirMenu() {
+            document.getElementById('mobileMenu').classList.add('active');
+            document.getElementById('mobileMenuOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function fecharMenu() {
+            document.getElementById('mobileMenu').classList.remove('active');
+            document.getElementById('mobileMenuOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function goToMobile(url) {
+            fecharMenu();
+            setTimeout(function() { window.location.href = url; }, 300);
+            return false;
+        }
+        function goTo(url) {
+            window.location.href = url;
+            return false;
+        }
 
-document.getElementById('importModal').addEventListener('click',function(e){if(e.target===this)fecharModalImportar()});
-document.getElementById('viewModal').addEventListener('click',function(e){if(e.target===this)fecharModalView()});
-document.getElementById('tokenModal').addEventListener('click',function(e){if(e.target===this)fecharModalToken()});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){fecharModalImportar();fecharModalView();fecharModalToken()}});
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type}" style="display: block;">${message}</div>`;
+        }
+
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        async function init() {
+            if (typeof supabase === 'undefined' || !supabase.createClient) {
+                setTimeout(init, 500);
+                return;
+            }
+            const { createClient } = supabase;
+            supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+
+            if (!session || sessionError) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = session.user;
+            const nome = user.user_metadata?.nome || user.email.split('@')[0];
+
+            document.getElementById('userName').textContent = nome;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = (user.email[0] || 'U').toUpperCase();
+
+            // Update header (same as dashboard/configuracoes)
+            document.getElementById('info-usuario').innerHTML = '<svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ' + nome;
+        }
+
+        document.getElementById('formAlterarSenha').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert();
+
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('btnSubmit');
+
+            if (!currentPass) {
+                showAlert('Digite sua senha atual!');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                showAlert('As senhas não coincidem!');
+                return;
+            }
+            if (newPass.length < 8) {
+                showAlert('A nova senha deve ter no mínimo 8 caracteres!');
+                return;
+            }
+            if (newPass === currentPass) {
+                showAlert('A nova senha deve ser diferente da senha atual!');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = 'Validando... <span class="loading"></span>';
+
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    showAlert('Sessão expirada. Faça login novamente.');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+                    return;
+                }
+
+                const userEmail = session.user.email;
+                console.log('[ALTERAR-SENHA] Reautenticando usuário:', userEmail);
+
+                btn.innerHTML = 'Verificando senha atual... <span class="loading"></span>';
+
+                const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email: userEmail,
+                    password: currentPass
+                });
+
+                if (signInError) {
+                    console.error('[ALTERAR-SENHA] Erro na reautenticação:', signInError);
+                    throw new Error('Senha atual incorreta. Verifique e tente novamente.');
+                }
+
+                console.log('[ALTERAR-SENHA] Reautenticação OK, atualizando senha...');
+                btn.innerHTML = 'Atualizando senha... <span class="loading"></span>';
+
+                const { error: updateError } = await supabaseClient.auth.updateUser({ 
+                    password: newPass 
+                });
+
+                if (updateError) {
+                    console.error('[ALTERAR-SENHA] Erro ao atualizar:', updateError);
+                    throw new Error('Erro ao atualizar senha: ' + updateError.message);
+                }
+
+                console.log('[ALTERAR-SENHA] Senha alterada com sucesso!');
+
+                // Show success
+                document.getElementById('formCard').classList.add('hidden');
+                document.getElementById('successCard').classList.remove('hidden');
+                showAlert('&#9989; Senha alterada com sucesso!', 'success');
+
+                const { data: { session: newSession } } = await supabaseClient.auth.getSession();
+                if (newSession) {
+                    const dadosSessao = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+                    dadosSessao.login_time = new Date().toISOString();
+                    localStorage.setItem('usuarioLogado', JSON.stringify(dadosSessao));
+                }
+
+            } catch (err) {
+                console.error('[ALTERAR-SENHA] Erro:', err);
+                showAlert('Erro: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> Alterar Senha';
+            }
+        });
+
+        async function logout() {
+            try { await supabaseClient.auth.signOut(); } catch (err) {}
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
