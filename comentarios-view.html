@@ -245,7 +245,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                             <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-video"></i> <span id="liveTitle">Live</span></div>
-                            <button class="btn-primary" onclick="abrirModalEditarLive()" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-edit"></i> Editar Live</button>
+                            <button class="btn-primary" id="btnEditarLive" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-edit"></i> Editar Live</button>
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-success" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> Excel</button>
@@ -594,6 +594,12 @@ function mostrarAlerta(mensagem, tipo) {
     container.innerHTML = '<div class="alert ' + alertClass + '"><i class="fas ' + icon + '"></i>' + mensagem + '</div>';
     setTimeout(() => { container.innerHTML = ''; }, 5000);
 }
+// Event listener para botão Editar Live
+document.addEventListener('DOMContentLoaded', function() {
+    var btnEditar = document.getElementById('btnEditarLive');
+    if (btnEditar) btnEditar.addEventListener('click', abrirModalEditarLive);
+});
+
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
  });
