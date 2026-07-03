@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- CACHE BUSTER v2 -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -16,7 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js">
+    document.getElementById('editarLiveModal').addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive();
+</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -307,6 +305,13 @@
     <footer class="dashboard-footer">
         <p>&copy; 2026 VendaLive | <a href="termo-de-uso.html" target="_blank">Termos de Uso</a> | <a href="politica-privacidade.html" target="_blank">Política de Privacidade</a></p>
     </footer>
+<!-- Modal Editar Live -->
+    <div class="modal-overlay" id="editarLiveModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Editar Live</h3>
+                <button class="modal-close" onclick="fecharModalEditarLive()">&times;</button>
+            </div>
 <script>
 const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
@@ -333,7 +338,6 @@ async function logout() {
     localStorage.removeItem('supabase.auth.token'); sessionStorage.clear(); window.location.href = 'login.html';
 }
 
-console.log('[COMENTARIOS-VIEW] v2.0 - Carregando...');
 document.addEventListener('DOMContentLoaded', async function() {
     const params = new URLSearchParams(window.location.search);
     liveId = params.get('live_id');
@@ -592,17 +596,11 @@ function mostrarAlerta(mensagem, tipo) {
 }
 function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
-document.getElementById('editarLiveModal').addEventListener('click', function(e) { if (e.target === this) fecharModalEditarLive(); });
+ });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { fecharModalImportar(); fecharModalToken(); fecharModalEditarLive(); } });
 </script>
 
-    <!-- Modal Editar Live -->
-    <div class="modal-overlay" id="editarLiveModal">
-        <div class="modal" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Editar Live</h3>
-                <button class="modal-close" onclick="fecharModalEditarLive()">&times;</button>
-            </div>
+    
             <div class="modal-body">
                 <div class="input-section" style="margin-top: 0; padding-top: 0; border: none;">
                     <label class="input-label">ID da Mídia (Media ID)</label>
