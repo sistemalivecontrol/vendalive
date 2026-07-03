@@ -106,6 +106,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="header">
@@ -459,7 +460,7 @@ function renderizarUsuarios() {
         const firstDate = d.firstMsg ? new Date(d.firstMsg).toLocaleString('pt-BR') : '-';
         const produtosUnicos = [...new Set(d.comentarios.filter(c => c.produto).map(c => c.produto))];
         const produtosText = produtosUnicos.length > 0 ? ' | Produtos: ' + produtosUnicos.join(', ') : '';
-        html += '<div class="usuario-card" onclick="filtrarPorUsuario('' + nome.replace(/'/g, "\'") + '')">' +
+        html += '<div class="usuario-card" onclick="filtrarPorUsuario(' + encodeURIComponent(nome) + ')">' +
             '<div class="usuario-avatar">' + nome.charAt(0).toUpperCase() + '</div>' +
             '<div class="usuario-info"><div class="usuario-nome">@' + escapeHtml(nome) + '</div>' +
             '<div class="usuario-meta">' + d.count + ' comentario' + (d.count > 1 ? 's' : '') + ' | Primeira: ' + firstDate + produtosText + '</div></div>' +
@@ -471,6 +472,8 @@ function renderizarUsuarios() {
 function filtrarUsuarios() { renderizarUsuarios(); }
 
 function filtrarPorUsuario(username) {
+    // Decode if it was encoded from onclick
+    try { username = decodeURIComponent(username); } catch(e) {}
     mudarTab('comentarios', document.querySelectorAll('.tab-btn')[0]);
     document.getElementById('searchUsuario').value = username;
     filtrarComentarios();
