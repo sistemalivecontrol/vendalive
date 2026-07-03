@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VendaLive - Comentarios de Lives</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90">📺</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -86,6 +86,8 @@
         .btn-ver:hover { background: #dee2e6; }
         .btn-exportar { background: #28a745; color: white; }
         .btn-exportar:hover { background: #218838; }
+        .btn-detalhes { background: #17a2b8; color: white; }
+        .btn-detalhes:hover { background: #138496; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
         .modal { background: white; border-radius: 20px; width: 100%; max-width: 800px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -108,17 +110,6 @@
         .btn-buscar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
         .btn-buscar:hover { opacity: 0.9; }
         .btn-buscar:disabled { opacity: 0.5; cursor: not-allowed; }
-        .comentarios-table { width: 100%; border-collapse: collapse; }
-        .comentarios-table th, .comentarios-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
-        .comentarios-table th { background: #f8f9fa; font-size: 13px; font-weight: 600; color: #495057; }
-        .comentarios-table td { font-size: 14px; color: #333; }
-        .comentario-user { font-weight: 600; color: #667eea; }
-        .comentario-texto { color: #495057; }
-        .comentario-produto { display: inline-block; background: #e7eaff; color: #667eea; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .comentario-tipo { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .tipo-venda { background: #d4edda; color: #155724; }
-        .tipo-interesse { background: #fff3cd; color: #856404; }
-        .tipo-duvida { background: #d1ecf1; color: #0c5460; }
         .loading { text-align: center; padding: 40px; color: #6c757d; }
         .loading i { font-size: 40px; animation: spin 1s linear infinite; color: #667eea; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -128,10 +119,6 @@
         .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .hidden { display: none !important; }
-        .filters-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-btn { padding: 8px 20px; border-radius: 20px; border: 2px solid #e9ecef; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; color: #495057; }
-        .filter-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; }
-        .filter-btn:hover { border-color: #667eea; }
         .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
         .empty-state i { font-size: 60px; margin-bottom: 20px; color: #dee2e6; }
         .empty-state h3 { font-size: 20px; color: #495057; margin-bottom: 10px; }
@@ -153,9 +140,6 @@
             .instagram-actions .btn-instagram { flex: 1; justify-content: center; }
         }
     </style>
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -241,16 +225,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="viewModal">
-        <div class="modal" style="max-width: 1000px;">
-            <div class="modal-header"><h3><i class="fas fa-comments"></i> Comentarios da Live</h3><button class="modal-close" onclick="fecharModalView()">&times;</button></div>
-            <div class="modal-body">
-                <div class="filters-bar"><button class="filter-btn active" onclick="filtrarComentarios('todos', this)">Todos</button><button class="filter-btn" onclick="filtrarComentarios('venda', this)">Vendas</button><button class="filter-btn" onclick="filtrarComentarios('interesse', this)">Interesses</button><button class="filter-btn" onclick="filtrarComentarios('duvida', this)">Duvidas</button></div>
-                <div id="comentariosViewContainer"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
 const SUPABASE_URL='https://aqrvozmxlcgrllclceke.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 let supabaseClient=null,usuarioLogado=null,clienteId=null,instagramConfig=null,contasInstagram=[],contaAtiva=null,livesData=[],comentariosData=[],liveSelecionada=null;
@@ -286,9 +260,13 @@ async function salvarTokenManual(){const token=document.getElementById('tokenInp
 
 async function carregarLivesImportadas(){try{const{data,error}=await supabaseClient.from('lives_importadas').select('*').eq('cliente_id',clienteId).order('data_live',{ascending:false});if(error)throw error;livesData=data||[];renderizarLives(livesData);atualizarStats()}catch(error){console.error('[COMENTARIOS-LIVES] Erro ao carregar lives:',error);renderizarLives([])}}
 
-function renderizarLives(lives){const container=document.getElementById('livesContainer');if(lives.length===0){container.innerHTML='<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-video-slash"></i><h3>Nenhuma live importada</h3><p>Clique em "Importar Comentarios" para buscar lives do seu Instagram.</p></div>';return}container.innerHTML=lives.map(live=>{const dataLive=live.data_live?new Date(live.data_live).toLocaleDateString('pt-BR'):'Data desconhecida';const statusClass=live.status==='importada'?'importada':live.status==='disponivel'?'disponivel':'expirada';const statusText=live.status==='importada'?'Importada':live.status==='disponivel'?'Disponivel':'Expirada';return '<div class="live-card" data-id="'+live.id+'"><div class="live-header"><span class="live-status '+statusClass+'">'+statusText+'</span><div class="live-date"><i class="fas fa-calendar"></i> '+dataLive+'</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">'+(live.total_comentarios||0)+'</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_vendas||0)+'</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_interesses||0)+'</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="'+live.id+'" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-exportar" data-lid="'+live.id+'" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>'}).join('')}
+function renderizarLives(lives){const container=document.getElementById('livesContainer');if(lives.length===0){container.innerHTML='<div class="empty-state" style="grid-column: 1/-1;"><i class="fas fa-video-slash"></i><h3>Nenhuma live importada</h3><p>Clique em "Importar Comentarios" para buscar lives do seu Instagram.</p></div>';return}container.innerHTML=lives.map(live=>{const dataLive=live.data_live?new Date(live.data_live).toLocaleDateString('pt-BR'):'Data desconhecida';const statusClass=live.status==='importada'?'importada':live.status==='disponivel'?'disponivel':'expirada';const statusText=live.status==='importada'?'Importada':live.status==='disponivel'?'Disponivel':'Expirada';return '<div class="live-card" data-id="'+live.id+'"><div class="live-header"><span class="live-status '+statusClass+'">'+statusText+'</span><div class="live-date"><i class="fas fa-calendar"></i> '+dataLive+'</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">'+(live.total_comentarios||0)+'</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_vendas||0)+'</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">'+(live.total_interesses||0)+'</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="'+live.id+'" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-detalhes" data-lid="'+live.id+'" onclick="verDetalhesLive(this.dataset.lid)"><i class="fas fa-chart-bar"></i> Detalhes</button><button class="btn-action btn-exportar" data-lid="'+live.id+'" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>'}).join('')}
 
 function atualizarStats(){document.getElementById('statTotalLives').textContent=livesData.length;document.getElementById('statTotalComentarios').textContent=livesData.reduce((sum,l)=>sum+(l.total_comentarios||0),0);document.getElementById('statTotalVendas').textContent=livesData.reduce((sum,l)=>sum+(l.total_vendas||0),0);document.getElementById('statTotalInteresses').textContent=livesData.reduce((sum,l)=>sum+(l.total_interesses||0),0)}
+
+function verDetalhesLive(liveId){window.location.href='comentarios-view.html?live_id='+encodeURIComponent(liveId)}
+
+function verComentariosLive(liveId){window.location.href='comentarios-view.html?live_id='+encodeURIComponent(liveId)+'&tab=comentarios'}
 
 async function abrirModalImportar(){if(!instagramConfig||!instagramConfig.accessToken){mostrarAlerta('Conecte uma conta do Instagram primeiro!','warning');return}document.getElementById('importModal').classList.add('active');document.body.style.overflow='hidden';if(contaAtiva){document.getElementById('contaAtivaInfo').style.display='flex';document.getElementById('contaAtivaNome').textContent='@'+contaAtiva.username}document.getElementById('resultadosContainer').classList.add('hidden');document.getElementById('liveUrlInput').value='';await buscarSugestoesLives()}
 function fecharModalImportar(){document.getElementById('importModal').classList.remove('active');document.body.style.overflow=''}
@@ -303,26 +281,20 @@ async function buscarComentariosViaAPI(mediaId){try{let numericMediaId=mediaId;i
 
 function analisarComentario(comment){const texto=(comment.text||'').toLowerCase();let tipo='duvida',produto=null;if(TIPOS_KEYWORDS.venda.some(k=>texto.includes(k)))tipo='venda';else if(TIPOS_KEYWORDS.interesse.some(k=>texto.includes(k)))tipo='interesse';for(const keyword of PRODUTOS_KEYWORDS){if(texto.includes(keyword.toLowerCase())){const index=texto.indexOf(keyword.toLowerCase());const start=Math.max(0,index-20);const end=Math.min(texto.length,index+keyword.length+20);produto=texto.substring(start,end).trim();break}}return{comment_id:comment.id,username:comment.username||'usuario',texto:comment.text||'',tipo:tipo,produto:produto,timestamp:comment.timestamp,like_count:comment.like_count||0}}
 
-function mostrarResultadosComentarios(comentarios){const container=document.getElementById('resultadosContainer'),resultadoDiv=document.getElementById('comentariosResultado');if(comentarios.length===0){resultadoDiv.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum comentario encontrado.</p></div>'}else{resultadoDiv.innerHTML='<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th></tr></thead><tbody>'+comentarios.slice(0,50).map(c=>'<tr><td class="comentario-user">@'+escapeHtml(c.username)+'</td><td class="comentario-texto">'+escapeHtml(c.texto)+'</td><td>'+(c.produto?'<span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td><span class="comentario-tipo tipo-'+c.tipo+'">'+c.tipo+'</span></td></tr>').join('')+'</tbody></table>'+(comentarios.length>50?'<p style="text-align:center;margin-top:10px;color:#6c757d;">Mostrando 50 de '+comentarios.length+' comentarios</p>':'')}container.classList.remove('hidden')}
+function mostrarResultadosComentarios(comentarios){const container=document.getElementById('resultadosContainer'),resultadoDiv=document.getElementById('comentariosResultado');if(comentarios.length===0){resultadoDiv.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum comentario encontrado.</p></div>'}else{resultadoDiv.innerHTML='<table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f8f9fa;"><th style="padding:10px;text-align:left;font-size:13px;">Usuario</th><th style="padding:10px;text-align:left;font-size:13px;">Comentario</th><th style="padding:10px;text-align:left;font-size:13px;">Produto</th><th style="padding:10px;text-align:left;font-size:13px;">Tipo</th></tr></thead><tbody>'+comentarios.slice(0,50).map(c=>'<tr style="border-bottom:1px solid #e9ecef;"><td style="padding:10px;font-weight:600;color:#667eea;">@'+escapeHtml(c.username)+'</td><td style="padding:10px;color:#495057;">'+escapeHtml(c.texto)+'</td><td style="padding:10px;">'+(c.produto?'<span style="background:#e7eaff;color:#667eea;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td style="padding:10px;"><span style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;background:'+(c.tipo==='venda'?'#d4edda;color:#155724':c.tipo==='interesse'?'#fff3cd;color:#856404':'#d1ecf1;color:#0c5460')+'">'+c.tipo+'</span></td></tr>').join('')+'</tbody></table>'+(comentarios.length>50?'<p style="text-align:center;margin-top:10px;color:#6c757d;">Mostrando 50 de '+comentarios.length+' comentarios</p>':'')}container.classList.remove('hidden')}
 
 async function salvarLiveImportada(mediaId,comentarios){try{const totalVendas=comentarios.filter(c=>c.tipo==='venda').length;const totalInteresses=comentarios.filter(c=>c.tipo==='interesse').length;const liveData={cliente_id:clienteId,media_id:mediaId,data_live:new Date().toISOString(),total_comentarios:comentarios.length,total_vendas:totalVendas,total_interesses:totalInteresses,status:'importada'};const{data:liveInsert,error:liveError}=await supabaseClient.from('lives_importadas').insert(liveData).select().single();if(liveError)throw liveError;const comentariosToInsert=comentarios.map(c=>({live_id:liveInsert.id,cliente_id:clienteId,comment_id:c.comment_id,username:c.username,texto:c.texto,tipo:c.tipo,produto:c.produto,timestamp:c.timestamp}));const{error:comentariosError}=await supabaseClient.from('live_comentarios').insert(comentariosToInsert);if(comentariosError)throw comentariosError;mostrarAlerta('Live e comentarios salvos!','success');await carregarLivesImportadas()}catch(error){console.error('[COMENTARIOS-LIVES] Erro ao salvar:',error);mostrarAlerta('Erro ao salvar: '+error.message,'error')}}
 
-async function verComentariosLive(liveId){document.getElementById('viewModal').classList.add('active');document.body.style.overflow='hidden';try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;comentariosData=data||[];renderizarComentariosView(comentariosData)}catch(error){document.getElementById('comentariosViewContainer').innerHTML='<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Erro: '+error.message+'</div>'}}
-
-function renderizarComentariosView(comentarios){const container=document.getElementById('comentariosViewContainer');if(comentarios.length===0){container.innerHTML='<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Nenhum comentario encontrado.</p></div>';return}container.innerHTML='<table class="comentarios-table"><thead><tr><th>Usuario</th><th>Comentario</th><th>Produto</th><th>Tipo</th><th>Data</th></tr></thead><tbody>'+comentarios.map(c=>{const data=c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):'-';return '<tr><td class="comentario-user">@'+escapeHtml(c.username)+'</td><td class="comentario-texto">'+escapeHtml(c.texto)+'</td><td>'+(c.produto?'<span class="comentario-produto">'+escapeHtml(c.produto)+'</span>':'-')+'</td><td><span class="comentario-tipo tipo-'+c.tipo+'">'+c.tipo+'</span></td><td style="font-size:12px;color:#6c757d;">'+data+'</td></tr>'}).join('')+'</tbody></table>'}
-
-function filtrarComentarios(filtro,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');let filtrados=[...comentariosData];if(filtro!=='todos'){filtrados=comentariosData.filter(c=>c.tipo===filtro)}renderizarComentariosView(filtrados)}
-function fecharModalView(){document.getElementById('viewModal').classList.remove('active');document.body.style.overflow=''}
-
-async function exportarLive(liveId){try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;const comentarios=data||[];if(comentarios.length===0){mostrarAlerta('Nenhum comentario para exportar','warning');return}const csv='Usuario;Comentario;Produto;Tipo;Data\n'+comentarios.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();mostrarAlerta('Relatorio exportado!','success')}catch(error){mostrarAlerta('Erro ao exportar: '+error.message,'error')}}
+async function exportarLive(liveId){try{const{data,error}=await supabaseClient.from('live_comentarios').select('*').eq('live_id',liveId).order('timestamp',{ascending:true});if(error)throw error;const comentarios=data||[];if(comentarios.length===0){mostrarAlerta('Nenhum comentario para exportar','warning');return}const csv='Usuario;Comentario;Produto;Tipo;Data
+'+comentarios.map(c=>[c.username,c.texto,c.produto||'',c.tipo,c.timestamp?new Date(c.timestamp).toLocaleString('pt-BR'):''].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';')).join('
+');const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='live_comentarios_'+liveId+'_'+new Date().toISOString().split('T')[0]+'.csv';link.click();mostrarAlerta('Relatorio exportado!','success')}catch(error){mostrarAlerta('Erro ao exportar: '+error.message,'error')}}
 
 function mostrarAlerta(mensagem,tipo){const container=document.getElementById('alertContainer');const alertClass=tipo==='success'?'alert-success':tipo==='error'?'alert-error':tipo==='warning'?'alert-warning':'alert-info';const icon=tipo==='success'?'fa-check-circle':tipo==='error'?'fa-exclamation-circle':tipo==='warning'?'fa-exclamation-triangle':'fa-info-circle';container.innerHTML='<div class="alert '+alertClass+'"><i class="fas '+icon+'"></i>'+mensagem+'</div>';setTimeout(()=>{container.innerHTML=''},5000)}
 function escapeHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=text;return div.innerHTML}
 
 document.getElementById('importModal').addEventListener('click',function(e){if(e.target===this)fecharModalImportar()});
-document.getElementById('viewModal').addEventListener('click',function(e){if(e.target===this)fecharModalView()});
 document.getElementById('tokenModal').addEventListener('click',function(e){if(e.target===this)fecharModalToken()});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){fecharModalImportar();fecharModalView();fecharModalToken()}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){fecharModalImportar();fecharModalToken()}});
     </script>
 </body>
 </html>
