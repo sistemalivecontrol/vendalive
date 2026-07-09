@@ -2422,8 +2422,9 @@ async function finalizarLive() {
 
 async function alterarLive() {
     // Verificar nível de acesso de múltiplas fontes
-    const nivelAcesso = currentUserNivel || window.authUsuario?.nivel_acesso || window.sessaoUsuario?.nivel_acesso || window.sessaoUsuario?.perfil || 'usuario';
-    const isAdmin = nivelAcesso === 'admin' || nivelAcesso === 'dev' || nivelAcesso === 'DEV' || nivelAcesso === 'ADMIN';
+    const nivelAcesso = (currentUserNivel || window.authUsuario?.nivel_acesso || window.sessaoUsuario?.nivel_acesso || window.sessaoUsuario?.perfil || 'usuario').toString().toLowerCase().trim();
+    const isAdmin = nivelAcesso === 'admin' || nivelAcesso === 'dev';
+    console.log('[ALTERAR LIVE] Nível detectado:', nivelAcesso, '| isAdmin:', isAdmin);
     if (!isAdmin) { showStatus('Apenas administradores podem reabrir. Seu nível: ' + nivelAcesso, 'error'); return; }
     if (confirm('Deseja reabrir a live ' + codigoLiveAtual + '?')) {
         try {
