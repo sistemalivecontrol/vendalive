@@ -341,6 +341,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -1240,7 +1241,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     currentUser = session.user;
     currentClienteId = window.authClienteId;
-    currentUserNivel = window.authUsuario?.nivel_acesso;
+    currentUserNivel = window.authUsuario?.nivel_acesso || window.sessaoUsuario?.nivel_acesso || window.sessaoUsuario?.perfil || 'usuario';
+    console.log('[LIVE] Nível de acesso detectado:', currentUserNivel);
 
     if (!currentClienteId) {
         mostrarToast('Erro: Cliente não identificado.', 'error');
@@ -2419,7 +2421,10 @@ async function finalizarLive() {
 }
 
 async function alterarLive() {
-    if (currentUserNivel !== 'admin') { showStatus('Apenas administradores podem reabrir.', 'error'); return; }
+    // Verificar nível de acesso de múltiplas fontes
+    const nivelAcesso = currentUserNivel || window.authUsuario?.nivel_acesso || window.sessaoUsuario?.nivel_acesso || window.sessaoUsuario?.perfil || 'usuario';
+    const isAdmin = nivelAcesso === 'admin' || nivelAcesso === 'dev' || nivelAcesso === 'DEV' || nivelAcesso === 'ADMIN';
+    if (!isAdmin) { showStatus('Apenas administradores podem reabrir. Seu nível: ' + nivelAcesso, 'error'); return; }
     if (confirm('Deseja reabrir a live ' + codigoLiveAtual + '?')) {
         try {
             const { error } = await window.supabaseClient
