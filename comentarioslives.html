@@ -178,6 +178,8 @@
         .dashboard-footer a:hover { color: #0B193F; text-decoration: underline; }
         .icon-svg { width: 18px; height: 18px; display: inline-block; vertical-align: middle; }
         .icon-svg-sm { width: 14px; height: 14px; }
+        .btn-excluir { background: #ef4444; color: white; }
+        .btn-excluir:hover { background: #dc2626; }
         @media (max-width: 1024px) {
             .grid { grid-template-columns: 1fr; gap: 16px; }
             .sidebar { display: none; }
@@ -200,6 +202,7 @@
             .live-actions { flex-direction: column; }
         }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -682,7 +685,7 @@ function renderizarLives(lives) {
         const dataLive = live.data_live ? new Date(live.data_live).toLocaleDateString('pt-BR') : 'Data desconhecida';
         const statusClass = live.status === 'importada' ? 'importada' : live.status === 'disponivel' ? 'disponivel' : 'expirada';
         const statusText = live.status === 'importada' ? 'Importada' : live.status === 'disponivel' ? 'Disponivel' : 'Expirada';
-        return '<div class="live-card" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span><div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="' + live.id + '" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-detalhes" data-lid="' + live.id + '" onclick="verDetalhesLive(this.dataset.lid)"><i class="fas fa-chart-bar"></i> Detalhes</button><button class="btn-action btn-exportar" data-lid="' + live.id + '" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button></div></div></div>';
+        return '<div class="live-card" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span><div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="' + live.id + '" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-detalhes" data-lid="' + live.id + '" onclick="verDetalhesLive(this.dataset.lid)"><i class="fas fa-chart-bar"></i> Detalhes</button><button class="btn-action btn-exportar" data-lid="' + live.id + '" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button><button class="btn-action btn-excluir" data-lid="' + live.id + '" onclick="excluirLive(this.dataset.lid)"><i class="fas fa-trash"></i> Excluir</button></div></div></div>';
     }).join('');
 }
 
@@ -813,6 +816,41 @@ async function salvarLiveImportada(mediaId, comentarios) {
         mostrarAlerta('Live e comentarios salvos!', 'success');
         await carregarLivesImportadas();
     } catch (error) { console.error('[COMENTARIOS-LIVES] Erro ao salvar:', error); mostrarAlerta('Erro ao salvar: ' + error.message, 'error'); }
+}
+
+async function excluirLive(liveId) {
+    if (!confirm('Tem certeza que deseja excluir esta live e TODOS os seus comentarios? Esta acao nao pode ser desfeita.')) return;
+    try {
+        console.log('[COMENTARIOS-LIVES] Excluindo live:', liveId);
+        // First delete all comments from this live
+        const { error: delComentariosError } = await supabaseClient
+            .from('live_comentarios')
+            .delete()
+            .eq('live_id', liveId);
+        if (delComentariosError) {
+            console.error('[COMENTARIOS-LIVES] Erro ao excluir comentarios:', delComentariosError);
+            throw delComentariosError;
+        }
+        console.log('[COMENTARIOS-LIVES] Comentarios excluidos com sucesso');
+        // Then delete the live itself
+        const { error: delLiveError } = await supabaseClient
+            .from('lives_importadas')
+            .delete()
+            .eq('id', liveId);
+        if (delLiveError) {
+            console.error('[COMENTARIOS-LIVES] Erro ao excluir live:', delLiveError);
+            throw delLiveError;
+        }
+        console.log('[COMENTARIOS-LIVES] Live excluida com sucesso');
+        // Remove from local data
+        livesData = livesData.filter(l => l.id !== liveId);
+        renderizarLives(livesData);
+        atualizarStats();
+        mostrarAlerta('Live e comentarios excluidos com sucesso!', 'success');
+    } catch (error) {
+        console.error('[COMENTARIOS-LIVES] Erro ao excluir live:', error);
+        mostrarAlerta('Erro ao excluir: ' + error.message, 'error');
+    }
 }
 
 async function exportarLive(liveId) {
