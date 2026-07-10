@@ -107,6 +107,7 @@
         .lives-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .live-card { background: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; transition: transform 0.3s, box-shadow 0.3s; }
         .live-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .live-card.live-tipo .live-header { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .live-header { background: linear-gradient(135deg, #0B193F, #1a3a6e); padding: 20px; color: white; }
         .live-status { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
         .live-status.disponivel { background: #22c55e; }
@@ -142,6 +143,7 @@
         .sugestao-item { background: #f8fafc; border-radius: 10px; padding: 12px 15px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center; border: 2px solid transparent; }
         .sugestao-item:hover { border-color: #0B193F; background: #f0f4f8; }
         .sugestao-item.selecionado { border-color: #0B193F; background: #f0f4f8; }
+        .sugestao-item.live-item { border-left: 4px solid #ef4444; }
         .sugestao-info { display: flex; align-items: center; gap: 10px; }
         .sugestao-icon { font-size: 20px; }
         .sugestao-text { font-size: 14px; color: #0f172a; font-weight: 500; }
@@ -203,7 +205,6 @@
         }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="fecharMenu()"></div>
@@ -240,7 +241,7 @@
         </div>
         <div class="header-info">
             <span id="info-usuario"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Carregando...</span>
-            <a href="configuracoes.html" class="btn-header" title="Configurações"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Config</a>
+            <a href="configuracoes.html" class="btn-header" title="Configurações"><svg class="icon-svg icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Config</a>
             <button class="btn-header" onclick="logout()">Sair</button>
         </div>
     </div>
@@ -326,7 +327,7 @@
                 <div id="tokenValidacao"></div>
                 <div class="token-help">
                     <p><strong>Como obter o token:</strong></p>
-                    <ol><li>Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Facebook Graph API Explorer</a></li><li>Selecione seu app e gere um token com permissões: <code>instagram_basic</code>, <code>instagram_manage_comments</code></li><li>Copie o token e cole aqui</li></ol>
+                    <ol><li>Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Facebook Graph API Explorer</a></li><li>Selecione seu app e gere um token com permissoes: <code>instagram_basic</code>, <code>instagram_manage_comments</code></li><li>Copie o token e cole aqui</li></ol>
                 </div>
                 <div style="margin-top: 20px; text-align: right;"><button class="btn-buscar" id="btnSalvarToken" onclick="salvarTokenManual()"><i class="fas fa-save"></i> Salvar Conta</button></div>
             </div>
@@ -335,17 +336,17 @@
 
     <div class="modal-overlay" id="importModal">
         <div class="modal">
-            <div class="modal-header"><h3><i class="fas fa-download"></i> Importar Comentários de Live</h3><button class="modal-close" onclick="fecharModalImportar()">&times;</button></div>
+            <div class="modal-header"><h3><i class="fas fa-download"></i> Importar Comentarios de Live</h3><button class="modal-close" onclick="fecharModalImportar()">&times;</button></div>
             <div class="modal-body">
                 <div class="conta-ativa-info hidden" id="contaAtivaInfo"><i class="fab fa-instagram"></i> Conta ativa: <strong id="contaAtivaNome">@usuario</strong></div>
                 <div class="sugestoes-section">
-                    <div class="sugestoes-title"><i class="fas fa-lightbulb"></i> Lives recentes encontradas</div>
-                    <div id="sugestoesContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Buscando lives...</p></div></div>
+                    <div class="sugestoes-title"><i class="fas fa-lightbulb"></i> Lives e videos recentes encontrados</div>
+                    <div id="sugestoesContainer"><div class="loading"><i class="fas fa-spinner"></i><p>Buscando conteudo...</p></div></div>
                 </div>
                 <div class="input-section">
                     <label class="input-label">Ou cole o link/ID da live manualmente:</label>
                     <input type="text" class="input-field" id="liveUrlInput" placeholder="https://www.instagram.com/reel/ABC123... ou ID da media">
-                    <button class="btn-buscar" id="btnBuscarComentarios" onclick="buscarComentariosManual()" style="margin-top: 10px;"><i class="fas fa-search"></i> Buscar Comentários</button>
+                    <button class="btn-buscar" id="btnBuscarComentarios" onclick="buscarComentariosManual()" style="margin-top: 10px;"><i class="fas fa-search"></i> Buscar Comentarios</button>
                 </div>
                 <div id="resultadosContainer" class="hidden">
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
@@ -356,6 +357,7 @@
             </div>
         </div>
     </div>
+
 <script>
 const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
@@ -685,7 +687,8 @@ function renderizarLives(lives) {
         const dataLive = live.data_live ? new Date(live.data_live).toLocaleDateString('pt-BR') : 'Data desconhecida';
         const statusClass = live.status === 'importada' ? 'importada' : live.status === 'disponivel' ? 'disponivel' : 'expirada';
         const statusText = live.status === 'importada' ? 'Importada' : live.status === 'disponivel' ? 'Disponivel' : 'Expirada';
-        return '<div class="live-card" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span><div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="' + live.id + '" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-detalhes" data-lid="' + live.id + '" onclick="verDetalhesLive(this.dataset.lid)"><i class="fas fa-chart-bar"></i> Detalhes</button><button class="btn-action btn-exportar" data-lid="' + live.id + '" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button><button class="btn-action btn-excluir" data-lid="' + live.id + '" onclick="excluirLive(this.dataset.lid)"><i class="fas fa-trash"></i> Excluir</button></div></div></div>';
+        const isLiveTipo = live.tipo_midia === 'live';
+        return '<div class="live-card ' + (isLiveTipo ? 'live-tipo' : '') + '" data-id="' + live.id + '"><div class="live-header"><span class="live-status ' + statusClass + '">' + statusText + '</span>' + (isLiveTipo ? '<span style="margin-left:8px;background:#fff;color:#ef4444;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">LIVE</span>' : '') + '<div class="live-date"><i class="fas fa-calendar"></i> ' + dataLive + '</div></div><div class="live-info"><div class="live-stats"><div class="live-stat"><div class="live-stat-value">' + (live.total_comentarios || 0) + '</div><div class="live-stat-label">Comentarios</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_vendas || 0) + '</div><div class="live-stat-label">Vendas</div></div><div class="live-stat"><div class="live-stat-value">' + (live.total_interesses || 0) + '</div><div class="live-stat-label">Interesses</div></div></div><div class="live-actions"><button class="btn-action btn-ver" data-lid="' + live.id + '" onclick="verComentariosLive(this.dataset.lid)"><i class="fas fa-eye"></i> Ver</button><button class="btn-action btn-detalhes" data-lid="' + live.id + '" onclick="verDetalhesLive(this.dataset.lid)"><i class="fas fa-chart-bar"></i> Detalhes</button><button class="btn-action btn-exportar" data-lid="' + live.id + '" onclick="exportarLive(this.dataset.lid)"><i class="fas fa-file-excel"></i> Excel</button><button class="btn-action btn-excluir" data-lid="' + live.id + '" onclick="excluirLive(this.dataset.lid)"><i class="fas fa-trash"></i> Excluir</button></div></div></div>';
     }).join('');
 }
 
@@ -708,30 +711,105 @@ async function abrirModalImportar() {
 }
 function fecharModalImportar() { document.getElementById('importModal').classList.remove('active'); document.body.style.overflow = ''; }
 
+// ========== NOVO: buscar VIDEOS e LIVES separadamente ==========
 async function buscarSugestoesLives() {
     const container = document.getElementById('sugestoesContainer');
-    container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Buscando lives recentes...</p></div>';
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Buscando lives e videos recentes...</p></div>';
+
+    let todasMidias = [];
+
     try {
-        const url = 'https://graph.facebook.com/v18.0/' + instagramConfig.instagramId + '/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count&access_token=' + instagramConfig.accessToken + '&limit=20';
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-        const lives = (data.data || []).filter(item => item.media_type === 'VIDEO' || item.media_type === 'REELS');
-        if (lives.length === 0) { container.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> Nenhuma live recente encontrada. Cole o link manualmente.</div>'; return; }
-        container.innerHTML = lives.map(live => {
-            const dataLive = live.timestamp ? new Date(live.timestamp).toLocaleDateString('pt-BR') : 'Data desconhecida';
-            const horaLive = live.timestamp ? new Date(live.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-            const caption = live.caption ? live.caption.substring(0, 50) + (live.caption.length > 50 ? '...' : '') : 'Sem descricao';
-            const tipo = live.media_type === 'REELS' ? 'Reels' : 'Video';
-            return '<div class="sugestao-item" data-mid="' + live.id + '" data-plink="' + (live.permalink || '') + '" onclick="selecionarLive(this.dataset.mid, this.dataset.plink)"><div class="sugestao-info"><span class="sugestao-icon">&#128250;</span><div><div class="sugestao-text">[' + tipo + '] ' + caption + '</div><div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + ' <i class="fas fa-comment"></i> ' + (live.comments_count || 0) + ' comentarios</div></div></div><i class="fas fa-chevron-right" style="color: #0B193F;"></i></div>';
+        // === BUSCA 1: Videos / Reels normais ===
+        const urlMedia = 'https://graph.facebook.com/v18.0/' + instagramConfig.instagramId + 
+            '/media?fields=id,caption,media_type,media_url,permalink,timestamp,comments_count,shortcode&access_token=' + 
+            instagramConfig.accessToken + '&limit=50';
+
+        console.log('[COMENTARIOS-LIVES] Buscando media...');
+        const responseMedia = await fetch(urlMedia);
+        const dataMedia = await responseMedia.json();
+
+        if (dataMedia.error) {
+            console.log('[COMENTARIOS-LIVES] Erro media:', dataMedia.error);
+        } else {
+            const videos = (dataMedia.data || []).filter(item => 
+                item.media_type === 'VIDEO' || item.media_type === 'REELS'
+            );
+            console.log('[COMENTARIOS-LIVES] Videos/Reels encontrados:', videos.length);
+            todasMidias = todasMidias.concat(videos);
+        }
+
+        // === BUSCA 2: Lives especificas (live_media) ===
+        try {
+            const urlLive = 'https://graph.facebook.com/v18.0/' + instagramConfig.instagramId + 
+                '?fields=live_media{id,permalink,media_url,timestamp,comments_count}&access_token=' + 
+                instagramConfig.accessToken;
+
+            console.log('[COMENTARIOS-LIVES] Buscando live_media...');
+            const responseLive = await fetch(urlLive);
+            const dataLive = await responseLive.json();
+
+            console.log('[COMENTARIOS-LIVES] Resposta live_media:', dataLive);
+
+            if (dataLive.live_media && dataLive.live_media.data) {
+                const lives = dataLive.live_media.data.map(live => ({
+                    ...live,
+                    media_type: 'LIVE',
+                    caption: 'Live do Instagram',
+                    is_live_media: true
+                }));
+                console.log('[COMENTARIOS-LIVES] Lives encontradas:', lives.length);
+                todasMidias = todasMidias.concat(lives);
+            } else {
+                console.log('[COMENTARIOS-LIVES] Nenhuma live_media retornada');
+            }
+        } catch (liveError) {
+            console.log('[COMENTARIOS-LIVES] Erro ao buscar lives (sem permissao ou sem lives):', liveError.message);
+        }
+
+        if (todasMidias.length === 0) {
+            container.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle"></i> Nenhuma live ou video recente encontrado. Cole o link manualmente.</div>';
+            return;
+        }
+
+        // Ordenar por data mais recente
+        todasMidias.sort((a, b) => {
+            const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+            const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+            return dateB - dateA;
+        });
+
+        container.innerHTML = todasMidias.map(item => {
+            const dataLive = item.timestamp ? new Date(item.timestamp).toLocaleDateString('pt-BR') : 'Data desconhecida';
+            const horaLive = item.timestamp ? new Date(item.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+            const caption = item.caption ? item.caption.substring(0, 50) + (item.caption.length > 50 ? '...' : '') : 'Sem descricao';
+            const tipo = item.media_type === 'LIVE' ? 'LIVE' : item.media_type === 'REELS' ? 'Reels' : 'Video';
+            const icon = item.media_type === 'LIVE' ? '&#128308;' : item.media_type === 'REELS' ? '&#127909;' : '&#127916;';
+
+            return '<div class="sugestao-item ' + (item.is_live_media ? 'live-item' : '') + '" ' +
+                'data-mid="' + item.id + '" ' +
+                'data-plink="' + (item.permalink || '') + '" ' +
+                'data-is-live="' + (item.is_live_media ? 'true' : 'false') + '" ' +
+                'onclick="selecionarLive(this.dataset.mid, this.dataset.plink, this.dataset.isLive === \'true\')">' +
+                '<div class="sugestao-info">' +
+                '<span class="sugestao-icon">' + icon + '</span>' +
+                '<div>' +
+                '<div class="sugestao-text">[' + tipo + '] ' + caption + '</div>' +
+                '<div class="sugestao-data"><i class="fas fa-calendar"></i> ' + dataLive + ' ' + horaLive + 
+                ' <i class="fas fa-comment"></i> ' + (item.comments_count || 0) + ' comentarios</div>' +
+                '</div></div>' +
+                '<i class="fas fa-chevron-right" style="color: #0B193F;"></i></div>';
         }).join('');
-    } catch (error) { console.error('[COMENTARIOS-LIVES] Erro ao buscar sugestoes:', error); container.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Nao foi possivel buscar lives automaticamente.</div>'; }
+
+    } catch (error) {
+        console.error('[COMENTARIOS-LIVES] Erro ao buscar sugestoes:', error);
+        container.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Nao foi possivel buscar conteudo automaticamente.</div>';
+    }
 }
 
-function selecionarLive(mediaId, permalink) {
+function selecionarLive(mediaId, permalink, isLive) {
     document.querySelectorAll('.sugestao-item').forEach(item => item.classList.remove('selecionado'));
     event.currentTarget.classList.add('selecionado');
-    liveSelecionada = { mediaId: mediaId, permalink: permalink };
+    liveSelecionada = { mediaId: mediaId, permalink: permalink, isLive: isLive };
     document.getElementById('liveUrlInput').value = permalink || mediaId;
     buscarComentariosManual();
 }
@@ -754,44 +832,108 @@ async function buscarComentariosManual() {
     finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> Buscar Comentarios'; }
 }
 
+// ========== NOVO: buscar comentarios com fallback para Lives ==========
 async function buscarComentariosViaAPI(mediaId) {
     try {
+        const isLive = liveSelecionada && liveSelecionada.isLive;
         let numericMediaId = mediaId;
-        if (/[a-zA-Z_]/.test(mediaId)) {
+
+        // Se for shortcode (tem letras), tenta converter para ID numerico
+        if (/[a-zA-Z_]/.test(mediaId) && !isLive) {
             console.log('[COMENTARIOS-LIVES] Shortcode detectado, tentando converter...');
-            const searchUrl = 'https://graph.facebook.com/v18.0/' + instagramConfig.instagramId + '/media?fields=id,shortcode&access_token=' + instagramConfig.accessToken + '&limit=100';
+            const searchUrl = 'https://graph.facebook.com/v18.0/' + instagramConfig.instagramId + 
+                '/media?fields=id,shortcode&access_token=' + instagramConfig.accessToken + '&limit=100';
             const searchResponse = await fetch(searchUrl);
             const searchData = await searchResponse.json();
             if (searchData.error) throw new Error(searchData.error.message);
             const found = (searchData.data || []).find(m => m.shortcode === mediaId || m.id === mediaId);
-            if (found) { numericMediaId = found.id; console.log('[COMENTARIOS-LIVES] Convertido para ID:', numericMediaId); }
-            else { throw new Error('Media nao encontrada na conta. Verifique se o post/reel pertence a esta conta Instagram Business.'); }
+            if (found) { 
+                numericMediaId = found.id; 
+                console.log('[COMENTARIOS-LIVES] Convertido para ID:', numericMediaId); 
+            } else { 
+                throw new Error('Media nao encontrada na conta.'); 
+            }
         }
-        const url = 'https://graph.facebook.com/v18.0/' + numericMediaId + '/comments?fields=id,text,username,timestamp,like_count&access_token=' + instagramConfig.accessToken + '&limit=1000';
-        const response = await fetch(url);
-        const data = await response.json();
+
+        // TENTATIVA 1: Endpoint padrao de comentarios (funciona para videos/reels)
+        console.log('[COMENTARIOS-LIVES] Buscando comentarios via endpoint padrao...');
+        let url = 'https://graph.facebook.com/v18.0/' + numericMediaId + 
+            '/comments?fields=id,text,username,timestamp,like_count,replies{username,text,timestamp}&access_token=' + 
+            instagramConfig.accessToken + '&limit=1000';
+
+        let response = await fetch(url);
+        let data = await response.json();
+        console.log('[COMENTARIOS-LIVES] Resposta comentarios:', data);
+
+        // TENTATIVA 2: Se for live e deu erro, tenta endpoint alternativo
+        if (data.error && isLive) {
+            console.log('[COMENTARIOS-LIVES] Erro no endpoint padrao para live, tentando alternativo...');
+
+            // Para lives, o endpoint pode ser diferente
+            url = 'https://graph.facebook.com/v18.0/' + numericMediaId + 
+                '?fields=comments{id,text,username,timestamp,like_count}&access_token=' + 
+                instagramConfig.accessToken;
+
+            response = await fetch(url);
+            data = await response.json();
+            console.log('[COMENTARIOS-LIVES] Resposta alternativa:', data);
+
+            // Se veio como objeto aninhado
+            if (data.comments && data.comments.data) {
+                data = { data: data.comments.data };
+            }
+        }
+
         if (data.error) throw new Error(data.error.message);
-        comentariosData = (data.data || []).map(comment => analisarComentario(comment));
+
+        // Normalizar os dados de comentarios
+        let comentarios = [];
+        if (Array.isArray(data.data)) {
+            comentarios = data.data;
+        } else if (data.comments && data.comments.data) {
+            comentarios = data.comments.data;
+        }
+
+        console.log('[COMENTARIOS-LIVES] Comentarios encontrados:', comentarios.length);
+        comentariosData = comentarios.map(comment => analisarComentario(comment));
         mostrarResultadosComentarios(comentariosData);
         mostrarAlerta(comentariosData.length + ' comentarios encontrados!', 'success');
         await salvarLiveImportada(numericMediaId, comentariosData);
-    } catch (error) { throw error; }
+
+    } catch (error) { 
+        throw error; 
+    }
 }
 
 function analisarComentario(comment) {
-    const texto = (comment.text || '').toLowerCase();
+    // Normalizar campos (a API pode retornar text ou message)
+    const textoRaw = comment.text || comment.message || '';
+    const texto = textoRaw.toLowerCase();
+
     let tipo = 'duvida', produto = null;
+
     if (TIPOS_KEYWORDS.venda.some(k => texto.includes(k))) tipo = 'venda';
     else if (TIPOS_KEYWORDS.interesse.some(k => texto.includes(k))) tipo = 'interesse';
+
     for (const keyword of PRODUTOS_KEYWORDS) {
         if (texto.includes(keyword.toLowerCase())) {
             const index = texto.indexOf(keyword.toLowerCase());
             const start = Math.max(0, index - 20);
             const end = Math.min(texto.length, index + keyword.length + 20);
-            produto = texto.substring(start, end).trim(); break;
+            produto = texto.substring(start, end).trim(); 
+            break;
         }
     }
-    return { comment_id: comment.id, username: comment.username || 'usuario', texto: comment.text || '', tipo: tipo, produto: produto, timestamp: comment.timestamp, like_count: comment.like_count || 0 };
+
+    return { 
+        comment_id: comment.id, 
+        username: comment.username || comment.from?.name || 'usuario', 
+        texto: textoRaw, 
+        tipo: tipo, 
+        produto: produto, 
+        timestamp: comment.timestamp || comment.created_time, 
+        like_count: comment.like_count || 0 
+    };
 }
 
 function mostrarResultadosComentarios(comentarios) {
@@ -803,46 +945,59 @@ function mostrarResultadosComentarios(comentarios) {
     container.classList.remove('hidden');
 }
 
+// ========== NOVO: salvar com tipo_midia ==========
 async function salvarLiveImportada(mediaId, comentarios) {
     try {
         const totalVendas = comentarios.filter(c => c.tipo === 'venda').length;
         const totalInteresses = comentarios.filter(c => c.tipo === 'interesse').length;
-        const liveData = { cliente_id: clienteId, media_id: mediaId, data_live: new Date().toISOString(), total_comentarios: comentarios.length, total_vendas: totalVendas, total_interesses: totalInteresses, status: 'importada' };
+        const isLive = liveSelecionada && liveSelecionada.isLive;
+
+        const liveData = { 
+            cliente_id: clienteId, 
+            media_id: mediaId, 
+            data_live: new Date().toISOString(), 
+            total_comentarios: comentarios.length, 
+            total_vendas: totalVendas, 
+            total_interesses: totalInteresses, 
+            status: 'importada',
+            tipo_midia: isLive ? 'live' : 'video'
+        };
+
         const { data: liveInsert, error: liveError } = await supabaseClient.from('lives_importadas').insert(liveData).select().single();
         if (liveError) throw liveError;
-        const comentariosToInsert = comentarios.map(c => ({ live_id: liveInsert.id, cliente_id: clienteId, comment_id: c.comment_id, username: c.username, texto: c.texto, tipo: c.tipo, produto: c.produto, timestamp: c.timestamp }));
+
+        const comentariosToInsert = comentarios.map(c => ({ 
+            live_id: liveInsert.id, 
+            cliente_id: clienteId, 
+            comment_id: c.comment_id, 
+            username: c.username, 
+            texto: c.texto, 
+            tipo: c.tipo, 
+            produto: c.produto, 
+            timestamp: c.timestamp 
+        }));
+
         const { error: comentariosError } = await supabaseClient.from('live_comentarios').insert(comentariosToInsert);
         if (comentariosError) throw comentariosError;
+
         mostrarAlerta('Live e comentarios salvos!', 'success');
         await carregarLivesImportadas();
-    } catch (error) { console.error('[COMENTARIOS-LIVES] Erro ao salvar:', error); mostrarAlerta('Erro ao salvar: ' + error.message, 'error'); }
+    } catch (error) { 
+        console.error('[COMENTARIOS-LIVES] Erro ao salvar:', error); 
+        mostrarAlerta('Erro ao salvar: ' + error.message, 'error'); 
+    }
 }
 
 async function excluirLive(liveId) {
     if (!confirm('Tem certeza que deseja excluir esta live e TODOS os seus comentarios? Esta acao nao pode ser desfeita.')) return;
     try {
         console.log('[COMENTARIOS-LIVES] Excluindo live:', liveId);
-        // First delete all comments from this live
-        const { error: delComentariosError } = await supabaseClient
-            .from('live_comentarios')
-            .delete()
-            .eq('live_id', liveId);
-        if (delComentariosError) {
-            console.error('[COMENTARIOS-LIVES] Erro ao excluir comentarios:', delComentariosError);
-            throw delComentariosError;
-        }
+        const { error: delComentariosError } = await supabaseClient.from('live_comentarios').delete().eq('live_id', liveId);
+        if (delComentariosError) { console.error('[COMENTARIOS-LIVES] Erro ao excluir comentarios:', delComentariosError); throw delComentariosError; }
         console.log('[COMENTARIOS-LIVES] Comentarios excluidos com sucesso');
-        // Then delete the live itself
-        const { error: delLiveError } = await supabaseClient
-            .from('lives_importadas')
-            .delete()
-            .eq('id', liveId);
-        if (delLiveError) {
-            console.error('[COMENTARIOS-LIVES] Erro ao excluir live:', delLiveError);
-            throw delLiveError;
-        }
+        const { error: delLiveError } = await supabaseClient.from('lives_importadas').delete().eq('id', liveId);
+        if (delLiveError) { console.error('[COMENTARIOS-LIVES] Erro ao excluir live:', delLiveError); throw delLiveError; }
         console.log('[COMENTARIOS-LIVES] Live excluida com sucesso');
-        // Remove from local data
         livesData = livesData.filter(l => l.id !== liveId);
         renderizarLives(livesData);
         atualizarStats();
