@@ -80,20 +80,21 @@
         @media print { body { background: white; padding: 0; } .container { box-shadow: none; border-radius: 0; } .btn-voltar, .btn-pdf, .btn-imprimir { display: none !important; } .info-relatorio { background: none; border: 1px solid #ddd; } .stats-grid { display: none; } }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <button class="btn-voltar" onclick="window.location.href='rastreamento.html'">← Voltar</button>
+                <button class="btn-voltar" onclick="window.location.href='rastreamento.html'">&#8592; Voltar</button>
                 <div class="header-center">
-                    <h1>📄 Relatorio de Solicitacoes</h1>
+                    <h1>&#128196; Relatorio de Solicitacoes</h1>
                     <p>Relatorio completo com dados de pagamento PIX</p>
                 </div>
             </div>
             <div>
-                <button class="btn-acao btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
-                
+                <button class="btn-acao btn-pdf" onclick="gerarPDF()">&#128196; Gerar PDF</button>
+
             </div>
         </div>
         <div class="content">
@@ -114,7 +115,7 @@
                 <table id="tabelaRelatorio">
                     <thead>
                         <tr>
-                            <th>Nº Pedido</th>
+                            <th>N&#186; Pedido</th>
                             <th>Data / Hora</th>
                             <th>Nome</th>
                             <th>CPF</th>
@@ -125,7 +126,7 @@
                             <th>Endereco</th>
                             <th>Status</th>
                             <th>Codigo Rastreio</th>
-                            <th>💳 Pagamento PIX</th>
+                            <th>&#128179; Pagamento PIX</th>
                             <th>Observacoes</th>
                         </tr>
                     </thead>
@@ -136,7 +137,7 @@
     </div>
 
     <script>
-        console.log('[REL_SOLICITACOES] v2026-06-04-1937 - Margem 20mm + PDF simples com PIX');
+        console.log('[REL_SOLICITACOES] v2026-07-12-1517 - FIX PIX PDF + Debug logs');
         let supabaseClient = null;
         let clienteAtual = null;
         let solicitacoes = [];
@@ -220,7 +221,12 @@
                 if (error) throw error;
 
                 solicitacoes = data || [];
+                console.log('[REL] Solicitacoes carregadas:', solicitacoes.length);
+                console.log('[REL] Primeira solicitacao cobranca_id:', solicitacoes[0]?.cobranca_id);
+
                 await carregarDadosPix();
+                console.log('[REL] cobrancasCache keys:', Object.keys(cobrancasCache));
+
                 atualizarTabela();
                 atualizarEstatisticas();
             } catch (error) {
@@ -233,7 +239,12 @@
                 .map(s => s.cobranca_id)
                 .filter(id => id && id !== 'null' && id !== 'undefined');
 
-            if (cobrancaIds.length === 0) return;
+            console.log('[REL] cobrancaIds para buscar:', cobrancaIds);
+
+            if (cobrancaIds.length === 0) {
+                console.log('[REL] Nenhum cobranca_id encontrado nas solicitacoes');
+                return;
+            }
 
             try {
                 const { data, error } = await supabaseClient
@@ -244,8 +255,9 @@
                 if (error) throw error;
                 cobrancasCache = {};
                 (data || []).forEach(c => { cobrancasCache[c.id] = c; });
+                console.log('[REL] cobrancasCache populado:', Object.keys(cobrancasCache).length, 'registros');
             } catch (e) {
-                console.error('Erro ao carregar PIX:', e);
+                console.error('[REL] Erro ao carregar PIX:', e);
             }
         }
 
@@ -270,7 +282,7 @@
                     const dataPagamento = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleDateString('pt-BR') : '-';
                     const horaPagamento = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                     const statusClass = cobranca.status === 'pago' ? 'pix-status-pago' : cobranca.status === 'pendente' ? 'pix-status-pendente' : 'pix-status-cancelado';
-                    const statusText = cobranca.status === 'pago' ? '✅ Pago' : cobranca.status === 'pendente' ? '⏳ Pendente' : '❌ ' + cobranca.status;
+                    const statusText = cobranca.status === 'pago' ? '&#9989; Pago' : cobranca.status === 'pendente' ? '&#9203; Pendente' : '&#10060; ' + cobranca.status;
 
                     pixHtml = `<div class="pix-info"><span class="pix-valor">${valorFormatado}</span><span class="pix-data">${dataPagamento} ${horaPagamento ? 'as ' + horaPagamento : ''}</span><span class="${statusClass}">${statusText}</span></div>`;
                 }
@@ -334,15 +346,28 @@
 
         function getTagRegiao(regiao) {
             const r = (regiao || '').toLowerCase();
-            if (r.includes('florianopolis') || r.includes('floripa')) return '<span class="tag-regiao tag-floripa">🏠 Grande Florianopolis</span>';
-            if (r.includes('catarina') || r.includes('sc')) return '<span class="tag-regiao tag-sc">🌲 Santa Catarina</span>';
-            return '<span class="tag-regiao tag-outros">🇧🇷 Outros Estados</span>';
+            if (r.includes('florianopolis') || r.includes('floripa')) return '<span class="tag-regiao tag-floripa">&#127968; Grande Florianopolis</span>';
+            if (r.includes('catarina') || r.includes('sc')) return '<span class="tag-regiao tag-sc">&#127794; Santa Catarina</span>';
+            return '<span class="tag-regiao tag-outros">&#127463;&#127479; Outros Estados</span>';
         }
 
         // ===== GERAR PDF - LAYOUT SIMPLES + COLUNA PIX =====
         async function gerarPDF() {
-            console.log('[PDF] Gerando com margem 20mm');
-            if (solicitacoes.length === 0) { showAlert('Nao ha solicitacoes para gerar PDF', 'warning'); return; }
+            console.log('[PDF] Iniciando geracao de PDF...');
+            console.log('[PDF] solicitacoes.length:', solicitacoes.length);
+            console.log('[PDF] cobrancasCache keys:', Object.keys(cobrancasCache));
+
+            if (solicitacoes.length === 0) { 
+                showAlert('Nao ha solicitacoes para gerar PDF', 'warning'); 
+                return; 
+            }
+
+            // DEBUG: Verificar se cobrancasCache esta populado
+            if (Object.keys(cobrancasCache).length === 0) {
+                console.log('[PDF] cobrancasCache vazio! Tentando recarregar...');
+                await carregarDadosPix();
+                console.log('[PDF] cobrancasCache apos recarregar:', Object.keys(cobrancasCache));
+            }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
@@ -352,6 +377,9 @@
                 const nomeB = ((b.clientes_pg?.nome) || '').toLowerCase();
                 return nomeA.localeCompare(nomeB, 'pt-BR');
             });
+
+            console.log('[PDF] selecionados.length:', selecionados.length);
+            console.log('[PDF] Primeiro selecionado cobranca_id:', selecionados[0]?.cobranca_id);
 
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(16);
@@ -367,7 +395,7 @@
             doc.setLineWidth(0.5);
             doc.line(20, 21, 287, 21);
 
-            const dadosTabela = selecionados.map(s => {
+            const dadosTabela = selecionados.map((s, idx) => {
                 const cliente = s.clientes_pg || {};
                 const endereco = s.enderecos_pg || {};
 
@@ -376,8 +404,16 @@
                     nomeComObs = cliente.nome + String.fromCharCode(10) + String.fromCharCode(10) + '***Contem Observacoes***';
                 }
 
-                // Dados PIX
-                const cobranca = s.cobranca_id ? cobrancasCache[s.cobranca_id] : null;
+                // Dados PIX - com log de debug
+                const cobrancaId = s.cobranca_id;
+                console.log(`[PDF] Item ${idx}: cobranca_id=`, cobrancaId, 'tipo=', typeof cobrancaId);
+
+                let cobranca = null;
+                if (cobrancaId && cobrancaId !== 'null' && cobrancaId !== 'undefined') {
+                    cobranca = cobrancasCache[cobrancaId];
+                    console.log(`[PDF] Item ${idx}: cobranca do cache=`, cobranca ? 'ENCONTRADO' : 'NAO ENCONTRADO');
+                }
+
                 let pixCol = '-';
                 if (cobranca) {
                     const valor = cobranca.valor ? 'R$ ' + parseFloat(cobranca.valor).toFixed(2).replace('.', ',') : '-';
@@ -385,6 +421,9 @@
                     const horaPag = cobranca.pago_em ? new Date(cobranca.pago_em).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '';
                     const statusText = cobranca.status === 'pago' ? 'Pago' : cobranca.status === 'pendente' ? 'Pendente' : cobranca.status;
                     pixCol = valor + String.fromCharCode(10) + dataPag + ' ' + (horaPag ? 'as ' + horaPag : '') + String.fromCharCode(10) + statusText;
+                    console.log(`[PDF] Item ${idx}: pixCol=`, pixCol.substring(0, 50) + '...');
+                } else {
+                    console.log(`[PDF] Item ${idx}: pixCol= '-' (cobranca nula)`);
                 }
 
                 return [
