@@ -81,6 +81,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -183,7 +184,7 @@
                 const filtrosFromStorage = sessionStorage.getItem('relatorio_filtros');
 
                 let query = supabaseClient.from('solicitacoes_pg')
-                    .select(`*, cobranca_id, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
+                    .select(`id, numero_solicitacao, cliente_pg_id, endereco_id, cliente_id, status, codigo_rastreio, forma_envio, data_envio, data_entrega_prevista, data_entrega_real, peso_kg, altura_cm, largura_cm, comprimento_cm, valor_frete, regiao, semana_envio, data_corte_semanal, observacoes, email_enviado, criado_em, atualizado_em, cobranca_id, clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram), enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)`)
                     .eq('cliente_id', clienteAtual);
 
                 if (idsFromStorage) {
@@ -345,9 +346,11 @@
         }
 
         function getTagRegiao(regiao) {
-            const r = (regiao || '').toLowerCase();
-            if (r.includes('florianopolis') || r.includes('floripa')) return '<span class="tag-regiao tag-floripa">&#127968; Grande Florianopolis</span>';
-            if (r.includes('catarina') || r.includes('sc')) return '<span class="tag-regiao tag-sc">&#127794; Santa Catarina</span>';
+            // Normaliza removendo acentos para comparação robusta
+            const r = (regiao || '').toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '');
+            if (r.includes('florianopolis') || r.includes('floripa') || r.includes('grande florianopolis')) return '<span class="tag-regiao tag-floripa">&#127968; Grande Florianopolis</span>';
+            if (r.includes('santa catarina') || r.includes('catarina') || r.includes(' sc') || r.startsWith('sc ')) return '<span class="tag-regiao tag-sc">&#127794; Santa Catarina</span>';
             return '<span class="tag-regiao tag-outros">&#127463;&#127479; Outros Estados</span>';
         }
 
