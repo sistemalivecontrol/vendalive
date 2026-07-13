@@ -307,8 +307,45 @@
         .btn-whatsapp:disabled { background: #ccc; cursor: not-allowed; transform: none; }
         .btn-instagram { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; }
         .btn-instagram:hover { transform: scale(1.05); }
-        .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+                /* ===== BOTÃO MANDA BEM ===== */
+        .filter-actions .btn-mandabem { background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; }
+        .filter-actions .btn-mandabem:hover { box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4); }
+        .filter-actions .btn-mandabem:disabled { background: #bdc3c7; color: #7f8c8d; cursor: not-allowed; transform: none; box-shadow: none; }
+        /* ===== ESTILOS MODAL FRETE MANDA BEM ===== */
+        .modal-frete-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-frete-overlay.ativo { display: flex; }
+        .modal-frete { background: white; border-radius: 20px; width: 95%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; }
+        .modal-frete-header { background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; padding: 25px 30px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-frete-header h3 { font-size: 1.3rem; display: flex; align-items: center; gap: 10px; margin: 0; }
+        .modal-frete-body { padding: 30px; }
+        .modal-frete-footer { padding: 20px 30px; background: #F8F9FA; border-radius: 0 0 20px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .frete-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .frete-form-group { display: flex; flex-direction: column; }
+        .frete-form-group label { font-weight: 600; color: #555; margin-bottom: 6px; font-size: 13px; }
+        .frete-form-group input, .frete-form-group select { padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
+        .frete-form-group input:focus, .frete-form-group select:focus { outline: none; border-color: #FF6B35; }
+        .frete-resultados { margin-top: 20px; }
+        .frete-cota-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .frete-cota-card:hover { border-color: #FF6B35; background: #fff5f0; }
+        .frete-cota-card.selecionada { border-color: #FF6B35; background: linear-gradient(135deg, #FFF5F0, #FFE8D6); box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2); }
+        .frete-cota-info h4 { margin: 0 0 5px 0; color: #333; font-size: 1rem; }
+        .frete-cota-info p { margin: 0; color: #666; font-size: 0.85rem; }
+        .frete-cota-preco { text-align: right; }
+        .frete-cota-preco .valor { font-size: 1.4rem; font-weight: bold; color: #FF6B35; }
+        .frete-cota-preco .prazo { font-size: 0.8rem; color: #666; }
+        .frete-selecionado-info { margin-top: 15px; padding: 15px; background: #E8F5E9; border-radius: 10px; border-left: 4px solid #4CAF50; display: none; }
+        .frete-selecionado-info.ativo { display: block; }
+        .frete-loading { text-align: center; padding: 30px; }
+        .frete-loading i { color: #FF6B35; }
+        .btn-calcular-frete { background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-calcular-frete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4); }
+        .btn-calcular-frete:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-usar-frete { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-usar-frete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4); }
+        .btn-usar-frete:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -379,6 +416,10 @@
                     <button class="btn btn-warning" id="btnGerarPDF" onclick="abrirRelatorioSolicitacoes()" disabled>📄 Gerar PDF</button>
                     <button class="btn btn-etiqueta" id="btnGerarEtiquetas" onclick="gerarEtiquetas()" disabled>🏷️ Gerar Etiquetas PDF</button>
                     <button class="btn btn-pdf" id="btnEmitirEtiquetas" onclick="abrirModalEtiquetas()" disabled>📋 Emitir Etiquetas</button>
+                    <button class="btn btn-mandabem" id="btnCalcularFreteMandaBem" onclick="abrirModalFreteMandaBem()" disabled>
+                        <i class="fas fa-shipping-fast me-2"></i>Calcular Frete Manda Bem
+                    </button>
+<button class="btn btn-pdf" id="btnEmitirEtiquetas" onclick="abrirModalEtiquetas()" disabled>📋 Emitir Etiquetas</button>
                 </div>
             </div>
             <div class="table-container">
@@ -572,7 +613,73 @@
             </div>
         </div>
     </div>
-    <div id="printArea" class="print-area"></div>
+        <!-- ===== MODAL FRETE MANDA BEM ===== -->
+    <div class="modal-frete-overlay" id="modalFreteMandaBem" onclick="if(event.target===this)fecharModalFreteMandaBem()">
+        <div class="modal-frete">
+            <div class="modal-frete-header">
+                <h3><i class="fas fa-shipping-fast"></i> Calcular Frete - Manda Bem</h3>
+                <button class="modal-close" onclick="fecharModalFreteMandaBem()" style="background:none;border:none;color:white;font-size:28px;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-frete-body">
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>CEP Origem *</label>
+                        <input type="text" id="mb_cep_origem" placeholder="00000-000" maxlength="9">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>CEP Destino *</label>
+                        <input type="text" id="mb_cep_destino" placeholder="00000-000" maxlength="9">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Peso (kg) *</label>
+                        <input type="number" id="mb_peso" value="1" step="0.1" min="0.1">
+                    </div>
+                </div>
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>Comprimento (cm)</label>
+                        <input type="number" id="mb_comprimento" value="16" min="1">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Largura (cm)</label>
+                        <input type="number" id="mb_largura" value="11" min="1">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Altura (cm)</label>
+                        <input type="number" id="mb_altura" value="2" min="1">
+                    </div>
+                </div>
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>Valor Declarado (R$)</label>
+                        <input type="number" id="mb_valor_declarado" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="frete-form-group" style="display:flex;align-items:end;">
+                        <button class="btn-calcular-frete w-100" id="btnExecutarCalculoFrete" onclick="executarCalculoFreteMandaBem()">
+                            <i class="fas fa-calculator me-2"></i>Calcular Frete
+                        </button>
+                    </div>
+                </div>
+                <div id="mb_resultados_frete" class="frete-resultados"></div>
+                <div id="mb_frete_selecionado_info" class="frete-selecionado-info">
+                    <strong><i class="fas fa-check-circle me-2"></i>Frete selecionado:</strong>
+                    <span id="mb_frete_selecionado_texto"></span>
+                </div>
+            </div>
+            <div class="modal-frete-footer">
+                <div style="color:#636E72;font-size:0.9rem;">
+                    <i class="fas fa-info-circle me-1"></i> Cotação via Manda Bem
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn btn-secondary" onclick="fecharModalFreteMandaBem()">Cancelar</button>
+                    <button class="btn-usar-frete" id="btnUsarFreteSelecionado" onclick="usarFreteSelecionado()" disabled>
+                        <i class="fas fa-check me-2"></i>Usar Este Frete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="printArea" class="print-area"></div>
     <script>
         // Variáveis globais (auth.js fornece supabaseClient, authClienteId)
         console.log('[RASTREAMENTO] v2026-05-29-1447 - Cache busting ativado');
@@ -641,6 +748,10 @@ let solicitacoes = [];
             await mostrarInfoCliente();
             await carregarClientes();
             await carregarSolicitacoes();
+
+            // Aplicar máscaras de CEP no modal Manda Bem
+            aplicarMascaraCEP(document.getElementById('mb_cep_origem'));
+            aplicarMascaraCEP(document.getElementById('mb_cep_destino'));
         });
         async function mostrarInfoCliente() {
             try {
@@ -982,6 +1093,8 @@ async function aplicarFiltros() {
             document.getElementById('btnGerarPDF').disabled = !habilitado;
             document.getElementById('btnGerarEtiquetas').disabled = !habilitado;
             document.getElementById('btnEmitirEtiquetas').disabled = !habilitado;
+            const btnMandaBem = document.getElementById('btnCalcularFreteMandaBem');
+            if (btnMandaBem) btnMandaBem.disabled = idsSelecionados.size !== 1;
         }
         // ============================================
         // FILTROS
@@ -2070,6 +2183,173 @@ Obrigada pela preferência! 🥰`;
         function fecharModalDetalhesPix() {
             document.getElementById('modalDetalhesPix').classList.remove('active');
         }
+
+        // ============================================
+        // INTEGRAÇÃO MANDA BEM - CALCULAR FRETE
+        // ============================================
+        let mbCotasAtuais = [];
+        let mbCotaSelecionada = null;
+        let mbSolicitacaoAtual = null;
+
+        function abrirModalFreteMandaBem() {
+            if (idsSelecionados.size === 0) {
+                alert('Selecione pelo menos uma solicitação na tabela para calcular o frete');
+                return;
+            }
+            if (idsSelecionados.size > 1) {
+                alert('Selecione apenas UMA solicitação para calcular o frete');
+                return;
+            }
+            const index = Array.from(idsSelecionados)[0];
+            mbSolicitacaoAtual = solicitacoes[index];
+            if (!mbSolicitacaoAtual) {
+                alert('Solicitação não encontrada');
+                return;
+            }
+            const endereco = mbSolicitacaoAtual.enderecos_pg || {};
+            document.getElementById('mb_cep_destino').value = formatarCEP(endereco.cep) || '';
+            document.getElementById('mb_peso').value = mbSolicitacaoAtual.peso_kg || 1;
+            document.getElementById('mb_comprimento').value = mbSolicitacaoAtual.comprimento_cm || 16;
+            document.getElementById('mb_largura').value = mbSolicitacaoAtual.largura_cm || 11;
+            document.getElementById('mb_altura').value = mbSolicitacaoAtual.altura_cm || 2;
+            const cepOrigem = localStorage.getItem('cep_origem') || '89200000';
+            document.getElementById('mb_cep_origem').value = cepOrigem;
+            document.getElementById('mb_resultados_frete').innerHTML = '';
+            document.getElementById('mb_frete_selecionado_info').classList.remove('ativo');
+            mbCotasAtuais = [];
+            mbCotaSelecionada = null;
+            document.getElementById('btnUsarFreteSelecionado').disabled = true;
+            document.getElementById('modalFreteMandaBem').classList.add('ativo');
+        }
+
+        function fecharModalFreteMandaBem() {
+            document.getElementById('modalFreteMandaBem').classList.remove('ativo');
+            mbSolicitacaoAtual = null;
+        }
+
+        async function executarCalculoFreteMandaBem() {
+            const btn = document.getElementById('btnExecutarCalculoFrete');
+            const resultadosEl = document.getElementById('mb_resultados_frete');
+            const cepOrigem = document.getElementById('mb_cep_origem').value.trim().replace(/\D/g, '');
+            const cepDestino = document.getElementById('mb_cep_destino').value.trim().replace(/\D/g, '');
+            const peso = parseFloat(document.getElementById('mb_peso').value) || 1;
+            const comprimento = parseFloat(document.getElementById('mb_comprimento').value) || 16;
+            const largura = parseFloat(document.getElementById('mb_largura').value) || 11;
+            const altura = parseFloat(document.getElementById('mb_altura').value) || 2;
+            const valorDeclarado = parseFloat(document.getElementById('mb_valor_declarado').value) || 0;
+            if (!cepOrigem || !cepDestino) {
+                alert('Preencha os CEPs de origem e destino');
+                return;
+            }
+            const clienteSistemaId = localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id');
+            if (!clienteSistemaId) {
+                alert('Erro: Cliente não identificado');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculando...';
+            resultadosEl.innerHTML = '<div class="frete-loading"><i class="fas fa-shipping-fast fa-spin fa-2x"></i><p class="mt-2">Consultando transportadoras na Manda Bem...</p></div>';
+            try {
+                const response = await fetch(
+                    SUPABASE_URL + '/functions/v1/mandabem-calcular-frete',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        },
+                        body: JSON.stringify({
+                            cliente_sistema_id: clienteSistemaId,
+                            cep_origem: cepOrigem,
+                            cep_destino: cepDestino,
+                            peso: peso,
+                            comprimento: comprimento,
+                            largura: largura,
+                            altura: altura,
+                            valor_declarado: valorDeclarado,
+                            servicos: ['pac', 'sedex', 'jadlog']
+                        })
+                    }
+                );
+                const resultado = await response.json();
+                if (!response.ok || !resultado.success) {
+                    resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>' + (resultado.error || 'Erro ao calcular frete') + (resultado.details ? '<br><small style="color:#666">' + resultado.details + '</small>' : '') + '</div>';
+                    return;
+                }
+                mbCotasAtuais = resultado.cotas || [];
+                if (mbCotasAtuais.length === 0) {
+                    resultadosEl.innerHTML = '<div class="alert" style="padding:15px;border-radius:8px;background:#fff3cd;color:#856404;"><i class="fas fa-info-circle me-2"></i>Nenhuma cota encontrada para esta rota. Verifique os CEPs e peso.</div>';
+                    return;
+                }
+                let html = '<h4 style="margin-bottom:15px;color:#333;"><i class="fas fa-list me-2"></i>Opções de Frete Encontradas</h4>';
+                mbCotasAtuais.forEach((cota, index) => {
+                    html += '<div class="frete-cota-card ' + (index === 0 ? 'selecionada' : '') + '" onclick="selecionarCotaMandaBem(' + index + ')" id="mb_cota_' + index + '"><div class="frete-cota-info"><h4><i class="fas fa-truck me-2"></i>' + cota.transportadora + ' - ' + cota.servico.toUpperCase() + '</h4><p><i class="fas fa-clock me-1"></i>' + cota.prazo + ' dia(s) útil(eis)' + (cota.msg ? '<br><i class="fas fa-info-circle me-1"></i>' + cota.msg : '') + '</p></div><div class="frete-cota-preco"><div class="valor">R$ ' + cota.valor.toFixed(2).replace('.', ',') + '</div><div class="prazo">' + cota.prazo + ' dia(s)</div></div></div>';
+                });
+                resultadosEl.innerHTML = html;
+                selecionarCotaMandaBem(0);
+            } catch (err) {
+                console.error('[MANDABEM] Erro:', err);
+                resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>Erro: ' + err.message + '</div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-calculator me-2"></i>Calcular Frete';
+            }
+        }
+
+        function selecionarCotaMandaBem(index) {
+            document.querySelectorAll('[id^="mb_cota_"]').forEach(el => el.classList.remove('selecionada'));
+            const el = document.getElementById('mb_cota_' + index);
+            if (el) el.classList.add('selecionada');
+            mbCotaSelecionada = mbCotasAtuais[index];
+            const infoEl = document.getElementById('mb_frete_selecionado_info');
+            infoEl.classList.add('ativo');
+            document.getElementById('mb_frete_selecionado_texto').innerHTML = mbCotaSelecionada.transportadora + ' ' + mbCotaSelecionada.servico.toUpperCase() + ' - <strong>R$ ' + mbCotaSelecionada.valor.toFixed(2).replace('.', ',') + '</strong> (' + mbCotaSelecionada.prazo + ' dia(s))';
+            document.getElementById('btnUsarFreteSelecionado').disabled = false;
+        }
+
+        async function usarFreteSelecionado() {
+            if (!mbCotaSelecionada || !mbSolicitacaoAtual) {
+                alert('Selecione uma opção de frete');
+                return;
+            }
+            const btn = document.getElementById('btnUsarFreteSelecionado');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+            try {
+                const updateData = {
+                    valor_frete: mbCotaSelecionada.valor,
+                    forma_envio: mbCotaSelecionada.servico,
+                    peso_kg: parseFloat(document.getElementById('mb_peso').value) || mbSolicitacaoAtual.peso_kg,
+                    comprimento_cm: parseFloat(document.getElementById('mb_comprimento').value) || mbSolicitacaoAtual.comprimento_cm,
+                    largura_cm: parseFloat(document.getElementById('mb_largura').value) || mbSolicitacaoAtual.largura_cm,
+                    altura_cm: parseFloat(document.getElementById('mb_altura').value) || mbSolicitacaoAtual.altura_cm,
+                    atualizado_em: new Date().toISOString()
+                };
+                const { error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .update(updateData)
+                    .eq('id', mbSolicitacaoAtual.id);
+                if (error) throw error;
+                showAlert('✅ Frete salvo! ' + mbCotaSelecionada.transportadora + ' ' + mbCotaSelecionada.servico.toUpperCase() + ' - R$ ' + mbCotaSelecionada.valor.toFixed(2).replace('.', ','), 'success');
+                fecharModalFreteMandaBem();
+                await carregarSolicitacoes();
+            } catch (err) {
+                console.error('[MANDABEM] Erro ao salvar frete:', err);
+                showAlert('Erro ao salvar frete: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check me-2"></i>Usar Este Frete';
+            }
+        }
+
+        function aplicarMascaraCEP(input) {
+            input.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g, '');
+                v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+                e.target.value = v;
+            });
+        }
+
     </script>
     <script src="whatsapp-envios-log.js?v=20260529"></script>
     <!-- Modal Detalhes Cobrança PIX -->
