@@ -624,7 +624,7 @@
                 <div class="frete-form-grid">
                     <div class="frete-form-group">
                         <label>CEP Origem *</label>
-                        <input type="text" id="mb_cep_origem" placeholder="00000-000" maxlength="9">
+                        <input type="text" id="mb_cep_origem" placeholder="00000-000" maxlength="9" value="88104-740">
                     </div>
                     <div class="frete-form-group">
                         <label>CEP Destino *</label>
@@ -653,6 +653,16 @@
                     <div class="frete-form-group">
                         <label>Valor Declarado (R$)</label>
                         <input type="number" id="mb_valor_declarado" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Tipo de Serviço *</label>
+                        <select id="mb_tipo_servico">
+                            <option value="PAC">📦 PAC (Econômico)</option>
+                            <option value="SEDEX">🚀 SEDEX (Expresso)</option>
+                            <option value="PACMINI">📬 PAC Mini (Pequenos)</option>
+                            <option value="PAC,SEDEX,PACMINI">🔍 Todos os tipos</option>
+                        </select>
+                        <small style="color:#666;font-size:0.75rem;">Selecione o tipo de envio desejado</small>
                     </div>
                     <div class="frete-form-group" style="display:flex;align-items:end;">
                         <button class="btn-calcular-frete w-100" id="btnExecutarCalculoFrete" onclick="executarCalculoFreteMandaBem()">
@@ -2220,7 +2230,7 @@ Obrigada pela preferência! 🥰`;
             document.getElementById('mb_comprimento').value = mbSolicitacaoAtual.comprimento_cm || 16;
             document.getElementById('mb_largura').value = mbSolicitacaoAtual.largura_cm || 11;
             document.getElementById('mb_altura').value = mbSolicitacaoAtual.altura_cm || 2;
-            const cepOrigem = localStorage.getItem('cep_origem') || '89200000';
+            const cepOrigem = localStorage.getItem('cep_origem') || '88104740';
             document.getElementById('mb_cep_origem').value = cepOrigem;
             document.getElementById('mb_resultados_frete').innerHTML = '';
             document.getElementById('mb_frete_selecionado_info').classList.remove('ativo');
@@ -2329,7 +2339,7 @@ Obrigada pela preferência! 🥰`;
                             largura: largura,
                             altura: altura,
                             valor_declarado: valorDeclarado,
-                            servicos: ['pac', 'sedex', 'jadlog']
+                            tipo_servico: tipoServico
                         })
                     }
                 );
