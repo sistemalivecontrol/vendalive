@@ -2192,6 +2192,13 @@ Obrigada pela preferência! 🥰`;
         let mbSolicitacaoAtual = null;
 
         function abrirModalFreteMandaBem() {
+            console.log('[MANDABEM-FRETE] ===== ABRINDO MODAL FRETE =====');
+            console.log('[MANDABEM-FRETE] idsSelecionados.size:', idsSelecionados.size);
+            console.log('[MANDABEM-FRETE] localStorage cliente_id:', localStorage.getItem('cliente_id'));
+            console.log('[MANDABEM-FRETE] sessionStorage cliente_id:', sessionStorage.getItem('cliente_id'));
+            console.log('[MANDABEM-FRETE] window.authClienteId:', window.authClienteId);
+            console.log('[MANDABEM-FRETE] clienteAtual:', clienteAtual);
+
             if (idsSelecionados.size === 0) {
                 alert('Selecione pelo menos uma solicitação na tabela para calcular o frete');
                 return;
@@ -2202,6 +2209,7 @@ Obrigada pela preferência! 🥰`;
             }
             const index = Array.from(idsSelecionados)[0];
             mbSolicitacaoAtual = solicitacoes[index];
+            console.log('[MANDABEM-FRETE] Solicitação selecionada:', mbSolicitacaoAtual ? mbSolicitacaoAtual.numero_solicitacao : 'null');
             if (!mbSolicitacaoAtual) {
                 alert('Solicitação não encontrada');
                 return;
@@ -2228,8 +2236,18 @@ Obrigada pela preferência! 🥰`;
         }
 
         async function executarCalculoFreteMandaBem() {
+            console.log('[MANDABEM-FRETE] ===== INICIANDO CÁLCULO DE FRETE =====');
             const btn = document.getElementById('btnExecutarCalculoFrete');
             const resultadosEl = document.getElementById('mb_resultados_frete');
+
+            // LOGS DE DIAGNÓSTICO
+            console.log('[MANDABEM-FRETE] SUPABASE_URL:', typeof SUPABASE_URL, SUPABASE_URL ? 'definido' : 'INDEFINIDO');
+            console.log('[MANDABEM-FRETE] SUPABASE_ANON_KEY:', typeof SUPABASE_ANON_KEY, SUPABASE_ANON_KEY ? 'definido (len=' + SUPABASE_ANON_KEY.length + ')' : 'INDEFINIDO');
+            console.log('[MANDABEM-FRETE] localStorage cliente_id:', localStorage.getItem('cliente_id'));
+            console.log('[MANDABEM-FRETE] sessionStorage cliente_id:', sessionStorage.getItem('cliente_id'));
+            console.log('[MANDABEM-FRETE] window.authClienteId:', window.authClienteId);
+            console.log('[MANDABEM-FRETE] window.sessaoUsuario:', window.sessaoUsuario);
+
             const cepOrigem = document.getElementById('mb_cep_origem').value.trim().replace(/\D/g, '');
             const cepDestino = document.getElementById('mb_cep_destino').value.trim().replace(/\D/g, '');
             const peso = parseFloat(document.getElementById('mb_peso').value) || 1;
@@ -2237,19 +2255,53 @@ Obrigada pela preferência! 🥰`;
             const largura = parseFloat(document.getElementById('mb_largura').value) || 11;
             const altura = parseFloat(document.getElementById('mb_altura').value) || 2;
             const valorDeclarado = parseFloat(document.getElementById('mb_valor_declarado').value) || 0;
+
+            console.log('[MANDABEM-FRETE] Dados do formulário:', { cepOrigem, cepDestino, peso, comprimento, largura, altura, valorDeclarado });
+
             if (!cepOrigem || !cepDestino) {
                 alert('Preencha os CEPs de origem e destino');
                 return;
             }
-            const clienteSistemaId = localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id');
+
+            // Tentar obter cliente_id de múltiplas fontes
+            let clienteSistemaId = localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || window.authClienteId;
+            console.log('[MANDABEM-FRETE] clienteSistemaId (tentativa 1):', clienteSistemaId);
+
+            // Se ainda não tem, tentar do sessaoUsuario
+            if (!clienteSistemaId && window.sessaoUsuario && window.sessaoUsuario.cliente_id) {
+                clienteSistemaId = window.sessaoUsuario.cliente_id;
+                console.log('[MANDABEM-FRETE] clienteSistemaId (do sessaoUsuario):', clienteSistemaId);
+            }
+
+            // Se ainda não tem, tentar do usuarioAtual
+            if (!clienteSistemaId && usuarioAtual && usuarioAtual.cliente_id) {
+                clienteSistemaId = usuarioAtual.cliente_id;
+                console.log('[MANDABEM-FRETE] clienteSistemaId (do usuarioAtual):', clienteSistemaId);
+            }
+
+            // Se ainda não tem, tentar do clienteAtual
+            if (!clienteSistemaId && clienteAtual) {
+                clienteSistemaId = clienteAtual;
+                console.log('[MANDABEM-FRETE] clienteSistemaId (do clienteAtual):', clienteSistemaId);
+            }
+
+            console.log('[MANDABEM-FRETE] clienteSistemaId FINAL:', clienteSistemaId);
+
             if (!clienteSistemaId) {
-                alert('Erro: Cliente não identificado');
+                console.error('[MANDABEM-FRETE] ❌ ERRO: Não foi possível obter cliente_id de NENHUMA fonte!');
+                console.error('[MANDABEM-FRETE] localStorage keys:', Object.keys(localStorage));
+                console.error('[MANDABEM-FRETE] sessionStorage keys:', Object.keys(sessionStorage));
+                alert('Erro: Cliente não identificado. Verifique o console (F12) para mais detalhes.');
                 return;
             }
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculando...';
             resultadosEl.innerHTML = '<div class="frete-loading"><i class="fas fa-shipping-fast fa-spin fa-2x"></i><p class="mt-2">Consultando transportadoras na Manda Bem...</p></div>';
             try {
+                console.log('[MANDABEM-FRETE] Enviando request para Edge Function...');
+                console.log('[MANDABEM-FRETE] URL:', SUPABASE_URL + '/functions/v1/mandabem-calcular-frete');
+                console.log('[MANDABEM-FRETE] cliente_sistema_id no body:', clienteSistemaId);
+
                 const response = await fetch(
                     SUPABASE_URL + '/functions/v1/mandabem-calcular-frete',
                     {
@@ -2288,8 +2340,11 @@ Obrigada pela preferência! 🥰`;
                 resultadosEl.innerHTML = html;
                 selecionarCotaMandaBem(0);
             } catch (err) {
-                console.error('[MANDABEM] Erro:', err);
-                resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>Erro: ' + err.message + '</div>';
+                console.error('[MANDABEM-FRETE] ❌ ERRO NO FETCH:', err);
+                console.error('[MANDABEM-FRETE] Tipo do erro:', err.name);
+                console.error('[MANDABEM-FRETE] Mensagem:', err.message);
+                console.error('[MANDABEM-FRETE] Stack:', err.stack);
+                resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>Erro: ' + err.message + '<br><small style="color:#666">Verifique o console (F12) para detalhes.</small></div>';
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-calculator me-2"></i>Calcular Frete';
