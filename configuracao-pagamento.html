@@ -1599,8 +1599,12 @@
             if (statusDiv) statusDiv.innerHTML = '';
             habilitarBotoes(false);
 
+            var sucesso = false;
+            var ultimoErro = '';
+
+            // TENTATIVA 1: Edge Function direta (pode falhar por CORS)
             try {
-                var response = await fetch(EDGE_FUNCTIONS_URL + '/mandabem-testar-conexao', {
+                var response = await fetch(EDGE_FUNCTIONS_URL + '/mandabem-verificar-conexao', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1611,22 +1615,49 @@
 
                 var data = await response.json();
 
-                if (loading) loading.classList.remove('ativo');
-
                 if (response.ok && data.success) {
+                    sucesso = true;
                     if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Conexão Manda Bem OK!</div><p style="color: #636E72; font-size: 0.9rem; margin-top: 10px;">' + (data.transportadoras || 'API respondendo') + '</p>';
                     mostrarSucessoConfig('✅ Conexão com Manda Bem estabelecida!');
                 } else {
-                    if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ ' + (data.error || 'Erro desconhecido') + '</div>';
-                    mostrarErroConfig('❌ ' + (data.error || 'Erro desconhecido'));
+                    ultimoErro = data.error || 'Erro desconhecido';
                 }
             } catch (error) {
-                if (loading) loading.classList.remove('ativo');
-                if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ Erro de conexão: ' + error.message + '</div>';
-                mostrarErroConfig('Erro: ' + error.message);
-            } finally {
-                habilitarBotoes(true);
+                console.warn('[MANDABEM] Tentativa 1 (Edge Function) falhou:', error.message);
+                ultimoErro = error.message;
             }
+
+            // TENTATIVA 2: Via Supabase REST API (bypass CORS)
+            if (!sucesso) {
+                try {
+                    console.log('[MANDABEM] Tentando via Supabase REST API...');
+                    var { data, error } = await supabaseClient.functions.invoke('mandabem-verificar-conexao', {
+                        body: { cliente_sistema_id: clienteSistemaId }
+                    });
+
+                    if (error) throw error;
+
+                    if (data && data.success) {
+                        sucesso = true;
+                        if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-ok">✅ Conexão Manda Bem OK! (via Supabase)</div><p style="color: #636E72; font-size: 0.9rem; margin-top: 10px;">' + (data.transportadoras || 'API respondendo') + '</p>';
+                        mostrarSucessoConfig('✅ Conexão com Manda Bem estabelecida!');
+                    } else {
+                        ultimoErro = (data && data.error) ? data.error : 'Erro desconhecido via Supabase';
+                    }
+                } catch (error2) {
+                    console.warn('[MANDABEM] Tentativa 2 (Supabase REST) falhou:', error2.message);
+                    ultimoErro = error2.message;
+                }
+            }
+
+            if (loading) loading.classList.remove('ativo');
+
+            if (!sucesso) {
+                if (statusDiv) statusDiv.innerHTML = '<div class="status-badge status-error">❌ ' + ultimoErro + '</div><p style="color: #636E72; font-size: 0.85rem; margin-top: 10px;">Tente fazer o deploy da Edge Function novamente ou verifique as configurações CORS no Supabase.</p>';
+                mostrarErroConfig('❌ ' + ultimoErro);
+            }
+
+            habilitarBotoes(true);
         }
 
         // ===== INICIAR =====
