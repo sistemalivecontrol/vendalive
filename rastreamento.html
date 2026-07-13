@@ -614,7 +614,7 @@
         </div>
     </div>
         <!-- ===== MODAL FRETE MANDA BEM ===== -->
-    <div class="modal-frete-overlay" id="modalFreteMandaBem" onclick="if(event.target===this)fecharModalFreteMandaBem()">
+    <div class="modal-frete-overlay" id="modalFreteMandaBem">
         <div class="modal-frete">
             <div class="modal-frete-header">
                 <h3><i class="fas fa-shipping-fast"></i> Calcular Frete - Manda Bem</h3>
@@ -2234,6 +2234,16 @@ Obrigada pela preferência! 🥰`;
             document.getElementById('modalFreteMandaBem').classList.remove('ativo');
             mbSolicitacaoAtual = null;
         }
+
+        // Fechar modal Manda Bem apenas com ESC (não clica fora)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                var modal = document.getElementById('modalFreteMandaBem');
+                if (modal && modal.classList.contains('ativo')) {
+                    fecharModalFreteMandaBem();
+                }
+            }
+        });
 
         async function executarCalculoFreteMandaBem() {
             console.log('[MANDABEM-FRETE] ===== INICIANDO CÁLCULO DE FRETE =====');
