@@ -1364,43 +1364,42 @@ async function aplicarFiltros() {
                 const posX = posicoesX[coluna];
                 const posY = posicoesY[linha];
                 const endereco = item.enderecos_pg || {};
-                // ✅ CORREÇÃO: clientes_pg (cliente final) em vez de clientes_sistema
                 const cliente = item.clientes_pg || {};
                 doc.setDrawColor(0, 0, 0);
                 doc.setLineWidth(0.5);
                 doc.rect(posX, posY, etiquetaLargura, etiquetaAltura);
-                doc.line(posX, posY + 28, posX + etiquetaLargura, posY + 28);
-                doc.setFontSize(7);
+                doc.line(posX, posY + 32, posX + etiquetaLargura, posY + 32);
+                doc.setFontSize(10);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
-                doc.text('REMETENTE:', posX + 3, posY + 6);
-                doc.setFontSize(9);
+                doc.text('REMETENTE:', posX + 3, posY + 7);
+                doc.setFontSize(13);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(0, 0, 0);
-                doc.text(REMETENTE.nome, posX + 3, posY + 13);
-                doc.setFontSize(8);
+                doc.text(REMETENTE.nome, posX + 3, posY + 15);
+                doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
-                doc.text(REMETENTE.endereco, posX + 3, posY + 19);
-                doc.text(`${REMETENTE.bairro} - ${REMETENTE.cidade} - ${REMETENTE.estado}`, posX + 3, posY + 24);
-                const destY = posY + 35;
-                doc.setFontSize(7);
+                doc.text(REMETENTE.endereco, posX + 3, posY + 22);
+                doc.text(`${REMETENTE.bairro} - ${REMETENTE.cidade} - ${REMETENTE.estado}`, posX + 3, posY + 28);
+                const destY = posY + 38;
+                doc.setFontSize(10);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
                 doc.text('DESTINATARIO:', posX + 3, destY);
                 if (item.numero_solicitacao) {
-                    doc.setFontSize(8);
+                    doc.setFontSize(11);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(255, 107, 138);
                     doc.text(`PEDIDO: ${item.numero_solicitacao}`, posX + etiquetaLargura - 3, destY, { align: 'right' });
                 }
-                doc.setFontSize(11);
+                doc.setFontSize(16);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(0, 0, 0);
                 const nome = (cliente.nome || 'NAO INFORMADO').toUpperCase();
                 const nomeLinhas = doc.splitTextToSize(nome, etiquetaLargura - 6);
-                doc.text(nomeLinhas, posX + 3, destY + 8);
-                let currentY = destY + 8 + (nomeLinhas.length * 5);
-                doc.setFontSize(9);
+                doc.text(nomeLinhas, posX + 3, destY + 10);
+                let currentY = destY + 10 + (nomeLinhas.length * 7);
+                doc.setFontSize(13);
                 doc.setFont('helvetica', 'normal');
                 const rua = endereco.rua || '';
                 const numero = endereco.numero || 'S/N';
@@ -1409,31 +1408,32 @@ async function aplicarFiltros() {
                 if (complemento) linhaEndereco += ` - ${complemento}`;
                 const linhasEndereco = doc.splitTextToSize(linhaEndereco, etiquetaLargura - 6);
                 doc.text(linhasEndereco, posX + 3, currentY);
-                currentY += (linhasEndereco.length * 4.5) + 2;
+                currentY += (linhasEndereco.length * 6.5) + 2;
                 if (endereco.bairro) {
+                    doc.setFont('helvetica', 'bold');
                     doc.text(`Bairro: ${endereco.bairro}`, posX + 3, currentY);
-                    currentY += 5;
+                    currentY += 7;
                 }
                 doc.setFont('helvetica', 'bold');
                 doc.text(`${endereco.cidade || ''} - ${endereco.estado || 'SC'}`, posX + 3, currentY);
-                currentY += 8;
-                doc.setFontSize(11);
+                currentY += 10;
+                doc.setFontSize(16);
                 doc.text(`CEP: ${formatarCEP(endereco.cep)}`, posX + 3, currentY + 1);
-                const obsY = posY + etiquetaAltura - 20;
+                const obsY = posY + etiquetaAltura - 24;
                 doc.setDrawColor(150, 150, 150);
                 doc.setLineWidth(0.3);
                 doc.line(posX + 3, obsY, posX + etiquetaLargura - 3, obsY);
-                doc.setFontSize(7);
+                doc.setFontSize(10);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(100, 100, 100);
-                doc.text('OBSERVACOES:', posX + 3, obsY + 5);
-                doc.setFontSize(8);
+                doc.text('OBSERVACOES:', posX + 3, obsY + 6);
+                doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(0, 0, 0);
                 const obs = item.observacoes || 'Nenhuma observacao';
                 const linhasObs = doc.splitTextToSize(obs, etiquetaLargura - 6);
-                doc.text(linhasObs.slice(0, 2), posX + 3, obsY + 10);
-                doc.setFontSize(6);
+                doc.text(linhasObs.slice(0, 2), posX + 3, obsY + 13);
+                doc.setFontSize(9);
                 doc.setTextColor(150, 150, 150);
                 doc.text(`${index + 1}/${selecionados.length}`, posX + etiquetaLargura - 2, posY + etiquetaAltura - 2, { align: 'right' });
                 etiquetaAtual++;
@@ -1442,69 +1442,7 @@ async function aplicarFiltros() {
             const novaAba = window.open(pdfBlobUrl, '_blank');
             if (!novaAba) alert('❌ Permita popups para este site.');
         }
-        // ============================================
-        // ETIQUETAS MODAL (COPIAR CAMPOS)
-        // ============================================
-        function abrirModalEtiquetas() {
-            if (idsSelecionados.size === 0) { showAlert('Selecione pelo menos uma', 'error'); return; }
-            const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
-            const container = document.getElementById('etiquetasContainer');
-            container.innerHTML = '';
-            selecionados.forEach((item, idx) => {
-                const endereco = item.enderecos_pg || {};
-                // ✅ CORREÇÃO: clientes_pg (cliente final) em vez de clientes_sistema
-                const cliente = item.clientes_pg || {};
-                const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || 'S/N'}${endereco.complemento ? ' - ' + endereco.complemento : ''}`;
-                const cidadeUF = `${endereco.cidade || ''} - ${endereco.estado || 'SC'}`;
-                const temMedidas = item.peso_kg || item.altura_cm || item.largura_cm || item.comprimento_cm;
-                const medidasHtml = temMedidas ? `
-                    <div class="etiqueta-secao">
-                        <div class="etiqueta-secao-titulo">📦 Medidas do Pacote</div>
-                        <div class="etiqueta-grid">
-                            ${item.peso_kg ? `<div class="campo-copiar"><span class="campo-label">Peso:</span><span class="campo-valor" id="peso-${idx}">${item.peso_kg} kg</span><button class="btn-copiar-campo" onclick="copiarCampo('peso-${idx}', this)">📋 Copiar</button></div>` : ''}
-                            ${item.altura_cm ? `<div class="campo-copiar"><span class="campo-label">Altura:</span><span class="campo-valor" id="altura-${idx}">${item.altura_cm} cm</span><button class="btn-copiar-campo" onclick="copiarCampo('altura-${idx}', this)">📋 Copiar</button></div>` : ''}
-                            ${item.largura_cm ? `<div class="campo-copiar"><span class="campo-label">Largura:</span><span class="campo-valor" id="largura-${idx}">${item.largura_cm} cm</span><button class="btn-copiar-campo" onclick="copiarCampo('largura-${idx}', this)">📋 Copiar</button></div>` : ''}
-                            ${item.comprimento_cm ? `<div class="campo-copiar"><span class="campo-label">Comprimento:</span><span class="campo-valor" id="comprimento-${idx}">${item.comprimento_cm} cm</span><button class="btn-copiar-campo" onclick="copiarCampo('comprimento-${idx}', this)">📋 Copiar</button></div>` : ''}
-                        </div>
-                    </div>` : `
-                    <div class="etiqueta-secao">
-                        <div class="etiqueta-secao-titulo">📦 Medidas do Pacote</div>
-                        <div style="padding: 15px; background: #FFF3E0; border-radius: 8px; color: #E65100; font-size: 0.9rem;">⚠️ Medidas nao cadastradas</div>
-                    </div>`;
-                const card = document.createElement('div');
-                card.className = 'etiqueta-card';
-                card.innerHTML = `
-                    <div class="etiqueta-numero">${item.numero_solicitacao || 'Sem Numero'}</div>
-                    <div class="etiqueta-secao">
-                        <div class="etiqueta-secao-titulo">👤 Dados do Destinatario</div>
-                        <div class="etiqueta-grid">
-                            <div class="campo-copiar"><span class="campo-label">Nome:</span><span class="campo-valor" id="nome-${idx}">${cliente.nome || '-'}</span><button class="btn-copiar-campo" onclick="copiarCampo('nome-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">CPF:</span><span class="campo-valor" id="cpf-${idx}">${formatarCPF(cliente.cpf)}</span><button class="btn-copiar-campo" onclick="copiarCampo('cpf-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">WhatsApp:</span><span class="campo-valor" id="whatsapp-${idx}">${cliente.whatsapp || '-'}</span><button class="btn-copiar-campo" onclick="copiarCampo('whatsapp-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">Instagram:</span><span class="campo-valor" id="instagram-${idx}">${cliente.instagram || '-'}</span><button class="btn-copiar-campo" onclick="copiarCampo('instagram-${idx}', this)">📋 Copiar</button></div>
-                        </div>
-                    </div>
-                    <div class="etiqueta-secao">
-                        <div class="etiqueta-secao-titulo">📍 Endereco de Entrega</div>
-                        <div class="etiqueta-grid">
-                            <div class="campo-copiar campo-endereco-completo"><span class="campo-label">Endereco:</span><span class="campo-valor" id="endereco-${idx}">${enderecoCompleto}</span><button class="btn-copiar-campo" onclick="copiarCampo('endereco-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">Bairro:</span><span class="campo-valor" id="bairro-${idx}">${endereco.bairro || '-'}</span><button class="btn-copiar-campo" onclick="copiarCampo('bairro-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">Cidade/UF:</span><span class="campo-valor" id="cidade-${idx}">${cidadeUF}</span><button class="btn-copiar-campo" onclick="copiarCampo('cidade-${idx}', this)">📋 Copiar</button></div>
-                            <div class="campo-copiar"><span class="campo-label">CEP:</span><span class="campo-valor" id="cep-${idx}">${formatarCEP(endereco.cep)}</span><button class="btn-copiar-campo" onclick="copiarCampo('cep-${idx}', this)">📋 Copiar</button></div>
-                        </div>
-                    </div>
-                    ${medidasHtml}
-                    <div class="etiqueta-secao">
-                        <div class="etiqueta-secao-titulo">📝 Informacoes Adicionais</div>
-                        <div class="etiqueta-grid">
-                            <div class="campo-copiar campo-endereco-completo"><span class="campo-label">Observacoes:</span><span class="campo-valor" id="obs-${idx}">${item.observacoes || 'Nenhuma observacao'}</span><button class="btn-copiar-campo" onclick="copiarCampo('obs-${idx}', this)">📋 Copiar</button></div>
-                        </div>
-                    </div>`;
-                container.appendChild(card);
-            });
-            document.getElementById('modalEtiquetas').classList.add('active');
-        }
-        function copiarCampo(elementId, botao) {
+function copiarCampo(elementId, botao) {
             const elemento = document.getElementById(elementId);
             if (!elemento) return;
             navigator.clipboard.writeText(elemento.textContent).then(() => {
