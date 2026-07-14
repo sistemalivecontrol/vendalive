@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotação de Frete - Manda Bem</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="./js/auth.js?v=20260714"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .header p { opacity: 0.9; font-size: 0.9rem; margin-top: 5px; }
+        .btn-voltar { background: white; color: #FF6B35; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .content { padding: 30px; }
+        .info-box { background: #FFF8F0; border: 2px solid #FFE0C0; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .info-box h3 { color: #E65100; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .info-item { display: flex; flex-direction: column; }
+        .info-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
+        .info-value { font-size: 1rem; color: #333; font-weight: 600; }
+        .loading-box { text-align: center; padding: 60px 20px; }
+        .loading-box i { font-size: 3rem; color: #FF6B35; animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .loading-box p { margin-top: 15px; color: #666; font-size: 1.1rem; }
+        .loading-box .sub { font-size: 0.85rem; color: #999; margin-top: 5px; }
+        .error-box { background: #FFF5F5; border: 2px solid #FFB8B8; border-radius: 12px; padding: 25px; text-align: center; }
+        .error-box h3 { color: #C53030; margin-bottom: 10px; }
+        .error-box p { color: #666; margin-bottom: 15px; }
+        .error-box code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; }
+        .resultados-box { margin-top: 20px; }
+        .resultados-box h3 { color: #2D3436; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .cota-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .cota-card:hover { border-color: #FF6B35; background: #FFF5F0; }
+        .cota-card.selecionada { border-color: #FF6B35; background: linear-gradient(135deg, #FFF5F0, #FFE8D6); box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2); }
+        .cota-info h4 { margin: 0 0 5px 0; color: #333; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .cota-info p { margin: 0; color: #666; font-size: 0.9rem; }
+        .cota-preco { text-align: right; }
+        .cota-preco .valor { font-size: 1.6rem; font-weight: bold; color: #FF6B35; }
+        .cota-preco .prazo { font-size: 0.85rem; color: #666; }
+        .cota-preco .original { font-size: 0.85rem; color: #999; text-decoration: line-through; }
+        .tag-melhor-preco { background: #27ae60; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
+        .tag-melhor-prazo { background: #3498db; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
+        .selo-real { display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; color: #2E7D32; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; }
+        .selo-estimado { display: inline-flex; align-items: center; gap: 6px; background: #FFF3E0; color: #E65100; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; }
+        .actions-footer { padding: 20px 30px; background: #F8F9FA; border-top: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn { padding: 12px 24px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .btn-secondary { background: linear-gradient(135deg, #636E72, #495057); color: white; }
+        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+        .btn-success:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
+        .frete-selecionado-info { margin-top: 20px; padding: 15px; background: #E8F5E9; border-radius: 10px; border-left: 4px solid #4CAF50; display: none; }
+        .frete-selecionado-info.ativo { display: block; }
+        .btn-calcular { background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 20px; }
+        .btn-calcular:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4); }
+        .btn-calcular:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-error { background: #FFF5F5; color: #C53030; border: 1px solid #FFB8B8; }
+        .alert-success { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; }
+        .alert-warning { background: #FFF8E1; color: #F57C00; border: 1px solid #FFE082; }
+        .transport-icon { font-size: 1.5rem; }
+        .correios { color: #003087; }
+        .jadlog { color: #E30613; }
+        .loggi { color: #00A3E0; }
+        .mini { color: #7B1FA2; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🚚 Cotação de Frete - Manda Bem</h1>
+                <p>Valores reais das transportadoras para sua entrega</p>
+            </div>
+            <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+        </div>
+
+        <div class="content">
+            <!-- Dados da solicitação -->
+            <div class="info-box" id="infoBox">
+                <h3>📦 Dados da Entrega</h3>
+                <div class="info-grid" id="infoGrid">
+                    <div class="info-item"><span class="info-label">Nº Pedido</span><span class="info-value" id="infoPedido">-</span></div>
+                    <div class="info-item"><span class="info-label">Cliente</span><span class="info-value" id="infoCliente">-</span></div>
+                    <div class="info-item"><span class="info-label">CEP Origem</span><span class="info-value" id="infoCepOrigem">-</span></div>
+                    <div class="info-item"><span class="info-label">CEP Destino</span><span class="info-value" id="infoCepDestino">-</span></div>
+                    <div class="info-item"><span class="info-label">Peso</span><span class="info-value" id="infoPeso">-</span></div>
+                    <div class="info-item"><span class="info-label">Dimensões</span><span class="info-value" id="infoDimensoes">-</span></div>
+                    <div class="info-item"><span class="info-label">Valor Declarado</span><span class="info-value" id="infoValor">-</span></div>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div id="alertContainer"></div>
+
+            <!-- Loading -->
+            <div class="loading-box" id="loadingBox">
+                <div style="font-size: 3rem;">🚚</div>
+                <p>Consultando transportadoras...</p>
+                <p class="sub">Manda Bem - PAC, SEDEX, Jadlog, Loggi</p>
+            </div>
+
+            <!-- Error -->
+            <div class="error-box hidden" id="errorBox">
+                <h3>⚠️ Erro ao consultar</h3>
+                <p id="errorMessage">Não foi possível obter cotações.</p>
+                <button class="btn btn-secondary" onclick="tentarNovamente()">🔄 Tentar Novamente</button>
+            </div>
+
+            <!-- Resultados -->
+            <div class="resultados-box hidden" id="resultadosBox">
+                <div class="selo-real" id="seloResultado">
+                    <span>✅</span> Valores reais da Manda Bem
+                </div>
+                <h3>📋 Opções de Frete Encontradas</h3>
+                <div id="cotasContainer"></div>
+                <div class="frete-selecionado-info" id="freteSelecionadoInfo">
+                    <strong><i class="fas fa-check-circle me-2"></i>Frete selecionado:</strong>
+                    <span id="freteSelecionadoTexto"></span>
+                </div>
+            </div>
+
+            <!-- Botão calcular (se precisar) -->
+            <button class="btn-calcular hidden" id="btnCalcular" onclick="calcularFrete()">
+                <span style="font-size: 1.2rem;">🔄</span> Calcular Frete
+            </button>
+        </div>
+
+        <div class="actions-footer" id="actionsFooter" style="display: none;">
+            <div style="color:#636E72;font-size:0.9rem;">
+                <span id="footerInfo">Selecione uma opção de frete</span>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-secondary" onclick="voltar()">Cancelar</button>
+                <button class="btn btn-success" id="btnUsarFrete" onclick="usarFreteSelecionado()" disabled>
+                    ✅ Usar Este Frete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ VARIÁVEIS GLOBAIS ============
+        let dadosSolicitacao = null;
+        let cotasAtuais = [];
+        let cotaSelecionada = null;
+        let supabaseClient = null;
+
+        // ============ INICIALIZAÇÃO ============
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('[MANDABEM-PAGE] Página carregada');
+
+            // Aguardar auth.js carregar
+            await new Promise(resolve => {
+                const check = () => {
+                    if (window.supabaseClient) { supabaseClient = window.supabaseClient; resolve(); }
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+
+            // Ler dados da URL
+            const params = new URLSearchParams(window.location.search);
+            dadosSolicitacao = {
+                solicitacao_id: params.get('solicitacao_id'),
+                cliente_id: params.get('cliente_id'),
+                cliente_sistema_id: params.get('cliente_sistema_id'),
+                pedido: params.get('pedido') || '-',
+                cliente_nome: params.get('cliente_nome') || '-',
+                cep_origem: params.get('cep_origem') || '',
+                cep_destino: params.get('cep_destino') || '',
+                peso: parseFloat(params.get('peso')) || 1,
+                comprimento: parseFloat(params.get('comprimento')) || 16,
+                largura: parseFloat(params.get('largura')) || 11,
+                altura: parseFloat(params.get('altura')) || 2,
+                valor_declarado: parseFloat(params.get('valor_declarado')) || 0
+            };
+
+            console.log('[MANDABEM-PAGE] Dados recebidos:', dadosSolicitacao);
+
+            // Preencher info box
+            document.getElementById('infoPedido').textContent = dadosSolicitacao.pedido;
+            document.getElementById('infoCliente').textContent = decodeURIComponent(dadosSolicitacao.cliente_nome);
+            document.getElementById('infoCepOrigem').textContent = formatarCEP(dadosSolicitacao.cep_origem);
+            document.getElementById('infoCepDestino').textContent = formatarCEP(dadosSolicitacao.cep_destino);
+            document.getElementById('infoPeso').textContent = dadosSolicitacao.peso + ' kg';
+            document.getElementById('infoDimensoes').textContent = 
+                dadosSolicitacao.altura + 'x' + dadosSolicitacao.largura + 'x' + dadosSolicitacao.comprimento + ' cm';
+            document.getElementById('infoValor').textContent = 'R$ ' + dadosSolicitacao.valor_declarado.toFixed(2).replace('.', ',');
+
+            // Validar dados
+            if (!dadosSolicitacao.cep_destino || !dadosSolicitacao.cliente_sistema_id) {
+                mostrarErro('Dados incompletos. Volte para o rastreamento e selecione uma solicitação.');
+                return;
+            }
+
+            // Iniciar cálculo automaticamente
+            calcularFrete();
+        });
+
+        // ============ FUNÇÃO PRINCIPAL ============
+        async function calcularFrete() {
+            console.log('[MANDABEM-PAGE] Iniciando cálculo...');
+
+            mostrarLoading(true);
+            mostrarErro(false);
+            mostrarResultados(false);
+            document.getElementById('actionsFooter').style.display = 'none';
+            document.getElementById('btnCalcular').classList.add('hidden');
+
+            try {
+                // PASSO 1: Buscar credenciais na Edge Function
+                console.log('[MANDABEM-PAGE] Buscando credenciais...');
+
+                const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+                const credResponse = await fetch(
+                    SUPABASE_URL + '/functions/v1/mandabem-calcular-frete',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        },
+                        body: JSON.stringify({
+                            cliente_sistema_id: dadosSolicitacao.cliente_sistema_id
+                        })
+                    }
+                );
+
+                const credData = await credResponse.json();
+                console.log('[MANDABEM-PAGE] Credenciais:', credData);
+
+                if (!credData.success || !credData.credentials) {
+                    throw new Error(credData.error || 'Falha ao obter credenciais do Manda Bem');
+                }
+
+                // PASSO 2: Chamar API Manda Bem diretamente do navegador
+                console.log('[MANDABEM-PAGE] Chamando API Manda Bem...');
+
+                const payload = {
+                    api_id: credData.credentials.api_id,
+                    api_token: credData.credentials.api_token,
+                    cep_origem: dadosSolicitacao.cep_origem.replace(/\D/g, ''),
+                    cep_destino: dadosSolicitacao.cep_destino.replace(/\D/g, ''),
+                    peso: dadosSolicitacao.peso,
+                    comprimento: dadosSolicitacao.comprimento,
+                    largura: dadosSolicitacao.largura,
+                    altura: dadosSolicitacao.altura,
+                    valor_declarado: dadosSolicitacao.valor_declarado,
+                    servicos: ['pac', 'sedex', 'jadlog', 'loggi']
+                };
+
+                console.log('[MANDABEM-PAGE] Payload:', { ...payload, api_token: '***' });
+
+                const mbResponse = await fetch(credData.api_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const mbResult = await mbResponse.json();
+                console.log('[MANDABEM-PAGE] Resposta Manda Bem:', JSON.stringify(mbResult).substring(0, 2000));
+
+                if (!mbResponse.ok) {
+                    throw new Error(mbResult.error || mbResult.message || 'Erro na API Manda Bem (HTTP ' + mbResponse.status + ')');
+                }
+
+                // PASSO 3: Processar resultados
+                cotasAtuais = extrairCotas(mbResult);
+
+                if (cotasAtuais.length === 0) {
+                    throw new Error('A API Manda Bem não retornou cotações para esta rota.');
+                }
+
+                console.log('[MANDABEM-PAGE] Cotas encontradas:', cotasAtuais.length);
+                exibirCotas(cotasAtuais);
+
+            } catch (err) {
+                console.error('[MANDABEM-PAGE] ERRO:', err);
+
+                // Se erro for de DNS/CORS, tentar com proxy CORS
+                if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('CORS') || err.message.includes('NetworkError'))) {
+                    console.log('[MANDABEM-PAGE] Tentando com proxy CORS...');
+                    await tentarComProxy();
+                    return;
+                }
+
+                mostrarErro(err.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        // ============ TENTAR COM PROXY CORS ============
+        async function tentarComProxy() {
+            try {
+                const proxyUrls = [
+                    'https://corsproxy.io/?',
+                    'https://api.allorigins.win/raw?url=',
+                    'https://cors-anywhere.herokuapp.com/'
+                ];
+
+                // Buscar credenciais novamente
+                const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+                const credResponse = await fetch(
+                    SUPABASE_URL + '/functions/v1/mandabem-calcular-frete',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        },
+                        body: JSON.stringify({
+                            cliente_sistema_id: dadosSolicitacao.cliente_sistema_id
+                        })
+                    }
+                );
+                const credData = await credResponse.json();
+
+                if (!credData.success) throw new Error('Sem credenciais');
+
+                const payload = {
+                    api_id: credData.credentials.api_id,
+                    api_token: credData.credentials.api_token,
+                    cep_origem: dadosSolicitacao.cep_origem.replace(/\D/g, ''),
+                    cep_destino: dadosSolicitacao.cep_destino.replace(/\D/g, ''),
+                    peso: dadosSolicitacao.peso,
+                    comprimento: dadosSolicitacao.comprimento,
+                    largura: dadosSolicitacao.largura,
+                    altura: dadosSolicitacao.altura,
+                    valor_declarado: dadosSolicitacao.valor_declarado,
+                    servicos: ['pac', 'sedex', 'jadlog', 'loggi']
+                };
+
+                // Tentar cada proxy
+                for (const proxy of proxyUrls) {
+                    try {
+                        console.log('[MANDABEM-PAGE] Tentando proxy:', proxy);
+                        const response = await fetch(proxy + encodeURIComponent(credData.api_url), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            cotasAtuais = extrairCotas(result);
+                            if (cotasAtuais.length > 0) {
+                                console.log('[MANDABEM-PAGE] Proxy funcionou!');
+                                exibirCotas(cotasAtuais);
+                                mostrarLoading(false);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('[MANDABEM-PAGE] Proxy falhou:', e.message);
+                    }
+                }
+
+                throw new Error('Nenhum proxy CORS funcionou. A API Manda Bem pode estar bloqueando requisições do navegador.');
+
+            } catch (err) {
+                console.error('[MANDABEM-PAGE] Proxy falhou:', err);
+                mostrarErro('A API Manda Bem não está acessível diretamente do navegador. ' +
+                    'Isso pode ser uma restrição de CORS ou DNS. ' +
+                    'Erro: ' + err.message);
+                mostrarLoading(false);
+            }
+        }
+
+        // ============ EXTRAIR COTAS ============
+        function extrairCotas(result) {
+            const cotas = [];
+
+            // Tentar vários formatos de resposta
+            const formatos = [
+                result?.cotacoes,
+                result?.resultado,
+                result?.quotas,
+                result?.cotas,
+                result?.data,
+                result?.results,
+                result?.shipping_options,
+                result?.opcoes,
+                result?.rates
+            ];
+
+            for (const lista of formatos) {
+                if (Array.isArray(lista) && lista.length > 0) {
+                    for (const c of lista) {
+                        cotas.push({
+                            transportadora: c.transportadora || c.carrier || c.company || c.empresa || 'Manda Bem',
+                            servico: c.servico || c.service || c.tipo || c.name || c.modalidade || 'PAC',
+                            valor: parseFloat(c.valor || c.price || c.preco || c.total || c.cost || c.valor_frete || 0),
+                            prazo: parseInt(c.prazo || c.deadline || c.delivery_time || c.dias || c.time || c.prazo_entrega || 0),
+                            msg: c.msg || c.message || c.note || c.observacao || '',
+                            original: c.valor_original || c.original_price || c.preco_original || null
+                        });
+                    }
+                    break;
+                }
+            }
+
+            // Se a API retornou objeto com transportadoras como chaves
+            if (cotas.length === 0 && typeof result === 'object' && result !== null) {
+                Object.keys(result).forEach(key => {
+                    const item = result[key];
+                    if (typeof item === 'object' && item !== null && (item.valor || item.price || item.preco)) {
+                        cotas.push({
+                            transportadora: item.transportadora || item.carrier || key || 'Manda Bem',
+                            servico: item.servico || item.service || item.tipo || key || 'PAC',
+                            valor: parseFloat(item.valor || item.price || item.preco || item.total || 0),
+                            prazo: parseInt(item.prazo || item.deadline || item.delivery_time || item.dias || 0),
+                            msg: item.msg || item.message || '',
+                            original: item.valor_original || item.original_price || null
+                        });
+                    }
+                });
+            }
+
+            return cotas;
+        }
+
+        // ============ EXIBIR COTAS ============
+        function exibirCotas(cotas) {
+            const container = document.getElementById('cotasContainer');
+            container.innerHTML = '';
+
+            // Ordenar por valor
+            cotas.sort((a, b) => a.valor - b.valor);
+
+            // Encontrar melhor preço e melhor prazo
+            const melhorPreco = cotas[0];
+            const melhorPrazo = cotas.reduce((min, c) => c.prazo < min.prazo ? c : min, cotas[0]);
+
+            cotas.forEach((cota, index) => {
+                const isMelhorPreco = cota === melhorPreco;
+                const isMelhorPrazo = cota === melhorPrazo && cota !== melhorPreco;
+
+                const card = document.createElement('div');
+                card.className = 'cota-card ' + (index === 0 ? 'selecionada' : '');
+                card.id = 'cota_' + index;
+                card.onclick = () => selecionarCota(index);
+
+                const iconClass = getIconClass(cota.transportadora, cota.servico);
+                const iconColor = getIconColor(cota.transportadora, cota.servico);
+
+                card.innerHTML =
+                    '<div class="cota-info">' +
+                    '<h4>' +
+                    '<span class="transport-icon ' + iconColor + '">' + iconClass + '</span> ' +
+                    cota.transportadora + ' - ' + cota.servico.toUpperCase() +
+                    (isMelhorPreco ? '<span class="tag-melhor-preco">💰 Melhor Preço</span>' : '') +
+                    (isMelhorPrazo ? '<span class="tag-melhor-prazo">⚡ Melhor Prazo</span>' : '') +
+                    '</h4>' +
+                    '<p>⏱️ Até ' + cota.prazo + ' dia(s) útil(eis)' + (cota.msg ? ' | ' + cota.msg : '') + '</p>' +
+                    '</div>' +
+                    '<div class="cota-preco">' +
+                    (cota.original ? '<div class="original">R$ ' + cota.original.toFixed(2).replace('.', ',') + '</div>' : '') +
+                    '<div class="valor">R$ ' + cota.valor.toFixed(2).replace('.', ',') + '</div>' +
+                    '<div class="prazo">' + cota.prazo + ' dia(s)</div>' +
+                    '</div>';
+
+                container.appendChild(card);
+            });
+
+            mostrarResultados(true);
+            document.getElementById('actionsFooter').style.display = 'flex';
+            selecionarCota(0);
+        }
+
+        function getIconClass(transportadora, servico) {
+            const t = (transportadora + '').toLowerCase();
+            const s = (servico + '').toLowerCase();
+            if (t.includes('correios') || s.includes('pac') || s.includes('sedex')) return '📮';
+            if (t.includes('jadlog')) return '📦';
+            if (t.includes('loggi')) return '🛵';
+            if (t.includes('mini')) return '📬';
+            return '🚚';
+        }
+
+        function getIconColor(transportadora, servico) {
+            const t = (transportadora + '').toLowerCase();
+            const s = (servico + '').toLowerCase();
+            if (t.includes('correios') || s.includes('pac') || s.includes('sedex')) return 'correios';
+            if (t.includes('jadlog')) return 'jadlog';
+            if (t.includes('loggi')) return 'loggi';
+            if (t.includes('mini')) return 'mini';
+            return '';
+        }
+
+        // ============ SELECIONAR COTA ============
+        function selecionarCota(index) {
+            document.querySelectorAll('.cota-card').forEach(el => el.classList.remove('selecionada'));
+            const el = document.getElementById('cota_' + index);
+            if (el) el.classList.add('selecionada');
+
+            cotaSelecionada = cotasAtuais[index];
+
+            const infoEl = document.getElementById('freteSelecionadoInfo');
+            infoEl.classList.add('ativo');
+            document.getElementById('freteSelecionadoTexto').innerHTML =
+                cotaSelecionada.transportadora + ' ' + cotaSelecionada.servico.toUpperCase() +
+                ' - <strong>R$ ' + cotaSelecionada.valor.toFixed(2).replace('.', ',') + '</strong>' +
+                ' (' + cotaSelecionada.prazo + ' dia(s))';
+
+            document.getElementById('btnUsarFrete').disabled = false;
+            document.getElementById('footerInfo').textContent = 'Frete selecionado: ' +
+                cotaSelecionada.transportadora + ' ' + cotaSelecionada.servico.toUpperCase();
+        }
+
+        // ============ USAR FRETE SELECIONADO ============
+        async function usarFreteSelecionado() {
+            if (!cotaSelecionada || !dadosSolicitacao) {
+                alert('Selecione uma opção de frete');
+                return;
+            }
+
+            const btn = document.getElementById('btnUsarFrete');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Salvando...';
+
+            try {
+                if (!supabaseClient) {
+                    throw new Error('Supabase não conectado');
+                }
+
+                const updateData = {
+                    valor_frete: cotaSelecionada.valor,
+                    forma_envio: cotaSelecionada.servico,
+                    peso_kg: dadosSolicitacao.peso,
+                    comprimento_cm: dadosSolicitacao.comprimento,
+                    largura_cm: dadosSolicitacao.largura,
+                    altura_cm: dadosSolicitacao.altura,
+                    atualizado_em: new Date().toISOString()
+                };
+
+                const { error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .update(updateData)
+                    .eq('id', dadosSolicitacao.solicitacao_id);
+
+                if (error) throw error;
+
+                // Alertar sucesso e voltar
+                alert('✅ Frete salvo com sucesso!\n\n' +
+                    cotaSelecionada.transportadora + ' ' + cotaSelecionada.servico.toUpperCase() +
+                    ' - R$ ' + cotaSelecionada.valor.toFixed(2).replace('.', ','));
+
+                voltar();
+
+            } catch (err) {
+                console.error('[MANDABEM-PAGE] Erro ao salvar:', err);
+                alert('❌ Erro ao salvar frete: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '✅ Usar Este Frete';
+            }
+        }
+
+        // ============ UTILITÁRIOS ============
+        function mostrarLoading(show) {
+            document.getElementById('loadingBox').style.display = show ? 'block' : 'none';
+        }
+
+        function mostrarErro(msg) {
+            const box = document.getElementById('errorBox');
+            if (msg === false) {
+                box.classList.add('hidden');
+                return;
+            }
+            document.getElementById('errorMessage').textContent = msg;
+            box.classList.remove('hidden');
+            document.getElementById('btnCalcular').classList.remove('hidden');
+        }
+
+        function mostrarResultados(show) {
+            document.getElementById('resultadosBox').classList.toggle('hidden', !show);
+        }
+
+        function tentarNovamente() {
+            calcularFrete();
+        }
+
+        function voltar() {
+            window.location.href = 'rastreamento.html';
+        }
+
+        function formatarCEP(cep) {
+            if (!cep) return '-';
+            cep = cep.toString().replace(/\D/g, '');
+            return cep.length === 8 ? cep.replace(/(\d{5})(\d{3})/, '$1-$2') : cep;
+        }
+
+        // ============ ALERTAS ============
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-' + type;
+            alert.textContent = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+    </script>
+</body>
+</html>
