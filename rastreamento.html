@@ -1520,17 +1520,16 @@ Obrigada pela preferência! 🥰`;
             }
         });
 
+        
         async function executarCalculoFreteMandaBem() {
-            console.log('[MANDABEM-FRETE] ===== INICIANDO CÁLCULO DE FRETE =====');
+            console.log('[MANDABEM-FRONT] ===== INICIANDO CÁLCULO DE FRETE =====');
             const btn = document.getElementById('btnExecutarCalculoFrete');
             const resultadosEl = document.getElementById('mb_resultados_frete');
 
-            // Obter SUPABASE_URL e SUPABASE_ANON_KEY do auth.js (já devem estar definidos globalmente)
-            // Se não estiverem, tentar obter do window.supabaseClient
+            // Obter credenciais Supabase do auth.js
             let SUPABASE_URL = window.SUPABASE_URL || (window.supabaseClient && window.supabaseClient.supabaseUrl) || '';
             let SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || (window.supabaseClient && window.supabaseClient.supabaseKey) || '';
 
-            // Fallback: tentar extrair do localStorage
             if (!SUPABASE_URL) {
                 try {
                     const stored = localStorage.getItem('supabase_config');
@@ -1542,14 +1541,10 @@ Obrigada pela preferência! 🥰`;
                 } catch(e) {}
             }
 
-            // Fallback hardcoded para o projeto do usuário
             if (!SUPABASE_URL) {
                 SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
             }
-
-            console.log('[MANDABEM-FRETE] SUPABASE_URL:', SUPABASE_URL ? 'definido' : 'INDEFINIDO');
-            console.log('[MANDABEM-FRETE] SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'definido (len=' + SUPABASE_ANON_KEY.length + ')' : 'INDEFINIDO');
 
             const cepOrigem = document.getElementById('mb_cep_origem').value.trim().replace(/\D/g, '');
             const cepDestino = document.getElementById('mb_cep_destino').value.trim().replace(/\D/g, '');
@@ -1559,8 +1554,6 @@ Obrigada pela preferência! 🥰`;
             const altura = parseFloat(document.getElementById('mb_altura').value) || 2;
             const valorDeclarado = parseFloat(document.getElementById('mb_valor_declarado').value) || 0;
 
-            console.log('[MANDABEM-FRETE] Dados do formulário:', { cepOrigem, cepDestino, peso, comprimento, largura, altura, valorDeclarado });
-
             if (!cepOrigem || !cepDestino) { alert('Preencha os CEPs de origem e destino'); return; }
 
             let clienteSistemaId = localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || window.authClienteId;
@@ -1568,22 +1561,19 @@ Obrigada pela preferência! 🥰`;
             if (!clienteSistemaId && usuarioAtual && usuarioAtual.cliente_id) clienteSistemaId = usuarioAtual.cliente_id;
             if (!clienteSistemaId && clienteAtual) clienteSistemaId = clienteAtual;
 
-            console.log('[MANDABEM-FRETE] clienteSistemaId FINAL:', clienteSistemaId);
-
             if (!clienteSistemaId) {
-                console.error('[MANDABEM-FRETE] ERRO: Não foi possível obter cliente_id!');
-                alert('Erro: Cliente não identificado. Verifique o console (F12) para mais detalhes.');
+                alert('Erro: Cliente não identificado.');
                 return;
             }
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculando...';
-            resultadosEl.innerHTML = '<div class="frete-loading"><i class="fas fa-shipping-fast fa-spin fa-2x"></i><p class="mt-2">Consultando transportadoras na Manda Bem...</p></div>';
-            try {
-                console.log('[MANDABEM-FRETE] Enviando request para Edge Function...');
-                console.log('[MANDABEM-FRETE] URL:', SUPABASE_URL + '/functions/v1/mandabem-calcular-frete');
-                console.log('[MANDABEM-FRETE] cliente_sistema_id no body:', clienteSistemaId);
 
-                const response = await fetch(
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Buscando credenciais...';
+            resultadosEl.innerHTML = '<div class="frete-loading"><i class="fas fa-shipping-fast fa-spin fa-2x"></i><p class="mt-2">Consultando transportadoras...</p></div>';
+
+            try {
+                // PASSO 1: Buscar credenciais na Edge Function
+                console.log('[MANDABEM-FRONT] Buscando credenciais na Edge Function...');
+                const credResponse = await fetch(
                     SUPABASE_URL + '/functions/v1/mandabem-calcular-frete',
                     {
                         method: 'POST',
@@ -1591,38 +1581,130 @@ Obrigada pela preferência! 🥰`;
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
                         },
-                        body: JSON.stringify({
-                            cliente_sistema_id: clienteSistemaId,
-                            cep_origem: cepOrigem,
-                            cep_destino: cepDestino,
-                            peso: peso,
-                            comprimento: comprimento,
-                            largura: largura,
-                            altura: altura,
-                            valor_declarado: valorDeclarado,
-                            servicos: ['pac', 'sedex', 'jadlog']
-                        })
+                        body: JSON.stringify({ cliente_sistema_id: clienteSistemaId })
                     }
                 );
-                const resultado = await response.json();
-                if (!response.ok || !resultado.success) {
-                    resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>' + (resultado.error || 'Erro ao calcular frete') + (resultado.details ? '<br><small style="color:#666">' + resultado.details + '</small>' : '') + '</div>';
-                    return;
+
+                const credData = await credResponse.json();
+                console.log('[MANDABEM-FRONT] Resposta credenciais:', credData);
+
+                if (!credData.success || !credData.credentials) {
+                    throw new Error(credData.error || 'Falha ao obter credenciais');
                 }
-                mbCotasAtuais = resultado.cotas || [];
-                if (mbCotasAtuais.length === 0) {
-                    resultadosEl.innerHTML = '<div class="alert" style="padding:15px;border-radius:8px;background:#fff3cd;color:#856404;"><i class="fas fa-info-circle me-2"></i>Nenhuma cota encontrada para esta rota. Verifique os CEPs e peso.</div>';
-                    return;
-                }
-                let html = '<h4 style="margin-bottom:15px;color:#333;"><i class="fas fa-list me-2"></i>Opções de Frete Encontradas</h4>';
-                mbCotasAtuais.forEach((cota, index) => {
-                    html += '<div class="frete-cota-card ' + (index === 0 ? 'selecionada' : '') + '" onclick="selecionarCotaMandaBem(' + index + ')" id="mb_cota_' + index + '"><div class="frete-cota-info"><h4><i class="fas fa-truck me-2"></i>' + cota.transportadora + ' - ' + cota.servico.toUpperCase() + '</h4><p><i class="fas fa-clock me-1"></i>' + cota.prazo + ' dia(s) útil(eis)' + (cota.msg ? '<br><i class="fas fa-info-circle me-1"></i>' + cota.msg : '') + '</p></div><div class="frete-cota-preco"><div class="valor">R$ ' + cota.valor.toFixed(2).replace('.', ',') + '</div><div class="prazo">' + cota.prazo + ' dia(s)</div></div></div>';
+
+                // PASSO 2: Chamar API Manda Bem DIRETAMENTE do navegador (sem passar pelo Edge Function)
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculando frete real...';
+
+                const payload = {
+                    api_id: credData.credentials.api_id,
+                    api_token: credData.credentials.api_token,
+                    cep_origem: cepOrigem,
+                    cep_destino: cepDestino,
+                    peso: peso,
+                    comprimento: comprimento,
+                    largura: largura,
+                    altura: altura,
+                    valor_declarado: valorDeclarado,
+                    servicos: ['pac', 'sedex', 'jadlog', 'loggi']
+                };
+
+                console.log('[MANDABEM-FRONT] Chamando API Manda Bem diretamente...');
+                console.log('[MANDABEM-FRONT] URL:', credData.api_url);
+                console.log('[MANDABEM-FRONT] Payload:', { ...payload, api_token: '***' });
+
+                const mbResponse = await fetch(credData.api_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 });
+
+                const mbResult = await mbResponse.json();
+                console.log('[MANDABEM-FRONT] Resposta Manda Bem:', JSON.stringify(mbResult).substring(0, 1000));
+
+                if (!mbResponse.ok) {
+                    throw new Error(mbResult.error || mbResult.message || 'Erro na API Manda Bem');
+                }
+
+                // PASSO 3: Processar e exibir resultados
+                let cotas = [];
+
+                // Tentar extrair de vários formatos possíveis
+                const formatos = [
+                    mbResult.cotacoes,
+                    mbResult.resultado,
+                    mbResult.quotas,
+                    mbResult.cotas,
+                    mbResult.data,
+                    mbResult.results,
+                    mbResult.shipping_options,
+                    mbResult.opcoes
+                ];
+
+                for (const lista of formatos) {
+                    if (Array.isArray(lista) && lista.length > 0) {
+                        for (const c of lista) {
+                            cotas.push({
+                                transportadora: c.transportadora || c.carrier || c.company || c.empresa || 'Manda Bem',
+                                servico: c.servico || c.service || c.tipo || c.name || c.modalidade || 'PAC',
+                                valor: parseFloat(c.valor || c.price || c.preco || c.total || c.cost || c.valor_frete || 0),
+                                prazo: parseInt(c.prazo || c.deadline || c.delivery_time || c.dias || c.time || c.prazo_entrega || 0),
+                                msg: c.msg || c.message || c.note || c.observacao || ''
+                            });
+                        }
+                        break;
+                    }
+                }
+
+                // Se a API retornou objeto com transportadoras como chaves
+                if (cotas.length === 0 && typeof mbResult === 'object' && mbResult !== null) {
+                    Object.keys(mbResult).forEach(key => {
+                        const item = mbResult[key];
+                        if (typeof item === 'object' && item !== null && (item.valor || item.price || item.preco)) {
+                            cotas.push({
+                                transportadora: item.transportadora || item.carrier || key || 'Manda Bem',
+                                servico: item.servico || item.service || item.tipo || key || 'PAC',
+                                valor: parseFloat(item.valor || item.price || item.preco || item.total || 0),
+                                prazo: parseInt(item.prazo || item.deadline || item.delivery_time || item.dias || 0),
+                                msg: item.msg || item.message || ''
+                            });
+                        }
+                    });
+                }
+
+                if (cotas.length === 0) {
+                    resultadosEl.innerHTML = '<div class="alert" style="padding:15px;border-radius:8px;background:#fff3cd;color:#856404;"><i class="fas fa-info-circle me-2"></i>A API Manda Bem não retornou cotações para esta rota. Verifique os CEPs e tente novamente.</div>';
+                    return;
+                }
+
+                // Exibir cotações
+                let html = '<h4 style="margin-bottom:15px;color:#333;"><i class="fas fa-list me-2"></i>Opções de Frete - Manda Bem</h4>';
+                html += '<div style="background:#e8f5e9;border:1px solid #4caf50;border-radius:8px;padding:10px;margin-bottom:15px;color:#2e7d32;font-size:0.85rem;"><i class="fas fa-check-circle me-1"></i> Valores reais da Manda Bem</div>';
+
+                cotas.sort((a, b) => a.valor - b.valor);
+
+                cotas.forEach((cota, index) => {
+                    html += '<div class="frete-cota-card ' + (index === 0 ? 'selecionada' : '') + '" onclick="selecionarCotaMandaBem(' + index + ')" id="mb_cota_' + index + '">' +
+                        '<div class="frete-cota-info">' +
+                        '<h4><i class="fas fa-truck me-2"></i>' + cota.transportadora + ' - ' + cota.servico.toUpperCase() + '</h4>' +
+                        '<p><i class="fas fa-clock me-1"></i>' + cota.prazo + ' dia(s) útil(eis)' + (cota.msg ? '<br><i class="fas fa-info-circle me-1"></i>' + cota.msg : '') + '</p>' +
+                        '</div>' +
+                        '<div class="frete-cota-preco">' +
+                        '<div class="valor">R$ ' + cota.valor.toFixed(2).replace('.', ',') + '</div>' +
+                        '<div class="prazo">' + cota.prazo + ' dia(s)</div>' +
+                        '</div>' +
+                        '</div>';
+                });
+
                 resultadosEl.innerHTML = html;
+                mbCotasAtuais = cotas;
                 selecionarCotaMandaBem(0);
+
             } catch (err) {
-                console.error('[MANDABEM-FRETE] ERRO NO FETCH:', err);
-                resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>Erro: ' + err.message + '<br><small style="color:#666">Verifique o console (F12) para detalhes.</small></div>';
+                console.error('[MANDABEM-FRONT] ERRO:', err);
+                resultadosEl.innerHTML = '<div class="alert alert-error" style="padding:15px;border-radius:8px;"><i class="fas fa-exclamation-circle me-2"></i>Erro: ' + err.message + '<br><small style="color:#666">A API Manda Bem pode estar indisponível. Tente novamente mais tarde.</small></div>';
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-calculator me-2"></i>Calcular Frete';
