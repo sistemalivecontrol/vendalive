@@ -331,7 +331,7 @@
                         '1. Fazer deploy da Edge Function no Supabase Dashboard\n' +
                         '2. Ou configurar as credenciais Manda Bem diretamente nesta página');
                 } else {
-                    mostrarErro(err.message, result);
+                    mostrarErro(err.message);
                 }
             } finally {
                 mostrarLoading(false);
@@ -454,23 +454,35 @@
             const container = document.getElementById('cotasContainer');
             container.innerHTML = '';
 
+            // Sempre mostrar raw response para debug (visível ou oculto)
+            let debugHtml = '';
+            if (rawResponse) {
+                debugHtml += '<details style="margin-bottom:15px;">';
+                debugHtml += '<summary style="cursor:pointer;font-weight:600;color:#666;font-size:0.85rem;">📋 Resposta bruta da API (debug)</summary>';
+                debugHtml += '<pre style="background:#f5f5f5;padding:10px;border-radius:5px;overflow-x:auto;font-size:0.75rem;margin-top:10px;">' + JSON.stringify(rawResponse, null, 2) + '</pre>';
+                debugHtml += '</details>';
+            }
+
             if (!cotas || cotas.length === 0) {
-                // Mostrar raw response para debug
                 let rawHtml = '<div class="alert alert-warning" style="padding:15px;border-radius:8px;margin-bottom:15px;">';
                 rawHtml += '<h4>⚠️ Nenhuma cotação encontrada</h4>';
-                rawHtml += '<p>A API Manda Bem retornou uma resposta, mas não foi possível extrair cotações.</p>';
-                if (rawResponse) {
-                    rawHtml += '<details style="margin-top:10px;">';
-                    rawHtml += '<summary style="cursor:pointer;font-weight:600;">📋 Ver resposta bruta da API (para debug)</summary>';
-                    rawHtml += '<pre style="background:#f5f5f5;padding:10px;border-radius:5px;overflow-x:auto;font-size:0.8rem;margin-top:10px;">' + JSON.stringify(rawResponse, null, 2) + '</pre>';
-                    rawHtml += '</details>';
-                }
+                rawHtml += '<p>A API Manda Bem respondeu, mas não retornou cotações para esta rota.</p>';
+                rawHtml += '<p style="font-size:0.85rem;color:#666;margin-top:10px;">Isso pode acontecer se:</p>';
+                rawHtml += '<ul style="font-size:0.85rem;color:#666;">';
+                rawHtml += '<li>Os CEPs não são válidos para entrega</li>';
+                rawHtml += '<li>As dimensões/peso estão fora dos limites</li>';
+                rawHtml += '<li>O serviço não está disponível para esta rota</li>';
+                rawHtml += '</ul>';
                 rawHtml += '</div>';
+                rawHtml += debugHtml;
                 container.innerHTML = rawHtml;
                 mostrarResultados(true);
                 document.getElementById('actionsFooter').style.display = 'none';
                 return;
             }
+
+            // Adicionar debug antes das cotas
+            container.innerHTML = debugHtml;
 
             // Ordenar por valor
             cotas.sort((a, b) => a.valor - b.valor);
