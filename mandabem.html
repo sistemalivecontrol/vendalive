@@ -69,6 +69,7 @@
         .mini { color: #7B1FA2; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -81,17 +82,36 @@
         </div>
 
         <div class="content">
-            <!-- Dados da solicitação -->
+            <!-- Dados da solicitação - EDITÁVEIS -->
             <div class="info-box" id="infoBox">
                 <h3>📦 Dados da Entrega</h3>
                 <div class="info-grid" id="infoGrid">
                     <div class="info-item"><span class="info-label">Nº Pedido</span><span class="info-value" id="infoPedido">-</span></div>
                     <div class="info-item"><span class="info-label">Cliente</span><span class="info-value" id="infoCliente">-</span></div>
-                    <div class="info-item"><span class="info-label">CEP Origem</span><span class="info-value" id="infoCepOrigem">-</span></div>
-                    <div class="info-item"><span class="info-label">CEP Destino</span><span class="info-value" id="infoCepDestino">-</span></div>
-                    <div class="info-item"><span class="info-label">Peso</span><span class="info-value" id="infoPeso">-</span></div>
-                    <div class="info-item"><span class="info-label">Dimensões</span><span class="info-value" id="infoDimensoes">-</span></div>
-                    <div class="info-item"><span class="info-label">Valor Declarado</span><span class="info-value" id="infoValor">-</span></div>
+                    <div class="info-item">
+                        <span class="info-label">CEP Origem *</span>
+                        <input type="text" id="inputCepOrigem" value="" placeholder="00000-000" maxlength="9" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CEP Destino *</span>
+                        <input type="text" id="inputCepDestino" value="" placeholder="00000-000" maxlength="9" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Peso (kg) *</span>
+                        <input type="number" id="inputPeso" value="1" step="0.1" min="0.1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Dimensões (AxLxC cm)</span>
+                        <div style="display:flex;gap:5px;">
+                            <input type="number" id="inputAltura" value="2" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Alt">
+                            <input type="number" id="inputLargura" value="11" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Larg">
+                            <input type="number" id="inputComprimento" value="16" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Comp">
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Valor Declarado (R$)</span>
+                        <input type="number" id="inputValor" value="0" step="0.01" min="0" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
+                    </div>
                 </div>
             </div>
 
@@ -169,7 +189,7 @@
             dadosSolicitacao = {
                 solicitacao_id: params.get('solicitacao_id'),
                 cliente_id: params.get('cliente_id'),
-                cliente_sistema_id: params.get('cliente_sistema_id'),
+                cliente_sistema_id: params.get('cliente_sistema_id') || params.get('cliente_id') || window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || '',
                 pedido: params.get('pedido') || '-',
                 cliente_nome: params.get('cliente_nome') || '-',
                 cep_origem: params.get('cep_origem') || '',
@@ -186,18 +206,30 @@
             // Preencher info box
             document.getElementById('infoPedido').textContent = dadosSolicitacao.pedido;
             document.getElementById('infoCliente').textContent = decodeURIComponent(dadosSolicitacao.cliente_nome);
-            document.getElementById('infoCepOrigem').textContent = formatarCEP(dadosSolicitacao.cep_origem);
-            document.getElementById('infoCepDestino').textContent = formatarCEP(dadosSolicitacao.cep_destino);
-            document.getElementById('infoPeso').textContent = dadosSolicitacao.peso + ' kg';
-            document.getElementById('infoDimensoes').textContent = 
-                dadosSolicitacao.altura + 'x' + dadosSolicitacao.largura + 'x' + dadosSolicitacao.comprimento + ' cm';
-            document.getElementById('infoValor').textContent = 'R$ ' + dadosSolicitacao.valor_declarado.toFixed(2).replace('.', ',');
+            document.getElementById('inputCepOrigem').value = formatarCEP(dadosSolicitacao.cep_origem);
+            document.getElementById('inputCepDestino').value = formatarCEP(dadosSolicitacao.cep_destino);
+            document.getElementById('inputPeso').value = dadosSolicitacao.peso;
+            document.getElementById('inputAltura').value = dadosSolicitacao.altura;
+            document.getElementById('inputLargura').value = dadosSolicitacao.largura;
+            document.getElementById('inputComprimento').value = dadosSolicitacao.comprimento;
+            document.getElementById('inputValor').value = dadosSolicitacao.valor_declarado;
 
-            // Validar dados
-            if (!dadosSolicitacao.cep_destino || !dadosSolicitacao.cliente_sistema_id) {
-                mostrarErro('Dados incompletos. Volte para o rastreamento e selecione uma solicitação.');
+            // Aplicar máscara de CEP nos inputs
+            aplicarMascaraCEP(document.getElementById('inputCepOrigem'));
+            aplicarMascaraCEP(document.getElementById('inputCepDestino'));
+
+            // Validar dados mínimos
+            if (!dadosSolicitacao.cep_destino) {
+                mostrarErro('CEP de destino não informado. Volte para o rastreamento e selecione uma solicitação.');
                 return;
             }
+
+            // Tentar obter cliente_sistema_id de todas as fontes possíveis
+            if (!dadosSolicitacao.cliente_sistema_id) {
+                dadosSolicitacao.cliente_sistema_id = window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || '';
+            }
+
+            console.log('[MANDABEM-PAGE] cliente_sistema_id final:', dadosSolicitacao.cliente_sistema_id);
 
             // Iniciar cálculo automaticamente
             calcularFrete();
@@ -247,13 +279,13 @@
                 const payload = {
                     api_id: credData.credentials.api_id,
                     api_token: credData.credentials.api_token,
-                    cep_origem: dadosSolicitacao.cep_origem.replace(/\D/g, ''),
-                    cep_destino: dadosSolicitacao.cep_destino.replace(/\D/g, ''),
-                    peso: dadosSolicitacao.peso,
-                    comprimento: dadosSolicitacao.comprimento,
-                    largura: dadosSolicitacao.largura,
-                    altura: dadosSolicitacao.altura,
-                    valor_declarado: dadosSolicitacao.valor_declarado,
+                    cep_origem: document.getElementById('inputCepOrigem').value.replace(/\D/g, ''),
+                    cep_destino: document.getElementById('inputCepDestino').value.replace(/\D/g, ''),
+                    peso: parseFloat(document.getElementById('inputPeso').value) || 1,
+                    comprimento: parseFloat(document.getElementById('inputComprimento').value) || 16,
+                    largura: parseFloat(document.getElementById('inputLargura').value) || 11,
+                    altura: parseFloat(document.getElementById('inputAltura').value) || 2,
+                    valor_declarado: parseFloat(document.getElementById('inputValor').value) || 0,
                     servicos: ['pac', 'sedex', 'jadlog', 'loggi']
                 };
 
@@ -334,13 +366,13 @@
                 const payload = {
                     api_id: credData.credentials.api_id,
                     api_token: credData.credentials.api_token,
-                    cep_origem: dadosSolicitacao.cep_origem.replace(/\D/g, ''),
-                    cep_destino: dadosSolicitacao.cep_destino.replace(/\D/g, ''),
-                    peso: dadosSolicitacao.peso,
-                    comprimento: dadosSolicitacao.comprimento,
-                    largura: dadosSolicitacao.largura,
-                    altura: dadosSolicitacao.altura,
-                    valor_declarado: dadosSolicitacao.valor_declarado,
+                    cep_origem: document.getElementById('inputCepOrigem').value.replace(/\D/g, ''),
+                    cep_destino: document.getElementById('inputCepDestino').value.replace(/\D/g, ''),
+                    peso: parseFloat(document.getElementById('inputPeso').value) || 1,
+                    comprimento: parseFloat(document.getElementById('inputComprimento').value) || 16,
+                    largura: parseFloat(document.getElementById('inputLargura').value) || 11,
+                    altura: parseFloat(document.getElementById('inputAltura').value) || 2,
+                    valor_declarado: parseFloat(document.getElementById('inputValor').value) || 0,
                     servicos: ['pac', 'sedex', 'jadlog', 'loggi']
                 };
 
@@ -540,10 +572,10 @@
                 const updateData = {
                     valor_frete: cotaSelecionada.valor,
                     forma_envio: cotaSelecionada.servico,
-                    peso_kg: dadosSolicitacao.peso,
-                    comprimento_cm: dadosSolicitacao.comprimento,
-                    largura_cm: dadosSolicitacao.largura,
-                    altura_cm: dadosSolicitacao.altura,
+                    peso_kg: parseFloat(document.getElementById('inputPeso').value) || dadosSolicitacao.peso,
+                    comprimento_cm: parseFloat(document.getElementById('inputComprimento').value) || dadosSolicitacao.comprimento,
+                    largura_cm: parseFloat(document.getElementById('inputLargura').value) || dadosSolicitacao.largura,
+                    altura_cm: parseFloat(document.getElementById('inputAltura').value) || dadosSolicitacao.altura,
                     atualizado_em: new Date().toISOString()
                 };
 
