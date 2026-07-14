@@ -256,7 +256,11 @@
         .btn-usar-frete:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4); }
         .btn-usar-frete:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-    </style>
+            .filter-actions .btn-correios { background: linear-gradient(135deg, #003087, #0055A4); color: white; }
+        .filter-actions .btn-correios:hover { box-shadow: 0 6px 20px rgba(0, 48, 135, 0.4); }
+        .filter-actions .btn-correios:disabled { background: #bdc3c7; color: #7f8c8d; cursor: not-allowed; transform: none; box-shadow: none; }
+</style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -323,6 +327,9 @@
                     <button class="btn btn-pdf" id="btnEmitirEtiquetas" onclick="abrirModalEtiquetas()" disabled>📋 Emitir Etiquetas</button>
                     <button class="btn btn-mandabem" id="btnCalcularFreteMandaBem" onclick="abrirModalFreteMandaBem()" disabled>
                         <i class="fas fa-shipping-fast me-2"></i>Calcular Frete Manda Bem
+                    </button>
+                    <button class="btn btn-correios" id="btnCalcularFreteCorreios" onclick="abrirModalFreteCorreios()" disabled>
+                        <i class="fas fa-shipping-fast me-2"></i>Calcular Frete Correios
                     </button>
                 </div>
             </div>
@@ -514,7 +521,73 @@
             </div>
         </div>
     </div>
-    <div class="modal-frete-overlay" id="modalFreteMandaBem">
+        <div class="modal-frete-overlay" id="modalFreteCorreios">
+        <div class="modal-frete">
+            <div class="modal-frete-header" style="background: linear-gradient(135deg, #003087, #0055A4);">
+                <h3><i class="fas fa-shipping-fast"></i> Calcular Frete - Correios</h3>
+                <button class="modal-close" onclick="fecharModalFreteCorreios()" style="background:none;border:none;color:white;font-size:28px;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-frete-body">
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>CEP Origem *</label>
+                        <input type="text" id="co_cep_origem" placeholder="00000-000" maxlength="9">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>CEP Destino *</label>
+                        <input type="text" id="co_cep_destino" placeholder="00000-000" maxlength="9">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Peso (kg) *</label>
+                        <input type="number" id="co_peso" value="1" step="0.1" min="0.1">
+                    </div>
+                </div>
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>Comprimento (cm)</label>
+                        <input type="number" id="co_comprimento" value="16" min="1">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Largura (cm)</label>
+                        <input type="number" id="co_largura" value="11" min="1">
+                    </div>
+                    <div class="frete-form-group">
+                        <label>Altura (cm)</label>
+                        <input type="number" id="co_altura" value="2" min="1">
+                    </div>
+                </div>
+                <div class="frete-form-grid">
+                    <div class="frete-form-group">
+                        <label>Valor Declarado (R$)</label>
+                        <input type="number" id="co_valor_declarado" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="frete-form-group" style="display:flex;align-items:end;">
+                        <button class="btn-calcular-frete w-100" id="btnExecutarCalculoFreteCorreios" onclick="executarCalculoFreteCorreios()" style="background: linear-gradient(135deg, #003087, #0055A4);">
+                            <i class="fas fa-calculator me-2"></i>Calcular Frete
+                        </button>
+                    </div>
+                </div>
+                <div id="co_resultados_frete" class="frete-resultados"></div>
+                <div id="co_frete_selecionado_info" class="frete-selecionado-info">
+                    <strong><i class="fas fa-check-circle me-2"></i>Frete selecionado:</strong>
+                    <span id="co_frete_selecionado_texto"></span>
+                </div>
+            </div>
+            <div class="modal-frete-footer">
+                <div style="color:#636E72;font-size:0.9rem;">
+                    <i class="fas fa-info-circle me-1"></i> Cotação via Correios Web Services
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn btn-secondary" onclick="fecharModalFreteCorreios()">Cancelar</button>
+                    <button class="btn-usar-frete" id="btnUsarFreteSelecionadoCorreios" onclick="usarFreteSelecionadoCorreios()" disabled>
+                        <i class="fas fa-check me-2"></i>Usar Este Frete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="modal-frete-overlay" id="modalFreteMandaBem">
         <div class="modal-frete">
             <div class="modal-frete-header">
                 <h3><i class="fas fa-shipping-fast"></i> Calcular Frete - Manda Bem</h3>
@@ -948,6 +1021,8 @@
             document.getElementById('btnEmitirEtiquetas').disabled = !habilitado;
             const btnMandaBem = document.getElementById('btnCalcularFreteMandaBem');
             if (btnMandaBem) btnMandaBem.disabled = idsSelecionados.size !== 1;
+            const btnCorreios = document.getElementById('btnCalcularFreteCorreios');
+            if (btnCorreios) btnCorreios.disabled = idsSelecionados.size !== 1;
         }
 
         function sincronizarDataHora(tipo) {
@@ -1484,6 +1559,42 @@ Obrigada pela preferência! 🥰`;
 
         function fecharModalDetalhesPix() { document.getElementById('modalDetalhesPix').classList.remove('active'); }
 
+                // ============================================
+        // INTEGRAÇÃO CORREIOS - CALCULAR FRETE
+        // ============================================
+        let coCotasAtuais = [];
+        let coCotaSelecionada = null;
+        let coSolicitacaoAtual = null;
+
+        function abrirModalFreteCorreios() {
+            if (idsSelecionados.size === 0) { alert('Selecione pelo menos uma solicitacao na tabela para calcular o frete'); return; }
+            if (idsSelecionados.size > 1) { alert('Selecione apenas UMA solicitacao para calcular o frete'); return; }
+            const index = Array.from(idsSelecionados)[0];
+            const solicitacao = solicitacoes[index];
+            if (!solicitacao) { alert('Solicitacao nao encontrada'); return; }
+            const endereco = solicitacao.enderecos_pg || {};
+            const cliente = solicitacao.clientes_pg || {};
+            const params = new URLSearchParams();
+            params.append('solicitacao_id', solicitacao.id);
+            params.append('cliente_sistema_id', clienteAtual || '');
+            params.append('cep_origem', '88104740');
+            if (endereco.cep) params.append('cep_destino', endereco.cep.replace(/\D/g, ''));
+            if (cliente.nome) params.append('destinatario', cliente.nome);
+            if (solicitacao.peso_kg) params.append('peso', solicitacao.peso_kg);
+            if (solicitacao.altura_cm) params.append('altura', solicitacao.altura_cm);
+            if (solicitacao.largura_cm) params.append('largura', solicitacao.largura_cm);
+            if (solicitacao.comprimento_cm) params.append('comprimento', solicitacao.comprimento_cm);
+            if (solicitacao.valor_frete) params.append('valor_declarado', solicitacao.valor_frete);
+            window.open('correios.html?' + params.toString(), '_blank');
+        }
+
+        function fecharModalFreteCorreios() {
+            document.getElementById('modalFreteCorreios').classList.remove('ativo');
+            coSolicitacaoAtual = null;
+        }
+
+        // ============================================
+        // INTEGRAÇÃO MANDA BEM
         // ============================================
         // INTEGRAÇÃO MANDA BEM - CALCULAR FRETE
         // ============================================
