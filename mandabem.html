@@ -107,7 +107,7 @@
                     <div class="info-item">
                         <span class="info-label">Dimensões (AxLxC cm)</span>
                         <div style="display:flex;gap:5px;">
-                            <input type="number" id="inputAltura" value="20" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Alt">
+                            <input type="number" id="inputAltura" value="10" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Alt">
                             <input type="number" id="inputLargura" value="20" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Larg">
                             <input type="number" id="inputComprimento" value="20" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Comp">
                         </div>
@@ -150,7 +150,7 @@
             </div>
 
             <!-- Botão calcular (se precisar) -->
-            <button class="btn-calcular hidden" id="btnCalcular" onclick="calcularFrete()">
+            <button class="btn-calcular" id="btnCalcular" onclick="calcularFrete()">
                 <span style="font-size: 1.2rem;">🔄</span> Calcular Frete
             </button>
         </div>
@@ -222,8 +222,8 @@
             document.getElementById('infoCliente').textContent = decodeURIComponent(dadosSolicitacao.cliente_nome);
             document.getElementById('inputCepOrigem').value = formatarCEP(dadosSolicitacao.cep_origem);
             document.getElementById('inputCepDestino').value = formatarCEP(dadosSolicitacao.cep_destino);
-            document.getElementById('inputPeso').value = dadosSolicitacao.peso || 10;
-            document.getElementById('inputAltura').value = dadosSolicitacao.altura || 20;
+            document.getElementById('inputPeso').value = dadosSolicitacao.peso || 1;
+            document.getElementById('inputAltura').value = dadosSolicitacao.altura || 10;
             document.getElementById('inputLargura').value = dadosSolicitacao.largura || 20;
             document.getElementById('inputComprimento').value = dadosSolicitacao.comprimento || 20;
             document.getElementById('inputValor').value = dadosSolicitacao.valor_declarado || 200;
@@ -257,7 +257,8 @@
             mostrarErro(false);
             mostrarResultados(false);
             document.getElementById('actionsFooter').style.display = 'none';
-            document.getElementById('btnCalcular').classList.add('hidden');
+            // Botão calcular mantido visível
+            // document.getElementById('btnCalcular').classList.add('hidden');
 
             try {
                 console.log('[MANDABEM-PAGE] Chamando Edge Function mandabem-cotar-frete...');
@@ -277,10 +278,10 @@
                             cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
                             cep_origem: document.getElementById('inputCepOrigem').value,
                             cep_destino: document.getElementById('inputCepDestino').value,
-                            peso: parseFloat(document.getElementById('inputPeso').value) || 10,
+                            peso: parseFloat(document.getElementById('inputPeso').value) || 1,
                             comprimento: parseFloat(document.getElementById('inputComprimento').value) || 20,
                             largura: parseFloat(document.getElementById('inputLargura').value) || 20,
-                            altura: parseFloat(document.getElementById('inputAltura').value) || 20,
+                            altura: parseFloat(document.getElementById('inputAltura').value) || 10,
                             valor_declarado: parseFloat(document.getElementById('inputValor').value) || 200,
                             servicos: ['pac', 'sedex', 'pacmini']
                         })
@@ -572,6 +573,7 @@
             }
             document.getElementById('errorMessage').innerHTML = html;
             box.classList.remove('hidden');
+            // Botão calcular sempre visível para permitir recalcular
             document.getElementById('btnCalcular').classList.remove('hidden');
         }
 
