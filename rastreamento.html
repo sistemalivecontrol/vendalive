@@ -259,6 +259,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -1487,27 +1488,38 @@ Obrigada pela preferência! 🥰`;
         // INTEGRAÇÃO MANDA BEM - CALCULAR FRETE
         // ============================================
         function abrirModalFreteMandaBem() {
-            if (idsSelecionados.size === 0) { alert('Selecione pelo menos uma solicitação na tabela para calcular o frete'); return; }
-            if (idsSelecionados.size > 1) { alert('Selecione apenas UMA solicitação para calcular o frete'); return; }
+            if (idsSelecionados.size === 0) { alert('Selecione pelo menos uma solicitacao na tabela para calcular o frete'); return; }
+            if (idsSelecionados.size > 1) { alert('Selecione apenas UMA solicitacao para calcular o frete'); return; }
             const index = Array.from(idsSelecionados)[0];
-            mbSolicitacaoAtual = solicitacoes[index];
-            if (!mbSolicitacaoAtual) { alert('Solicitação não encontrada'); return; }
-            const endereco = mbSolicitacaoAtual.enderecos_pg || {};
-            document.getElementById('mb_cep_destino').value = formatarCEP(endereco.cep) || '';
-            document.getElementById('mb_peso').value = mbSolicitacaoAtual.peso_kg || 1;
-            document.getElementById('mb_comprimento').value = mbSolicitacaoAtual.comprimento_cm || 16;
-            document.getElementById('mb_largura').value = mbSolicitacaoAtual.largura_cm || 11;
-            document.getElementById('mb_altura').value = mbSolicitacaoAtual.altura_cm || 2;
-            const cepOrigem = localStorage.getItem('cep_origem') || '89200000';
-            document.getElementById('mb_cep_origem').value = cepOrigem;
-            document.getElementById('mb_resultados_frete').innerHTML = '';
-            document.getElementById('mb_frete_selecionado_info').classList.remove('ativo');
-            mbCotasAtuais = []; mbCotaSelecionada = null;
-            document.getElementById('btnUsarFreteSelecionado').disabled = true;
-            document.getElementById('modalFreteMandaBem').classList.add('ativo');
+            const solicitacao = solicitacoes[index];
+            if (!solicitacao) { alert('Solicitacao nao encontrada'); return; }
+            const endereco = solicitacao.enderecos_pg || {};
+            const cliente = solicitacao.clientes_pg || {};
+
+            // Montar parametros para mandabem.html
+            const params = new URLSearchParams();
+            params.append('solicitacao_id', solicitacao.id);
+            params.append('cep_origem', '88104740');
+            if (endereco.cep) params.append('cep_destino', endereco.cep.replace(/\D/g, ''));
+            if (cliente.nome) params.append('destinatario', cliente.nome);
+            if (solicitacao.endereco_completo) params.append('endereco', solicitacao.endereco_completo);
+            if (endereco.rua) params.append('rua', endereco.rua);
+            if (endereco.numero) params.append('numero', endereco.numero);
+            if (endereco.complemento) params.append('complemento', endereco.complemento);
+            if (endereco.bairro) params.append('bairro', endereco.bairro);
+            if (endereco.cidade) params.append('cidade', endereco.cidade);
+            if (endereco.estado) params.append('estado', endereco.estado);
+            if (cliente.whatsapp) params.append('telefone', cliente.whatsapp);
+            if (solicitacao.peso_kg) params.append('peso', solicitacao.peso_kg);
+            if (solicitacao.altura_cm) params.append('altura', solicitacao.altura_cm);
+            if (solicitacao.largura_cm) params.append('largura', solicitacao.largura_cm);
+            if (solicitacao.comprimento_cm) params.append('comprimento', solicitacao.comprimento_cm);
+            if (solicitacao.valor_frete) params.append('valor_declarado', solicitacao.valor_frete);
+
+            window.open('mandabem.html?' + params.toString(), '_blank');
         }
 
-        function fecharModalFreteMandaBem() {
+        function fecharModalFreteMandaBemfunction fecharModalFreteMandaBem() {
             document.getElementById('modalFreteMandaBem').classList.remove('ativo');
             mbSolicitacaoAtual = null;
         }
