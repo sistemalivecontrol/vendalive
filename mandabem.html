@@ -331,7 +331,7 @@
                         '1. Fazer deploy da Edge Function no Supabase Dashboard\n' +
                         '2. Ou configurar as credenciais Manda Bem diretamente nesta página');
                 } else {
-                    mostrarErro(err.message);
+                    mostrarErro(err.message, result);
                 }
             } finally {
                 mostrarLoading(false);
@@ -608,13 +608,20 @@
             document.getElementById('loadingBox').style.display = show ? 'block' : 'none';
         }
 
-        function mostrarErro(msg) {
+        function mostrarErro(msg, rawData) {
             const box = document.getElementById('errorBox');
             if (msg === false) {
                 box.classList.add('hidden');
                 return;
             }
-            document.getElementById('errorMessage').textContent = msg;
+            let html = '<p>' + msg + '</p>';
+            if (rawData) {
+                html += '<details style="margin-top:10px;text-align:left;">';
+                html += '<summary style="cursor:pointer;font-weight:600;">📋 Ver detalhes técnicos</summary>';
+                html += '<pre style="background:#f5f5f5;padding:10px;border-radius:5px;overflow-x:auto;font-size:0.75rem;margin-top:10px;text-align:left;">' + JSON.stringify(rawData, null, 2) + '</pre>';
+                html += '</details>';
+            }
+            document.getElementById('errorMessage').innerHTML = html;
             box.classList.remove('hidden');
             document.getElementById('btnCalcular').classList.remove('hidden');
         }
