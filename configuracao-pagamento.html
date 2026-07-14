@@ -21,7 +21,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
-    <meta name="version" content="202607141722">
+    <meta name="version" content="202607141816">
     <title>Configuração de Pagamento - VendaLive</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="auth.js"></script>
@@ -114,7 +114,7 @@
 <body>
     <script>
         (function(){
-            var expectedVersion = '202607141722';
+            var expectedVersion = '202607141816';
             var currentVersion = document.querySelector('meta[name="version"]')?.content || '0';
             if (currentVersion !== expectedVersion) {
                 console.log('[CACHE] Versão diferente, forçando reload...');
@@ -502,10 +502,19 @@
                     </div>
                     <small style="display: block; margin-top: 8px; color: #636E72; font-size: 0.9rem;">Quando ativo, será possível calcular frete via Correios (PAC, SEDEX) diretamente pelo sistema de rastreamento.</small>
                 </div>
+                
+                <!-- NOVO: CNPJ/Usuário do Meu Correios -->
+                <div class="form-group">
+                    <label for="correios_usuario">🏢 CNPJ / Usuário do Portal Meu Correios *</label>
+                    <input type="text" id="correios_usuario" placeholder="Ex: 50403919000102" maxlength="14">
+                    <small>CNPJ cadastrado no Portal Meu Correios (pessoa jurídica). Usado para autenticação Basic Auth.</small>
+                    <div class="hint">💡 Este é o CNPJ que você usa para fazer login no Meu Correios, não o Código de Acesso.</div>
+                </div>
+                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="form-group">
                         <label for="correios_api_id">🆔 Código de Acesso (API ID)</label>
-                        <input type="text" id="correios_api_id" placeholder="Ex: 12345678">
+                        <input type="text" id="correios_api_id" placeholder="Ex: PALBuLfAwWW1KixyBMlg8QZEp52ePUYcHX">
                         <small>Encontrado em: CWS → Credenciais → Código de Acesso</small>
                     </div>
                     <div class="form-group">
@@ -770,16 +779,20 @@
                     if (elMbApiToken && result.data.mandabem_api_token) elMbApiToken.value = result.data.mandabem_api_token;
                     if (elMbAtivo && result.data.mandabem_ativo !== null) elMbAtivo.checked = result.data.mandabem_ativo;
                     atualizarStatusMandaBem(result.data);
-                    // CARREGAR CORREIOS
+                    
+                    // CARREGAR CORREIOS - NOVO CAMPO USUÁRIO
+                    var elCorrUsuario = document.getElementById('correios_usuario');
                     var elCorrApiId = document.getElementById('correios_api_id');
                     var elCorrApiToken = document.getElementById('correios_api_token');
                     var elCorrAtivo = document.getElementById('correios_ativo');
                     var elCorrCepOrigem = document.getElementById('correios_cep_origem');
+                    if (elCorrUsuario && result.data.correios_usuario) elCorrUsuario.value = result.data.correios_usuario;
                     if (elCorrApiId && result.data.correios_api_id) elCorrApiId.value = result.data.correios_api_id;
                     if (elCorrApiToken && result.data.correios_api_token) elCorrApiToken.value = result.data.correios_api_token;
                     if (elCorrAtivo && result.data.correios_ativo !== null) elCorrAtivo.checked = result.data.correios_ativo;
                     if (elCorrCepOrigem && result.data.correios_cep_origem) elCorrCepOrigem.value = result.data.correios_cep_origem;
                     atualizarStatusCorreios(result.data);
+                    
                     var elIpWebhook = document.getElementById('infinitepayWebhookUrl');
                     if (elIpWebhook && result.data.infinitepay_webhook_url) elIpWebhook.value = result.data.infinitepay_webhook_url;
                     atualizarSimuladorMp();
@@ -1101,26 +1114,28 @@
             var container = document.getElementById('correiosStatusInfo');
             if (!container) return;
             if (!config || !config.correios_api_id) {
-                container.innerHTML = '<div class="status-badge status-pending">⚠️ Correios não configurado</div><p style="margin-top: 15px; color: #636E72;">Adicione seu Código de Acesso e Senha de Componente acima.</p>';
+                container.innerHTML = '<div class="status-badge status-pending">⚠️ Correios não configurado</div><p style="margin-top: 15px; color: #636E72;">Adicione seu Código de Acesso, Senha de Componente e CNPJ do Meu Correios acima.</p>';
                 return;
             }
             var ativo = config.correios_ativo ? '✅ Ativo' : '❌ Inativo';
             var ativoColor = config.correios_ativo ? '#28a745' : '#dc3545';
             var cepOrigem = config.correios_cep_origem ? config.correios_cep_origem : 'Não configurado';
-            container.innerHTML = '<div class="status-badge ' + (config.correios_ativo ? 'status-ok' : 'status-error') + '">' + ativo + '</div><div style="margin-top: 15px; display: grid; gap: 10px;"><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">API ID:</span><span style="font-weight: 600; color: #2D3436;">' + config.correios_api_id.substring(0, 5) + '...' + config.correios_api_id.slice(-3) + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Token:</span><span style="font-weight: 600; color: #2D3436;">' + (config.correios_api_token ? '✅ Configurado' : '❌ Não configurado') + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">CEP Origem:</span><span style="font-weight: 600; color: #2D3436;">' + cepOrigem + '</span></div></div>';
+            var usuario = config.correios_usuario ? config.correios_usuario.substring(0, 4) + '...' : 'Não configurado';
+            container.innerHTML = '<div class="status-badge ' + (config.correios_ativo ? 'status-ok' : 'status-error') + '">' + ativo + '</div><div style="margin-top: 15px; display: grid; gap: 10px;"><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">CNPJ/Usuário:</span><span style="font-weight: 600; color: #2D3436;">' + usuario + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">API ID:</span><span style="font-weight: 600; color: #2D3436;">' + config.correios_api_id.substring(0, 5) + '...' + config.correios_api_id.slice(-3) + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">Token:</span><span style="font-weight: 600; color: #2D3436;">' + (config.correios_api_token ? '✅ Configurado' : '❌ Não configurado') + '</span></div><div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;"><span style="color: #636E72;">CEP Origem:</span><span style="font-weight: 600; color: #2D3436;">' + cepOrigem + '</span></div></div>';
         }
 
         async function salvarConfigCorreios() {
             if (!appInicializado) { mostrarErroConfig('⏳ Carregando...'); return; }
+            var usuario = document.getElementById('correios_usuario').value.trim();
             var apiId = document.getElementById('correios_api_id').value.trim();
             var apiToken = document.getElementById('correios_api_token').value.trim();
             var ativo = document.getElementById('correios_ativo').checked;
             var cepOrigem = document.getElementById('correios_cep_origem').value.trim();
             var gatewayCartao = document.getElementById('gatewayCartao').value;
-            if (ativo && (!apiId || !apiToken)) { mostrarErroConfig('Preencha Código de Acesso e Senha de Componente para ativar a integração.'); return; }
+            if (ativo && (!usuario || !apiId || !apiToken)) { mostrarErroConfig('Preencha CNPJ/Usuário, Código de Acesso e Senha de Componente para ativar a integração.'); return; }
             habilitarBotoes(false);
             try {
-                var dados = { cliente_sistema_id: clienteSistemaId, correios_api_id: apiId || null, correios_api_token: apiToken || null, correios_ativo: ativo, correios_cep_origem: cepOrigem || null, gateway_cartao: gatewayCartao, atualizado_em: new Date().toISOString() };
+                var dados = { cliente_sistema_id: clienteSistemaId, correios_usuario: usuario || null, correios_api_id: apiId || null, correios_api_token: apiToken || null, correios_ativo: ativo, correios_cep_origem: cepOrigem || null, gateway_cartao: gatewayCartao, atualizado_em: new Date().toISOString() };
                 if (configAtual) { var result = await supabaseClient.from('configuracoes_pagamento').update(dados).eq('cliente_sistema_id', clienteSistemaId); if (result.error) throw result.error; }
                 else { dados.criado_em = new Date().toISOString(); var result = await supabaseClient.from('configuracoes_pagamento').insert(dados); if (result.error) throw result.error; }
                 mostrarSucessoConfig('✅ Configuração Correios salva!');
