@@ -70,6 +70,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -256,59 +257,45 @@
             document.getElementById('btnCalcular').classList.add('hidden');
 
             try {
-                // Tentar Edge Function primeiro
                 console.log('[MANDABEM-PAGE] Chamando Edge Function mandabem-cotar-frete...');
 
                 const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
                 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-                let result;
-                let edgeFuncWorks = false;
-
-                try {
-                    const response = await fetch(
-                        SUPABASE_URL + '/functions/v1/mandabem-cotar-frete',
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                            },
-                            body: JSON.stringify({
-                                cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
-                                cep_origem: document.getElementById('inputCepOrigem').value,
-                                cep_destino: document.getElementById('inputCepDestino').value,
-                                peso: parseFloat(document.getElementById('inputPeso').value) || 1,
-                                comprimento: parseFloat(document.getElementById('inputComprimento').value) || 16,
-                                largura: parseFloat(document.getElementById('inputLargura').value) || 11,
-                                altura: parseFloat(document.getElementById('inputAltura').value) || 2,
-                                valor_declarado: parseFloat(document.getElementById('inputValor').value) || 0,
-                                servicos: ['pac', 'sedex', 'jadlog', 'loggi']
-                            })
-                        }
-                    );
-
-                    // Verificar se a resposta é JSON válido
-                    const text = await response.text();
-                    try {
-                        result = JSON.parse(text);
-                        edgeFuncWorks = true;
-                        console.log('[MANDABEM-PAGE] Edge Function respondeu:', result);
-                    } catch (parseErr) {
-                        console.log('[MANDABEM-PAGE] Edge Function retornou HTML (não existe ou erro):', text.substring(0, 200));
-                        throw new Error('Edge Function não disponível');
+                const response = await fetch(
+                    SUPABASE_URL + '/functions/v1/mandabem-cotar-frete',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        },
+                        body: JSON.stringify({
+                            cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
+                            cep_origem: document.getElementById('inputCepOrigem').value,
+                            cep_destino: document.getElementById('inputCepDestino').value,
+                            peso: parseFloat(document.getElementById('inputPeso').value) || 10,
+                            comprimento: parseFloat(document.getElementById('inputComprimento').value) || 20,
+                            largura: parseFloat(document.getElementById('inputLargura').value) || 20,
+                            altura: parseFloat(document.getElementById('inputAltura').value) || 20,
+                            valor_declarado: parseFloat(document.getElementById('inputValor').value) || 200,
+                            servicos: ['pac', 'sedex', 'pacmini']
+                        })
                     }
+                );
 
-                } catch (edgeErr) {
-                    console.log('[MANDABEM-PAGE] Edge Function falhou, tentando fallback...');
-
-                    // FALLBACK: Chamar API Manda Bem diretamente do navegador
-                    // Isso só funciona se a API Manda Bem tiver CORS liberado
-                    result = await calcularFreteFallback();
-                    edgeFuncWorks = true;
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    console.log('[MANDABEM-PAGE] Resposta não-JSON:', text.substring(0, 300));
+                    throw new Error('Edge Function retornou resposta inválida. Verifique se a função está deployada.');
                 }
 
-                if (!edgeFuncWorks || !result.success) {
+                console.log('[MANDABEM-PAGE] Edge Function respondeu:', result);
+
+                if (!result.success) {
                     throw new Error(result.error || 'Erro na consulta de frete');
                 }
 
@@ -319,83 +306,16 @@
                 }
 
                 console.log('[MANDABEM-PAGE] Cotas encontradas:', cotasAtuais.length);
-                mostrarErro(false); // Esconder erro anterior
+                mostrarErro(false);
                 exibirCotas(cotasAtuais, result.raw_response);
 
             } catch (err) {
                 console.error('[MANDABEM-PAGE] ERRO:', err);
-
-                // Se for erro da Edge Function não existir, mostrar mensagem específica
-                if (err.message && (err.message.includes('Edge Function não disponível') || err.message.includes('not valid JSON'))) {
-                    mostrarErro('A Edge Function "mandabem-cotar-frete" ainda não foi deployada no Supabase.\n\n' +
-                        'Para usar esta funcionalidade, você precisa:\n' +
-                        '1. Fazer deploy da Edge Function no Supabase Dashboard\n' +
-                        '2. Ou configurar as credenciais Manda Bem diretamente nesta página');
-                } else {
-                    mostrarErro(err.message);
-                }
+                mostrarErro(err.message);
             } finally {
                 mostrarLoading(false);
             }
         }
-
-        // ============ FALLBACK: Chamar API Manda Bem diretamente ============
-        async function calcularFreteFallback() {
-            console.log('[MANDABEM-PAGE] Fallback: chamando API Manda Bem diretamente...');
-
-            // Tentar com proxy CORS
-            const proxyUrls = [
-                'https://corsproxy.io/?',
-                'https://api.allorigins.win/raw?url=',
-                'https://cors-anywhere.herokuapp.com/'
-            ];
-
-            const apiUrl = 'https://mandabem.com.br/api/v1/cotar';
-
-            // Payload básico (sem credenciais - a API pública pode funcionar)
-            const payload = {
-                cep_origem: document.getElementById('inputCepOrigem').value.replace(/\D/g, ''),
-                cep_destino: document.getElementById('inputCepDestino').value.replace(/\D/g, ''),
-                peso: parseFloat(document.getElementById('inputPeso').value) || 1,
-                comprimento: parseFloat(document.getElementById('inputComprimento').value) || 16,
-                largura: parseFloat(document.getElementById('inputLargura').value) || 11,
-                altura: parseFloat(document.getElementById('inputAltura').value) || 2,
-                valor_declarado: parseFloat(document.getElementById('inputValor').value) || 0
-            };
-
-            // Tentar cada proxy
-            for (const proxy of proxyUrls) {
-                try {
-                    console.log('[MANDABEM-PAGE] Tentando proxy:', proxy);
-                    const response = await fetch(proxy + encodeURIComponent(apiUrl), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        const cotas = extrairCotas(result);
-                        if (cotas.length > 0) {
-                            console.log('[MANDABEM-PAGE] Proxy funcionou!');
-                            return { success: true, cotas: cotas, raw_response: result };
-                        }
-                    }
-                } catch (e) {
-                    console.log('[MANDABEM-PAGE] Proxy falhou:', e.message);
-                }
-            }
-
-            // Se nenhum proxy funcionou, retornar erro informativo
-            return { 
-                success: false, 
-                error: 'Não foi possível conectar à API Manda Bem.\n\n' +
-                    'A Edge Function "mandabem-cotar-frete" precisa ser deployada no Supabase.\n' +
-                    'Sem ela, não é possível fazer cotações de frete.' 
-            };
-        }
-
-        
 
         // ============ EXTRAIR COTAS ============
         function extrairCotas(result) {
