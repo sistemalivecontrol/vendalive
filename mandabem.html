@@ -67,7 +67,9 @@
         .jadlog { color: #E30613; }
         .loggi { color: #00A3E0; }
         .mini { color: #7B1FA2; }
+            .hidden { display: none !important; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -296,6 +298,9 @@
 
                 console.log('[MANDABEM-PAGE] Edge Function respondeu:', result);
 
+                // Sempre esconder o erro quando a API responde, mesmo que venha cotas vazias
+                mostrarErro(false);
+
                 if (!result.success) {
                     throw new Error(result.error || 'Erro na consulta de frete');
                 }
@@ -315,9 +320,10 @@
 
             } catch (err) {
                 console.error('[MANDABEM-PAGE] ERRO:', err);
+                mostrarLoading(false);
                 mostrarErro(err.message);
             } finally {
-                mostrarLoading(false);
+                // mostrarLoading já tratado acima
             }
         }
 
@@ -376,6 +382,10 @@
 
         // ============ EXIBIR COTAS ============
         function exibirCotas(cotas, rawResponse) {
+            // Sempre esconder o box de erro ao exibir cotas
+            mostrarErro(false);
+            mostrarLoading(false);
+
             const container = document.getElementById('cotasContainer');
             container.innerHTML = '';
 
@@ -547,10 +557,12 @@
 
         function mostrarErro(msg, rawData) {
             const box = document.getElementById('errorBox');
-            if (msg === false) {
+            if (msg === false || msg === '' || msg === null || msg === undefined) {
                 box.classList.add('hidden');
+                box.style.display = 'none';
                 return;
             }
+            box.style.display = 'block';
             let html = '<p>' + msg + '</p>';
             if (rawData) {
                 html += '<details style="margin-top:10px;text-align:left;">';
