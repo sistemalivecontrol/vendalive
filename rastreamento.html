@@ -258,6 +258,7 @@
         .btn-instagram:disabled { background: #ccc; cursor: not-allowed; transform: none; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -1241,12 +1242,8 @@
             const rastreioId = document.getElementById('rastreioId').value;
             const solicitacaoId = document.getElementById('rastreioSolicitacaoId').value;
             if (!rastreioId) { alert('⚠️ Nenhum rastreamento para apagar'); return; }
-            if (!confirm('🗑️ Tem certeza que deseja APAGAR este rastreamento?
-
-Esta ação não pode ser desfeita!')) return;
-            if (!confirm('⚠️ CONFIRMAÇÃO FINAL:
-
-O rastreamento será permanentemente removido. Deseja continuar?')) return;
+            if (!confirm('🗑️ Tem certeza que deseja APAGAR este rastreamento?\n\nEsta ação não pode ser desfeita!')) return;
+            if (!confirm('⚠️ CONFIRMAÇÃO FINAL:\n\nO rastreamento será permanentemente removido. Deseja continuar?')) return;
             try {
                 const { error } = await supabaseClient.from('rastreamentos_pg').delete().eq('id', rastreioId);
                 if (error) throw error;
