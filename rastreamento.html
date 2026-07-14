@@ -1499,6 +1499,7 @@ Obrigada pela preferência! 🥰`;
             // Montar parametros para mandabem.html
             const params = new URLSearchParams();
             params.append('solicitacao_id', solicitacao.id);
+            params.append('cliente_sistema_id', clienteAtual || '');
             params.append('cep_origem', '88104740');
             if (endereco.cep) params.append('cep_destino', endereco.cep.replace(/\D/g, ''));
             if (cliente.nome) params.append('destinatario', cliente.nome);
