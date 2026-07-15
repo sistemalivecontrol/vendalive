@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreamento - Correios</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="./js/auth.js?v=20260529"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 25px 30px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 12px; }
+        .header p { opacity: 0.9; font-size: 0.95rem; margin-top: 5px; }
+        .btn-voltar { background: white; color: #003087; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* Search Box */
+        .search-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        .search-card h3 { font-size: 1.1rem; color: #2D3436; margin-bottom: 15px; }
+        .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 250px; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 1rem; font-family: inherit; }
+        .search-input:focus { outline: none; border-color: #003087; }
+        .btn-search { background: linear-gradient(135deg, #003087, #0055A4); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .btn-search:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 48, 135, 0.4); }
+
+        /* Tracking Result */
+        .tracking-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; display: none; }
+        .tracking-card.ativo { display: block; }
+        .tracking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .tracking-header h3 { font-size: 1.2rem; color: #2D3436; }
+        .tracking-code { background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-family: monospace; font-size: 1.1rem; color: #003087; font-weight: 600; }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, #003087, #0055A4); }
+        .timeline-item { position: relative; padding-bottom: 25px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-dot { position: absolute; left: -24px; width: 16px; height: 16px; border-radius: 50%; background: white; border: 3px solid #003087; }
+        .timeline-dot.entregue { background: #4CAF50; border-color: #4CAF50; }
+        .timeline-dot.transito { background: #2196F3; border-color: #2196F3; }
+        .timeline-content { background: #f8f9fa; padding: 15px; border-radius: 12px; }
+        .timeline-title { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .timeline-meta { font-size: 0.85rem; color: #666; }
+        .timeline-local { font-size: 0.8rem; color: #999; margin-top: 5px; }
+
+        /* Table */
+        .table-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        .table-card h3 { font-size: 1.1rem; color: #2D3436; margin-bottom: 20px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        tr:hover { background: #f8f9fa; }
+        .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-entregue { background: #E8F5E9; color: #2E7D32; }
+        .badge-transito { background: #E3F2FD; color: #1565C0; }
+        .badge-pendente { background: #FFF8E1; color: #F57C00; }
+        .badge-postado { background: #F3E5F5; color: #7B1FA2; }
+
+        /* Coming Soon */
+        .coming-soon { background: white; border-radius: 16px; padding: 60px 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
+        .coming-soon .icon { font-size: 4rem; margin-bottom: 20px; }
+        .coming-soon h3 { font-size: 1.5rem; color: #2D3436; margin-bottom: 10px; }
+        .coming-soon p { color: #666; font-size: 1rem; line-height: 1.6; max-width: 500px; margin: 0 auto 20px; }
+        .coming-soon .tag { display: inline-flex; align-items: center; gap: 5px; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: #E3F2FD; color: #1565C0; }
+
+        .hidden { display: none !important; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>🔍 Rastreamento de Encomendas</h1>
+                <p>Acompanhe o status de todas as suas entregas dos Correios</p>
+            </div>
+            <button class="btn-voltar" onclick="voltar()">← Central Correios</button>
+        </div>
+
+        <!-- Search -->
+        <div class="search-card">
+            <h3>📮 Buscar Encomenda</h3>
+            <div class="search-row">
+                <input type="text" class="search-input" id="inputCodigo" placeholder="Digite o código de rastreamento (ex: DG049186230BR)" maxlength="13">
+                <button class="btn-search" onclick="rastrear()">🔍 Rastrear</button>
+            </div>
+        </div>
+
+        <!-- Coming Soon Message (shown when API is not available) -->
+        <div class="coming-soon" id="comingSoon">
+            <div class="icon">🚧</div>
+            <h3>Funcionalidade em Desenvolvimento</h3>
+            <p>O rastreamento automático via API dos Correios será ativado assim que o plano Platinum for liberado. Por enquanto, você pode rastrear manualmente no site dos Correios.</p>
+            <span class="tag">⏳ Aguardando API Platinum</span>
+            <div style="margin-top: 25px;">
+                <a href="https://rastreamento.correios.com.br/app/index.php" target="_blank" class="btn-voltar" style="background: linear-gradient(135deg, #003087, #0055A4); color: white;">
+                    🌐 Rastrear no Site dos Correios
+                </a>
+            </div>
+        </div>
+
+        <!-- Tracking Result (hidden by default) -->
+        <div class="tracking-card" id="trackingResult">
+            <div class="tracking-header">
+                <h3>📦 Status da Encomenda</h3>
+                <div class="tracking-code" id="trackingCode">DG049186230BR</div>
+            </div>
+            <div class="timeline" id="timeline">
+                <!-- Timeline items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Tracking Table -->
+        <div class="table-card">
+            <h3>📋 Encomendas em Acompanhamento</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Cliente</th>
+                            <th>Serviço</th>
+                            <th>Último Status</th>
+                            <th>Data</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaRastreios">
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:#999;padding:30px;">
+                                Nenhuma encomenda em acompanhamento. Adicione códigos de rastreamento das suas entregas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        var CORREIOS_SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        var CORREIOS_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await new Promise((resolve) => {
+                let attempts = 0;
+                const check = () => {
+                    if (window.supabaseClient) {
+                        supabaseClient = window.supabaseClient;
+                        resolve();
+                    } else if (attempts > 50) {
+                        resolve();
+                    } else {
+                        attempts++;
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+
+            await carregarRastreios();
+        });
+
+        async function carregarRastreios() {
+            if (!supabaseClient) return;
+
+            try {
+                const clienteId = window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id');
+                if (!clienteId) return;
+
+                // Buscar solicitações que têm código de rastreio
+                const { data, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('id, codigo_rastreio, destinatario, forma_envio, status, atualizado_em')
+                    .eq('cliente_sistema_id', clienteId)
+                    .not('codigo_rastreio', 'is', null);
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('tabelaRastreios');
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(item => {
+                        const statusClass = item.status === 'entregue' ? 'badge-entregue' : 
+                                          item.status === 'enviado' ? 'badge-transito' : 'badge-pendente';
+                        const statusText = item.status === 'entregue' ? 'Entregue' : 
+                                         item.status === 'enviado' ? 'Em trânsito' : 'Pendente';
+                        return `<tr>
+                            <td><code style="background:#f8f9fa;padding:4px 8px;border-radius:4px;font-family:monospace;">${item.codigo_rastreio || '-'}</code></td>
+                            <td>${item.destinatario || '-'}</td>
+                            <td>${item.forma_envio || '-'}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>${item.atualizado_em ? new Date(item.atualizado_em).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td><button class="btn-search" style="padding:6px 12px;font-size:0.85rem;" onclick="rastrear('${item.codigo_rastreio}')">Rastrear</button></td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error('[CORREIOS-RASTREIO] Erro:', err);
+            }
+        }
+
+        async function rastrear(codigo) {
+            const codigoRastreio = codigo || document.getElementById('inputCodigo').value.trim();
+            if (!codigoRastreio) {
+                alert('Digite um código de rastreamento');
+                return;
+            }
+
+            // Por enquanto, mostrar o "em breve" já que a API oficial não está disponível
+            // Quando a API Platinum estiver ativa, descomentar o código abaixo:
+
+            /*
+            try {
+                const response = await fetch(CORREIOS_SUPABASE_URL + '/functions/v1/correios-rastrear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + CORREIOS_SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ codigo: codigoRastreio })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    exibirResultadoRastreio(result.dados);
+                } else {
+                    alert('Erro ao rastrear: ' + result.error);
+                }
+            } catch (err) {
+                console.error('[CORREIOS-RASTREIO] Erro:', err);
+                alert('Erro ao consultar rastreamento');
+            }
+            */
+
+            // Abrir o site dos Correios enquanto a API não está disponível
+            window.open('https://rastreamento.correios.com.br/app/index.php?objeto=' + codigoRastreio, '_blank');
+        }
+
+        function exibirResultadoRastreio(dados) {
+            document.getElementById('comingSoon').classList.add('hidden');
+            document.getElementById('trackingResult').classList.add('ativo');
+            document.getElementById('trackingCode').textContent = dados.codigo;
+
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = dados.eventos.map((evento, i) => {
+                const isLast = i === 0;
+                const dotClass = evento.tipo === '01' ? 'entregue' : 'transito';
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${dotClass} ${isLast ? 'entregue' : ''}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${evento.descricao}</div>
+                            <div class="timeline-meta">${evento.dtHrCriado}</div>
+                            <div class="timeline-local">${evento.unidade?.endereco?.cidade || ''} - ${evento.unidade?.endereco?.uf || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function voltar() {
+            window.location.href = 'correios.html';
+        }
+    </script>
+</body>
+</html>
