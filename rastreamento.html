@@ -1580,13 +1580,13 @@ Obrigada pela preferência! 🥰`;
             params.append('cliente_sistema_id', clienteAtual || '');
             params.append('cep_origem', '88104740');
             if (endereco.cep) params.append('cep_destino', endereco.cep.replace(/\D/g, ''));
-            if (cliente.nome) params.append('destinatario', cliente.nome);
+            if (cliente.nome) params.append('cliente_nome', encodeURIComponent(cliente.nome));
             if (solicitacao.peso_kg) params.append('peso', solicitacao.peso_kg);
             if (solicitacao.altura_cm) params.append('altura', solicitacao.altura_cm);
             if (solicitacao.largura_cm) params.append('largura', solicitacao.largura_cm);
             if (solicitacao.comprimento_cm) params.append('comprimento', solicitacao.comprimento_cm);
             if (solicitacao.valor_frete) params.append('valor_declarado', solicitacao.valor_frete);
-            window.location.href = 'correios.html?' + params.toString();
+            window.location.href = 'correios-cotacao.html?' + params.toString();
         }
 
         function fecharModalFreteCorreios() {
