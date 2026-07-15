@@ -1,199 +1,326 @@
 <!DOCTYPE html>
+<script>
+(function(){
+    'use strict';
+    const SESSAO_KEY='usuarioLogado';
+    const LOGIN_PAGE='login.html';
+    const path=window.location.pathname.toLowerCase();
+    const href=window.location.href.toLowerCase();
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
+    function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
+    verificarSessaoSincrona();
+})();
+</script>
+
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotação de Frete - Correios</title>
+    <title>Central Correios - Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="./js/auth.js?v=20260529"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Header */
+        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 18px 25px; border-radius: 16px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
         .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .header p { opacity: 0.9; font-size: 0.9rem; margin-top: 5px; }
+        .header p { opacity: 0.9; font-size: 0.95rem; margin-top: 5px; }
+        .header-actions { display: flex; gap: 10px; }
         .btn-voltar { background: white; color: #003087; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .content { padding: 30px; }
-        .info-box { background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-        .info-box h3 { color: #2E7D32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .info-item { display: flex; flex-direction: column; }
-        .info-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
-        .info-value { font-size: 1rem; color: #333; font-weight: 600; }
-        .loading-box { text-align: center; padding: 60px 20px; }
-        .error-box { background: #FFF5F5; border: 2px solid #FFB8B8; border-radius: 12px; padding: 25px; text-align: center; }
-        .error-box h3 { color: #C53030; margin-bottom: 10px; }
-        .resultados-box { margin-top: 20px; }
-        .resultados-box h3 { color: #2D3436; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .cota-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .cota-card:hover { border-color: #003087; background: #E8F5E9; }
-        .cota-card.selecionada { border-color: #003087; background: linear-gradient(135deg, #E8F5E9, #C8E6C9); box-shadow: 0 4px 15px rgba(0, 48, 135, 0.2); }
-        .cota-info h4 { margin: 0 0 5px 0; color: #333; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .cota-info p { margin: 0; color: #666; font-size: 0.9rem; }
-        .cota-preco { text-align: right; }
-        .cota-preco .valor { font-size: 1.6rem; font-weight: bold; color: #003087; }
-        .cota-preco .prazo { font-size: 0.85rem; color: #666; }
-        .tag-melhor-preco { background: #27ae60; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
-        .tag-melhor-prazo { background: #3498db; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
-        .selo-real { display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; color: #2E7D32; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; }
-        .actions-footer { padding: 20px 30px; background: #F8F9FA; border-top: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .btn { padding: 12px 24px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        .btn-secondary { background: linear-gradient(135deg, #636E72, #495057); color: white; }
-        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
-        .btn-success:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
-        .frete-selecionado-info { margin-top: 20px; padding: 15px; background: #E8F5E9; border-radius: 10px; border-left: 4px solid #4CAF50; display: none; }
-        .frete-selecionado-info.ativo { display: block; }
-        .btn-calcular { background: linear-gradient(135deg, #003087, #0055A4); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 20px; }
-        .btn-calcular:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 48, 135, 0.4); }
-        .btn-calcular:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .alert-error { background: #FFF5F5; color: #C53030; border: 1px solid #FFB8B8; }
-        .alert-warning { background: #FFF8E1; color: #F57C00; border: 1px solid #FFE082; }
-        .transport-icon { font-size: 1.5rem; }
+
+        /* Status Badge */
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-pendente { background: #FFF8E1; color: #F57C00; }
+        .status-ativo { background: #E8F5E9; color: #2E7D32; }
+        .status-integrado { background: #E3F2FD; color: #1565C0; }
+
+        /* Metrics Cards - Compacto */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 15px; }
+        .metric-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; overflow: hidden; }
+        .metric-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; }
+        .metric-card.total::before { background: linear-gradient(90deg, #003087, #0055A4); }
+        .metric-card.enviados::before { background: linear-gradient(90deg, #2196F3, #03A9F4); }
+        .metric-card.entregues::before { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+        .metric-card.pendentes::before { background: linear-gradient(90deg, #FF9800, #FFC107); }
+        .metric-card.receita::before { background: linear-gradient(90deg, #9C27B0, #E91E63); }
+        .metric-icon { font-size: 1.4rem; margin-bottom: 6px; }
+        .metric-value { font-size: 1.6rem; font-weight: 800; color: #2D3436; margin-bottom: 2px; }
+        .metric-label { font-size: 0.75rem; color: #666; font-weight: 500; }
+        .metric-change { font-size: 0.7rem; margin-top: 4px; font-weight: 600; }
+        .metric-change.up { color: #4CAF50; }
+        .metric-change.down { color: #F44336; }
+
+        /* Charts Section - Compacto */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .chart-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .chart-card h3 { font-size: 1rem; color: #2D3436; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .chart-placeholder { background: #f8f9fa; border-radius: 10px; height: 140px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.85rem; }
+
+        /* Menu Cards - Compacto */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .menu-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; border: 2px solid transparent; }
+        .menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); border-color: #003087; }
+        .menu-card .icon { font-size: 2.2rem; }
+        .menu-card h3 { font-size: 1.1rem; color: #2D3436; }
+        .menu-card p { color: #666; font-size: 0.85rem; line-height: 1.4; }
+        .menu-card .tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; width: fit-content; }
+        .tag-ok { background: #E8F5E9; color: #2E7D32; }
+        .tag-soon { background: #FFF8E1; color: #F57C00; }
+        .tag-wait { background: #E3F2FD; color: #1565C0; }
+
+        /* API Status Section - Compacto */
+        .api-status { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .api-status h3 { font-size: 1rem; color: #2D3436; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .api-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+        .api-item .api-icon { font-size: 1.2rem; }
+        .api-item .api-info { flex: 1; }
+        .api-item .api-name { font-weight: 600; color: #333; font-size: 0.85rem; }
+        .api-item .api-desc { font-size: 0.7rem; color: #999; }
+        .api-item .api-state { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+        .state-active { background: #E8F5E9; color: #2E7D32; }
+        .state-pending { background: #FFF8E1; color: #F57C00; }
+        .state-wait { background: #E3F2FD; color: #1565C0; }
+
+        /* Recent Activity - Compacto */
+        .activity-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .activity-card h3 { font-size: 1rem; color: #2D3436; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .activity-list { display: flex; flex-direction: column; gap: 8px; }
+        .activity-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; transition: all 0.2s; }
+        .activity-item:hover { background: #E8F5E9; }
+        .activity-icon { font-size: 1.2rem; }
+        .activity-info { flex: 1; }
+        .activity-title { font-weight: 600; color: #333; font-size: 0.85rem; }
+        .activity-meta { font-size: 0.7rem; color: #999; margin-top: 2px; }
+        .activity-status { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+
+        /* Loading */
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .loading-box { background: white; padding: 40px 60px; border-radius: 20px; text-align: center; }
+        .loading-box .spinner { font-size: 3rem; animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .hidden { display: none !important; }
-        .api-notice { background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 10px; padding: 15px; margin-bottom: 20px; font-size: 0.9rem; color: #1565C0; }
-        .api-notice strong { display: block; margin-bottom: 5px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.3rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .metric-value { font-size: 1.8rem; }
+            .mobile-menu-btn { display: inline-flex !important; }
+            .header-actions { display: none; }
+        }
     </style>
+  <link rel="stylesheet" href="navmenu.css">
 <base target="_blank">
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
-            <div>
-                <h1>💵 Cotação de Frete</h1>
-                <p>Calcule o valor do frete dos Correios</p>
-            </div>
-            <button class="btn-voltar" onclick="voltar()">← Central Correios</button>
-        </div>
-
-        <div class="content">
-            <!-- API Status Notice -->
-            <div class="api-notice" id="apiNotice">
-                <strong>ℹ️ Modo de operação atual</strong>
-                A API oficial dos Correios está aguardando ativação do plano Platinum. 
-                Atualmente usando cálculo via API pública com proxy server-side.
-            </div>
-
-            <!-- Dados da solicitação - EDITÁVEIS -->
-            <div class="info-box" id="infoBox">
-                <h3>📦 Dados da Entrega</h3>
-                <div class="info-grid" id="infoGrid">
-                    <div class="info-item"><span class="info-label">Nº Pedido</span><span class="info-value" id="infoPedido">-</span></div>
-                    <div class="info-item"><span class="info-label">Cliente</span><span class="info-value" id="infoCliente">-</span></div>
-                    <div class="info-item">
-                        <span class="info-label">CEP Origem *</span>
-                        <input type="text" id="inputCepOrigem" value="" placeholder="00000-000" maxlength="9" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">CEP Destino *</span>
-                        <input type="text" id="inputCepDestino" value="" placeholder="00000-000" maxlength="9" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Peso (kg) *</span>
-                        <input type="number" id="inputPeso" value="1" step="0.1" min="0.1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Dimensões (AxLxC cm)</span>
-                        <div style="display:flex;gap:5px;">
-                            <input type="number" id="inputAltura" value="10" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Alt">
-                            <input type="number" id="inputLargura" value="20" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Larg">
-                            <input type="number" id="inputComprimento" value="20" min="1" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-weight:600;width:33%;" placeholder="Comp">
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Valor Declarado (R$)</span>
-                        <input type="number" id="inputValor" value="200" step="0.01" min="0" style="padding:8px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;font-weight:600;width:100%;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Alertas -->
-            <div id="alertContainer"></div>
-
-            <!-- Loading -->
-            <div class="loading-box" id="loadingBox">
-                <div style="font-size: 3rem;">📮</div>
-                <p>Consultando Correios...</p>
-                <p class="sub">Correios Web Services - PAC, SEDEX</p>
-            </div>
-
-            <!-- Error -->
-            <div class="error-box hidden" id="errorBox">
-                <h3>⚠️ Erro ao consultar</h3>
-                <p id="errorMessage">Não foi possível obter cotações.</p>
-                <button class="btn btn-secondary" onclick="tentarNovamente()">🔄 Tentar Novamente</button>
-            </div>
-
-            <!-- Resultados -->
-            <div class="resultados-box hidden" id="resultadosBox">
-                <div class="selo-real" id="seloResultado">
-                    <span>✅</span> Valores reais dos Correios
-                </div>
-                <h3>📋 Opções de Frete Encontradas</h3>
-                <div id="cotasContainer"></div>
-                <div class="frete-selecionado-info" id="freteSelecionadoInfo">
-                    <strong>Frete selecionado:</strong>
-                    <span id="freteSelecionadoTexto"></span>
-                </div>
-            </div>
-
-            <!-- Botão calcular -->
-            <button class="btn-calcular" id="btnCalcular">
-                <span style="font-size: 1.2rem;">🔄</span> Calcular Frete
-            </button>
-        </div>
-
-        <div class="actions-footer" id="actionsFooter" style="display: none;">
-            <div style="color:#636E72;font-size:0.9rem;">
-                <span id="footerInfo">Selecione uma opção de frete</span>
-            </div>
-            <div style="display:flex;gap:10px;">
-                <button class="btn btn-secondary" onclick="voltar()">Cancelar</button>
-                <button class="btn btn-success" id="btnUsarFrete" onclick="usarFreteSelecionado()" disabled>
-                    ✅ Usar Este Frete
+            <div style="display:flex;align-items:center;gap:15px;">
+                <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn" style="display:none;background:none;border:none;color:white;cursor:pointer;padding:8px;font-size:24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
+                <div>
+                    <h1>📮 Central Correios</h1>
+                    <p>Gerenciamento de envios, cotações e rastreamento</p>
+                    <div style="margin-top: 10px;">
+                        <span class="status-badge status-pendente" id="apiStatusBadge">
+                            ⏳ API Oficial: Aguardando Platinum
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-voltar" onclick="voltar()">← Dashboard</button>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="metric-card total">
+                <div class="metric-icon">📦</div>
+                <div class="metric-value" id="metricTotal">0</div>
+                <div class="metric-label">Total de Envios</div>
+                <div class="metric-change up">↑ 12% vs mês anterior</div>
+            </div>
+            <div class="metric-card enviados">
+                <div class="metric-icon">🚚</div>
+                <div class="metric-value" id="metricEnviados">0</div>
+                <div class="metric-label">Enviados</div>
+                <div class="metric-change up">↑ 8% vs mês anterior</div>
+            </div>
+            <div class="metric-card entregues">
+                <div class="metric-icon">✅</div>
+                <div class="metric-value" id="metricEntregues">0</div>
+                <div class="metric-label">Entregues</div>
+                <div class="metric-change up">↑ 15% vs mês anterior</div>
+            </div>
+            <div class="metric-card pendentes">
+                <div class="metric-icon">⏳</div>
+                <div class="metric-value" id="metricPendentes">0</div>
+                <div class="metric-label">Pendentes</div>
+                <div class="metric-change down">↓ 3% vs mês anterior</div>
+            </div>
+            <div class="metric-card receita">
+                <div class="metric-icon">💰</div>
+                <div class="metric-value" id="metricReceita">R$ 0</div>
+                <div class="metric-label">Total em Fretes</div>
+                <div class="metric-change up">↑ 10% vs mês anterior</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📊 Envios por Mês</h3>
+                <div class="chart-placeholder" id="chartEnvios">
+                    <canvas id="canvasEnvios" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>🎯 Status dos Envios</h3>
+                <div class="chart-placeholder" id="chartStatus">
+                    <canvas id="canvasStatus" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Modules -->
+        <div class="menu-grid">
+            <a href="correios-cotacao.html" class="menu-card">
+                <div class="icon">💵</div>
+                <h3>Cotações de Frete</h3>
+                <p>Calcule o valor do frete para PAC, SEDEX e outras modalidades dos Correios. Integre automaticamente às suas solicitações de entrega.</p>
+                <span class="tag tag-ok">✅ Funcionando</span>
+            </a>
+            <a href="correios-rastreio.html" class="menu-card">
+                <div class="icon">🔍</div>
+                <h3>Rastreamento</h3>
+                <p>Acompanhe o status de todas as suas encomendas em tempo real. Visualize histórico de eventos e notifique clientes automaticamente.</p>
+                <span class="tag tag-soon">🚧 Em desenvolvimento</span>
+            </a>
+            <a href="correios-carteira.html" class="menu-card">
+                <div class="icon">💳</div>
+                <h3>Carteira de Postagem</h3>
+                <p>Gerencie seu cartão de postagem, visualize saldo, histórico de postagens e configure pré-postagens automáticas.</p>
+                <span class="tag tag-wait">⏳ Aguardando API Platinum</span>
+            </a>
+        </div>
+
+        <!-- API Status -->
+        <div class="api-status">
+            <h3>🔌 Status das Integrações Correios</h3>
+            <div class="api-grid" id="apiGrid">
+                <div class="api-item">
+                    <div class="api-icon">💵</div>
+                    <div class="api-info">
+                        <div class="api-name">API de Preço (Cotação)</div>
+                        <div class="api-desc">Calcular frete PAC/SEDEX</div>
+                    </div>
+                    <span class="api-state state-pending">Fallback Ativo</span>
+                </div>
+                <div class="api-item">
+                    <div class="api-icon">🔍</div>
+                    <div class="api-info">
+                        <div class="api-name">API Rastro</div>
+                        <div class="api-desc">Rastreamento de encomendas</div>
+                    </div>
+                    <span class="api-state state-wait">Aguardando Platinum</span>
+                </div>
+                <div class="api-item">
+                    <div class="api-icon">📋</div>
+                    <div class="api-info">
+                        <div class="api-name">API Pré-Postagem</div>
+                        <div class="api-desc">Gerar etiquetas de envio</div>
+                    </div>
+                    <span class="api-state state-wait">Aguardando Platinum</span>
+                </div>
+                <div class="api-item">
+                    <div class="api-icon">🚚</div>
+                    <div class="api-info">
+                        <div class="api-name">API Coleta</div>
+                        <div class="api-desc">Solicitar coleta de encomendas</div>
+                    </div>
+                    <span class="api-state state-wait">Aguardando Platinum</span>
+                </div>
+                <div class="api-item">
+                    <div class="api-icon">🏢</div>
+                    <div class="api-info">
+                        <div class="api-name">API Agências</div>
+                        <div class="api-desc">Localizar agências próximas</div>
+                    </div>
+                    <span class="api-state state-wait">Aguardando Platinum</span>
+                </div>
+                <div class="api-item">
+                    <div class="api-icon">📍</div>
+                    <div class="api-info">
+                        <div class="api-name">API CEP</div>
+                        <div class="api-desc">Consulta de endereços</div>
+                    </div>
+                    <span class="api-state state-active">Disponível Pública</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-card">
+            <h3>🕐 Atividade Recente</h3>
+            <div class="activity-list" id="activityList">
+                <div class="activity-item">
+                    <div class="activity-icon">💵</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Cotação de frete realizada</div>
+                        <div class="activity-meta">PAC - R$ 21,90 | CEP: 88104-740 → 89186-000</div>
+                    </div>
+                    <span class="activity-status" style="background:#E8F5E9;color:#2E7D32;">Concluído</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">📦</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Solicitação de entrega criada</div>
+                        <div class="activity-meta">Cliente: Edna Klaumann | Pedido #1234</div>
+                    </div>
+                    <span class="activity-status" style="background:#FFF8E1;color:#F57C00;">Pendente</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🚚</div>
+                    <div class="activity-info">
+                        <div class="activity-title">Envio despachado</div>
+                        <div class="activity-meta">Código: DG049186230BR | SEDEX</div>
+                    </div>
+                    <span class="activity-status" style="background:#E3F2FD;color:#1565C0;">Em trânsito</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        let dadosSolicitacao = null;
-        let cotasAtuais = [];
-        let cotaSelecionada = null;
-        let supabaseClient = null;
+    <!-- Loading -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner">📮</div>
+            <p style="margin-top:15px;font-weight:600;">Carregando dados...</p>
+        </div>
+    </div>
 
+    <script>
+        let supabaseClient = null;
         var CORREIOS_SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         var CORREIOS_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
-        const SERVICOS_CORREIOS = {
-            'PAC': '03298',
-            'SEDEX': '03220',
-            'SEDEX_10': '03158',
-            'SEDEX_12': '03140',
-            'SEDEX_HOJE': '03164',
-            'MINI_ENVIOS': '04227'
-        };
-
-        function aplicarMascaraCEP(input) {
-            input.addEventListener('input', function(e) {
-                let v = e.target.value.replace(/\D/g, '');
-                v = v.replace(/^(\d{5})(\d)/, '$1-$2');
-                e.target.value = v;
-            });
-        }
-
-        function formatarCEP(cep) {
-            if (!cep) return '-';
-            cep = cep.toString().replace(/\D/g, '');
-            return cep.length === 8 ? cep.replace(/(\d{5})(\d{3})/, '$1-$2') : cep;
-        }
-
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('[CORREIOS-COTAR] Página carregada');
+            console.log('[CORREIOS-DASH] Página carregada');
             await new Promise((resolve) => {
                 let attempts = 0;
                 const check = () => {
@@ -201,7 +328,7 @@
                         supabaseClient = window.supabaseClient;
                         resolve();
                     } else if (attempts > 50) {
-                        console.warn('[CORREIOS-COTAR] supabaseClient não encontrado, continuando sem...');
+                        console.warn('[CORREIOS-DASH] supabaseClient não encontrado');
                         resolve();
                     } else {
                         attempts++;
@@ -211,355 +338,181 @@
                 check();
             });
 
-            const params = new URLSearchParams(window.location.search);
-            dadosSolicitacao = {
-                solicitacao_id: params.get('solicitacao_id'),
-                cliente_id: params.get('cliente_id'),
-                cliente_sistema_id: params.get('cliente_sistema_id') || params.get('cliente_id') || window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || '',
-                pedido: params.get('pedido') || '-',
-                cliente_nome: params.get('cliente_nome') || '-',
-                cep_origem: params.get('cep_origem') || '',
-                cep_destino: params.get('cep_destino') || '',
-                peso: parseFloat(params.get('peso')) || 1,
-                comprimento: parseFloat(params.get('comprimento')) || 20,
-                largura: parseFloat(params.get('largura')) || 20,
-                altura: parseFloat(params.get('altura')) || 10,
-                valor_declarado: parseFloat(params.get('valor_declarado')) || 0
-            };
+            await carregarMetricas();
+            desenharGraficos();
+        });
 
-            console.log('[CORREIOS-COTAR] Dados recebidos:', dadosSolicitacao);
-            document.getElementById('infoPedido').textContent = dadosSolicitacao.pedido;
-            document.getElementById('infoCliente').textContent = decodeURIComponent(dadosSolicitacao.cliente_nome);
-            document.getElementById('inputCepOrigem').value = formatarCEP(dadosSolicitacao.cep_origem);
-            document.getElementById('inputCepDestino').value = formatarCEP(dadosSolicitacao.cep_destino);
-            document.getElementById('inputPeso').value = dadosSolicitacao.peso || 1;
-            document.getElementById('inputAltura').value = dadosSolicitacao.altura || 10;
-            document.getElementById('inputLargura').value = dadosSolicitacao.largura || 20;
-            document.getElementById('inputComprimento').value = dadosSolicitacao.comprimento || 20;
-            document.getElementById('inputValor').value = dadosSolicitacao.valor_declarado || 200;
-
-            aplicarMascaraCEP(document.getElementById('inputCepOrigem'));
-            aplicarMascaraCEP(document.getElementById('inputCepDestino'));
-
-            if (!dadosSolicitacao.cep_destino) {
-                mostrarErro('CEP de destino não informado. Volte para o rastreamento e selecione uma solicitação.');
+        async function carregarMetricas() {
+            if (!supabaseClient) {
+                console.warn('[CORREIOS-DASH] Supabase não disponível, usando dados demo');
+                usarDadosDemo();
                 return;
             }
 
-            if (!dadosSolicitacao.cliente_sistema_id) {
-                dadosSolicitacao.cliente_sistema_id = window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id') || sessionStorage.getItem('cliente_id') || '';
-            }
-
-            console.log('[CORREIOS-COTAR] cliente_sistema_id final:', dadosSolicitacao.cliente_sistema_id);
-
-            // Configurar event listener do botão calcular
-            const btnCalcular = document.getElementById('btnCalcular');
-            if (btnCalcular) {
-                btnCalcular.addEventListener('click', calcularFrete);
-                console.log('[CORREIOS-COTAR] Event listener do botão configurado');
-            }
-
-            calcularFrete();
-        });
-
-        async function calcularFrete() {
-            console.log('[CORREIOS-COTAR] Iniciando cálculo...');
-            mostrarLoading(true);
-            mostrarErro(false);
-            mostrarResultados(false);
-            document.getElementById('actionsFooter').style.display = 'none';
-
-            const cepOrigem = document.getElementById('inputCepOrigem').value.replace(/\D/g, '');
-            const cepDestino = document.getElementById('inputCepDestino').value.replace(/\D/g, '');
-            const peso = parseFloat(document.getElementById('inputPeso').value) || 1;
-            const altura = parseFloat(document.getElementById('inputAltura').value) || 10;
-            const largura = parseFloat(document.getElementById('inputLargura').value) || 20;
-            const comprimento = parseFloat(document.getElementById('inputComprimento').value) || 20;
-            const valorDeclarado = parseFloat(document.getElementById('inputValor').value) || 0;
-
             try {
-                // ===== PASSO 1: OBTER CONFIGURAÇÃO DA EDGE FUNCTION =====
-                console.log('[CORREIOS-COTAR] Buscando configuração...');
-                const configResponse = await fetch(CORREIOS_SUPABASE_URL + '/functions/v1/correios-calcular-frete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + CORREIOS_SUPABASE_ANON_KEY
-                    },
-                    body: JSON.stringify({
-                        cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
-                        cep_origem: cepOrigem,
-                        cep_destino: cepDestino,
-                        peso_gramas: Math.round(peso * 1000),
-                        comprimento: comprimento,
-                        largura: largura,
-                        altura: altura,
-                        valor_declarado: valorDeclarado,
-                        servicos_desejados: ['PAC', 'SEDEX']
-                    })
-                });
-
-                const configResult = await configResponse.json();
-                console.log('[CORREIOS-COTAR] Config:', configResult);
-
-                if (!configResult.success) {
-                    throw new Error(configResult.error || 'Erro ao buscar configuração');
-                }
-
-                // Se a API oficial funcionou, usar os resultados dela
-                if (configResult.api_usada === 'oficial' && configResult.cotacoes) {
-                    console.log('[CORREIOS-COTAR] Usando API oficial');
-                    cotasAtuais = configResult.cotacoes;
-                    exibirCotas(cotasAtuais);
-                    document.getElementById('apiNotice').style.display = 'none';
+                // Buscar solicitações de entrega do cliente
+                const clienteId = window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id');
+                if (!clienteId) {
+                    usarDadosDemo();
                     return;
                 }
 
-                // Se não, usar API pública via Edge Function proxy
-                console.log('[CORREIOS-COTAR] Usando API pública via Edge Function proxy...');
-                const cotacoes = await cotarFreteViaProxy({
-                    cepOrigem: cepOrigem,
-                    cepDestino: cepDestino,
-                    pesoGramas: Math.round(peso * 1000),
-                    tipoObjeto: 2,
-                    comprimento: comprimento,
-                    largura: largura,
-                    altura: altura,
-                    diametro: 0,
-                    valorDeclarado: valorDeclarado,
-                    servicos: ['PAC', 'SEDEX']
+                const { data, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteId);
+
+                if (error) throw error;
+
+                const total = data?.length || 0;
+                const enviados = data?.filter(s => s.status === 'enviado' || s.status === 'despachado').length || 0;
+                const entregues = data?.filter(s => s.status === 'entregue').length || 0;
+                const pendentes = data?.filter(s => !s.status || s.status === 'pendente').length || 0;
+                const receita = data?.reduce((sum, s) => sum + (parseFloat(s.valor_frete) || 0), 0) || 0;
+
+                document.getElementById('metricTotal').textContent = total;
+                document.getElementById('metricEnviados').textContent = enviados;
+                document.getElementById('metricEntregues').textContent = entregues;
+                document.getElementById('metricPendentes').textContent = pendentes;
+                document.getElementById('metricReceita').textContent = 'R$ ' + receita.toFixed(2).replace('.', ',');
+
+                console.log('[CORREIOS-DASH] Métricas carregadas:', { total, enviados, entregues, pendentes, receita });
+
+            } catch (err) {
+                console.error('[CORREIOS-DASH] Erro ao carregar métricas:', err);
+                usarDadosDemo();
+            }
+        }
+
+        function usarDadosDemo() {
+            document.getElementById('metricTotal').textContent = '12';
+            document.getElementById('metricEnviados').textContent = '8';
+            document.getElementById('metricEntregues').textContent = '5';
+            document.getElementById('metricPendentes').textContent = '3';
+            document.getElementById('metricReceita').textContent = 'R$ 187,45';
+        }
+
+        function desenharGraficos() {
+            // Gráfico de barras - Envios por mês
+            const canvasEnvios = document.getElementById('canvasEnvios');
+            if (canvasEnvios) {
+                const ctx = canvasEnvios.getContext('2d');
+                const w = canvasEnvios.width;
+                const h = canvasEnvios.height;
+
+                // Dados demo
+                const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
+                const valores = [2, 4, 3, 5, 8, 12];
+                const max = Math.max(...valores);
+                const barWidth = w / meses.length * 0.6;
+                const gap = w / meses.length * 0.4;
+
+                ctx.clearRect(0, 0, w, h);
+
+                meses.forEach((mes, i) => {
+                    const barHeight = (valores[i] / max) * (h - 40);
+                    const x = i * (barWidth + gap) + gap / 2;
+                    const y = h - barHeight - 20;
+
+                    // Gradiente
+                    const grad = ctx.createLinearGradient(0, y, 0, h - 20);
+                    grad.addColorStop(0, '#003087');
+                    grad.addColorStop(1, '#0055A4');
+
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(x, y, barWidth, barHeight);
+
+                    // Label
+                    ctx.fillStyle = '#666';
+                    ctx.font = '12px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(mes, x + barWidth / 2, h - 5);
+
+                    // Valor
+                    ctx.fillStyle = '#333';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText(valores[i], x + barWidth / 2, y - 5);
+                });
+            }
+
+            // Gráfico de pizza - Status
+            const canvasStatus = document.getElementById('canvasStatus');
+            if (canvasStatus) {
+                const ctx = canvasStatus.getContext('2d');
+                const w = canvasStatus.width;
+                const h = canvasStatus.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) / 2 - 30;
+
+                const dados = [
+                    { label: 'Entregues', value: 5, color: '#4CAF50' },
+                    { label: 'Enviados', value: 3, color: '#2196F3' },
+                    { label: 'Pendentes', value: 3, color: '#FF9800' },
+                    { label: 'Cancelados', value: 1, color: '#F44336' }
+                ];
+
+                const total = dados.reduce((s, d) => s + d.value, 0);
+                let startAngle = 0;
+
+                ctx.clearRect(0, 0, w, h);
+
+                dados.forEach(d => {
+                    const sliceAngle = (d.value / total) * 2 * Math.PI;
+
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = d.color;
+                    ctx.fill();
+
+                    // Label
+                    const midAngle = startAngle + sliceAngle / 2;
+                    const lx = cx + Math.cos(midAngle) * (radius + 20);
+                    const ly = cy + Math.sin(midAngle) * (radius + 20);
+
+                    ctx.fillStyle = '#333';
+                    ctx.font = '11px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(d.label + ' (' + d.value + ')', lx, ly);
+
+                    startAngle += sliceAngle;
                 });
 
-                cotasAtuais = cotacoes;
-                exibirCotas(cotasAtuais);
+                // Centro branco (donut)
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius * 0.5, 0, 2 * Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
 
-            } catch (err) {
-                console.error('[CORREIOS-COTAR] ERRO:', err);
-                mostrarLoading(false);
-                mostrarErro(err.message);
+                // Total no centro
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(total, cx, cy + 5);
             }
         }
-        window.calcularFrete = calcularFrete;
 
-        async function cotarFreteViaProxy(dados) {
-            const {
-                cepOrigem, cepDestino, pesoGramas, tipoObjeto,
-                comprimento, largura, altura, diametro, valorDeclarado, servicos
-            } = dados;
-
-            const resultados = [];
-
-            for (const servicoNome of servicos) {
-                const coProduto = SERVICOS_CORREIOS[servicoNome] || servicoNome;
-
-                const url = `http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?` +
-                    `nCdServico=${coProduto}` +
-                    `&sCepOrigem=${cepOrigem}` +
-                    `&sCepDestino=${cepDestino}` +
-                    `&nVlPeso=${(parseInt(pesoGramas) / 1000).toFixed(1)}` +
-                    `&nCdFormato=${tipoObjeto}` +
-                    `&nVlComprimento=${comprimento}` +
-                    `&nVlAltura=${altura}` +
-                    `&nVlLargura=${largura}` +
-                    `&nVlDiametro=${diametro}` +
-                    `&sCdMaoPropria=N` +
-                    `&nVlValorDeclarado=${valorDeclarado}` +
-                    `&sCdAvisoRecebimento=N` +
-                    `&StrRetorno=xml`;
-
-                console.log(`[CORREIOS-COTAR] Cotando ${servicoNome} via Edge Function proxy...`);
-
-                try {
-                    const response = await fetch(CORREIOS_SUPABASE_URL + '/functions/v1/correios-proxy', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + CORREIOS_SUPABASE_ANON_KEY
-                        },
-                        body: JSON.stringify({ url: url })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Edge Function retornou ${response.status}`);
-                    }
-
-                    const xmlText = await response.text();
-                    console.log(`[CORREIOS-COTAR] Resposta ${servicoNome}:`, xmlText.substring(0, 300));
-
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-                    const valorEl = xmlDoc.querySelector('Valor');
-                    const prazoEl = xmlDoc.querySelector('PrazoEntrega');
-                    const msgErroEl = xmlDoc.querySelector('MsgErro');
-                    const codErroEl = xmlDoc.querySelector('Erro');
-
-                    const valor = valorEl ? parseFloat(valorEl.textContent.replace(',', '.')) : null;
-                    const prazo = prazoEl ? parseInt(prazoEl.textContent) : null;
-                    const msgErro = msgErroEl ? msgErroEl.textContent : null;
-                    const codErro = codErroEl ? codErroEl.textContent : null;
-
-                    resultados.push({
-                        servico: servicoNome,
-                        codigo_produto: coProduto,
-                        nome_produto: servicoNome,
-                        prazo_entrega: prazo,
-                        valor_frete: valor,
-                        erro: msgErro && msgErro !== '0' ? { codigo: codErro, mensagem: msgErro } : null,
-                        disponivel: valor !== null && (!msgErro || msgErro === '0'),
-                        fonte: 'api_publica'
-                    });
-
-                } catch (error) {
-                    console.log(`[CORREIOS-COTAR] Erro ${servicoNome}: ${error.message}`);
-                    resultados.push({
-                        servico: servicoNome,
-                        codigo_produto: coProduto,
-                        nome_produto: servicoNome,
-                        erro: { mensagem: error.message },
-                        disponivel: false,
-                        fonte: 'api_publica'
-                    });
+        function abrirMenu() {
+            if (typeof window.navMenuOpen === 'function') {
+                window.navMenuOpen();
+            } else {
+                // Fallback if navmenu.js is not loaded yet
+                var overlay = document.getElementById('navMenuOverlay');
+                var panel = document.getElementById('navMenuPanel');
+                if (overlay && panel) {
+                    overlay.classList.add('active');
+                    panel.classList.add('active');
+                    document.body.classList.add('nav-menu-open');
                 }
             }
-
-            return resultados;
-        }
-
-        function exibirCotas(cotas) {
-            mostrarErro(false);
-            mostrarLoading(false);
-            const container = document.getElementById('cotasContainer');
-            container.innerHTML = '';
-
-            if (!cotas || cotas.length === 0) {
-                container.innerHTML = '<div class="alert alert-warning">Nenhuma cotação encontrada.</div>';
-                mostrarResultados(true);
-                document.getElementById('actionsFooter').style.display = 'none';
-                return;
-            }
-
-            const cotasFormatadas = cotas.map(c => ({
-                servico: c.servico,
-                valor: c.valor_frete || 0,
-                prazo: c.prazo_entrega || 0,
-                msg: c.erro ? c.erro.mensagem : null,
-                original: null
-            })).filter(c => c.valor > 0);
-
-            if (cotasFormatadas.length === 0) {
-                container.innerHTML = '<div class="alert alert-warning">Nenhuma cotação válida encontrada. Verifique os dados informados ou tente novamente mais tarde.</div>';
-                mostrarResultados(true);
-                document.getElementById('actionsFooter').style.display = 'none';
-                return;
-            }
-
-            cotasFormatadas.sort((a, b) => a.valor - b.valor);
-            const melhorPreco = cotasFormatadas[0];
-            const melhorPrazo = cotasFormatadas.reduce((min, c) => c.prazo < min.prazo ? c : min, cotasFormatadas[0]);
-
-            cotasFormatadas.forEach((cota, index) => {
-                const isMelhorPreco = cota === melhorPreco;
-                const isMelhorPrazo = cota === melhorPrazo && cota !== melhorPreco;
-                const card = document.createElement('div');
-                card.className = 'cota-card ' + (index === 0 ? 'selecionada' : '');
-                card.id = 'cota_' + index;
-                card.onclick = () => selecionarCota(index);
-                const iconClass = cota.servico.toLowerCase().includes('pac') ? '📦' : (cota.servico.toLowerCase().includes('sedex') ? '✈️' : '📮');
-                card.innerHTML =
-                    '<div class="cota-info">' +
-                    '<h4>' +
-                    '<span class="transport-icon">' + iconClass + '</span> ' +
-                    'Correios - ' + cota.servico.toUpperCase() +
-                    (isMelhorPreco ? '<span class="tag-melhor-preco">💰 Melhor Preço</span>' : '') +
-                    (isMelhorPrazo ? '<span class="tag-melhor-prazo">⚡ Melhor Prazo</span>' : '') +
-                    '</h4>' +
-                    '<p>⏱️ Até ' + cota.prazo + ' dia(s) útil(eis)' + (cota.msg ? ' | ' + cota.msg : '') + '</p>' +
-                    '</div>' +
-                    '<div class="cota-preco">' +
-                    (cota.original ? '<div class="original">R$ ' + cota.original.toFixed(2).replace('.', ',') + '</div>' : '') +
-                    '<div class="valor">R$ ' + cota.valor.toFixed(2).replace('.', ',') + '</div>' +
-                    '<div class="prazo">' + cota.prazo + ' dia(s)</div>' +
-                    '</div>';
-                container.appendChild(card);
-            });
-
-            mostrarResultados(true);
-            document.getElementById('actionsFooter').style.display = 'flex';
-            selecionarCota(0);
-        }
-
-        function selecionarCota(index) {
-            document.querySelectorAll('.cota-card').forEach(el => el.classList.remove('selecionada'));
-            const el = document.getElementById('cota_' + index);
-            if (el) el.classList.add('selecionada');
-            cotaSelecionada = cotasAtuais[index];
-            const infoEl = document.getElementById('freteSelecionadoInfo');
-            infoEl.classList.add('ativo');
-            document.getElementById('freteSelecionadoTexto').innerHTML =
-                'Correios ' + cotaSelecionada.servico.toUpperCase() +
-                ' - <strong>R$ ' + (cotaSelecionada.valor_frete || 0).toFixed(2).replace('.', ',') + '</strong>' +
-                ' (' + (cotaSelecionada.prazo_entrega || 0) + ' dia(s))';
-            document.getElementById('btnUsarFrete').disabled = false;
-            document.getElementById('footerInfo').textContent = 'Frete selecionado: Correios ' + cotaSelecionada.servico.toUpperCase();
-        }
-
-        async function usarFreteSelecionado() {
-            if (!cotaSelecionada || !dadosSolicitacao) { alert('Selecione uma opção de frete'); return; }
-            const btn = document.getElementById('btnUsarFrete');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Salvando...';
-            try {
-                if (!supabaseClient) throw new Error('Supabase não conectado');
-                const updateData = {
-                    valor_frete: cotaSelecionada.valor_frete || 0,
-                    forma_envio: cotaSelecionada.servico,
-                    peso_kg: parseFloat(document.getElementById('inputPeso').value) || dadosSolicitacao.peso,
-                    comprimento_cm: parseFloat(document.getElementById('inputComprimento').value) || dadosSolicitacao.comprimento,
-                    largura_cm: parseFloat(document.getElementById('inputLargura').value) || dadosSolicitacao.largura,
-                    altura_cm: parseFloat(document.getElementById('inputAltura').value) || dadosSolicitacao.altura,
-                    atualizado_em: new Date().toISOString()
-                };
-                const { error } = await supabaseClient.from('solicitacoes_pg').update(updateData).eq('id', dadosSolicitacao.solicitacao_id);
-                if (error) throw error;
-                alert('✅ Frete salvo com sucesso!\n\nCorreios ' + cotaSelecionada.servico.toUpperCase() + ' - R$ ' + (cotaSelecionada.valor_frete || 0).toFixed(2).replace('.', ','));
-                voltar();
-            } catch (err) {
-                console.error('[CORREIOS-COTAR] Erro ao salvar:', err);
-                alert('❌ Erro ao salvar frete: ' + err.message);
-                btn.disabled = false;
-                btn.innerHTML = '✅ Usar Este Frete';
-            }
-        }
-
-        function mostrarLoading(show) {
-            document.getElementById('loadingBox').style.display = show ? 'block' : 'none';
-        }
-
-        function mostrarErro(msg) {
-            const box = document.getElementById('errorBox');
-            if (msg === false || msg === '' || msg === null || msg === undefined) {
-                box.classList.add('hidden');
-                box.style.display = 'none';
-                return;
-            }
-            box.style.display = 'block';
-            document.getElementById('errorMessage').textContent = msg;
-            box.classList.remove('hidden');
-            document.getElementById('btnCalcular').classList.remove('hidden');
-        }
-
-        function mostrarResultados(show) {
-            document.getElementById('resultadosBox').classList.toggle('hidden', !show);
-        }
-
-        function tentarNovamente() {
-            calcularFrete();
         }
 
         function voltar() {
-            window.location.href = 'correios.html';
+            window.location.href = 'dashboard.html';
         }
     </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>
