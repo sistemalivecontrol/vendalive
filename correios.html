@@ -346,7 +346,13 @@
             } = dados;
 
             const resultados = [];
-            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+
+            // Lista de proxies CORS para tentar em ordem
+            const PROXIES = [
+                { url: 'https://proxy.corsfix.com/?', encode: false },
+                { url: 'https://proxy.cors.sh/', encode: false },
+                { url: 'https://api.codetabs.com/v1/proxy?quest=', encode: true }
+            ];
 
             for (const servicoNome of servicos) {
                 const coProduto = SERVICOS_CORREIOS[servicoNome] || servicoNome;
@@ -368,44 +374,65 @@
 
                 console.log(`[CORREIOS-PAGE] Cotando ${servicoNome} via proxy...`);
 
-                try {
-                    const response = await fetch(PROXY_URL + encodeURIComponent(url));
-                    const xmlText = await response.text();
+                let proxySuccess = false;
 
-                    console.log(`[CORREIOS-PAGE] Resposta ${servicoNome}:`, xmlText.substring(0, 300));
+                // Tentar cada proxy em ordem
+                for (const proxy of PROXIES) {
+                    try {
+                        const proxyUrl = proxy.encode ? proxy.url + encodeURIComponent(url) : proxy.url + url;
+                        console.log(`[CORREIOS-PAGE] Tentando proxy: ${proxy.url}`);
 
-                    // Parse XML
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                        const response = await fetch(proxyUrl);
 
-                    const valorEl = xmlDoc.querySelector('Valor');
-                    const prazoEl = xmlDoc.querySelector('PrazoEntrega');
-                    const msgErroEl = xmlDoc.querySelector('MsgErro');
-                    const codErroEl = xmlDoc.querySelector('Erro');
+                        if (!response.ok) {
+                            console.log(`[CORREIOS-PAGE] Proxy ${proxy.url} retornou status ${response.status}, tentando próximo...`);
+                            continue;
+                        }
 
-                    const valor = valorEl ? parseFloat(valorEl.textContent.replace(',', '.')) : null;
-                    const prazo = prazoEl ? parseInt(prazoEl.textContent) : null;
-                    const msgErro = msgErroEl ? msgErroEl.textContent : null;
-                    const codErro = codErroEl ? codErroEl.textContent : null;
+                        const xmlText = await response.text();
+                        console.log(`[CORREIOS-PAGE] Resposta ${servicoNome} via ${proxy.url}:`, xmlText.substring(0, 300));
 
+                        // Parse XML
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                        const valorEl = xmlDoc.querySelector('Valor');
+                        const prazoEl = xmlDoc.querySelector('PrazoEntrega');
+                        const msgErroEl = xmlDoc.querySelector('MsgErro');
+                        const codErroEl = xmlDoc.querySelector('Erro');
+
+                        const valor = valorEl ? parseFloat(valorEl.textContent.replace(',', '.')) : null;
+                        const prazo = prazoEl ? parseInt(prazoEl.textContent) : null;
+                        const msgErro = msgErroEl ? msgErroEl.textContent : null;
+                        const codErro = codErroEl ? codErroEl.textContent : null;
+
+                        resultados.push({
+                            servico: servicoNome,
+                            codigo_produto: coProduto,
+                            nome_produto: servicoNome,
+                            prazo_entrega: prazo,
+                            valor_frete: valor,
+                            erro: msgErro && msgErro !== '0' ? { codigo: codErro, mensagem: msgErro } : null,
+                            disponivel: valor !== null && (!msgErro || msgErro === '0'),
+                            fonte: 'api_publica'
+                        });
+
+                        proxySuccess = true;
+                        break; // Proxy funcionou, sair do loop de proxies
+
+                    } catch (error) {
+                        console.log(`[CORREIOS-PAGE] Erro no proxy ${proxy.url} para ${servicoNome}: ${error.message}`);
+                        // Continuar para o próximo proxy
+                    }
+                }
+
+                if (!proxySuccess) {
+                    console.log(`[CORREIOS-PAGE] Todos os proxies falharam para ${servicoNome}`);
                     resultados.push({
                         servico: servicoNome,
                         codigo_produto: coProduto,
                         nome_produto: servicoNome,
-                        prazo_entrega: prazo,
-                        valor_frete: valor,
-                        erro: msgErro && msgErro !== '0' ? { codigo: codErro, mensagem: msgErro } : null,
-                        disponivel: valor !== null && (!msgErro || msgErro === '0'),
-                        fonte: 'api_publica'
-                    });
-
-                } catch (error) {
-                    console.log(`[CORREIOS-PAGE] Erro ${servicoNome}: ${error.message}`);
-                    resultados.push({
-                        servico: servicoNome,
-                        codigo_produto: coProduto,
-                        nome_produto: servicoNome,
-                        erro: { mensagem: error.message },
+                        erro: { mensagem: 'Todos os proxies CORS falharam. Tente novamente mais tarde.' },
                         disponivel: false,
                         fonte: 'api_publica'
                     });
