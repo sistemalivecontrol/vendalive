@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carteira de Postagem - Correios</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <script src="./js/auth.js?v=20260529"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 25px 30px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 12px; }
+        .header p { opacity: 0.9; font-size: 0.95rem; margin-top: 5px; }
+        .btn-voltar { background: white; color: #003087; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* Card Info */
+        .card-info { background: linear-gradient(135deg, #003087, #0055A4); color: white; border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+        .card-info::before { content: ''; position: absolute; top: -50%; right: -20%; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+        .card-info::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 200px; height: 200px; background: rgba(255,255,255,0.03); border-radius: 50%; }
+        .card-info h3 { font-size: 1.1rem; opacity: 0.9; margin-bottom: 5px; }
+        .card-number { font-family: monospace; font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; margin: 15px 0; }
+        .card-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .card-balance { font-size: 2.5rem; font-weight: 800; }
+        .card-balance-label { font-size: 0.85rem; opacity: 0.8; }
+        .card-status { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: #003087; }
+        .stat-label { font-size: 0.9rem; color: #666; margin-top: 5px; }
+
+        /* Coming Soon */
+        .coming-soon { background: white; border-radius: 16px; padding: 60px 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; margin-bottom: 25px; }
+        .coming-soon .icon { font-size: 4rem; margin-bottom: 20px; }
+        .coming-soon h3 { font-size: 1.5rem; color: #2D3436; margin-bottom: 10px; }
+        .coming-soon p { color: #666; font-size: 1rem; line-height: 1.6; max-width: 500px; margin: 0 auto 20px; }
+        .coming-soon .tag { display: inline-flex; align-items: center; gap: 5px; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: #E3F2FD; color: #1565C0; }
+
+        /* History Table */
+        .table-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        .table-card h3 { font-size: 1.1rem; color: #2D3436; margin-bottom: 20px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        tr:hover { background: #f8f9fa; }
+        .valor-positivo { color: #4CAF50; font-weight: 600; }
+        .valor-negativo { color: #F44336; font-weight: 600; }
+
+        .hidden { display: none !important; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>💳 Carteira de Postagem</h1>
+                <p>Gerencie seu cartão de postagem e saldo</p>
+            </div>
+            <button class="btn-voltar" onclick="voltar()">← Central Correios</button>
+        </div>
+
+        <!-- Card Info -->
+        <div class="card-info">
+            <h3>💳 Cartão de Postagem</h3>
+            <div class="card-number" id="cardNumber">0080 2209 59</div>
+            <div class="card-row">
+                <div>
+                    <div class="card-balance-label">Saldo Disponível</div>
+                    <div class="card-balance" id="cardBalance">R$ 0,00</div>
+                </div>
+                <div class="card-status" id="cardStatus">
+                    ⏳ Aguardando API Platinum
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statPostagens">0</div>
+                <div class="stat-label">Postagens Realizadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statPendentes">0</div>
+                <div class="stat-label">Pré-Postagens Pendentes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statEconomia">R$ 0</div>
+                <div class="stat-label">Economia com Descontos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statPeso">0 kg</div>
+                <div class="stat-label">Peso Total Enviado</div>
+            </div>
+        </div>
+
+        <!-- Coming Soon -->
+        <div class="coming-soon" id="comingSoon">
+            <div class="icon">🚧</div>
+            <h3>Funcionalidade em Desenvolvimento</h3>
+            <p>A integração completa com a carteira de postagem dos Correios será ativada assim que o plano Platinum for liberado. Você poderá gerenciar saldo, gerar etiquetas de pré-postagem e acompanhar consumo.</p>
+            <span class="tag">⏳ Aguardando API Platinum</span>
+            <div style="margin-top: 25px;">
+                <a href="https://empresas.correios.com.br/" target="_blank" class="btn-voltar" style="background: linear-gradient(135deg, #003087, #0055A4); color: white;">
+                    🌐 Acessar Portal Correios Empresas
+                </a>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="table-card">
+            <h3>📋 Histórico de Postagens</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Código</th>
+                            <th>Serviço</th>
+                            <th>Destinatário</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaHistorico">
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:#999;padding:30px;">
+                                Nenhuma postagem registrada. O histórico será preenchido automaticamente quando a API Platinum estiver ativa.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let supabaseClient = null;
+        var CORREIOS_SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        var CORREIOS_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await new Promise((resolve) => {
+                let attempts = 0;
+                const check = () => {
+                    if (window.supabaseClient) {
+                        supabaseClient = window.supabaseClient;
+                        resolve();
+                    } else if (attempts > 50) {
+                        resolve();
+                    } else {
+                        attempts++;
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+
+            await carregarDados();
+        });
+
+        async function carregarDados() {
+            if (!supabaseClient) return;
+
+            try {
+                const clienteId = window.authClienteId || window.sessaoUsuario?.cliente_id || localStorage.getItem('cliente_id');
+                if (!clienteId) return;
+
+                // Buscar solicitações com dados de envio
+                const { data, error } = await supabaseClient
+                    .from('solicitacoes_pg')
+                    .select('*')
+                    .eq('cliente_sistema_id', clienteId)
+                    .not('forma_envio', 'is', null);
+
+                if (error) throw error;
+
+                const totalPostagens = data?.length || 0;
+                const pendentes = data?.filter(s => !s.status || s.status === 'pendente').length || 0;
+                const totalValor = data?.reduce((sum, s) => sum + (parseFloat(s.valor_frete) || 0), 0) || 0;
+                const totalPeso = data?.reduce((sum, s) => sum + (parseFloat(s.peso_kg) || 0), 0) || 0;
+
+                document.getElementById('statPostagens').textContent = totalPostagens;
+                document.getElementById('statPendentes').textContent = pendentes;
+                document.getElementById('statEconomia').textContent = 'R$ ' + (totalValor * 0.15).toFixed(2).replace('.', ',');
+                document.getElementById('statPeso').textContent = totalPeso.toFixed(1) + ' kg';
+
+                // Preencher tabela
+                if (data && data.length > 0) {
+                    const tbody = document.getElementById('tabelaHistorico');
+                    tbody.innerHTML = data.slice(0, 10).map(item => {
+                        const statusClass = item.status === 'entregue' ? 'valor-positivo' : 'valor-negativo';
+                        const statusText = item.status === 'entregue' ? 'Entregue' : item.status || 'Pendente';
+                        return `<tr>
+                            <td>${item.atualizado_em ? new Date(item.atualizado_em).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td><code style="background:#f8f9fa;padding:4px 8px;border-radius:4px;font-family:monospace;">${item.codigo_rastreio || '-'}</code></td>
+                            <td>${item.forma_envio || '-'}</td>
+                            <td>${item.destinatario || '-'}</td>
+                            <td class="${statusClass}">R$ ${(parseFloat(item.valor_frete) || 0).toFixed(2).replace('.', ',')}</td>
+                            <td>${statusText}</td>
+                        </tr>`;
+                    }).join('');
+                }
+
+            } catch (err) {
+                console.error('[CORREIOS-CARTEIRA] Erro:', err);
+            }
+        }
+
+        function voltar() {
+            window.location.href = 'correios.html';
+        }
+    </script>
+</body>
+</html>
