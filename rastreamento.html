@@ -264,6 +264,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -1585,7 +1586,7 @@ Obrigada pela preferência! 🥰`;
             if (solicitacao.largura_cm) params.append('largura', solicitacao.largura_cm);
             if (solicitacao.comprimento_cm) params.append('comprimento', solicitacao.comprimento_cm);
             if (solicitacao.valor_frete) params.append('valor_declarado', solicitacao.valor_frete);
-            window.location.href('correios.html?' + params.toString());
+            window.location.href = 'correios.html?' + params.toString();
         }
 
         function fecharModalFreteCorreios() {
