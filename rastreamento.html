@@ -1628,8 +1628,7 @@ Obrigada pela preferência! 🥰`;
             if (solicitacao.largura_cm) params.append('largura', solicitacao.largura_cm);
             if (solicitacao.comprimento_cm) params.append('comprimento', solicitacao.comprimento_cm);
             if (solicitacao.valor_frete) params.append('valor_declarado', solicitacao.valor_frete);
-
-            window.open('mandabem.html?' + params.toString(), '_blank');
+            window.location.href = 'mandabem.html?' + params.toString();
         }
 
         function fecharModalFreteMandaBem() {
