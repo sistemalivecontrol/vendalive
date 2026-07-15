@@ -23,6 +23,7 @@
         { url: 'clientes.html', icon: '👥', label: 'Clientes' },
         { url: 'enderecos.html', icon: '📍', label: 'Enderecos' },
         { url: 'rastreamento.html', icon: '📦', label: 'Solicitacoes de Entregas' },
+        { url: 'correios.html', icon: '📮', label: 'Central Correios' },
         { url: 'whatsapp-monitor.html', icon: '📱', label: 'Monitor WhatsApp' },
         { url: 'comentarioslives.html', icon: '💬', label: 'Comentarios de Lives' },
         { url: 'configuracao-pagamento.html', icon: '⚙️', label: 'Config. Pagamento' },
