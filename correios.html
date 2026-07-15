@@ -1,4 +1,18 @@
 <!DOCTYPE html>
+<script>
+(function(){
+    'use strict';
+    const SESSAO_KEY='usuarioLogado';
+    const LOGIN_PAGE='login.html';
+    const path=window.location.pathname.toLowerCase();
+    const href=window.location.href.toLowerCase();
+    const paginasPublicas=['login.html','solicitacao-entrega.html','solicitacoes.html','solicitacoes1.html','coblive.html','pix-pagamento.html','pix-sucesso.html','links.html','index.html','index2.html'];
+    function ehPaginaPublica(){if(path==='/'||path.endsWith('/index.html')||path.endsWith('/index2.html'))return true;for(const p of paginasPublicas){if(path.includes(p)||href.includes(p))return true}return false}
+    function verificarSessaoSincrona(){if(ehPaginaPublica())return true;try{const s=localStorage.getItem(SESSAO_KEY);if(!s){window.location.href=LOGIN_PAGE;return false}const d=JSON.parse(s);if(!d||!d.auth_id||!d.usuario_id){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}if(d.login_time){const t=new Date(d.login_time).getTime();if((Date.now()-t)>86400000){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}window.sessaoUsuario=d;window.authClienteId=d.cliente_id;return true}catch(e){localStorage.removeItem(SESSAO_KEY);window.location.href=LOGIN_PAGE;return false}}
+    verificarSessaoSincrona();
+})();
+</script>
+
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -99,20 +113,33 @@
             .header h1 { font-size: 1.3rem; }
             .metrics-grid { grid-template-columns: repeat(2, 1fr); }
             .metric-value { font-size: 1.8rem; }
+            .mobile-menu-btn { display: inline-flex !important; }
+            .header-actions { display: none; }
         }
     </style>
+  <link rel="stylesheet" href="navmenu.css">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div>
-                <h1>📮 Central Correios</h1>
-                <p>Gerenciamento de envios, cotações e rastreamento</p>
-                <div style="margin-top: 10px;">
-                    <span class="status-badge status-pendente" id="apiStatusBadge">
-                        ⏳ API Oficial: Aguardando Platinum
-                    </span>
+            <div style="display:flex;align-items:center;gap:15px;">
+                <button class="mobile-menu-btn" onclick="abrirMenu()" id="menuBtn" style="display:none;background:none;border:none;color:white;cursor:pointer;padding:8px;font-size:24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div>
+                    <h1>📮 Central Correios</h1>
+                    <p>Gerenciamento de envios, cotações e rastreamento</p>
+                    <div style="margin-top: 10px;">
+                        <span class="status-badge status-pendente" id="apiStatusBadge">
+                            ⏳ API Oficial: Aguardando Platinum
+                        </span>
+                    </div>
                 </div>
             </div>
             <div class="header-actions">
@@ -467,9 +494,25 @@
             }
         }
 
+        function abrirMenu() {
+            if (typeof window.navMenuOpen === 'function') {
+                window.navMenuOpen();
+            } else {
+                // Fallback if navmenu.js is not loaded yet
+                var overlay = document.getElementById('navMenuOverlay');
+                var panel = document.getElementById('navMenuPanel');
+                if (overlay && panel) {
+                    overlay.classList.add('active');
+                    panel.classList.add('active');
+                    document.body.classList.add('nav-menu-open');
+                }
+            }
+        }
+
         function voltar() {
             window.location.href = 'dashboard.html';
         }
     </script>
+    <script src="navmenu.js"></script>
 </body>
 </html>
