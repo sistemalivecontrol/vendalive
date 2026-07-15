@@ -163,8 +163,8 @@
         let cotaSelecionada = null;
         let supabaseClient = null;
 
-        const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
+        var CORREIOS_SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
+        var CORREIOS_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
         // Códigos de serviço dos Correios
         const SERVICOS_CORREIOS = {
@@ -270,11 +270,11 @@
             try {
                 // ===== PASSO 1: OBTER CONFIGURAÇÃO DA EDGE FUNCTION =====
                 console.log('[CORREIOS-PAGE] Buscando configuração...');
-                const configResponse = await fetch(SUPABASE_URL + '/functions/v1/correios-calcular-frete', {
+                const configResponse = await fetch(CORREIOS_SUPABASE_URL + '/functions/v1/correios-calcular-frete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        'Authorization': 'Bearer ' + CORREIOS_SUPABASE_ANON_KEY
                     },
                     body: JSON.stringify({
                         cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
