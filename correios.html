@@ -165,6 +165,16 @@
         const SUPABASE_URL = 'https://aqrvozmxlcgrllclceke.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcnZvem14bGNncmxsY2xjZWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNTk0MDEsImV4cCI6MjA5MTgzNTQwMX0.6CL3-1dU6WUT4EbJ0UfvmLFj6jGPnT9Avc743WrNiCA';
 
+        // Códigos de serviço dos Correios
+        const SERVICOS_CORREIOS = {
+            'PAC': '03298',
+            'SEDEX': '03220',
+            'SEDEX_10': '03158',
+            'SEDEX_12': '03140',
+            'SEDEX_HOJE': '03164',
+            'MINI_ENVIOS': '04227'
+        };
+
         function aplicarMascaraCEP(input) {
             input.addEventListener('input', function(e) {
                 let v = e.target.value.replace(/\D/g, '');
@@ -229,9 +239,19 @@
             mostrarErro(false);
             mostrarResultados(false);
             document.getElementById('actionsFooter').style.display = 'none';
+
+            const cepOrigem = document.getElementById('inputCepOrigem').value.replace(/\D/g, '');
+            const cepDestino = document.getElementById('inputCepDestino').value.replace(/\D/g, '');
+            const peso = parseFloat(document.getElementById('inputPeso').value) || 1;
+            const altura = parseFloat(document.getElementById('inputAltura').value) || 10;
+            const largura = parseFloat(document.getElementById('inputLargura').value) || 20;
+            const comprimento = parseFloat(document.getElementById('inputComprimento').value) || 20;
+            const valorDeclarado = parseFloat(document.getElementById('inputValor').value) || 0;
+
             try {
-                console.log('[CORREIOS-PAGE] Chamando Edge Function correios-cotar-frete...');
-                const response = await fetch(SUPABASE_URL + '/functions/v1/correios-cotar-frete', {
+                // ===== PASSO 1: OBTER CONFIGURAÇÃO DA EDGE FUNCTION =====
+                console.log('[CORREIOS-PAGE] Buscando configuração...');
+                const configResponse = await fetch(SUPABASE_URL + '/functions/v1/correios-calcular-frete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -239,36 +259,50 @@
                     },
                     body: JSON.stringify({
                         cliente_sistema_id: dadosSolicitacao.cliente_sistema_id,
-                        cep_origem: document.getElementById('inputCepOrigem').value.replace(/\D/g, ''),
-                        cep_destino: document.getElementById('inputCepDestino').value.replace(/\D/g, ''),
-                        peso: parseFloat(document.getElementById('inputPeso').value) || 1,
-                        comprimento: parseFloat(document.getElementById('inputComprimento').value) || 20,
-                        largura: parseFloat(document.getElementById('inputLargura').value) || 20,
-                        altura: parseFloat(document.getElementById('inputAltura').value) || 10,
-                        valor_declarado: parseFloat(document.getElementById('inputValor').value) || 200,
-                        servicos: ['pac', 'sedex']
+                        cep_origem: cepOrigem,
+                        cep_destino: cepDestino,
+                        peso_gramas: Math.round(peso * 1000), // Converter kg para gramas
+                        comprimento: comprimento,
+                        largura: largura,
+                        altura: altura,
+                        valor_declarado: valorDeclarado,
+                        servicos_desejados: ['PAC', 'SEDEX']
                     })
                 });
-                const text = await response.text();
-                let result;
-                try { result = JSON.parse(text); }
-                catch (parseErr) {
-                    console.log('[CORREIOS-PAGE] Resposta não-JSON:', text.substring(0, 300));
-                    throw new Error('Edge Function retornou resposta inválida. Verifique se a função está deployada.');
+
+                const configResult = await configResponse.json();
+                console.log('[CORREIOS-PAGE] Config:', configResult);
+
+                if (!configResult.success) {
+                    throw new Error(configResult.error || 'Erro ao buscar configuração');
                 }
-                console.log('[CORREIOS-PAGE] Edge Function respondeu:', result);
-                mostrarErro(false);
-                if (!result.success) throw new Error(result.error || 'Erro na consulta de frete');
-                cotasAtuais = result.cotas || [];
-                if (cotasAtuais.length === 0) {
-                    console.log('[CORREIOS-PAGE] Nenhuma cotação retornada pela API');
-                    mostrarErro(false);
-                    exibirCotas([], result.raw_response);
+
+                // Se a API oficial funcionou, usar os resultados dela
+                if (configResult.api_usada === 'oficial' && configResult.cotacoes) {
+                    console.log('[CORREIOS-PAGE] Usando API oficial');
+                    cotasAtuais = configResult.cotacoes;
+                    exibirCotas(cotasAtuais);
                     return;
                 }
-                console.log('[CORREIOS-PAGE] Cotas encontradas:', cotasAtuais.length);
-                mostrarErro(false);
-                exibirCotas(cotasAtuais, result.raw_response);
+
+                // Se não, usar API pública via proxy
+                console.log('[CORREIOS-PAGE] Usando API pública via proxy...');
+                const cotacoes = await cotarFreteViaProxy({
+                    cepOrigem: cepOrigem,
+                    cepDestino: cepDestino,
+                    pesoGramas: Math.round(peso * 1000),
+                    tipoObjeto: 2,
+                    comprimento: comprimento,
+                    largura: largura,
+                    altura: altura,
+                    diametro: 0,
+                    valorDeclarado: valorDeclarado,
+                    servicos: ['PAC', 'SEDEX']
+                });
+
+                cotasAtuais = cotacoes;
+                exibirCotas(cotasAtuais);
+
             } catch (err) {
                 console.error('[CORREIOS-PAGE] ERRO:', err);
                 mostrarLoading(false);
@@ -276,41 +310,125 @@
             }
         }
 
-        function exibirCotas(cotas, rawResponse) {
+        // ===== FUNÇÃO PARA COTAR VIA API PÚBLICA COM PROXY =====
+        async function cotarFreteViaProxy(dados) {
+            const {
+                cepOrigem,
+                cepDestino,
+                pesoGramas,
+                tipoObjeto,
+                comprimento,
+                largura,
+                altura,
+                diametro,
+                valorDeclarado,
+                servicos
+            } = dados;
+
+            const resultados = [];
+            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+
+            for (const servicoNome of servicos) {
+                const coProduto = SERVICOS_CORREIOS[servicoNome] || servicoNome;
+
+                const url = `http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx?` +
+                    `nCdServico=${coProduto}` +
+                    `&sCepOrigem=${cepOrigem}` +
+                    `&sCepDestino=${cepDestino}` +
+                    `&nVlPeso=${(parseInt(pesoGramas) / 1000).toFixed(1)}` +
+                    `&nCdFormato=${tipoObjeto}` +
+                    `&nVlComprimento=${comprimento}` +
+                    `&nVlAltura=${altura}` +
+                    `&nVlLargura=${largura}` +
+                    `&nVlDiametro=${diametro}` +
+                    `&sCdMaoPropria=N` +
+                    `&nVlValorDeclarado=${valorDeclarado}` +
+                    `&sCdAvisoRecebimento=N` +
+                    `&StrRetorno=xml`;
+
+                console.log(`[CORREIOS-PAGE] Cotando ${servicoNome} via proxy...`);
+
+                try {
+                    const response = await fetch(PROXY_URL + encodeURIComponent(url));
+                    const xmlText = await response.text();
+
+                    console.log(`[CORREIOS-PAGE] Resposta ${servicoNome}:`, xmlText.substring(0, 300));
+
+                    // Parse XML
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                    const valorEl = xmlDoc.querySelector('Valor');
+                    const prazoEl = xmlDoc.querySelector('PrazoEntrega');
+                    const msgErroEl = xmlDoc.querySelector('MsgErro');
+                    const codErroEl = xmlDoc.querySelector('Erro');
+
+                    const valor = valorEl ? parseFloat(valorEl.textContent.replace(',', '.')) : null;
+                    const prazo = prazoEl ? parseInt(prazoEl.textContent) : null;
+                    const msgErro = msgErroEl ? msgErroEl.textContent : null;
+                    const codErro = codErroEl ? codErroEl.textContent : null;
+
+                    resultados.push({
+                        servico: servicoNome,
+                        codigo_produto: coProduto,
+                        nome_produto: servicoNome,
+                        prazo_entrega: prazo,
+                        valor_frete: valor,
+                        erro: msgErro && msgErro !== '0' ? { codigo: codErro, mensagem: msgErro } : null,
+                        disponivel: valor !== null && (!msgErro || msgErro === '0'),
+                        fonte: 'api_publica'
+                    });
+
+                } catch (error) {
+                    console.log(`[CORREIOS-PAGE] Erro ${servicoNome}: ${error.message}`);
+                    resultados.push({
+                        servico: servicoNome,
+                        codigo_produto: coProduto,
+                        nome_produto: servicoNome,
+                        erro: { mensagem: error.message },
+                        disponivel: false,
+                        fonte: 'api_publica'
+                    });
+                }
+            }
+
+            return resultados;
+        }
+
+        function exibirCotas(cotas) {
             mostrarErro(false);
             mostrarLoading(false);
             const container = document.getElementById('cotasContainer');
             container.innerHTML = '';
-            let debugHtml = '';
-            if (rawResponse) {
-                debugHtml += '<details style="margin-bottom:15px;">';
-                debugHtml += '<summary style="cursor:pointer;font-weight:600;color:#666;font-size:0.85rem;">📋 Resposta bruta da API (debug)</summary>';
-                debugHtml += '<pre style="background:#f5f5f5;padding:10px;border-radius:5px;overflow-x:auto;font-size:0.75rem;margin-top:10px;">' + JSON.stringify(rawResponse, null, 2) + '</pre>';
-                debugHtml += '</details>';
-            }
+
             if (!cotas || cotas.length === 0) {
-                let rawHtml = '<div class="alert alert-warning" style="padding:15px;border-radius:8px;margin-bottom:15px;">';
-                rawHtml += '<h4>⚠️ Nenhuma cotação encontrada</h4>';
-                rawHtml += '<p>A API dos Correios respondeu, mas não retornou cotações para esta rota.</p>';
-                rawHtml += '<p style="font-size:0.85rem;color:#666;margin-top:10px;">Isso pode acontecer se:</p>';
-                rawHtml += '<ul style="font-size:0.85rem;color:#666;">';
-                rawHtml += '<li>Os CEPs não são válidos para entrega</li>';
-                rawHtml += '<li>As dimensões/peso estão fora dos limites dos Correios</li>';
-                rawHtml += '<li>O serviço não está disponível para esta rota</li>';
-                rawHtml += '<li>As credenciais do Correios não estão configuradas corretamente</li>';
-                rawHtml += '</ul>';
-                rawHtml += '</div>';
-                rawHtml += debugHtml;
-                container.innerHTML = rawHtml;
+                container.innerHTML = '<div class="alert alert-warning">Nenhuma cotação encontrada.</div>';
                 mostrarResultados(true);
                 document.getElementById('actionsFooter').style.display = 'none';
                 return;
             }
-            container.innerHTML = debugHtml;
-            cotas.sort((a, b) => a.valor - b.valor);
-            const melhorPreco = cotas[0];
-            const melhorPrazo = cotas.reduce((min, c) => c.prazo < min.prazo ? c : min, cotas[0]);
-            cotas.forEach((cota, index) => {
+
+            // Converter para formato compatível com a exibição
+            const cotasFormatadas = cotas.map(c => ({
+                servico: c.servico,
+                valor: c.valor_frete || 0,
+                prazo: c.prazo_entrega || 0,
+                msg: c.erro ? c.erro.mensagem : null,
+                original: null
+            })).filter(c => c.valor > 0);
+
+            if (cotasFormatadas.length === 0) {
+                container.innerHTML = '<div class="alert alert-warning">Nenhuma cotação válida encontrada.</div>';
+                mostrarResultados(true);
+                document.getElementById('actionsFooter').style.display = 'none';
+                return;
+            }
+
+            cotasFormatadas.sort((a, b) => a.valor - b.valor);
+            const melhorPreco = cotasFormatadas[0];
+            const melhorPrazo = cotasFormatadas.reduce((min, c) => c.prazo < min.prazo ? c : min, cotasFormatadas[0]);
+
+            cotasFormatadas.forEach((cota, index) => {
                 const isMelhorPreco = cota === melhorPreco;
                 const isMelhorPrazo = cota === melhorPrazo && cota !== melhorPreco;
                 const card = document.createElement('div');
@@ -335,6 +453,7 @@
                     '</div>';
                 container.appendChild(card);
             });
+
             mostrarResultados(true);
             document.getElementById('actionsFooter').style.display = 'flex';
             selecionarCota(0);
@@ -349,8 +468,8 @@
             infoEl.classList.add('ativo');
             document.getElementById('freteSelecionadoTexto').innerHTML =
                 'Correios ' + cotaSelecionada.servico.toUpperCase() +
-                ' - <strong>R$ ' + cotaSelecionada.valor.toFixed(2).replace('.', ',') + '</strong>' +
-                ' (' + cotaSelecionada.prazo + ' dia(s))';
+                ' - <strong>R$ ' + (cotaSelecionada.valor_frete || 0).toFixed(2).replace('.', ',') + '</strong>' +
+                ' (' + (cotaSelecionada.prazo_entrega || 0) + ' dia(s))';
             document.getElementById('btnUsarFrete').disabled = false;
             document.getElementById('footerInfo').textContent = 'Frete selecionado: Correios ' + cotaSelecionada.servico.toUpperCase();
         }
@@ -363,7 +482,7 @@
             try {
                 if (!supabaseClient) throw new Error('Supabase não conectado');
                 const updateData = {
-                    valor_frete: cotaSelecionada.valor,
+                    valor_frete: cotaSelecionada.valor_frete || 0,
                     forma_envio: cotaSelecionada.servico,
                     peso_kg: parseFloat(document.getElementById('inputPeso').value) || dadosSolicitacao.peso,
                     comprimento_cm: parseFloat(document.getElementById('inputComprimento').value) || dadosSolicitacao.comprimento,
@@ -373,7 +492,7 @@
                 };
                 const { error } = await supabaseClient.from('solicitacoes_pg').update(updateData).eq('id', dadosSolicitacao.solicitacao_id);
                 if (error) throw error;
-                alert('✅ Frete salvo com sucesso!\n\nCorreios ' + cotaSelecionada.servico.toUpperCase() + ' - R$ ' + cotaSelecionada.valor.toFixed(2).replace('.', ','));
+                alert('✅ Frete salvo com sucesso!\n\nCorreios ' + cotaSelecionada.servico.toUpperCase() + ' - R$ ' + (cotaSelecionada.valor_frete || 0).toFixed(2).replace('.', ','));
                 voltar();
             } catch (err) {
                 console.error('[CORREIOS-PAGE] Erro ao salvar:', err);
