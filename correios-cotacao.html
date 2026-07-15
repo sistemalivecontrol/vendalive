@@ -24,23 +24,23 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #003087, #0055A4); color: white; padding: 25px 30px; border-radius: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
         .header p { opacity: 0.9; font-size: 0.9rem; margin-top: 5px; }
         .btn-voltar { background: white; color: #003087; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .content { padding: 30px; }
-        .info-box { background: #E8F5E9; border: 2px solid #4CAF50; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-        .info-box h3 { color: #2E7D32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .content { padding: 0; }
+        .info-box { background: white; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .info-box h3 { color: #2D3436; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .info-item { display: flex; flex-direction: column; }
         .info-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
         .info-value { font-size: 1rem; color: #333; font-weight: 600; }
-        .loading-box { text-align: center; padding: 60px 20px; }
-        .error-box { background: #FFF5F5; border: 2px solid #FFB8B8; border-radius: 12px; padding: 25px; text-align: center; }
+        .loading-box { text-align: center; padding: 60px 20px; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
+        .error-box { background: white; border: 1px solid #FFB8B8; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
         .error-box h3 { color: #C53030; margin-bottom: 10px; }
-        .resultados-box { margin-top: 20px; }
+        .resultados-box { margin-top: 20px; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); margin-bottom: 25px; }
         .resultados-box h3 { color: #2D3436; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .cota-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .cota-card:hover { border-color: #003087; background: #E8F5E9; }
@@ -53,7 +53,7 @@
         .tag-melhor-preco { background: #27ae60; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
         .tag-melhor-prazo { background: #3498db; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
         .selo-real { display: inline-flex; align-items: center; gap: 6px; background: #E8F5E9; color: #2E7D32; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 15px; }
-        .actions-footer { padding: 20px 30px; background: #F8F9FA; border-top: 1px solid #E0E0E0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .actions-footer { padding: 20px 30px; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 25px; }
         .btn { padding: 12px 24px; font-size: 0.95rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
         .btn-secondary { background: linear-gradient(135deg, #636E72, #495057); color: white; }
@@ -61,7 +61,7 @@
         .btn-success:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
         .frete-selecionado-info { margin-top: 20px; padding: 15px; background: #E8F5E9; border-radius: 10px; border-left: 4px solid #4CAF50; display: none; }
         .frete-selecionado-info.ativo { display: block; }
-        .btn-calcular { background: linear-gradient(135deg, #003087, #0055A4); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 20px; }
+        .btn-calcular { background: linear-gradient(135deg, #003087, #0055A4); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 20px; margin-bottom: 25px; }
         .btn-calcular:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 48, 135, 0.4); }
         .btn-calcular:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
         .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
@@ -69,10 +69,11 @@
         .alert-warning { background: #FFF8E1; color: #F57C00; border: 1px solid #FFE082; }
         .transport-icon { font-size: 1.5rem; }
         .hidden { display: none !important; }
-        .api-notice { background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 10px; padding: 15px; margin-bottom: 20px; font-size: 0.9rem; color: #1565C0; }
+        .api-notice { background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 16px; padding: 20px; margin-bottom: 25px; font-size: 0.9rem; color: #1565C0; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .api-notice strong { display: block; margin-bottom: 5px; }
     </style>
   <link rel="stylesheet" href="navmenu.css">
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
