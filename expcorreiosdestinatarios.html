@@ -86,6 +86,7 @@
         .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .hidden { display: none !important; }
         .numero-pedido { display: inline-block; background: linear-gradient(135deg, #0B193F, #1a3a6e); color: white; padding: 5px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; font-family: monospace; letter-spacing: 0.5px; }
         .tag-regiao { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
@@ -102,6 +103,25 @@
         .status-cancelado { background: #f8d7da; color: #721c24; }
         .info-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: #e3f2fd; color: #1565c0; }
         .cartao-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: #FFF3E0; color: #E65100; font-family: monospace; }
+        .validacao-erro { color: #e74c3c; font-size: 0.75rem; font-weight: 600; }
+        .validacao-ok { color: #27ae60; font-size: 0.75rem; font-weight: 600; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { background: linear-gradient(135deg, #0B193F 0%, #1a3a6e 100%); color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 24px; }
+        .modal-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: transform 0.3s; }
+        .modal-close:hover { transform: rotate(90deg); }
+        .modal-body { padding: 25px; }
+        .validacao-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+        .validacao-item.erro { background: #fff3e0; border-left: 4px solid #e74c3c; }
+        .validacao-item.ok { background: #e8f5e9; border-left: 4px solid #27ae60; }
+        .validacao-item.aviso { background: #fffde7; border-left: 4px solid #f39c12; }
+        .validacao-icon { font-size: 20px; }
+        .validacao-texto { flex: 1; }
+        .validacao-texto strong { display: block; margin-bottom: 2px; }
+        .validacao-texto span { font-size: 0.85rem; color: #666; }
     </style>
 <base target="_blank">
 </head>
@@ -159,7 +179,7 @@
                 <div class="filter-actions">
                     <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Buscar</button>
                     <button class="btn btn-secondary" onclick="limparFiltros()">🧹 Limpar Filtros</button>
-                    <button class="btn btn-excel" id="btnExportarExcel" onclick="exportarExcel()" disabled>📊 Exportar Excel Correios</button>
+                    <button class="btn btn-excel" id="btnExportarExcel" onclick="validarEExportar()" disabled>📊 Exportar Excel Correios</button>
                 </div>
             </div>
 
@@ -177,13 +197,30 @@
                             <th>Endereco</th>
                             <th>Cidade/UF</th>
                             <th>Status</th>
-                            <th>Malote</th>
+                            <th>Validacao</th>
                         </tr>
                     </thead>
                     <tbody id="tbodySolicitacoes">
                         <tr><td colspan="11" class="loading">Carregando solicitacoes...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Validacao -->
+    <div class="modal-overlay" id="modalValidacao">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔍 Validacao de Dados - Correios</h2>
+                <button class="modal-close" onclick="fecharModalValidacao()">&times;</button>
+            </div>
+            <div class="modal-body" id="validacaoBody">
+                <!-- Validacoes serao inseridas aqui -->
+            </div>
+            <div style="padding: 20px 25px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="fecharModalValidacao()">Cancelar</button>
+                <button class="btn btn-excel" id="btnConfirmarExport" onclick="confirmarExportacao()">📊 Exportar Mesmo Assim</button>
             </div>
         </div>
     </div>
@@ -195,6 +232,7 @@
         let clienteAtual = null;
         let solicitacoes = [];
         let idsSelecionados = new Set();
+        let validacoesPendentes = [];
         const CARTAO_POSTAGEM = '0080220959';
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -243,6 +281,92 @@
             }
         }
 
+        // ===== FUNCOES DE VALIDACAO =====
+        function validarEmail(email) {
+            if (!email || email.trim() === '') return { valido: true, mensagem: 'Campo vazio (opcional)' };
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regex.test(email)) return { valido: false, mensagem: 'Formato de email invalido' };
+            return { valido: true, mensagem: 'Email valido' };
+        }
+
+        function validarCPF(cpf) {
+            if (!cpf || cpf.trim() === '') return { valido: false, mensagem: 'CPF/CNPJ nao informado' };
+            const limpo = cpf.toString().replace(/\D/g, '');
+            if (limpo.length !== 11 && limpo.length !== 14) return { valido: false, mensagem: 'CPF deve ter 11 digitos ou CNPJ 14 digitos' };
+
+            // Validacao basica de CPF
+            if (limpo.length === 11) {
+                if (/^(\d)\1{10}$/.test(limpo)) return { valido: false, mensagem: 'CPF com digitos repetidos' };
+                let soma = 0, resto;
+                for (let i = 1; i <= 9; i++) soma += parseInt(limpo.substring(i-1, i)) * (11 - i);
+                resto = (soma * 10) % 11;
+                if (resto === 10 || resto === 11) resto = 0;
+                if (resto !== parseInt(limpo.substring(9, 10))) return { valido: false, mensagem: 'CPF invalido (digito verificador)' };
+                soma = 0;
+                for (let i = 1; i <= 10; i++) soma += parseInt(limpo.substring(i-1, i)) * (12 - i);
+                resto = (soma * 10) % 11;
+                if (resto === 10 || resto === 11) resto = 0;
+                if (resto !== parseInt(limpo.substring(10, 11))) return { valido: false, mensagem: 'CPF invalido (digito verificador)' };
+            }
+
+            return { valido: true, mensagem: 'CPF/CNPJ valido' };
+        }
+
+        function validarCEP(cep) {
+            if (!cep || cep.trim() === '') return { valido: false, mensagem: 'CEP nao informado' };
+            const limpo = cep.toString().replace(/\D/g, '');
+            if (limpo.length !== 8) return { valido: false, mensagem: 'CEP deve ter 8 digitos' };
+            return { valido: true, mensagem: 'CEP valido' };
+        }
+
+        function validarNumero(numero) {
+            if (!numero || numero.trim() === '') return { valido: true, mensagem: 'Sem numero (S/N)' };
+            const str = numero.toString().trim();
+            if (str.length > 6) return { valido: false, mensagem: 'Numero deve ter no maximo 6 caracteres' };
+            return { valido: true, mensagem: 'Numero valido' };
+        }
+
+        function validarRegistro(s) {
+            const cliente = s.clientes_pg || {};
+            const endereco = s.enderecos_pg || {};
+            const erros = [];
+            const avisos = [];
+
+            // Validar CPF
+            const cpfVal = validarCPF(cliente.cpf);
+            if (!cpfVal.valido) erros.push({ campo: 'CPF/CNPJ', mensagem: cpfVal.mensagem, valor: cliente.cpf || '(vazio)' });
+
+            // Validar CEP
+            const cepVal = validarCEP(endereco.cep);
+            if (!cepVal.valido) erros.push({ campo: 'CEP', mensagem: cepVal.mensagem, valor: endereco.cep || '(vazio)' });
+
+            // Validar Numero
+            const numVal = validarNumero(endereco.numero);
+            if (!numVal.valido) erros.push({ campo: 'Numero', mensagem: numVal.mensagem, valor: endereco.numero || '(vazio)' });
+
+            // Validar Email
+            const emailVal = validarEmail(cliente.email);
+            if (!emailVal.valido) erros.push({ campo: 'Email', mensagem: emailVal.mensagem, valor: cliente.email || '(vazio)' });
+
+            // Avisos
+            if (!cliente.nome || cliente.nome.trim() === '') erros.push({ campo: 'Nome', mensagem: 'Nome nao informado', valor: '(vazio)' });
+            if (!endereco.rua || endereco.rua.trim() === '') erros.push({ campo: 'Logradouro', mensagem: 'Endereco nao informado', valor: '(vazio)' });
+            if (!endereco.cidade || endereco.cidade.trim() === '') erros.push({ campo: 'Cidade', mensagem: 'Cidade nao informada', valor: '(vazio)' });
+            if (!endereco.estado || endereco.estado.trim() === '') erros.push({ campo: 'UF', mensagem: 'Estado nao informado', valor: '(vazio)' });
+
+            return { erros, avisos, valido: erros.length === 0 };
+        }
+
+        function getValidacaoHTML(s, index) {
+            const resultado = validarRegistro(s);
+            if (resultado.valido) {
+                return '<span class="validacao-ok">✅ OK</span>';
+            } else {
+                const qtdErros = resultado.erros.length;
+                return `<span class="validacao-erro">❌ ${qtdErros} erro(s)</span>`;
+            }
+        }
+
         function atualizarTabela() {
             const tbody = document.getElementById('tbodySolicitacoes');
             if (solicitacoes.length === 0) {
@@ -256,6 +380,7 @@
                 const horaSolicitacao = s.criado_em ? new Date(s.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
                 const enderecoCompleto = `${endereco.rua || ''}, ${endereco.numero || ''}${endereco.complemento ? ' - ' + endereco.complemento : ''}`;
                 const cidadeUF = `${endereco.cidade || ''}/${endereco.estado || ''}`;
+                const validacaoHTML = getValidacaoHTML(s, index);
 
                 return `<tr data-index="${index}">
                     <td class="checkbox-cell"><input type="checkbox" class="row-checkbox" onchange="toggleSelecao(${index})" value="${s.id}"></td>
@@ -268,7 +393,7 @@
                     <td style="max-width: 200px; font-size: 0.85rem;">${enderecoCompleto}</td>
                     <td>${cidadeUF}</td>
                     <td><span class="status-badge status-${s.status}">${formatarStatus(s.status)}</span></td>
-                    <td><span class="cartao-badge">📮 ${CARTAO_POSTAGEM}</span></td>
+                    <td>${validacaoHTML}</td>
                 </tr>`;
             }).join('');
         }
@@ -373,6 +498,67 @@
             setTimeout(() => alert.remove(), 5000);
         }
 
+        // ===== VALIDACAO E EXPORTACAO =====
+        function validarEExportar() {
+            if (idsSelecionados.size === 0) {
+                showAlert('Selecione pelo menos uma solicitacao para exportar', 'error');
+                return;
+            }
+
+            const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
+            validacoesPendentes = [];
+            let temErros = false;
+            let html = '';
+
+            selecionados.forEach((s, idx) => {
+                const cliente = s.clientes_pg || {};
+                const resultado = validarRegistro(s);
+
+                if (!resultado.valido) {
+                    temErros = true;
+                    html += `<div style="margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+                        <div style="background: #f8f9fa; padding: 12px 15px; font-weight: 600; border-bottom: 1px solid #e0e0e0;">
+                            📦 ${s.numero_solicitacao || 'N/A'} - ${cliente.nome || 'Sem nome'}
+                        </div>
+                        <div style="padding: 10px 15px;">`;
+
+                    resultado.erros.forEach(erro => {
+                        html += `<div class="validacao-item erro">
+                            <span class="validacao-icon">❌</span>
+                            <div class="validacao-texto">
+                                <strong>${erro.campo}</strong>
+                                <span>${erro.mensagem} (valor: ${erro.valor})</span>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div></div>`;
+                }
+            });
+
+            if (temErros) {
+                document.getElementById('validacaoBody').innerHTML = `
+                    <div class="alert alert-warning" style="margin-bottom: 20px;">
+                        ⚠️ Foram encontrados erros nos dados selecionados. O Correios pode rejeitar o arquivo.
+                        <br><strong>Recomendacao:</strong> Corrija os erros antes de exportar, ou exporte mesmo assim (os dados serao ajustados automaticamente quando possivel).
+                    </div>
+                    ${html}
+                `;
+                document.getElementById('modalValidacao').classList.add('active');
+            } else {
+                exportarExcel();
+            }
+        }
+
+        function fecharModalValidacao() {
+            document.getElementById('modalValidacao').classList.remove('active');
+        }
+
+        function confirmarExportacao() {
+            fecharModalValidacao();
+            exportarExcel();
+        }
+
         // ===== EXPORTAR EXCEL NO FORMATO TEMPLATE CORREIOS =====
         function exportarExcel() {
             if (idsSelecionados.size === 0) {
@@ -382,30 +568,51 @@
 
             const selecionados = Array.from(idsSelecionados).map(i => solicitacoes[i]).filter(Boolean);
 
-            // Criar dados no formato do template dos Correios
+            // Criar dados no formato do template dos Correios com validacoes
             const dadosExcel = selecionados.map(s => {
                 const cliente = s.clientes_pg || {};
                 const endereco = s.enderecos_pg || {};
-                const cepLimpo = (endereco.cep || '').toString().replace(/\D/g, '');
-                const cpfLimpo = (cliente.cpf || '').toString().replace(/\D/g, '');
-                const whatsappLimpo = (cliente.whatsapp || '').toString().replace(/\D/g, '');
+
+                // CEP: remover tudo que nao for digito, garantir 8 digitos
+                let cepLimpo = (endereco.cep || '').toString().replace(/\D/g, '');
+                if (cepLimpo.length !== 8) cepLimpo = '';
+
+                // CPF: remover tudo que nao for digito, validar 11 ou 14
+                let cpfLimpo = (cliente.cpf || '').toString().replace(/\D/g, '');
+                if (cpfLimpo.length !== 11 && cpfLimpo.length !== 14) cpfLimpo = '';
+
+                // Celular: remover tudo que nao for digito
+                let celularLimpo = (cliente.whatsapp || '').toString().replace(/\D/g, '');
+
+                // Numero: maximo 6 caracteres
+                let numeroLimpo = (endereco.numero || '').toString().trim();
+                if (numeroLimpo.length > 6) numeroLimpo = numeroLimpo.substring(0, 6);
+
+                // Email: validar formato ou deixar vazio
+                let emailLimpo = (cliente.email || '').toString().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailLimpo)) emailLimpo = '';
+
+                // UF: maximo 2 caracteres, maiusculo
+                let ufLimpo = (endereco.estado || '').toString().trim().toUpperCase();
+                if (ufLimpo.length > 2) ufLimpo = ufLimpo.substring(0, 2);
 
                 return {
                     'Cartao_postagem': CARTAO_POSTAGEM,
                     'Malote (S ou N)': 'S',
                     'Codigo': '',
-                    'Nome': cliente.nome || '',
-                    'Email': cliente.email || '',
+                    'Nome': (cliente.nome || '').toString().trim(),
+                    'Email': emailLimpo,
                     'CPF/CNPJ': cpfLimpo,
                     'Telefone': '',
-                    'Celular': whatsappLimpo,
+                    'Celular': celularLimpo,
                     'CEP': cepLimpo,
-                    'Logradouro': endereco.rua || '',
-                    'Numero': endereco.numero || '',
-                    'Complemento': endereco.complemento || '',
-                    'Bairro': endereco.bairro || '',
-                    'Cidade': endereco.cidade || '',
-                    'UF': (endereco.estado || '').toUpperCase()
+                    'Logradouro': (endereco.rua || '').toString().trim(),
+                    'Numero': numeroLimpo,
+                    'Complemento': (endereco.complemento || '').toString().trim(),
+                    'Bairro': (endereco.bairro || '').toString().trim(),
+                    'Cidade': (endereco.cidade || '').toString().trim(),
+                    'UF': ufLimpo
                 };
             });
 
