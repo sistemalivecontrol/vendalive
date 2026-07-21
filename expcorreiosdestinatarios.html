@@ -22,7 +22,7 @@
     <meta http-equiv="Expires" content="0">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exportar Destinatários Correios - VendaLive</title>
+    <title>Exportar Destinatarios Correios - VendaLive</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <script src="./js/auth.js?v=20260529"></script>
@@ -63,8 +63,6 @@
         .filter-actions .btn-secondary:hover { box-shadow: 0 6px 20px rgba(99, 110, 114, 0.35); }
         .filter-actions .btn-success { background: linear-gradient(135deg, #27ae60, #219a52); color: white; }
         .filter-actions .btn-success:hover { box-shadow: 0 6px 20px rgba(39, 174, 96, 0.35); }
-        .filter-actions .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
-        .filter-actions .btn-warning:hover { box-shadow: 0 6px 20px rgba(243, 156, 18, 0.35); }
         .filter-actions .btn-excel { background: linear-gradient(135deg, #1B6B2F, #2E8B57); color: white; }
         .filter-actions .btn-excel:hover { box-shadow: 0 6px 20px rgba(27, 107, 47, 0.35); }
         .filter-actions .btn-excel:disabled { background: #bdc3c7; color: #7f8c8d; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -113,7 +111,7 @@
             <div class="header-left">
                 <button class="btn-voltar" onclick="window.location.href='dashboard.html'">← Voltar</button>
                 <div class="header-center">
-                    <h1>📦 Exportar Destinatários Correios</h1>
+                    <h1>📦 Exportar Destinatarios Correios</h1>
                     <p>Gere planilha no formato do Template dos Correios</p>
                 </div>
             </div>
@@ -126,13 +124,13 @@
             <div id="alertContainer"></div>
 
             <div class="stats-grid">
-                <div class="stat-card"><h4>Total de Solicitações</h4><div class="number" id="totalSolicitacoes">0</div></div>
+                <div class="stat-card"><h4>Total de Solicitacoes</h4><div class="number" id="totalSolicitacoes">0</div></div>
                 <div class="stat-card"><h4>Selecionadas</h4><div class="number" id="totalSelecionadas">0</div></div>
-                <div class="stat-card"><h4>Cartão de Postagem</h4><div class="number" style="font-size: 18px; font-family: monospace;">0080220959</div></div>
+                <div class="stat-card"><h4>Cartao de Postagem</h4><div class="number" style="font-size: 18px; font-family: monospace;">0080220959</div></div>
             </div>
 
             <div class="filters-section">
-                <h3>📅 Filtros por Período da Solicitação</h3>
+                <h3>📅 Filtros por Periodo da Solicitacao</h3>
                 <div class="filter-grid">
                     <div class="form-group">
                         <label>Data Inicial</label>
@@ -147,7 +145,7 @@
                         <select id="filtroStatus">
                             <option value="">Todos</option>
                             <option value="pendente">Pendente</option>
-                            <option value="em_separacao">Em Separação</option>
+                            <option value="em_separacao">Em Separacao</option>
                             <option value="enviado">Enviado</option>
                             <option value="entregue">Entregue</option>
                             <option value="cancelado">Cancelado</option>
@@ -171,19 +169,19 @@
                         <tr>
                             <th class="checkbox-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                             <th>Nº Pedido</th>
-                            <th>Data Solicitação</th>
-                            <th>Nome Destinatário</th>
+                            <th>Data Solicitacao</th>
+                            <th>Nome Destinatario</th>
                             <th>CPF/CNPJ</th>
                             <th>WhatsApp</th>
                             <th>CEP</th>
-                            <th>Endereço</th>
+                            <th>Endereco</th>
                             <th>Cidade/UF</th>
                             <th>Status</th>
                             <th>Malote</th>
                         </tr>
                     </thead>
                     <tbody id="tbodySolicitacoes">
-                        <tr><td colspan="11" class="loading">Carregando solicitações...</td></tr>
+                        <tr><td colspan="11" class="loading">Carregando solicitacoes...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -191,7 +189,7 @@
     </div>
 
     <script>
-        // ===== VARIÁVEIS GLOBAIS =====
+        // ===== VARIAVEIS GLOBAIS =====
         let supabaseClient = null;
         let usuarioAtual = null;
         let clienteAtual = null;
@@ -215,7 +213,7 @@
             usuarioAtual = window.authUsuario;
             clienteAtual = window.authClienteId;
             if (!clienteAtual) {
-                showAlert('Erro: Cliente não identificado.', 'error');
+                showAlert('Erro: Cliente nao identificado.', 'error');
                 setTimeout(() => { window.location.replace('login.html'); }, 3000);
                 return;
             }
@@ -229,7 +227,7 @@
                     .from('solicitacoes_pg')
                     .select(`
                         *,
-                        clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram, email, telefone),
+                        clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram, email),
                         enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)
                     `)
                     .eq('cliente_id', clienteAtual)
@@ -248,7 +246,7 @@
         function atualizarTabela() {
             const tbody = document.getElementById('tbodySolicitacoes');
             if (solicitacoes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhuma solicitação encontrada</p></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="empty-state"><div class="empty-state-icon">📭</div><p>Nenhuma solicitacao encontrada</p></td></tr>`;
                 return;
             }
             tbody.innerHTML = solicitacoes.map((s, index) => {
@@ -282,7 +280,7 @@
         }
 
         function formatarStatus(status) {
-            const map = { 'pendente': 'Pendente', 'em_separacao': 'Em Separação', 'enviado': 'Enviado', 'entregue': 'Entregue', 'cancelado': 'Cancelado' };
+            const map = { 'pendente': 'Pendente', 'em_separacao': 'Em Separacao', 'enviado': 'Enviado', 'entregue': 'Entregue', 'cancelado': 'Cancelado' };
             return map[status] || status;
         }
 
@@ -324,7 +322,7 @@
                 let query = supabaseClient.from('solicitacoes_pg')
                     .select(`
                         *,
-                        clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram, email, telefone),
+                        clientes_pg:cliente_pg_id(id, nome, cpf, whatsapp, instagram, email),
                         enderecos_pg:endereco_id(rua, numero, complemento, bairro, cidade, estado, cep, regiao)
                     `)
                     .eq('cliente_id', clienteAtual);
@@ -341,8 +339,8 @@
                 if (nomeCliente) {
                     resultado = resultado.filter(s => {
                         const nome = s.clientes_pg?.nome || '';
-                        return nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(
-                            nomeCliente.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+                        return nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(
+                            nomeCliente.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                         );
                     });
                 }
@@ -351,7 +349,7 @@
                 idsSelecionados.clear();
                 atualizarTabela();
                 atualizarEstatisticas();
-                showAlert(`${solicitacoes.length} solicitação(ões) encontrada(s)`, 'success');
+                showAlert(`${solicitacoes.length} solicitacao(oes) encontrada(s)`, 'success');
             } catch (error) {
                 showAlert('Erro: ' + error.message, 'error');
             }
@@ -378,7 +376,7 @@
         // ===== EXPORTAR EXCEL NO FORMATO TEMPLATE CORREIOS =====
         function exportarExcel() {
             if (idsSelecionados.size === 0) {
-                showAlert('Selecione pelo menos uma solicitação para exportar', 'error');
+                showAlert('Selecione pelo menos uma solicitacao para exportar', 'error');
                 return;
             }
 
@@ -403,7 +401,7 @@
                     'Celular': whatsappLimpo,
                     'CEP': cepLimpo,
                     'Logradouro': endereco.rua || '',
-                    'Número': endereco.numero || '',
+                    'Numero': endereco.numero || '',
                     'Complemento': endereco.complemento || '',
                     'Bairro': endereco.bairro || '',
                     'Cidade': endereco.cidade || '',
@@ -416,7 +414,7 @@
 
             // Criar worksheet com os dados
             const ws = XLSX.utils.json_to_sheet(dadosExcel, {
-                header: ['Cartao_postagem', 'Malote (S ou N)', 'Codigo', 'Nome', 'Email', 'CPF/CNPJ', 'Telefone', 'Celular', 'CEP', 'Logradouro', 'Número', 'Complemento', 'Bairro', 'Cidade', 'UF']
+                header: ['Cartao_postagem', 'Malote (S ou N)', 'Codigo', 'Nome', 'Email', 'CPF/CNPJ', 'Telefone', 'Celular', 'CEP', 'Logradouro', 'Numero', 'Complemento', 'Bairro', 'Cidade', 'UF']
             });
 
             // Ajustar larguras das colunas
@@ -431,7 +429,7 @@
                 { wch: 15 },  // Celular
                 { wch: 10 },  // CEP
                 { wch: 35 },  // Logradouro
-                { wch: 10 },  // Número
+                { wch: 10 },  // Numero
                 { wch: 20 },  // Complemento
                 { wch: 25 },  // Bairro
                 { wch: 25 },  // Cidade
@@ -449,7 +447,7 @@
             // Download
             XLSX.writeFile(wb, nomeArquivo);
 
-            showAlert(`✅ ${selecionados.length} destinatário(s) exportado(s) com sucesso!`, 'success');
+            showAlert(`✅ ${selecionados.length} destinatario(s) exportado(s) com sucesso!`, 'success');
             console.log('[EXPORT-CORREIOS] Excel gerado:', nomeArquivo, 'Registros:', selecionados.length);
         }
     </script>
