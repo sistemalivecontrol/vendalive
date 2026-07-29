@@ -342,6 +342,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -2636,7 +2637,7 @@ function gerarRelatorioNovaAba() {
     let totalGeral = 0, quantidadeTotal = 0;
     compradoresOrdenados.forEach(comprador => {
         const vendasComp = vendasPorComprador[comprador];
-        const totalComp = vendasComp.reduce((sum, v) => sum + v.total, 0);
+        const totalComp = vendasComp.reduce((sum, v) => sum + (parseFloat(v.valor) || 0), 0);
         totalGeral += totalComp;
         quantidadeTotal += vendasComp.length;
         const cliente = clientes.find(c => c.nome?.toLowerCase() === comprador.toLowerCase());
