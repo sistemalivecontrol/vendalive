@@ -237,6 +237,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -747,26 +748,34 @@
                     return;
                 }
                 const codigos = lives.map(function(l) { return l.codigo; });
+                console.log('[COBLIVE-GRID] Buscando vendas para códigos:', codigos);
                 const { data: vendas, error: vendasError } = await supabaseClient
                     .from('vendas_live')
                     .select('codigo_live, valor, comprador')
                     .in('codigo_live', codigos)
                     .eq('cliente_id', clienteSistemaId);
+                console.log('[COBLIVE-GRID] Vendas retornadas do banco:', vendas ? vendas.length : 0);
                 if (vendasError) throw vendasError;
                 const totaisPorLive = {};
+                console.log('[COBLIVE-GRID] Total registros brutos vendas_live:', vendas ? vendas.length : 0);
                 (vendas || []).forEach(function(v) {
-                    if (!totaisPorLive[v.codigo_live]) totaisPorLive[v.codigo_live] = { total: 0, count: 0 };
-                    // Mesma lógica do live.html: apenas itens com valor > 0 e comprador preenchido
+                    const codigoNormalizado = (v.codigo_live || '').toString().trim().toUpperCase();
+                    if (!codigoNormalizado) return;
+                    if (!totaisPorLive[codigoNormalizado]) totaisPorLive[codigoNormalizado] = { total: 0, count: 0 };
                     var valor = parseFloat(v.valor) || 0;
-                    var temComprador = v.comprador && v.comprador.trim().length > 0;
+                    var temComprador = v.comprador && v.comprador.toString().trim().length > 0;
+                    console.log('[COBLIVE-GRID] Registro:', codigoNormalizado, '| valor:', valor, '| comprador:', v.comprador, '| passa:', (valor > 0 && temComprador));
                     if (valor > 0 && temComprador) {
-                        totaisPorLive[v.codigo_live].total += valor;
-                        totaisPorLive[v.codigo_live].count += 1;
+                        totaisPorLive[codigoNormalizado].total += valor;
+                        totaisPorLive[codigoNormalizado].count += 1;
                     }
                 });
+                console.log('[COBLIVE-GRID] Totais calculados:', totaisPorLive);
 
                 todasLivesGrid = lives.map(function(live) {
-                    const info = totaisPorLive[live.codigo] || { total: 0, count: 0 };
+                    const codigoNormalizado = (live.codigo || '').toString().trim().toUpperCase();
+                    const info = totaisPorLive[codigoNormalizado] || { total: 0, count: 0 };
+                    console.log('[COBLIVE-GRID] Live:', live.codigo, '| normalizado:', codigoNormalizado, '| total:', info.total, '| itens:', info.count);
                     return { 
                         codigo: live.codigo, 
                         data_live: live.data_live, 
@@ -861,6 +870,7 @@
             document.getElementById('loading').style.display = 'block';
             try {
                 await carregarTodosClientes();
+                console.log('[COBLIVE-VENDAS] Buscando vendas para live:', codigoLiveAtual, '| cliente:', clienteSistemaId);
                 const { data, error } = await supabaseClient
                     .from('vendas_live')
                     .select('*')
@@ -868,9 +878,14 @@
                     .eq('cliente_id', clienteSistemaId)
                     .order('linha_id', { ascending: true });
                 if (error) throw error;
+                console.log('[COBLIVE-VENDAS] Registros brutos retornados:', data ? data.length : 0);
                 vendasData = (data || []).filter(function(v) {
-                    return (parseFloat(v.valor) || 0) > 0 && v.comprador && v.comprador.trim() !== '';
+                    var valor = parseFloat(v.valor) || 0;
+                    var temComprador = v.comprador && v.comprador.toString().trim() !== '';
+                    console.log('[COBLIVE-VENDAS] Filtro - codigo:', v.codigo_live, '| valor:', valor, '| comprador:', v.comprador, '| passa:', (valor > 0 && temComprador));
+                    return valor > 0 && temComprador;
                 });
+                console.log('[COBLIVE-VENDAS] Registros após filtro:', vendasData.length);
                 const agrupados = {};
                 vendasData.forEach(function(v) {
                     const nome = v.comprador.trim();
