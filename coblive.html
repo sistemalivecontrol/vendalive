@@ -789,8 +789,6 @@
                 gridBody.innerHTML = '<div class="lives-grid-empty"><div class="lives-grid-empty-icon">⚠️</div><h3>Erro ao carregar lives</h3><p>' + e.message + '</p></div>';
             } finally { window.__COBLIVE_CARREGANDO_GRID = false; }
         }
-        }
-
         function renderizarLivesGrid() {
             const gridBody = document.getElementById('livesGridBody');
             if (todasLivesGrid.length === 0) {
