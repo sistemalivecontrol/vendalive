@@ -1416,10 +1416,12 @@ Qualquer dúvida, estou por aqui! 💕
         function copiarParaInstagram() {
             const mensagem = document.getElementById('igMensagem').value;
             navigator.clipboard.writeText(mensagem).then(() => {
-                showAlert('✅ Mensagem copiada!', 'success');
+                showAlert('✅ Mensagem copiada! Abrindo Instagram...', 'success');
+                if (instagramAtual) { abrirInstagramCliente(); }
                 fecharModalInstagram();
             }).catch(() => {
-                const textarea = document.createElement('textarea'); textarea.value = mensagem; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); showAlert('✅ Mensagem copiada!', 'success');
+                const textarea = document.createElement('textarea'); textarea.value = mensagem; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); showAlert('✅ Mensagem copiada! Abrindo Instagram...', 'success');
+                if (instagramAtual) { abrirInstagramCliente(); }
                 fecharModalInstagram();
             });
         }
