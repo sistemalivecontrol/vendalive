@@ -494,7 +494,6 @@
         </div>
     </div>
     
-    </div>
     <div id="modalEtiquetas" class="modal" onclick="if(event.target===this)fecharModalEtiquetas()">
         <div class="modal-etiquetas">
             <div class="etiquetas-header">
@@ -1411,9 +1410,9 @@ Qualquer dúvida, estou por aqui! 💕
             window.open(webUrl, '_blank');
         }
 
-        ).catch(() => { showAlert('Erro ao copiar mensagem. Copie manualmente.', 'error'); });
-        }
-
+        
+        
+        
         function copiarParaInstagram() {
             const mensagem = document.getElementById('igMensagem').value;
             navigator.clipboard.writeText(mensagem).then(() => {
