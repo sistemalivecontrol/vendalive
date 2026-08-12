@@ -265,6 +265,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -492,19 +493,7 @@
             </div>
         </div>
     </div>
-    <div class="modal-instrucoes-overlay" id="modalInstrucoesDesktop">
-        <div class="modal-instrucoes">
-            <h3>📱 Como enviar para <span id="instrucoesUsername"></span></h3>
-            <div class="instrucoes-box">
-                <p><strong>Passo a passo:</strong></p>
-                <p>1. O perfil do cliente foi aberto em uma nova aba<br>2. Clique no botão <strong>"Mensagem"</strong> no perfil<br>3. Cole a mensagem já copiada no Direct</p>
-                <p style="margin-top: 15px;"><a href="#" id="linkPerfilWeb" target="_blank" class="link-perfil">🔗 Abrir perfil novamente</a></p>
-            </div>
-            <div class="botoes-instrucoes">
-                <button class="btn-fechar-modal" onclick="fecharModalInstrucoes()">Fechar</button>
-                <button class="btn-copiar-abrir" onclick="copiarEAbrirDirect()">📋 Copiar e Abrir Direct</button>
-            </div>
-        </div>
+    
     </div>
     <div id="modalEtiquetas" class="modal" onclick="if(event.target===this)fecharModalEtiquetas()">
         <div class="modal-etiquetas">
@@ -1409,44 +1398,30 @@ Qualquer dúvida, estou por aqui! 💕
                 const appUrl = `instagram://user?username=${username}`;
                 const intentUrl = `intent://instagram.com/_u/${username}#Intent;package=com.instagram.android;scheme=https;end`;
                 window.location.href = appUrl;
-                setTimeout(() => { if (document.hidden) return; window.location.href = intentUrl; setTimeout(() => { if (document.hidden) return; window.open(webUrl, '_blank'); mostrarInstrucoesDesktop(username, webUrl); }, 800); }, 600);
+                setTimeout(() => { if (document.hidden) return; window.location.href = intentUrl; setTimeout(() => { if (document.hidden) return; window.open(webUrl, '_blank'); }, 800); }, 600);
             } else if (isIOS) {
                 const appUrl = `instagram://user?username=${username}`;
                 window.location.href = appUrl;
-                setTimeout(() => { if (document.hidden) return; window.open(webUrl, '_blank'); mostrarInstrucoesDesktop(username, webUrl); }, 800);
+                setTimeout(() => { if (document.hidden) return; window.open(webUrl, '_blank'); }, 800);
             }
         }
 
         function abrirInstagramDesktop(username) {
             const webUrl = `https://www.instagram.com/${username}`;
             window.open(webUrl, '_blank');
-            setTimeout(() => { mostrarInstrucoesDesktop(username, webUrl); }, 500);
         }
 
-        function mostrarInstrucoesDesktop(username, perfilUrl) {
-            document.getElementById('instrucoesUsername').textContent = '@' + username;
-            document.getElementById('linkPerfilWeb').href = perfilUrl;
-            document.getElementById('modalInstrucoesDesktop').classList.add('ativo');
-        }
-
-        function fecharModalInstrucoes() { document.getElementById('modalInstrucoesDesktop').classList.remove('ativo'); }
-
-        function copiarEAbrirDirect() {
-            const mensagem = document.getElementById('igMensagem').value;
-            navigator.clipboard.writeText(mensagem).then(() => {
-                window.open('https://www.instagram.com/direct/inbox/', '_blank');
-                fecharModalInstrucoes();
-                showAlert('✅ Mensagem copiada! Cole no Direct do Instagram', 'success');
-            }).catch(() => { showAlert('Erro ao copiar mensagem. Copie manualmente.', 'error'); });
+        ).catch(() => { showAlert('Erro ao copiar mensagem. Copie manualmente.', 'error'); });
         }
 
         function copiarParaInstagram() {
             const mensagem = document.getElementById('igMensagem').value;
             navigator.clipboard.writeText(mensagem).then(() => {
                 showAlert('✅ Mensagem copiada!', 'success');
-                if (instagramAtual && confirm('Mensagem copiada! Deseja abrir o Instagram agora?')) { abrirInstagramCliente(); }
+                fecharModalInstagram();
             }).catch(() => {
                 const textarea = document.createElement('textarea'); textarea.value = mensagem; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); showAlert('✅ Mensagem copiada!', 'success');
+                fecharModalInstagram();
             });
         }
 
