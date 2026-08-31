@@ -343,6 +343,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -1909,7 +1910,13 @@ async function salvarVendaSilencioso(linhaId) {
 async function verificarESalvarAntesDeVerRelatorio() { await verificarESalvarTodasLinhasPendentes(); gerarRelatorioNovaAba(); }
 async function verificarESalvarAntesDeFinalizar() { await verificarESalvarTodasLinhasPendentes(); finalizarLive(); }
 
-async function salvarVenda(linhaId) {
+async function salvarVendaBlur(linhaId) {
+    // Salva a linha sem pular para proxima (usado em onblur dos campos comprador/fila)
+    await salvarVenda(linhaId, false);
+}
+
+async function salvarVenda(linhaId, autoAvancar) {
+    if (autoAvancar === undefined) autoAvancar = true;
     if (liveBloqueada) return;
     const btnSalvar = document.getElementById('btn-save-' + linhaId);
     if (btnSalvar) { btnSalvar.classList.add('saving'); btnSalvar.textContent = '⏳'; }
@@ -2023,7 +2030,6 @@ function criarLinhaComDados(venda) {
         '</td>' +
         '<td style="white-space: nowrap;">' +
         '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
-        '<button class="btn-limpar" onclick="limparLinha(' + venda.linha_id + ')" ' + disabled + ' title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
     if (!jaSalvo) verificarCamposObrigatorios(venda.linha_id);
@@ -2056,7 +2062,6 @@ function adicionarLinha() {
         '</td>' +
         '<td style="white-space: nowrap;">' +
         '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
-        '<button class="btn-limpar" onclick="limparLinha(' + linhaCount + ')" title="Limpar">🧹</button>' +
         '</td>';
     tbody.appendChild(tr);
     linhasNaoSalvas.add(linhaCount);
