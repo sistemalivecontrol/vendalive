@@ -38,8 +38,8 @@
     <link rel="stylesheet" href="navmenu.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; height: 100vh; padding: 20px; overflow: hidden; box-sizing: border-box; }
-        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 40px); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B193F; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
         .header { background: white; padding: 20px 30px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 25px; }
         .header-left { display: flex; align-items: center; gap: 20px; }
         .btn-voltar { background: #0B193F; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
@@ -54,8 +54,8 @@
         .btn-coblive { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; white-space: nowrap; }
         .btn-coblive:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4); }
         @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .header-left { flex-direction: column; gap: 15px; } .user-info { width: 100%; justify-content: center; } }
-        .content { padding: 15px 30px 30px 30px; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-        .table-container { overflow-x: auto; overflow-y: auto; flex: 1; border: 1px solid #dee2e6; border-radius: 8px; min-height: 0; position: relative; scroll-behavior: smooth; }
+        .content { padding: 15px 30px 30px 30px; }
+        .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; margin-bottom: 30px; border: 1px solid #dee2e6; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: #f8f9fa; color: #495057; font-weight: 600; padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; position: sticky; top: 0; z-index: 10; }
         td { padding: 8px; border-bottom: 1px solid #dee2e6; position: relative; }
@@ -1172,26 +1172,14 @@ function destacarLinha(linhaId) {
         linha.classList.remove('linha-ativa-voz');
         void linha.offsetWidth;
         linha.classList.add('linha-ativa-voz');
-        // Scroll apenas dentro do container da tabela, não da página inteira
-        const container = document.querySelector('.table-container');
-        if (container) {
-            const linhaTop = linha.offsetTop;
-            const containerScrollTop = container.scrollTop;
-            const containerHeight = container.clientHeight;
-            const linhaHeight = linha.clientHeight;
-            // Só rola se a linha estiver fora da área visível
-            if (linhaTop < containerScrollTop || linhaTop + linhaHeight > containerScrollTop + containerHeight) {
-                container.scrollTo({ top: linhaTop - containerHeight / 2 + linhaHeight / 2, behavior: 'smooth' });
-            }
-        }
+        linha.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
 function focarCampoVoz(linhaId, campo) {
     const input = document.getElementById(`${campo}-${linhaId}`);
     if (input) {
-        // Foca sem causar scroll da página inteira
-        input.focus({ preventScroll: true });
+        input.focus();
         input.select();
         destacarLinha(linhaId);
     }
@@ -2013,7 +2001,7 @@ async function salvarVenda(linhaId, autoAvancar) {
             
             const campoValorProximo = document.getElementById('valor-' + proximaLinha);
             if (campoValorProximo) {
-                campoValorProximo.focus({ preventScroll: true });
+                campoValorProximo.focus();
                 campoValorProximo.select();
                 // Destaca a linha para visualização
                 destacarLinha(proximaLinha);
@@ -2103,11 +2091,11 @@ function navegarCampos(event, linhaId, campoAtual) {
         document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
         if (idx < campos.length - 1) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
-            if (next) { next.focus({ preventScroll: true }); next.select(); }
+            if (next) { next.focus(); next.select(); }
         } else {
             const btnSalvar = document.getElementById('btn-save-' + linhaId);
             if (btnSalvar) {
-                btnSalvar.focus({ preventScroll: true });
+                btnSalvar.focus();
                 btnSalvar.style.transform = 'scale(1.1)';
                 setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
             }
@@ -2147,11 +2135,11 @@ function navegarCamposComSugestoes(event, linhaId, campoAtual) {
         document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
         if (idx < campos.length - 1) {
             const next = document.getElementById(campos[idx+1] + '-' + linhaId);
-            if (next) { next.focus({ preventScroll: true }); next.select(); }
+            if (next) { next.focus(); next.select(); }
         } else {
             const btnSalvar = document.getElementById('btn-save-' + linhaId);
             if (btnSalvar) {
-                btnSalvar.focus({ preventScroll: true });
+                btnSalvar.focus();
                 btnSalvar.style.transform = 'scale(1.1)';
                 setTimeout(() => btnSalvar.style.transform = 'scale(1)', 200);
             }
@@ -2264,7 +2252,7 @@ function abrirCadastroCliente(nome, linhaId, tipoCampo) {
 
     // Focar no campo nome para edição
     setTimeout(() => {
-        document.getElementById('clienteNome').focus({ preventScroll: true });
+        document.getElementById('clienteNome').focus();
         document.getElementById('clienteNome').select();
     }, 100);
 }async function colarCampo(campo, linhaId) {
@@ -2297,7 +2285,7 @@ function fecharClienteDialog() {
         const input = document.getElementById(inputAtualCadastro.tipoCampo + '-' + inputAtualCadastro.linhaId);
         if (input) {
             setTimeout(() => {
-                input.focus({ preventScroll: true });
+                input.focus();
                 input.select();
             }, 50);
         }
@@ -2428,7 +2416,7 @@ function selecionarSugestao(linhaId, tipoCampo, nome, instagram) {
     const idx = campos.indexOf(tipoCampo);
     if (idx < campos.length - 1) {
         const next = document.getElementById(campos[idx+1] + '-' + linhaId);
-        if (next) next.focus({ preventScroll: true });
+        if (next) next.focus();
     }
 }
 
