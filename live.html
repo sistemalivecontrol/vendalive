@@ -1912,8 +1912,21 @@ async function verificarESalvarAntesDeVerRelatorio() { await verificarESalvarTod
 async function verificarESalvarAntesDeFinalizar() { await verificarESalvarTodasLinhasPendentes(); finalizarLive(); }
 
 async function salvarVendaBlur(linhaId) {
-    // Salva a linha sem pular para proxima (usado em onblur dos campos comprador/fila)
-    await salvarVenda(linhaId, false);
+    // Só salva automaticamente se valor > 0, código preenchido E comprador/fila preenchido
+    const valorInput = document.getElementById('valor-' + linhaId);
+    const codigoInput = document.getElementById('codigo-' + linhaId);
+    const compradorInput = document.getElementById('comprador-' + linhaId);
+    const filaInput = document.getElementById('fila-' + linhaId);
+
+    const valor = parseFloat(valorInput?.value?.replace(/\./g, '').replace(',', '.')) || 0;
+    const codigo = codigoInput?.value?.trim() || '';
+    const comprador = compradorInput?.value?.trim() || '';
+    const fila = filaInput?.value?.trim() || '';
+
+    // Só salva se: valor > 0, código preenchido, e (comprador OU fila preenchido)
+    if (valor > 0 && codigo && (comprador || fila)) {
+        await salvarVenda(linhaId, false);
+    }
 }
 
 async function salvarVenda(linhaId, autoAvancar) {
