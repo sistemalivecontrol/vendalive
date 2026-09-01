@@ -345,6 +345,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -559,6 +560,7 @@ let recognition = null, activeInput = null, selectedSuggestionIndex = -1;
 let liveBloqueada = false, inputAtualCadastro = null;
 let livesNaDataSelecionada = [], liveSelecionada = null, liveParaExcluir = null;
 let linhasNaoSalvas = new Set(), compradoresNaLive = new Set();
+let salvandoLinha = new Set(); // LOCK: evita salvamento duplo da mesma linha
 
 // ===== VARIÁVEIS DE GRAVAÇÃO CONTÍNUA =====
 let gravacaoContinuaAtiva = false;
@@ -1923,6 +1925,16 @@ async function verificarESalvarAntesDeVerRelatorio() { await verificarESalvarTod
 async function verificarESalvarAntesDeFinalizar() { await verificarESalvarTodasLinhasPendentes(); finalizarLive(); }
 
 async function salvarVendaBlur(linhaId) {
+    // LOCK: evita salvamento duplo se já está salvando
+    if (salvandoLinha.has(linhaId)) {
+        console.log('[BLUR] Linha ' + linhaId + ' já em salvamento. Ignorando blur.');
+        return;
+    }
+    // Se o botão já está verde (salvo), não salva de novo
+    const btnSalvar = document.getElementById('btn-save-' + linhaId);
+    if (btnSalvar && btnSalvar.classList.contains('saved')) {
+        return;
+    }
     // Só salva automaticamente se valor > 0, código preenchido E comprador/fila preenchido
     const valorInput = document.getElementById('valor-' + linhaId);
     const codigoInput = document.getElementById('codigo-' + linhaId);
@@ -1945,6 +1957,12 @@ async function salvarVendaBlur(linhaId) {
 async function salvarVenda(linhaId, autoAvancar) {
     if (autoAvancar === undefined) autoAvancar = true;
     if (liveBloqueada) return;
+    // LOCK: evita salvamento duplo da mesma linha
+    if (salvandoLinha.has(linhaId)) {
+        console.log('[SALVAR] Linha ' + linhaId + ' já em salvamento. Ignorando chamada duplicada.');
+        return;
+    }
+    salvandoLinha.add(linhaId);
     const btnSalvar = document.getElementById('btn-save-' + linhaId);
     if (btnSalvar) { btnSalvar.classList.add('saving'); btnSalvar.textContent = '⏳'; }
     const valorInput = document.getElementById('valor-' + linhaId);
@@ -2025,6 +2043,9 @@ async function salvarVenda(linhaId, autoAvancar) {
         console.error('Erro ao salvar:', error);
         if (btnSalvar) { btnSalvar.classList.remove('saving'); btnSalvar.textContent = '💾'; }
         showStatus('Erro ao salvar: ' + error.message, 'error');
+    } finally {
+        // Libera o lock após um pequeno delay para garantir que o blur não dispare outro salvamento
+        setTimeout(() => { salvandoLinha.delete(linhaId); }, 500);
     }
 }
 function criarLinhaComDados(venda) {
