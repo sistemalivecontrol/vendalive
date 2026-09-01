@@ -2006,7 +2006,7 @@ async function salvarVenda(linhaId, autoAvancar) {
         // Destaca a linha salva APENAS UMA VEZ
         destacarLinha(linhaId);
 
-        // ===== Pular para a primeira linha não salva/vazia =====
+        // ===== Pular para o campo VALOR da próxima linha =====
         if (autoAvancar) {
             setTimeout(() => {
                 let proximaLinha = null;
@@ -2026,10 +2026,19 @@ async function salvarVenda(linhaId, autoAvancar) {
 
                 const campoValorProximo = document.getElementById('valor-' + proximaLinha);
                 if (campoValorProximo) {
-                    campoValorProximo.focus({ preventScroll: true });
+                    campoValorProximo.focus();
                     campoValorProximo.select();
+                    // Scrolla a linha para visualização no container da tabela
+                    const container = document.querySelector('.table-container');
+                    const linhaEl = document.getElementById('linha-' + proximaLinha);
+                    if (container && linhaEl) {
+                        const linhaRect = linhaEl.getBoundingClientRect();
+                        const containerRect = container.getBoundingClientRect();
+                        const scrollTop = container.scrollTop + (linhaRect.top - containerRect.top) - (containerRect.height / 2) + (linhaRect.height / 2);
+                        container.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+                    }
                 }
-            }, 100);
+            }, 200);
         }
 
     } catch (error) {
