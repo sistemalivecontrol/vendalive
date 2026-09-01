@@ -2169,6 +2169,23 @@ function navegarCamposComSugestoes(event, linhaId, campoAtual) {
             const item = itens[selectedSuggestionIndex];
             if (item) { item.click(); return; }
         }
+
+        // Se está no comprador ou fila e os campos obrigatórios estão preenchidos, salva e vai para próxima linha
+        if (campoAtual === 'comprador' || campoAtual === 'fila') {
+            const valorInput = document.getElementById('valor-' + linhaId);
+            const codigoInput = document.getElementById('codigo-' + linhaId);
+            const compradorInput = document.getElementById('comprador-' + linhaId);
+            const temValor = valorInput && valorInput.value && parseFloat(valorInput.value.replace(/\./g, '').replace(',', '.')) > 0;
+            const temCodigo = codigoInput && codigoInput.value.trim();
+            const temComprador = compradorInput && compradorInput.value.trim();
+
+            if (temValor && temCodigo && temComprador) {
+                document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
+                salvarVenda(linhaId);
+                return;
+            }
+        }
+
         const campos = ['valor', 'codigo', 'comprador', 'fila'];
         const idx = campos.indexOf(campoAtual);
         document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
