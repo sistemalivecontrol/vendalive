@@ -2142,7 +2142,7 @@ function navegarCampos(event, linhaId, campoAtual) {
     }
 }
 
-function navegarCamposComSugestoes(event, linhaId, campoAtual) {
+async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
     if (liveBloqueada) return;
     const sugestoesDiv = document.getElementById('sugestoes-' + campoAtual + '-' + linhaId);
     const itens = sugestoesDiv.querySelectorAll('.suggestion-item');
@@ -2181,7 +2181,37 @@ function navegarCamposComSugestoes(event, linhaId, campoAtual) {
 
             if (temValor && temCodigo && temComprador) {
                 document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
-                salvarVenda(linhaId);
+                // Move foco para body para evitar que o navegador vá para o campo fila
+                document.body.focus();
+                await salvarVenda(linhaId, false);
+                // Após salvar, vai direto para o campo VALOR da próxima linha
+                let proximaLinha = null;
+                for (let i = 1; i <= linhaCount; i++) {
+                    const btn = document.getElementById('btn-save-' + i);
+                    if (btn && !btn.classList.contains('saved')) {
+                        const v = document.getElementById('valor-' + i)?.value;
+                        const c = document.getElementById('codigo-' + i)?.value;
+                        const comp = document.getElementById('comprador-' + i)?.value;
+                        if (!v && !c && !comp) {
+                            proximaLinha = i;
+                            break;
+                        }
+                    }
+                }
+                if (!proximaLinha) proximaLinha = linhaId + 1;
+                const campoValorProximo = document.getElementById('valor-' + proximaLinha);
+                if (campoValorProximo) {
+                    campoValorProximo.focus();
+                    campoValorProximo.select();
+                    const container = document.querySelector('.table-container');
+                    const linhaEl = document.getElementById('linha-' + proximaLinha);
+                    if (container && linhaEl) {
+                        const linhaRect = linhaEl.getBoundingClientRect();
+                        const containerRect = container.getBoundingClientRect();
+                        const scrollTop = container.scrollTop + (linhaRect.top - containerRect.top) - (containerRect.height / 2) + (linhaRect.height / 2);
+                        container.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+                    }
+                }
                 return;
             }
         }
