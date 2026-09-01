@@ -346,7 +346,6 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -1338,10 +1337,10 @@ async function carregarGridUltimasLives() {
                 let totalCalculado = 0;
                 if (!vendasError && vendasLive) {
                     totalCalculado = vendasLive.reduce(function(sum, v) {
-                        // Mesma lógica da tela aberta: apenas itens com valor > 0 e comprador ou fila preenchido
+                        // Mesma lógica da tela aberta: apenas itens com valor > 0 e comprador preenchido
                         const valor = parseFloat(v.valor) || 0;
-                        const temCompradorOuFila = (v.comprador && v.comprador.trim().length > 0) || (v.fila && v.fila.trim().length > 0);
-                        if (valor > 0 && temCompradorOuFila) {
+                        const temComprador = v.comprador && v.comprador.trim().length > 0;
+                        if (valor > 0 && temComprador) {
                             return sum + valor;
                         }
                         return sum;
@@ -1730,7 +1729,7 @@ function atualizarContagemItens() {
 }
 
 function atualizarTotalVendidoHeader() {
-    const vendasValidas = vendas.filter(v => v.valor > 0 && (v.comprador?.trim() || v.fila?.trim()));
+    const vendasValidas = vendas.filter(v => v.valor > 0 && v.comprador?.trim());
     const total = vendasValidas.reduce((sum, v) => sum + (parseFloat(v.valor) || 0), 0);
     document.getElementById('totalVendidoHeader').textContent = formatarMoeda(total);
 }
@@ -1760,7 +1759,7 @@ async function carregarVendasExistentes() {
         else if (liveData) { liveBloqueada = liveData.status === 'finalizada'; }
         const { data, error } = await window.supabaseClient.from('vendas_live').select('*').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).order('linha_id', { ascending: true });
         if (error) { if (error.status === 401) { await limparSessaoERedirecionar(); return; } console.error('Erro ao carregar vendas:', error); vendas = []; return; }
-        vendas = (data || []).filter(v => v.valor > 0 || v.comprador?.trim() || v.codigo?.trim() || v.fila?.trim());
+        vendas = (data || []).filter(v => v.valor > 0 || v.comprador?.trim() || v.codigo?.trim());
         vendas.forEach(v => { 
             if (v.comprador?.trim()) {
                 compradoresNaLive.add(v.comprador.trim().toLowerCase());
@@ -1893,7 +1892,7 @@ async function salvarVendaSilencioso(linhaId) {
     const codigo = document.getElementById('codigo-' + linhaId)?.value || '';
     const comprador = document.getElementById('comprador-' + linhaId)?.value?.trim() || '';
     const fila = document.getElementById('fila-' + linhaId)?.value?.trim() || '';
-    if (valor === 0 && !codigo && !comprador && !fila) { marcarLinhaComoSalva(linhaId); return; }
+    if (valor === 0 && !codigo && !comprador) { marcarLinhaComoSalva(linhaId); return; }
     const { data: existentes, error: checkError } = await window.supabaseClient.from('vendas_live').select('id, updated_at').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).eq('linha_id', linhaId).order('updated_at', { ascending: false }).limit(1);
     if (checkError) { if (checkError.status === 401) throw checkError; throw checkError; }
     const existente = (existentes && existentes.length > 0) ? existentes[0] : null;
@@ -2007,37 +2006,19 @@ async function salvarVenda(linhaId, autoAvancar) {
         // Destaca a linha salva APENAS UMA VEZ
         destacarLinha(linhaId);
 
-        // ===== Pular para o campo VALOR da próxima linha =====
+        // ===== Pular para a primeira linha não salva/vazia =====
         if (autoAvancar) {
             setTimeout(() => {
                 let proximaLinha = null;
-                // Procura a partir da linha atual + 1 (para ir para a PRÓXIMA linha, não a primeira vazia)
-                for (let i = linhaId + 1; i <= linhaCount; i++) {
+                for (let i = 1; i <= linhaCount; i++) {
                     const btn = document.getElementById('btn-save-' + i);
                     if (btn && !btn.classList.contains('saved')) {
                         const v = document.getElementById('valor-' + i)?.value;
                         const c = document.getElementById('codigo-' + i)?.value;
                         const comp = document.getElementById('comprador-' + i)?.value;
-                        const f = document.getElementById('fila-' + i)?.value;
-                        if (!v && !c && !comp && !f) {
+                        if (!v && !c && !comp) {
                             proximaLinha = i;
                             break;
-                        }
-                    }
-                }
-                // Se não achou depois da atual, procura do início até a linha atual
-                if (!proximaLinha) {
-                    for (let i = 1; i <= linhaId; i++) {
-                        const btn = document.getElementById('btn-save-' + i);
-                        if (btn && !btn.classList.contains('saved')) {
-                            const v = document.getElementById('valor-' + i)?.value;
-                            const c = document.getElementById('codigo-' + i)?.value;
-                            const comp = document.getElementById('comprador-' + i)?.value;
-                            const f = document.getElementById('fila-' + i)?.value;
-                            if (!v && !c && !comp && !f) {
-                                proximaLinha = i;
-                                break;
-                            }
                         }
                     }
                 }
@@ -2045,19 +2026,10 @@ async function salvarVenda(linhaId, autoAvancar) {
 
                 const campoValorProximo = document.getElementById('valor-' + proximaLinha);
                 if (campoValorProximo) {
-                    campoValorProximo.focus();
+                    campoValorProximo.focus({ preventScroll: true });
                     campoValorProximo.select();
-                    // Scrolla a linha para visualização no container da tabela
-                    const container = document.querySelector('.table-container');
-                    const linhaEl = document.getElementById('linha-' + proximaLinha);
-                    if (container && linhaEl) {
-                        const linhaRect = linhaEl.getBoundingClientRect();
-                        const containerRect = container.getBoundingClientRect();
-                        const scrollTop = container.scrollTop + (linhaRect.top - containerRect.top) - (containerRect.height / 2) + (linhaRect.height / 2);
-                        container.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
-                    }
                 }
-            }, 200);
+            }, 100);
         }
 
     } catch (error) {
@@ -2161,7 +2133,7 @@ function navegarCampos(event, linhaId, campoAtual) {
     }
 }
 
-async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
+function navegarCamposComSugestoes(event, linhaId, campoAtual) {
     if (liveBloqueada) return;
     const sugestoesDiv = document.getElementById('sugestoes-' + campoAtual + '-' + linhaId);
     const itens = sugestoesDiv.querySelectorAll('.suggestion-item');
@@ -2188,74 +2160,6 @@ async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
             const item = itens[selectedSuggestionIndex];
             if (item) { item.click(); return; }
         }
-
-        // Se está no comprador ou fila e os campos obrigatórios estão preenchidos, salva e vai para próxima linha
-        if (campoAtual === 'comprador' || campoAtual === 'fila') {
-            const valorInput = document.getElementById('valor-' + linhaId);
-            const codigoInput = document.getElementById('codigo-' + linhaId);
-            const compradorInput = document.getElementById('comprador-' + linhaId);
-            const filaInput = document.getElementById('fila-' + linhaId);
-            const temValor = valorInput && valorInput.value && parseFloat(valorInput.value.replace(/\./g, '').replace(',', '.')) > 0;
-            const temCodigo = codigoInput && codigoInput.value.trim();
-            const temComprador = compradorInput && compradorInput.value.trim();
-            const temFila = filaInput && filaInput.value.trim();
-
-            if (temValor && temCodigo && (temComprador || temFila)) {
-                document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
-                // Lock ANTES de remover o foco, para o onblur ser ignorado
-                salvandoLinha.add(linhaId);
-                event.target.blur();
-                await salvarVenda(linhaId, false);
-                // Após salvar, vai direto para o campo VALOR da próxima linha
-                let proximaLinha = null;
-                // Procura a partir da linha atual + 1
-                for (let i = linhaId + 1; i <= linhaCount; i++) {
-                    const btn = document.getElementById('btn-save-' + i);
-                    if (btn && !btn.classList.contains('saved')) {
-                        const v = document.getElementById('valor-' + i)?.value;
-                        const c = document.getElementById('codigo-' + i)?.value;
-                        const comp = document.getElementById('comprador-' + i)?.value;
-                        const f = document.getElementById('fila-' + i)?.value;
-                        if (!v && !c && !comp && !f) {
-                            proximaLinha = i;
-                            break;
-                        }
-                    }
-                }
-                // Se não achou depois, procura do início até a atual
-                if (!proximaLinha) {
-                    for (let i = 1; i <= linhaId; i++) {
-                        const btn = document.getElementById('btn-save-' + i);
-                        if (btn && !btn.classList.contains('saved')) {
-                            const v = document.getElementById('valor-' + i)?.value;
-                            const c = document.getElementById('codigo-' + i)?.value;
-                            const comp = document.getElementById('comprador-' + i)?.value;
-                            const f = document.getElementById('fila-' + i)?.value;
-                            if (!v && !c && !comp && !f) {
-                                proximaLinha = i;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!proximaLinha) proximaLinha = linhaId + 1;
-                const campoValorProximo = document.getElementById('valor-' + proximaLinha);
-                if (campoValorProximo) {
-                    campoValorProximo.focus();
-                    campoValorProximo.select();
-                    const container = document.querySelector('.table-container');
-                    const linhaEl = document.getElementById('linha-' + proximaLinha);
-                    if (container && linhaEl) {
-                        const linhaRect = linhaEl.getBoundingClientRect();
-                        const containerRect = container.getBoundingClientRect();
-                        const scrollTop = container.scrollTop + (linhaRect.top - containerRect.top) - (containerRect.height / 2) + (linhaRect.height / 2);
-                        container.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
-                    }
-                }
-                return;
-            }
-        }
-
         const campos = ['valor', 'codigo', 'comprador', 'fila'];
         const idx = campos.indexOf(campoAtual);
         document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
@@ -2654,7 +2558,7 @@ async function executarResetarLive() {
 function registrarVendasIndividuais() {
     const vendasParaRegistrar = vendas.filter(v => 
         v.valor > 0 && 
-        (v.comprador?.trim() || v.fila?.trim()) && 
+        v.comprador?.trim() && 
         !v.venda_registrada
     );
     if (vendasParaRegistrar.length === 0) {
@@ -2679,7 +2583,7 @@ async function executarRegistrarVendasIndividuais() {
     fecharVendaDialog();
     const vendasParaRegistrar = vendas.filter(v => 
         v.valor > 0 && 
-        (v.comprador?.trim() || v.fila?.trim()) && 
+        v.comprador?.trim() && 
         !v.venda_registrada
     );
     if (vendasParaRegistrar.length === 0) {
@@ -2753,7 +2657,7 @@ function fecharVendaDialog() {
 function gerarRelatorioNovaAba() {
     const vendasPorComprador = {};
     for (const v of vendas) {
-        if ((!v.comprador && !v.fila) || v.valor === 0) continue;
+        if (!v.comprador || v.valor === 0) continue;
         const compradorNormalizado = v.comprador.trim().toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
         if (!vendasPorComprador[compradorNormalizado]) vendasPorComprador[compradorNormalizado] = [];
         vendasPorComprador[compradorNormalizado].push(v);
