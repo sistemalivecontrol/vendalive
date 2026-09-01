@@ -346,6 +346,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -1337,10 +1338,10 @@ async function carregarGridUltimasLives() {
                 let totalCalculado = 0;
                 if (!vendasError && vendasLive) {
                     totalCalculado = vendasLive.reduce(function(sum, v) {
-                        // Mesma lógica da tela aberta: apenas itens com valor > 0 e comprador preenchido
+                        // Mesma lógica da tela aberta: apenas itens com valor > 0 e comprador ou fila preenchido
                         const valor = parseFloat(v.valor) || 0;
-                        const temComprador = v.comprador && v.comprador.trim().length > 0;
-                        if (valor > 0 && temComprador) {
+                        const temCompradorOuFila = (v.comprador && v.comprador.trim().length > 0) || (v.fila && v.fila.trim().length > 0);
+                        if (valor > 0 && temCompradorOuFila) {
                             return sum + valor;
                         }
                         return sum;
@@ -1729,7 +1730,7 @@ function atualizarContagemItens() {
 }
 
 function atualizarTotalVendidoHeader() {
-    const vendasValidas = vendas.filter(v => v.valor > 0 && v.comprador?.trim());
+    const vendasValidas = vendas.filter(v => v.valor > 0 && (v.comprador?.trim() || v.fila?.trim()));
     const total = vendasValidas.reduce((sum, v) => sum + (parseFloat(v.valor) || 0), 0);
     document.getElementById('totalVendidoHeader').textContent = formatarMoeda(total);
 }
@@ -1759,7 +1760,7 @@ async function carregarVendasExistentes() {
         else if (liveData) { liveBloqueada = liveData.status === 'finalizada'; }
         const { data, error } = await window.supabaseClient.from('vendas_live').select('*').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).order('linha_id', { ascending: true });
         if (error) { if (error.status === 401) { await limparSessaoERedirecionar(); return; } console.error('Erro ao carregar vendas:', error); vendas = []; return; }
-        vendas = (data || []).filter(v => v.valor > 0 || v.comprador?.trim() || v.codigo?.trim());
+        vendas = (data || []).filter(v => v.valor > 0 || v.comprador?.trim() || v.codigo?.trim() || v.fila?.trim());
         vendas.forEach(v => { 
             if (v.comprador?.trim()) {
                 compradoresNaLive.add(v.comprador.trim().toLowerCase());
@@ -1892,7 +1893,7 @@ async function salvarVendaSilencioso(linhaId) {
     const codigo = document.getElementById('codigo-' + linhaId)?.value || '';
     const comprador = document.getElementById('comprador-' + linhaId)?.value?.trim() || '';
     const fila = document.getElementById('fila-' + linhaId)?.value?.trim() || '';
-    if (valor === 0 && !codigo && !comprador) { marcarLinhaComoSalva(linhaId); return; }
+    if (valor === 0 && !codigo && !comprador && !fila) { marcarLinhaComoSalva(linhaId); return; }
     const { data: existentes, error: checkError } = await window.supabaseClient.from('vendas_live').select('id, updated_at').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).eq('linha_id', linhaId).order('updated_at', { ascending: false }).limit(1);
     if (checkError) { if (checkError.status === 401) throw checkError; throw checkError; }
     const existente = (existentes && existentes.length > 0) ? existentes[0] : null;
@@ -2010,15 +2011,33 @@ async function salvarVenda(linhaId, autoAvancar) {
         if (autoAvancar) {
             setTimeout(() => {
                 let proximaLinha = null;
-                for (let i = 1; i <= linhaCount; i++) {
+                // Procura a partir da linha atual + 1 (para ir para a PRÓXIMA linha, não a primeira vazia)
+                for (let i = linhaId + 1; i <= linhaCount; i++) {
                     const btn = document.getElementById('btn-save-' + i);
                     if (btn && !btn.classList.contains('saved')) {
                         const v = document.getElementById('valor-' + i)?.value;
                         const c = document.getElementById('codigo-' + i)?.value;
                         const comp = document.getElementById('comprador-' + i)?.value;
-                        if (!v && !c && !comp) {
+                        const f = document.getElementById('fila-' + i)?.value;
+                        if (!v && !c && !comp && !f) {
                             proximaLinha = i;
                             break;
+                        }
+                    }
+                }
+                // Se não achou depois da atual, procura do início até a linha atual
+                if (!proximaLinha) {
+                    for (let i = 1; i <= linhaId; i++) {
+                        const btn = document.getElementById('btn-save-' + i);
+                        if (btn && !btn.classList.contains('saved')) {
+                            const v = document.getElementById('valor-' + i)?.value;
+                            const c = document.getElementById('codigo-' + i)?.value;
+                            const comp = document.getElementById('comprador-' + i)?.value;
+                            const f = document.getElementById('fila-' + i)?.value;
+                            if (!v && !c && !comp && !f) {
+                                proximaLinha = i;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2175,11 +2194,13 @@ async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
             const valorInput = document.getElementById('valor-' + linhaId);
             const codigoInput = document.getElementById('codigo-' + linhaId);
             const compradorInput = document.getElementById('comprador-' + linhaId);
+            const filaInput = document.getElementById('fila-' + linhaId);
             const temValor = valorInput && valorInput.value && parseFloat(valorInput.value.replace(/\./g, '').replace(',', '.')) > 0;
             const temCodigo = codigoInput && codigoInput.value.trim();
             const temComprador = compradorInput && compradorInput.value.trim();
+            const temFila = filaInput && filaInput.value.trim();
 
-            if (temValor && temCodigo && temComprador) {
+            if (temValor && temCodigo && (temComprador || temFila)) {
                 document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
                 // Lock ANTES de remover o foco, para o onblur ser ignorado
                 salvandoLinha.add(linhaId);
@@ -2187,15 +2208,33 @@ async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
                 await salvarVenda(linhaId, false);
                 // Após salvar, vai direto para o campo VALOR da próxima linha
                 let proximaLinha = null;
-                for (let i = 1; i <= linhaCount; i++) {
+                // Procura a partir da linha atual + 1
+                for (let i = linhaId + 1; i <= linhaCount; i++) {
                     const btn = document.getElementById('btn-save-' + i);
                     if (btn && !btn.classList.contains('saved')) {
                         const v = document.getElementById('valor-' + i)?.value;
                         const c = document.getElementById('codigo-' + i)?.value;
                         const comp = document.getElementById('comprador-' + i)?.value;
-                        if (!v && !c && !comp) {
+                        const f = document.getElementById('fila-' + i)?.value;
+                        if (!v && !c && !comp && !f) {
                             proximaLinha = i;
                             break;
+                        }
+                    }
+                }
+                // Se não achou depois, procura do início até a atual
+                if (!proximaLinha) {
+                    for (let i = 1; i <= linhaId; i++) {
+                        const btn = document.getElementById('btn-save-' + i);
+                        if (btn && !btn.classList.contains('saved')) {
+                            const v = document.getElementById('valor-' + i)?.value;
+                            const c = document.getElementById('codigo-' + i)?.value;
+                            const comp = document.getElementById('comprador-' + i)?.value;
+                            const f = document.getElementById('fila-' + i)?.value;
+                            if (!v && !c && !comp && !f) {
+                                proximaLinha = i;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2615,7 +2654,7 @@ async function executarResetarLive() {
 function registrarVendasIndividuais() {
     const vendasParaRegistrar = vendas.filter(v => 
         v.valor > 0 && 
-        v.comprador?.trim() && 
+        (v.comprador?.trim() || v.fila?.trim()) && 
         !v.venda_registrada
     );
     if (vendasParaRegistrar.length === 0) {
@@ -2640,7 +2679,7 @@ async function executarRegistrarVendasIndividuais() {
     fecharVendaDialog();
     const vendasParaRegistrar = vendas.filter(v => 
         v.valor > 0 && 
-        v.comprador?.trim() && 
+        (v.comprador?.trim() || v.fila?.trim()) && 
         !v.venda_registrada
     );
     if (vendasParaRegistrar.length === 0) {
@@ -2714,7 +2753,7 @@ function fecharVendaDialog() {
 function gerarRelatorioNovaAba() {
     const vendasPorComprador = {};
     for (const v of vendas) {
-        if (!v.comprador || v.valor === 0) continue;
+        if ((!v.comprador && !v.fila) || v.valor === 0) continue;
         const compradorNormalizado = v.comprador.trim().toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
         if (!vendasPorComprador[compradorNormalizado]) vendasPorComprador[compradorNormalizado] = [];
         vendasPorComprador[compradorNormalizado].push(v);
