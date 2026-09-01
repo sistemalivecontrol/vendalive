@@ -2181,8 +2181,9 @@ async function navegarCamposComSugestoes(event, linhaId, campoAtual) {
 
             if (temValor && temCodigo && temComprador) {
                 document.querySelectorAll('.suggestions').forEach(el => el.classList.remove('active'));
-                // Move foco para body para evitar que o navegador vá para o campo fila
-                document.body.focus();
+                // Lock ANTES de remover o foco, para o onblur ser ignorado
+                salvandoLinha.add(linhaId);
+                event.target.blur();
                 await salvarVenda(linhaId, false);
                 // Após salvar, vai direto para o campo VALOR da próxima linha
                 let proximaLinha = null;
