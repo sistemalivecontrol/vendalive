@@ -345,7 +345,6 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay" style="display: none;"><div>Verificando autenticação...</div></div>
@@ -570,7 +569,6 @@ let ultimoTextoReconhecido = '';
 let temporizadorPausa = null;
 let comandoDetectado = false;
 let ultimaLinhaGravacao = 1;
-let salvandoLinha = new Set();
 
 // ===== ARRAY DE LIVES EXCLUÍDAS NESSA SESSÃO =====
 // Evita que lives excluídas reapareçam por cache do Supabase
@@ -1925,12 +1923,7 @@ async function verificarESalvarAntesDeVerRelatorio() { await verificarESalvarTod
 async function verificarESalvarAntesDeFinalizar() { await verificarESalvarTodasLinhasPendentes(); finalizarLive(); }
 
 async function salvarVendaBlur(linhaId) {
-    // Se a linha já está sendo salva (ex: blur causado por clicar no botão salvar), ignora
-    if (salvandoLinha.has(linhaId)) {
-        console.log('[BLUR] Linha ' + linhaId + ' já em salvamento. Ignorando blur.');
-        return;
-    }
-
+    // Só salva automaticamente se valor > 0, código preenchido E comprador/fila preenchido
     const valorInput = document.getElementById('valor-' + linhaId);
     const codigoInput = document.getElementById('codigo-' + linhaId);
     const compradorInput = document.getElementById('comprador-' + linhaId);
@@ -1943,45 +1936,37 @@ async function salvarVendaBlur(linhaId) {
 
     // Só salva se: valor > 0, código preenchido, e (comprador OU fila preenchido)
     if (valor > 0 && codigo && (comprador || fila)) {
-        await salvarVenda(linhaId, false); // autoAvancar = false no blur
+        await salvarVenda(linhaId, false);
+        // Após salvar, centraliza a linha no container da tabela
+        setTimeout(() => destacarLinha(linhaId), 100);
     }
 }
 
 async function salvarVenda(linhaId, autoAvancar) {
-    // LOCK: evita salvamento duplo da mesma linha
-    if (salvandoLinha.has(linhaId)) {
-        console.log('[SALVAR] Linha ' + linhaId + ' já está sendo salva. Ignorando chamada duplicada.');
-        return;
-    }
-    salvandoLinha.add(linhaId);
-
     if (autoAvancar === undefined) autoAvancar = true;
-    if (liveBloqueada) { salvandoLinha.delete(linhaId); return; }
-
+    if (liveBloqueada) return;
     const btnSalvar = document.getElementById('btn-save-' + linhaId);
     if (btnSalvar) { btnSalvar.classList.add('saving'); btnSalvar.textContent = '⏳'; }
-
     const valorInput = document.getElementById('valor-' + linhaId);
     const valor = parseFloat(valorInput?.value?.replace(/\./g, '').replace(',', '.')) || 0;
     const codigo = document.getElementById('codigo-' + linhaId)?.value || '';
     const comprador = document.getElementById('comprador-' + linhaId)?.value?.trim() || '';
     const fila = document.getElementById('fila-' + linhaId)?.value?.trim() || '';
-
     try {
         const { data: existentes, error: checkError } = await window.supabaseClient.from('vendas_live').select('id, updated_at').eq('cliente_id', currentClienteId).eq('codigo_live', codigoLiveAtual).eq('linha_id', linhaId).order('updated_at', { ascending: false }).limit(1);
-        if (checkError) { if (checkError.status === 401) { await limparSessaoERedirecionar(); salvandoLinha.delete(linhaId); return; } throw checkError; }
+        if (checkError) { if (checkError.status === 401) { await limparSessaoERedirecionar(); return; } throw checkError; }
         const existente = (existentes && existentes.length > 0) ? existentes[0] : null;
         const vendaData = { cliente_id: currentClienteId, codigo_live: codigoLiveAtual, linha_id: linhaId, data_live: dataLiveAtual, item: linhaId, valor: valor, codigo: codigo, comprador: comprador, fila: fila, total: valor, updated_at: new Date().toISOString() };
         let result;
         if (existente) {
             result = await window.supabaseClient.from('vendas_live').update(vendaData).eq('id', existente.id);
-            if (result.error) { if (result.error.status === 401) { await limparSessaoERedirecionar(); salvandoLinha.delete(linhaId); return; } throw result.error; }
+            if (result.error) { if (result.error.status === 401) { await limparSessaoERedirecionar(); return; } throw result.error; }
             const idx = vendas.findIndex(v => v.linha_id === linhaId && v.codigo_live === codigoLiveAtual);
             if (idx !== -1) vendas[idx] = { ...vendaData, id: existente.id };
             else vendas.push({ ...vendaData, id: existente.id });
         } else {
             result = await window.supabaseClient.from('vendas_live').insert([{ ...vendaData, created_at: new Date().toISOString(), bloqueada: false }]).select();
-            if (result.error) { if (result.error.status === 401) { await limparSessaoERedirecionar(); salvandoLinha.delete(linhaId); return; } throw result.error; }
+            if (result.error) { if (result.error.status === 401) { await limparSessaoERedirecionar(); return; } throw result.error; }
             if (result.data?.[0]) {
                 const idx = vendas.findIndex(v => v.linha_id === linhaId && v.codigo_live === codigoLiveAtual);
                 if (idx !== -1) vendas[idx] = result.data[0];
@@ -2002,48 +1987,46 @@ async function salvarVenda(linhaId, autoAvancar) {
             setTimeout(() => { btnSalvar.textContent = '💾'; }, 1500);
         }
         showStatus('Item salvo com sucesso!', 'success');
-
-        // Destaca a linha salva APENAS UMA VEZ
-        destacarLinha(linhaId);
-
-        // ===== Pular para a primeira linha não salva/vazia =====
-        if (autoAvancar) {
-            setTimeout(() => {
-                let proximaLinha = null;
-                for (let i = 1; i <= linhaCount; i++) {
-                    const btn = document.getElementById('btn-save-' + i);
-                    if (btn && !btn.classList.contains('saved')) {
-                        const v = document.getElementById('valor-' + i)?.value;
-                        const c = document.getElementById('codigo-' + i)?.value;
-                        const comp = document.getElementById('comprador-' + i)?.value;
-                        if (!v && !c && !comp) {
-                            proximaLinha = i;
-                            break;
-                        }
+        
+        // ===== NOVO: Pular para a primeira linha não salva/vazia =====
+        setTimeout(() => {
+            // Procura a primeira linha não salva (vazia) a partir da linha 1
+            let proximaLinha = null;
+            for (let i = 1; i <= linhaCount; i++) {
+                const btn = document.getElementById('btn-save-' + i);
+                // Se o botão existe e NÃO tem a classe 'saved', a linha não está salva
+                if (btn && !btn.classList.contains('saved')) {
+                    // Verifica se a linha está realmente vazia (sem valor, código ou comprador)
+                    const v = document.getElementById('valor-' + i)?.value;
+                    const c = document.getElementById('codigo-' + i)?.value;
+                    const comp = document.getElementById('comprador-' + i)?.value;
+                    if (!v && !c && !comp) {
+                        proximaLinha = i;
+                        break;
                     }
                 }
-                if (!proximaLinha) proximaLinha = linhaId + 1;
-
-                const campoValorProximo = document.getElementById('valor-' + proximaLinha);
-                if (campoValorProximo) {
-                    campoValorProximo.focus({ preventScroll: true });
-                    campoValorProximo.select();
-                }
-            }, 100);
-        }
-
+            }
+            
+            // Se não achou linha vazia não salva, vai para a próxima linha sequencial
+            if (!proximaLinha) {
+                proximaLinha = linhaId + 1;
+            }
+            
+            const campoValorProximo = document.getElementById('valor-' + proximaLinha);
+            if (campoValorProximo) {
+                campoValorProximo.focus({ preventScroll: true });
+                campoValorProximo.select();
+                // Destaca a linha para visualização
+                destacarLinha(proximaLinha);
+            }
+        }, 100);
+        
     } catch (error) {
         console.error('Erro ao salvar:', error);
         if (btnSalvar) { btnSalvar.classList.remove('saving'); btnSalvar.textContent = '💾'; }
         showStatus('Erro ao salvar: ' + error.message, 'error');
-    } finally {
-        // Libera o lock após um pequeno delay para garantir que o blur não dispare outro salvamento
-        setTimeout(() => {
-            salvandoLinha.delete(linhaId);
-        }, 300);
     }
 }
-
 function criarLinhaComDados(venda) {
     linhaCount = Math.max(linhaCount, venda.linha_id);
     const tbody = document.getElementById('vendasBody');
@@ -2073,7 +2056,7 @@ function criarLinhaComDados(venda) {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onmousedown="event.preventDefault()" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
+        '<button class="' + btnClass + '" id="btn-save-' + venda.linha_id + '" onclick="salvarVenda(' + venda.linha_id + ')" style="' + btnStyle + '" ' + disabled + ' title="Salvar">💾</button>' +
         '</td>';
     tbody.appendChild(tr);
     if (!jaSalvo) verificarCamposObrigatorios(venda.linha_id);
@@ -2105,7 +2088,7 @@ function adicionarLinha() {
         '</div>' +
         '</td>' +
         '<td style="white-space: nowrap;">' +
-        '<button class="btn-save" id="btn-save-' + linhaCount + '" onmousedown="event.preventDefault()" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
+        '<button class="btn-save" id="btn-save-' + linhaCount + '" onclick="salvarVenda(' + linhaCount + ')" style="background: #dc3545;" title="Salvar">💾</button>' +
         '</td>';
     tbody.appendChild(tr);
     linhasNaoSalvas.add(linhaCount);
